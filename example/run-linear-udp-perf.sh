@@ -1,6 +1,6 @@
 
 nodes="1 2 3 4 8 10 16 20"
-PRGM=./build/optimized/src/process-manager/example/ring-udp-perf
+PRGM=./build/optimized/src/process-manager/example/linear-udp-perf
 CONSTANTS="--TxBandwidth=1000000 --LinkBandwidth=2MBps --ns3::TaskManager::FiberManagerType=UcontextFiberManager --Duration=200s"
 args_exp1="--Ns3App=true"
 args_exp2="--Ns3App=false"
