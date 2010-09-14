@@ -50,10 +50,10 @@ def build(bld):
     dce.source = [
         'dce-manager.cc',
 	'dce-application.cc',
-        'simu.cc',
-        'simu-signal.cc',
+        'dce.cc',
+        'dce-signal.cc',
         'dce-manager-test.cc',
-        'libc-simu.c',
+        'libc-dce.c',
         'utils.cc',
         'unix-fd.cc',
         'unix-file-fd.cc',
@@ -61,25 +61,25 @@ def build(bld):
         'unix-datagram-socket-fd.cc',
         'unix-stream-socket-fd.cc',
         'unix-timer-fd.cc',
-        'simu-fd.cc',
-        'simu-stdio.cc',
-        'simu-pthread.cc',
-        'simu-stdlib.cc',
-        'simu-debug.cc',
-        'simu-semaphore.cc',
-        'simu-pthread-mutex.cc',
-        'simu-cxa.cc',
-        'simu-netdb.cc',
-        'simu-string.cc',
-        'simu-env.cc',
-        'simu-pthread-cond.cc',
-        'simu-timerfd.cc',
-        'simu-stat.cc',
-        'simu-global-variables.cc',
+        'dce-fd.cc',
+        'dce-stdio.cc',
+        'dce-pthread.cc',
+        'dce-stdlib.cc',
+        'dce-debug.cc',
+        'dce-semaphore.cc',
+        'dce-pthread-mutex.cc',
+        'dce-cxa.cc',
+        'dce-netdb.cc',
+        'dce-string.cc',
+        'dce-env.cc',
+        'dce-pthread-cond.cc',
+        'dce-timerfd.cc',
+        'dce-stat.cc',
+        'dce-global-variables.cc',
         'cmsg.cc',
         'waiter.cc',
         'alloc.cc',
-        'simu-alloc.cc',
+        'dce-alloc.cc',
         'trampoline-manager.cc',
         'system-wrappers.cc',
         'fiber-manager.cc',
@@ -156,7 +156,7 @@ def build(bld):
     bld.add_group('dce_use_version_files')
 
     # The very small libc used to replace the glibc
-    # and forward to the simu_* code
+    # and forward to the dce_* code
     module = bld.new_task_gen('cc', 'shlib')
     module.name = 'c-ns3'
     module.target = module.name
@@ -170,7 +170,7 @@ def build(bld):
     module.source = ['libc.c', 'libc-global-variables.c']
 
     # The very small libpthread used to replace the glibc
-    # and forward to the simu_* code
+    # and forward to the dce_* code
     module = bld.new_task_gen('cc', 'shlib')
     module.name = 'pthread-ns3'
     module.target = module.name

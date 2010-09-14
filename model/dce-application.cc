@@ -15,7 +15,7 @@ DceApplication::GetTypeId (void)
   static TypeId tid = TypeId ("ns3::DceApplication")
     .SetParent<Application> ()
     .AddConstructor<DceApplication> ()
-    .AddTraceSource ("DceStarted", "notify when the dce is started",
+    .AddTraceSource ("ProcessStarted", "notify when the dce is started",
 		     MakeTraceSourceAccessor (&DceApplication::m_dceStarted))
     ;
   return tid;

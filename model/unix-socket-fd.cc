@@ -4,7 +4,7 @@
 #include "utils.h"
 #include "waiter.h"
 #include "cmsg.h"
-#include "sys/simu-socket.h"
+#include "sys/dce-socket.h"
 #include "ns3/log.h"
 #include "ns3/socket.h"
 #include "ns3/packet.h"

@@ -3,57 +3,47 @@
 import os
 
 def build(bld):
-    obj = bld.create_ns3_program('process', ['core', 'simulator', 'point-to-point', 
-                                             'internet-stack', 'process-manager', 
-					     'dce-helper'])
-    obj.source = 'process.cc'
+    obj = bld.create_simu_program('udp-server')
+    obj.source = ['udp-server.cc']
+    obj = bld.create_simu_program('udp-client')
+    obj.source = ['udp-client.cc']
 
-    obj = bld.create_simu_program('process-udp-server')
-    obj.source = ['process-udp-server.cc']
-    obj = bld.create_simu_program('process-udp-client')
-    obj.source = ['process-udp-client.cc']
+    obj = bld.create_simu_program('tcp-server')
+    obj.source = ['tcp-server.cc']
+    obj = bld.create_simu_program('tcp-client')
+    obj.source = ['tcp-client.cc']
 
-    obj = bld.create_simu_program('process-tcp-server')
-    obj.source = ['process-tcp-server.cc']
-    obj = bld.create_simu_program('process-tcp-client')
-    obj.source = ['process-tcp-client.cc']
+    obj = bld.create_simu_program('tcp-loopback')
+    obj.source = ['tcp-loopback.cc']
 
-    obj = bld.create_simu_program('process-tcp-loopback')
-    obj.source = ['process-tcp-loopback.cc']
-
-    obj = bld.create_ns3_program('process-iperf', 
+    obj = bld.create_ns3_program('dce-iperf', 
                                  ['core', 'simulator', 'point-to-point', 
-                                  'internet-stack', 'process-manager'])
-    obj.source = 'process-iperf.cc'
+                                  'internet-stack', 'dce-manager'])
+    obj.source = 'dce-iperf.cc'
 
-    obj = bld.create_ns3_program('process-empty', 
+    obj = bld.create_ns3_program('dce-udp-perf', 
                                  ['core', 'simulator', 'point-to-point', 
-                                  'internet-stack', 'process-manager'])
-    obj.source = 'process-empty.cc'
+                                  'internet-stack', 'dce-manager'])
+    obj.source = 'dce-udp-perf.cc'
 
-    obj = bld.create_ns3_program('process-udp-perf', 
+    obj = bld.create_ns3_program('dce-linear', 
                                  ['core', 'simulator', 'point-to-point', 
-                                  'internet-stack', 'process-manager'])
-    obj.source = 'process-udp-perf.cc'
+                                  'internet-stack', 'dce-manager'])
+    obj.source = 'dce-linear.cc'
 
-    obj = bld.create_ns3_program('process-ring', 
+    obj = bld.create_ns3_program('dce-netlink', 
                                  ['core', 'simulator', 'point-to-point', 
-                                  'internet-stack', 'process-manager'])
-    obj.source = 'process-ring.cc'
+                                  'internet-stack', 'dce-manager'])
+    obj.source = 'dce-netlink.cc'
 
-    obj = bld.create_ns3_program('process-netlink', 
+    obj = bld.create_ns3_program('dce-linux', 
                                  ['core', 'simulator', 'point-to-point', 
-                                  'internet-stack', 'process-manager'])
-    obj.source = 'process-netlink.cc'
-
-    obj = bld.create_ns3_program('process-linux', 
-                                 ['core', 'simulator', 'point-to-point', 
-                                  'internet-stack', 'process-manager'])
-    obj.source = 'process-linux.cc'
+                                  'internet-stack', 'dce-manager'])
+    obj.source = 'dce-linux.cc'
 
     obj = bld.create_simu_program('udp-perf')
     obj.env.append_value('LINKFLAGS', '-lm')
     obj.source = 'udp-perf.cc'
 
-    obj = bld.create_ns3_program('ring-udp-perf')
-    obj.source = [ 'ring-udp-perf.cc', 'memory-usage.cc']
+    obj = bld.create_ns3_program('linear-udp-perf')
+    obj.source = [ 'linear-udp-perf.cc', 'memory-usage.cc']

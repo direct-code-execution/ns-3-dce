@@ -20,16 +20,16 @@
 #include "dce-manager.h"
 #include "process.h"
 #include "task-manager.h"
-#include "libc-simu.h"
+#include "libc-dce.h"
 #include "unix-fd.h"
 #include "unix-file-fd.h"
 #include "utils.h"
 #include "alloc.h"
-#include "simu-stdio.h"
-#include "simu-unistd.h"
-#include "simu-pthread.h"
-#include "simu-fcntl.h"
-#include "sys/simu-stat.h"
+#include "dce-stdio.h"
+#include "dce-unistd.h"
+#include "dce-pthread.h"
+#include "dce-fcntl.h"
+#include "sys/dce-stat.h"
 #include "system-wrappers.h"
 #include "loader-factory.h"
 #include "ns3/node.h"
@@ -110,21 +110,21 @@ DceManager::GetLibc (void)
       return &libc;
     }
   initialized = true;
-  libc_simu (&libc);
+  libc_dce (&libc);
   return &libc;
 }
 
 void
 DceManager::EnsureDirectoryExists (struct Thread *current, std::string dirName)
 {
-  int fd = simu_open (dirName.c_str(), O_DIRECTORY | O_RDONLY, 0);
+  int fd = dce_open (dirName.c_str(), O_DIRECTORY | O_RDONLY, 0);
   if (fd != -1)
     {
-      simu_close (fd);
+      dce_close (fd);
     }
   else if (current->err == ENOENT)
     {
-      int status = simu_mkdir (dirName.c_str (), S_IRWXU | S_IRWXG);
+      int status = dce_mkdir (dirName.c_str (), S_IRWXU | S_IRWXG);
       if (status == -1)
 	{
 	  NS_FATAL_ERROR ("Could not create directory " << dirName
@@ -148,7 +148,7 @@ DceManager::CreatePidFile (struct Thread *current, std::string filename)
   EnsureDirectoryExists (current, oss.str());
   oss << "/" << filename;
   std::string s = oss.str();
-  int fd = simu_creat (s.c_str (), S_IWUSR | S_IRUSR);
+  int fd = dce_creat (s.c_str (), S_IWUSR | S_IRUSR);
   return fd;
 }
 
@@ -172,11 +172,11 @@ DceManager::DoStartProcess (void *context)
   for (int i = 0; i < current->process->originalArgc; i++)
     {
       char *cur = current->process->originalArgv[i];
-      simu_write (fd, cur, strlen (cur));
-      simu_write (fd, " ", 1);
+      dce_write (fd, cur, strlen (cur));
+      dce_write (fd, " ", 1);
     }
-  simu_write (fd, "\n", 1);
-  simu_close (fd);
+  dce_write (fd, "\n", 1);
+  dce_close (fd);
   NS_ASSERT (fd == 3);
 
   void *h = current->process->loader->Load ("libc-ns3.so", RTLD_GLOBAL);
@@ -216,7 +216,7 @@ DceManager::DoStartProcess (void *context)
   int (*main) (int, char **);
   main = (int (*) (int, char **)) symbol;
   int retval = main (current->process->originalArgc, current->process->originalArgv);
-  simu_exit (retval);
+  dce_exit (retval);
 }
 
 struct Process *
@@ -245,7 +245,7 @@ DceManager::CreateProcess (std::string name, std::vector<std::string> args,
   process->pid = AllocatePid ();
   process->manager = this;
   sigemptyset (&process->pendingSignals);
-  // setup a signal handler for SIGKILL which calls simu_exit.
+  // setup a signal handler for SIGKILL which calls dce_exit.
   struct SignalHandler handler;
   handler.signal = SIGKILL;
   handler.flags = 0;
@@ -471,7 +471,7 @@ void
 DceManager::SigkillHandler (int signal)
 {
   NS_ASSERT (signal == SIGKILL);
-  simu_exit (-1);
+  dce_exit (-1);
 }
 void
 DceManager::DeleteThread (struct Thread *thread)
@@ -507,7 +507,7 @@ DceManager::DeleteProcess (struct Process *process)
       // Note that, while this code might look straightforward,
       // it is not so. Specifically, we call here the system fclose
       // function which will call indirectly system_close in 
-      // system-wrappers.cc which will call simu_close in simu-fd.cc
+      // system-wrappers.cc which will call dce_close in dce-fd.cc
       // which will return -1 because it is called without a 'current'
       // thread
       SystemWrappersEnableNoop ();

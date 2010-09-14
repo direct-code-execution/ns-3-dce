@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <fcntl.h>
-#include "simu-global-variables.h"
+#include "dce-global-variables.h"
 
   // macros stolen from glibc.
 #define weak_alias(name, aliasname) \

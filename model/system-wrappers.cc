@@ -1,9 +1,9 @@
 #define _GNU_SOURCE 1
 #include "system-wrappers.h"
 #include "trampoline-manager.h"
-#include "simu-fcntl.h"
-#include "simu-unistd.h"
-#include "sys/simu-stat.h"
+#include "dce-fcntl.h"
+#include "dce-unistd.h"
+#include "sys/dce-stat.h"
 #include "ns3/assert.h"
 #include <sys/syscall.h>
 #include <dlfcn.h>
@@ -36,7 +36,7 @@ extern "C" int system_open(const char *pathname, int flags, mode_t mode)
     case ENABLED:
       {
 	g_state = DISABLED;
-	ssize_t retval = simu_open (pathname, flags, mode);
+	ssize_t retval = dce_open (pathname, flags, mode);
 	g_state = ENABLED;
 	return retval;
       }
@@ -58,7 +58,7 @@ extern "C" int system_close (int fd)
     case ENABLED:
       {
 	g_state = DISABLED;
-	ssize_t retval = simu_close (fd);
+	ssize_t retval = dce_close (fd);
 	g_state = ENABLED;
 	return retval;
       }
@@ -80,7 +80,7 @@ extern "C" ssize_t system_write(int fd, const void *buf, size_t count)
     case ENABLED:
       {
 	g_state = DISABLED;
-	ssize_t retval = simu_write (fd, buf, count);
+	ssize_t retval = dce_write (fd, buf, count);
 	g_state = ENABLED;
 	return retval;
       }
@@ -102,7 +102,7 @@ extern "C" ssize_t system_read(int fd, void *buf, size_t count)
     case ENABLED:
       {
 	g_state = DISABLED;
-	ssize_t retval = simu_read (fd, buf, count);
+	ssize_t retval = dce_read (fd, buf, count);
 	g_state = ENABLED;
 	return retval;
       }
@@ -124,7 +124,7 @@ extern "C" ssize_t system_fcntl (int fd, int cmd, long arg)
     case ENABLED:
       {
 	g_state = DISABLED;
-	ssize_t retval = simu_fcntl (fd, cmd, arg);
+	ssize_t retval = dce_fcntl (fd, cmd, arg);
 	g_state = ENABLED;
 	return retval;
       }
@@ -147,7 +147,7 @@ extern "C" off_t system_lseek(int fd, off_t offset, int whence)
     case ENABLED:
       {
 	g_state = DISABLED;
-	off_t retval = simu_lseek (fd, offset, whence);
+	off_t retval = dce_lseek (fd, offset, whence);
 	g_state = ENABLED;
 	return retval;
       }
@@ -177,7 +177,7 @@ extern "C" off64_t system_llseek(int fd, off64_t offset, int whence)
     case ENABLED:
       {
 	g_state = DISABLED;
-	off64_t retval = simu_lseek64 (fd, offset, whence);
+	off64_t retval = dce_lseek64 (fd, offset, whence);
 	g_state = ENABLED;
 	return retval;
       }
@@ -244,7 +244,7 @@ extern "C" int system_fxstat64(int ver, int fd, struct stat64 *buf)
     case ENABLED:
       {
 	g_state = DISABLED;
-	off_t retval = simu_fxstat64 (ver, fd, buf);
+	off_t retval = dce_fxstat64 (ver, fd, buf);
 	g_state = ENABLED;
 	return retval;
       }
@@ -308,7 +308,7 @@ extern "C" int system_fxstat(int ver, int fd, struct stat *buf)
     case ENABLED:
       {
 	g_state = DISABLED;
-	off_t retval = simu_fxstat (ver, fd, buf);
+	off_t retval = dce_fxstat (ver, fd, buf);
 	g_state = ENABLED;
 	return retval;
       }
@@ -375,7 +375,7 @@ extern "C" int system_fxstat(int ver, int fd, struct stat *buf)
     case ENABLED:
       {
 	g_state = DISABLED;
-	off_t retval = simu_fxstat (ver, fd, buf);
+	off_t retval = dce_fxstat (ver, fd, buf);
 	g_state = ENABLED;
 	return retval;
       }
