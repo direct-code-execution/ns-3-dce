@@ -1,0 +1,4 @@
+NS3 {
+global:
+	libpthread_setup;
+};

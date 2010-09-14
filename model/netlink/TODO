@@ -1,0 +1,12 @@
+- Notification on status change
+- NETLINK_RTM_NEWADDR/NETLINK_RTM_DELADDR 
+- NETLINK_RTM_SETLINK
+   => if zebra can specify types of link
+- NETLINK_RTM_GETLINK
+   => Dump is implemented
+- handle missing oif when NEW/DEL Route
+- RT_A_SRC/RT_A_PERFSRC in NEWROUTE/DELROUTE
+- IPv6 code (can we avoid the duplicated code btw/ v4,v6?)
+- Multiple table from upper layer (VRF support in quagga)
+- Doc (Doxygen)
+- Example for netlink?

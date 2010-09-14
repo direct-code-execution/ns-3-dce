@@ -1,0 +1,36 @@
+def new_test(bld,name,libs):
+    obj = bld.create_simu_program(name)
+    obj.source = [name + '.cc']
+    obj.uselib = libs
+    obj.uselib_local = 'test'
+    
+
+def build(bld):
+    test = bld.new_task_gen('cc', 'shlib')
+    test.name = 'test'
+    test.target = test.name
+    test.env.append_value('CXXFLAGS', test.env['shlib_CXXFLAGS'])
+    test.env.append_value('CXXFLAGS', '-g')
+    test.source = ['test-macros.cc']
+
+    new_test(bld, 'test-empty', '')
+    new_test(bld, 'test-sleep', '')
+    new_test(bld, 'test-nanosleep', '')
+    new_test(bld, 'test-pthread', 'PTHREAD')
+    new_test(bld, 'test-mutex', 'PTHREAD')
+    new_test(bld, 'test-once', 'PTHREAD')
+    new_test(bld, 'test-pthread-key', 'PTHREAD')
+    new_test(bld, 'test-sem', 'PTHREAD')
+    new_test(bld, 'test-malloc', '')
+    new_test(bld, 'test-malloc-2', '')
+    new_test(bld, 'test-fd-simple', '')
+    new_test(bld, 'test-strerror', '')
+    new_test(bld, 'test-stdio', '')
+    new_test(bld, 'test-string', '')
+    new_test(bld, 'test-netdb', '')
+    new_test(bld, 'test-env', '')
+    new_test(bld, 'test-cond', 'PTHREAD')
+    new_test(bld, 'test-timer-fd', '')
+    new_test(bld, 'test-stdlib', '')
+    new_test(bld, 'test-select', '')
+    new_test(bld, 'test-random', '')
