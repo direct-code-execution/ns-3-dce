@@ -198,9 +198,10 @@ CoojaLoader::LoadModule (std::string filename, int flag)
 	      // is sufficient to make this work.
 	      int pagesize = sysconf(_SC_PAGE_SIZE);
 	      NS_ASSERT_MSG (pagesize != -1, "Unable to obtain page size " << strerror (errno));
-	      int retval = mprotect ((void *)ROUND_DOWN(link_map->l_addr + cached.data_p_vaddr, pagesize), 
-				     cached.data_p_memsz, 
-				     PROT_READ | PROT_WRITE | PROT_EXEC);
+	      int retval;
+	      retval = mprotect ((void *)ROUND_DOWN(link_map->l_addr + cached.data_p_vaddr, pagesize), 
+				 cached.data_p_memsz, 
+				 PROT_READ | PROT_WRITE | PROT_EXEC);
 	      NS_ASSERT_MSG (retval == 0, "mprotect failed " << strerror (errno));
 	      memcpy (tmpl->buffer, (void *)(link_map->l_addr + cached.data_p_vaddr),
 		      cached.data_p_memsz);
