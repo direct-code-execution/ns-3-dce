@@ -13,6 +13,7 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <list>
+#include <errno.h>
 
 namespace {
 struct Template
@@ -156,6 +157,9 @@ CoojaLoader::SearchTemplate (uint32_t id)
   return 0;
 }
 
+#define ROUND_DOWN(addr, align) \
+  (((long)addr) - (((long)(addr)) % (align)))
+
 struct CoojaLoader::Module *
 CoojaLoader::LoadModule (std::string filename, int flag)
 {
@@ -193,9 +197,19 @@ CoojaLoader::LoadModule (std::string filename, int flag)
 	    }
 	  else
 	    {
-	      NS_LOG_DEBUG ("reuse template " << cached.id);
 	      // restore the current state from the template state
+	      NS_LOG_DEBUG ("reuse template " << cached.id);
 	      tmpl->refcount++;
+	      // The libc loader maps the rw PT_LOAD segment as ro. 
+	      // Why ? I don't know but changing its protection here 
+	      // is sufficient to make this work.
+	      int pagesize = sysconf(_SC_PAGE_SIZE);
+	      NS_ASSERT_MSG (pagesize != -1, "Unable to obtain page size " << strerror (errno));
+	      int retval = mprotect ((void *)ROUND_DOWN(link_map->l_addr + cached.data_p_vaddr, pagesize), 
+				     cached.data_p_memsz, 
+				     PROT_READ | PROT_WRITE | PROT_EXEC);
+	      NS_ASSERT_MSG (retval == 0, "mprotect failed " << strerror (errno));
+	      // now, we can safely copy the data without triggering a segfault.
 	      memcpy ((void *)(link_map->l_addr + cached.data_p_vaddr), 
 		      tmpl->buffer, cached.data_p_memsz);
 	    }
