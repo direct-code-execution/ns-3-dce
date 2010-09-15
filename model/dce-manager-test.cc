@@ -5,7 +5,7 @@
 #include "dce-manager.h"
 #include "task-manager.h"
 #include "rr-task-scheduler.h"
-#include "dlm-loader-factory.h"
+#include "cooja-loader-factory.h"
 
 static std::string g_testError;
 
@@ -52,7 +52,7 @@ DceManagerTestCase::CreateManager (int *pstatus)
   Ptr<TaskManager> taskManager = CreateObject<TaskManager> ();
   Ptr<TaskScheduler> taskScheduler = CreateObject<RrTaskScheduler> ();
   Ptr<DceManager> aManager = CreateObject<DceManager> ();
-  Ptr<LoaderFactory> loaderFactory = CreateObject<DlmLoaderFactory> ();
+  Ptr<LoaderFactory> loaderFactory = CreateObject<CoojaLoaderFactory> ();
   taskManager->SetScheduler (taskScheduler);
   a->AggregateObject (loaderFactory);
   a->AggregateObject (taskManager);
