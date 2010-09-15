@@ -1,5 +1,5 @@
 def new_test(bld,name,libs):
-    obj = bld.create_simu_program(name)
+    obj = bld.create_dce_program(name)
     obj.source = [name + '.cc']
     obj.uselib = libs
     obj.uselib_local = 'test'

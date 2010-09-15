@@ -59,10 +59,9 @@ static Time AddAddress (Ptr<Node> node, Time at, std::string name, std::string a
 }
 
 void
-SetupIpStacks (std::string linuxStack, std::string loader, NodeContainer nodes)
+SetupIpStacks (std::string linuxStack, NodeContainer nodes)
 {
   DceManagerHelper processManager;
-  processManager.SetLoader (loader);
   if (linuxStack == "")
     {
       Ipv4StaticRoutingHelper staticHelper;
@@ -238,7 +237,6 @@ int main (int argc, char *argv[])
   std::string packetRate = "1000000";
   std::string linuxStack = "";
   std::string ns3App = "false";
-  std::string loader = "ns3::DlmLoaderFactory";
   Time duration = Seconds (10);
   std::string pcap = "no";
   uint32_t size = 1;
@@ -252,13 +250,12 @@ int main (int argc, char *argv[])
   cmd.AddValue ("TxBandwidth", "rate at which packets are sent (in bytes per second)", packetRate);
   cmd.AddValue ("Ns3App", "Use an ns-3 application or posix one", ns3App);
   cmd.AddValue ("LinuxPath", "path to linux network stack", linuxStack);
-  cmd.AddValue ("Loader", "type of loader to use", loader);
   cmd.Parse (argc, argv);
 
   NodeContainer nodes;
   nodes.Create (size);
 
-  SetupIpStacks (linuxStack, loader, nodes);
+  SetupIpStacks (linuxStack, nodes);
 
   CsmaHelper csma;
   csma.SetChannelAttribute ("DataRate", StringValue (rate));
