@@ -80,8 +80,6 @@ def build(bld):
         'waiter.cc',
         'alloc.cc',
         'dce-alloc.cc',
-        'trampoline-manager.cc',
-        'system-wrappers.cc',
         'fiber-manager.cc',
         'ucontext-fiber-manager.cc',
         'pthread-fiber-manager.cc',

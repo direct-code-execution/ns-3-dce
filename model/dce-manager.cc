@@ -30,7 +30,6 @@
 #include "dce-pthread.h"
 #include "dce-fcntl.h"
 #include "sys/dce-stat.h"
-#include "system-wrappers.h"
 #include "loader-factory.h"
 #include "ns3/node.h"
 #include "ns3/log.h"
@@ -510,9 +509,7 @@ DceManager::DeleteProcess (struct Process *process)
       // system-wrappers.cc which will call dce_close in dce-fd.cc
       // which will return -1 because it is called without a 'current'
       // thread
-      SystemWrappersEnableNoop ();
-      fclose (process->openStreams[i]);
-      SystemWrappersDisable ();
+      dce_fclose_unconditional (process->openStreams[i]);
     }
   process->openStreams.clear ();
 

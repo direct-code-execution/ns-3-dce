@@ -12,6 +12,7 @@ FILE *dce_fopen(const char *path, const char *mode);
 FILE *dce_fdopen(int fildes, const char *mode);
 FILE *dce_freopen(const char *path, const char *mode, FILE *stream);
 int dce_fclose(FILE *fp);
+int dce_fclose_unconditional(FILE *fp);
 int dce_fcloseall (void);
 
 int dce_fflush(FILE *stream);
