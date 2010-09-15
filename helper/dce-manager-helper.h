@@ -3,14 +3,17 @@
 
 #include "ns3/object-factory.h"
 #include "ns3/attribute.h"
+#include "ns3/object-base.h"
 #include "ns3/node-container.h"
 #include <string>
 
 namespace ns3 {
 
-class DceManagerHelper
+class DceManagerHelper : public ObjectBase
 {
 public:
+  static TypeId GetTypeId (void);
+  virtual TypeId GetInstanceTypeId (void) const;
   DceManagerHelper ();
   void SetScheduler (std::string type, 
 		     std::string n0 = "", const AttributeValue &v0 = EmptyAttributeValue (),

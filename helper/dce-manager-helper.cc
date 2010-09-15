@@ -6,14 +6,37 @@
 #include "ns3/loader-factory.h"
 #include "ns3/random-variable.h"
 #include "ns3/uinteger.h"
+#include "ns3/string.h"
+#include "ns3/config.h"
 
 namespace ns3 {
 
 UniformVariable g_firstPid;
 
+NS_OBJECT_ENSURE_REGISTERED (DceManagerHelper);
+
+TypeId 
+DceManagerHelper::GetTypeId (void)
+{
+  static TypeId tid = TypeId ("ns3::DceManagerHelper")
+    .SetParent<ObjectBase> ()
+    .AddAttribute ("LoaderFactory", 
+		   "The kind of loader factory created when Install is called", 
+		   StringValue ("ns3::CoojaLoaderFactory[]"),
+		   MakeObjectFactoryAccessor (&DceManagerHelper::m_loaderFactory),
+		   MakeObjectFactoryChecker ())
+    ;
+  return tid;
+}
+TypeId 
+DceManagerHelper::GetInstanceTypeId (void) const
+{
+  return DceManagerHelper::GetTypeId ();
+}
+
 DceManagerHelper::DceManagerHelper ()
 {
-  m_loaderFactory.SetTypeId ("ns3::DlmLoaderFactory");
+  ConstructSelf (AttributeList ());
   m_taskManagerFactory.SetTypeId ("ns3::TaskManager");
   m_schedulerFactory.SetTypeId ("ns3::RrTaskScheduler");
   m_managerFactory.SetTypeId ("ns3::DceManager");
