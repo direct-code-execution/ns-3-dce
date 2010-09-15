@@ -19,4 +19,4 @@ def configure(conf):
     conf.sub_config('vdl')
 
 def build(bld):
-    bld.add_subdirs(['model', 'helper', 'test', 'vdl', 'example'])
+    bld.add_subdirs(['model', 'helper', 'test', 'vdl', 'example', 'utils'])
