@@ -174,6 +174,7 @@ CoojaLoader::LoadModule (std::string filename, int flag)
       if (module == 0)
 	{
 	  void *handle = dlopen (cached.cachedFilename.c_str (), RTLD_LAZY | RTLD_DEEPBIND | RTLD_LOCAL);
+	  NS_ASSERT_MSG (handle != 0, "Could not open " << cached.cachedFilename << " " << dlerror ());
 	  struct link_map *link_map;
 	  dlinfo (handle, RTLD_DI_LINKMAP, &link_map);
 
@@ -192,14 +193,6 @@ CoojaLoader::LoadModule (std::string filename, int flag)
 	      tmpl->id = cached.id;
 	      tmpl->refcount = 1;
 	      ns->templates.push_back (tmpl);
-	      memcpy (tmpl->buffer, (void *)(link_map->l_addr + cached.data_p_vaddr),
-		      cached.data_p_memsz);
-	    }
-	  else
-	    {
-	      // restore the current state from the template state
-	      NS_LOG_DEBUG ("reuse template " << cached.id);
-	      tmpl->refcount++;
 	      // The libc loader maps the rw PT_LOAD segment as ro. 
 	      // Why ? I don't know but changing its protection here 
 	      // is sufficient to make this work.
@@ -209,6 +202,14 @@ CoojaLoader::LoadModule (std::string filename, int flag)
 				     cached.data_p_memsz, 
 				     PROT_READ | PROT_WRITE | PROT_EXEC);
 	      NS_ASSERT_MSG (retval == 0, "mprotect failed " << strerror (errno));
+	      memcpy (tmpl->buffer, (void *)(link_map->l_addr + cached.data_p_vaddr),
+		      cached.data_p_memsz);
+	    }
+	  else
+	    {
+	      // restore the current state from the template state
+	      NS_LOG_DEBUG ("reuse template " << cached.id);
+	      tmpl->refcount++;
 	      // now, we can safely copy the data without triggering a segfault.
 	      memcpy ((void *)(link_map->l_addr + cached.data_p_vaddr), 
 		      tmpl->buffer, cached.data_p_memsz);
