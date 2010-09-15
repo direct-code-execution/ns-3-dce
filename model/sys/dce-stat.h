@@ -19,6 +19,7 @@ int dce_fxstat64 (int ver, int fd, struct stat64 *buf);
 int dce_lxstat64 (int ver, const char *pathname, struct stat64 *buf);
 
 int dce_fstat (int fd, struct stat *buf);
+int dce_fstat64 (int fd, struct stat64 *buf);
 
 int dce_mkdir(const char *pathname, mode_t mode);
 

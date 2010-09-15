@@ -85,7 +85,7 @@ int my_close_unconditional (_IO_FILE *file)
 }
 int my_stat (_IO_FILE *file, void *buf)
 {
-  int result = dce_fstat (file->_fileno, (struct stat *)buf);
+  int result = dce_fstat64 (file->_fileno, (struct stat64 *)buf);
   if (result == -1)
     {
       errno = Current ()->err;
