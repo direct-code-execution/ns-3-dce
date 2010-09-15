@@ -11,6 +11,7 @@ def build(bld):
     test.target = test.name
     test.env.append_value('CXXFLAGS', test.env['shlib_CXXFLAGS'])
     test.env.append_value('CXXFLAGS', '-g')
+    test.env.append_value('LINKFLAGS', '-Wl,-soname=libtest.so');
     test.source = ['test-macros.cc']
 
     new_test(bld, 'test-empty', '')
