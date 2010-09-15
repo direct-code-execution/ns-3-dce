@@ -1,14 +1,16 @@
 #/bin/bash
-nodes="1 2 4 8 16 32 63"
-loaders="ns3::CoojaLoaderFactory ns3::DlmLoaderFactory ns3::CopyLoaderFactory"
+nodes="1 2 3 4 8 10 16 20 32 50 63"
+loaders="Cooja Dlm Copy"
 ARGS="--ns3::TaskManager::FiberManagerType=UcontextFiberManager --LinuxPath=./libnet-next-2.6-pic.so"
-PRGM="./build/optimized/src/process-manager/example/linear-udp-perf"
+PRGM="./build/optimized/src/dce/example/linear-udp-perf"
+DCE_RUNNER="./build/optimized/src/dce/utils/dce-runner"
 for node in ${nodes}; do
     for loader in ${loaders}; do
 	echo -n "${node},${loader},";
         MEM=0;
         for i in 0 1 2 3 4 5 6 7 8 9; do
-	    OUT=`${PRGM} ${ARGS} --Loader=${loader} --Size=${node} |cut -d ',' -f3,4|tail -1`;
+	    if test ${loader} == "Dlm"; then CMD="${DCE_RUNNER} ${PRGM}"; else CMD=${PRGM}; fi
+	    OUT=`${CMD} ${ARGS} --ns3::DceManagerHelper::LoaderFactory=ns3::${loader}LoaderFactory[] --Size=${node} |cut -d ',' -f3,4|tail -1`;
 	    US=`echo $OUT|sed -e 's/,.*//g'`;
 	    MEM=`echo $OUT|sed -e 's/.*,//g'`;
 	    echo -n "${US},";
