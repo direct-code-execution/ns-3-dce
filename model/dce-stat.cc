@@ -47,18 +47,7 @@ int dce_xstat64 (int ver, const char *path, struct stat64 *buf)
 }
 int dce_fxstat (int ver, int fd, struct stat *buf)
 {
-  Thread *current = Current ();
-  NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd);
-  NS_ASSERT (current != 0);
-  int index = UtilsSearchOpenFd (fd);
-  if (index == -1)
-    {
-      current->err = EBADF;
-      return -1;
-    }
-  UnixFd *unixFd = current->process->openFiles[index].second;
-  int retval = unixFd->Fxstat (ver, buf);
-  return retval;
+  return dce_fstat (fd, buf);
 }
 int dce_fxstat64 (int ver, int fd, struct stat64 *buf)
 {
@@ -109,5 +98,20 @@ int dce_lxstat64 (int ver, const char *pathname, struct stat64 *buf)
       current->err = errno;
       return -1;
     }
+  return retval;
+}
+int dce_fstat (int fd, struct stat *buf)
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd);
+  NS_ASSERT (current != 0);
+  int index = UtilsSearchOpenFd (fd);
+  if (index == -1)
+    {
+      current->err = EBADF;
+      return -1;
+    }
+  UnixFd *unixFd = current->process->openFiles[index].second;
+  int retval = unixFd->Fxstat (0, buf);
   return retval;
 }
