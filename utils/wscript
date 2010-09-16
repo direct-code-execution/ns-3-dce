@@ -1,16 +1,16 @@
 import os
 
 def build(bld):
-    program = bld.create_ns3_program('cxx', 'program')
-    program.source = ['dce-runner.cc']
+    program = bld.new_task_gen('cc', 'program')
+    program.source = ['dce-runner.c']
     program.name = 'dce-runner'
     program.target = 'dce-runner'
-    program.env.append_value('CXXFLAGS', '-fpic')
+    program.env.append_value('CCFLAGS', '-fpic')
     program.env.append_value('LINKFLAGS', '-ldl')
+    program.env.append_value('LINKFLAGS', '-pie')
     linker = os.path.join ('build', bld.env.variant (), 'src', 
                           'dce', 'vdl', 'ldso')
     program.env.append_value('LINKFLAGS', '-Wl,--dynamic-linker=' + 
                              os.path.abspath (linker))
-    program.env.append_value('LINKFLAGS', '-pie')
 
 
