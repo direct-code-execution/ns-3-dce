@@ -33,7 +33,7 @@ int main (int argc, char *argv[])
   struct itimerval it;
   memset (&it, 0, sizeof (it));
   it.it_value.tv_sec = 1;
-  it.it_value.tv_usec = 5;
+  it.it_value.tv_usec = 500000;
 
   timespec req = {3, 0};
   timespec rem;
@@ -44,12 +44,11 @@ int main (int argc, char *argv[])
   setitimer (ITIMER_REAL, &it, NULL);
   int result = nanosleep (&req, &rem);
   gettimeofday (&end, NULL);
-
   TEST_ASSERT_EQUAL (result, -1);
   TEST_ASSERT_EQUAL (end.tv_sec-start.tv_sec, 1);
-  TEST_ASSERT_EQUAL (end.tv_usec-start.tv_usec, 5);
+  TEST_ASSERT_EQUAL (end.tv_usec-start.tv_usec, 500000);
   TEST_ASSERT_EQUAL (rem.tv_sec, 1);
-  TEST_ASSERT (rem.tv_nsec >= 500000000);
+  TEST_ASSERT (rem.tv_nsec = 500000000);
   }
 
   exit (0);
