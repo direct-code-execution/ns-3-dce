@@ -1,7 +1,7 @@
 #include "dce-stdlib.h"
 #include "utils.h"
 #include "process.h"
-#include "alloc.h"
+#include "kingsley-alloc.h"
 #include "ns3/log.h"
 #include <string.h>
 

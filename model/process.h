@@ -30,7 +30,7 @@
 #include "unix-fd.h"
 #include "ns3/random-variable.h"
 
-class Alloc;
+class KingsleyAlloc;
 
 extern "C" {
 struct SimTask;
@@ -135,7 +135,7 @@ struct Process
   Loader *loader;
   void *mainHandle;
   std::string cwd;
-  Alloc *alloc;
+  KingsleyAlloc *alloc;
   Callback<void,uint16_t,int> finished;
   // the values specified by the user
   char **originalEnvp;

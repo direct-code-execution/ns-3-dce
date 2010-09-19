@@ -5,7 +5,7 @@
 #include "process.h"
 #include "utils.h"
 #include "task-manager.h"
-#include "alloc.h"
+#include "kingsley-alloc.h"
 #include "sim/include/sim-init.h"
 #include "ns3/log.h"
 #include "ns3/string.h"

@@ -24,7 +24,7 @@
 #include "unix-fd.h"
 #include "unix-file-fd.h"
 #include "utils.h"
-#include "alloc.h"
+#include "kingsley-alloc.h"
 #include "dce-stdio.h"
 #include "dce-unistd.h"
 #include "dce-pthread.h"

@@ -1,33 +1,10 @@
-#ifndef ALLOC_H
-#define ALLOC_H
+#ifndef KINGSLEY_ALLOC_H
+#define KINGSLEY_ALLOC_H
 
 #include <stdint.h>
 #include <list>
 
-class Alloc
-{
-public:
-  virtual ~Alloc () = 0;
-  virtual uint8_t * Malloc (uint32_t size) = 0;
-  virtual void Free (uint8_t *buffer, uint32_t size) = 0;
-  virtual uint8_t *Realloc(uint8_t *oldBuffer, uint32_t oldSize, uint32_t newSize) = 0;
-private:
-};
-
-class StupidAlloc : public Alloc
-{
-public:
-  StupidAlloc ();
-  virtual ~StupidAlloc ();
-
-  virtual uint8_t * Malloc (uint32_t size);
-  virtual void Free (uint8_t *buffer, uint32_t size);
-  virtual uint8_t *Realloc(uint8_t *oldBuffer, uint32_t oldSize, uint32_t newSize);
-private:
-  std::list<uint8_t *> m_alloced;
-};
-
-class KingsleyAlloc : public Alloc
+class KingsleyAlloc
 {
 public:
   KingsleyAlloc (void);
@@ -59,4 +36,4 @@ private:
 };
 
 
-#endif /* ALLOC_H */
+#endif /* KINGSLEY_ALLOC_H */

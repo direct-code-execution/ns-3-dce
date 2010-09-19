@@ -1,4 +1,4 @@
-#include "alloc.h"
+#include "kingsley-alloc.h"
 #include <string.h>
 #include <sys/mman.h>
 #include <stdlib.h>
@@ -25,48 +25,6 @@ NS_LOG_COMPONENT_DEFINE ("Alloc");
 # define MARK_UNDEFINED(buffer, size)
 #endif
 
-Alloc::~Alloc ()
-{}
-
-StupidAlloc::StupidAlloc ()
-{
-  NS_LOG_FUNCTION (this);
-}
-StupidAlloc::~StupidAlloc ()
-{
-  NS_LOG_FUNCTION (this);
-  for (std::list<uint8_t *>::iterator i = m_alloced.begin (); i != m_alloced.end (); ++i)
-    {
-      ::free (*i);
-    }
-}
-uint8_t *
-StupidAlloc::Malloc (uint32_t size)
-{
-  NS_LOG_FUNCTION (this << size);
-  uint8_t *buffer = (uint8_t*)::malloc (size);
-  m_alloced.push_back (buffer);
-  return buffer;
-}
-void 
-StupidAlloc::Free (uint8_t *buffer, uint32_t size)
-{
-  NS_LOG_FUNCTION (this << (void*)buffer << size);
-  ::free ((uint8_t*)buffer);
-  m_alloced.remove (buffer);
-}
-uint8_t *
-StupidAlloc::Realloc(uint8_t *oldBuffer, uint32_t oldSize, uint32_t newSize)
-{
-  NS_LOG_FUNCTION (this << (void*)oldBuffer << oldSize << newSize);
-  uint8_t *newBuffer = (uint8_t*)::realloc ((void*)oldBuffer, newSize);
-  if (newBuffer != oldBuffer)
-    {
-      m_alloced.remove (oldBuffer);
-      m_alloced.push_back (newBuffer);
-    }
-  return newBuffer;
-}
 
 KingsleyAlloc::KingsleyAlloc ()
   : m_defaultMmapSize (1<<15)

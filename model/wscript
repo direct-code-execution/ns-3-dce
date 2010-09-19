@@ -78,7 +78,7 @@ def build(bld):
         'dce-global-variables.cc',
         'cmsg.cc',
         'waiter.cc',
-        'alloc.cc',
+        'kingsley-alloc.cc',
         'dce-alloc.cc',
         'fiber-manager.cc',
         'ucontext-fiber-manager.cc',

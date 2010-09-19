@@ -21,7 +21,7 @@ struct SimKernel;
 struct SimSysFile;
 }
 
-class Alloc;
+class KingsleyAlloc;
 
 namespace ns3 {
 
@@ -117,7 +117,7 @@ private:
   std::list<Task *> m_kernelTasks;
   Ptr<TaskManager> m_manager;
   UniformVariable m_variable;
-  Alloc *m_alloc;
+  KingsleyAlloc *m_alloc;
   FILE *m_logFile;
   std::list<std::pair<std::string,std::string> > m_earlySysfs;
 };
