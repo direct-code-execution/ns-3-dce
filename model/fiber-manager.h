@@ -12,6 +12,9 @@ class FiberManager
 {
 public:
   virtual ~FiberManager ();
+
+  virtual struct Fiber *Clone (struct Fiber *fiber) {return 0;};
+
   /**
    * \param callback function to use as main loop for the 
    *        newly-created fiber

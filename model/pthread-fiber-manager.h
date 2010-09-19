@@ -14,7 +14,7 @@ class PthreadFiberManager : public FiberManager
 public:
   PthreadFiberManager ();
   virtual ~PthreadFiberManager ();
-
+  virtual struct Fiber *Clone (struct Fiber *fiber);
   virtual struct Fiber *Create (void (*callback) (void *),
 				void *context,
 				uint32_t stackSize);
@@ -29,6 +29,8 @@ private:
   void Yield (struct PthreadFiber *fiber);
   void Wakeup (struct PthreadFiber *fiber);
   void Start (struct PthreadFiber *fiber);
+  static void *SelfStackBottom (void);
+  void RestoreFiber (struct PthreadFiber *fiber);
   void (*m_notifySwitch) (void);
 };
 
