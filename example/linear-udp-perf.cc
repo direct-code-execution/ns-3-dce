@@ -59,7 +59,7 @@ static Time AddAddress (Ptr<Node> node, Time at, std::string name, std::string a
 }
 
 void
-SetupIpStacks (std::string linuxStack, NodeContainer nodes)
+SetupIpStacks (std::string linuxStack, std::string ns3App, NodeContainer nodes)
 {
   DceManagerHelper processManager;
   if (linuxStack == "")
@@ -74,7 +74,10 @@ SetupIpStacks (std::string linuxStack, NodeContainer nodes)
       processManager.SetNetworkStack("ns3::LinuxSocketFdFactory",
 				     "Library", StringValue (linuxStack));
     }
-  processManager.Install (nodes);
+  if (ns3App ==  "false")
+    {
+      processManager.Install (nodes);
+    }
   if (linuxStack != "")
     {
       for (uint32_t i = 0; i < nodes.GetN (); i++)
@@ -255,7 +258,7 @@ int main (int argc, char *argv[])
   NodeContainer nodes;
   nodes.Create (size);
 
-  SetupIpStacks (linuxStack, nodes);
+  SetupIpStacks (linuxStack, ns3App, nodes);
 
   CsmaHelper csma;
   csma.SetChannelAttribute ("DataRate", StringValue (rate));
@@ -330,7 +333,7 @@ int main (int argc, char *argv[])
       csma.EnablePcapAll ("ring-udp-perf");
     }
 
-  Simulator::Schedule (Seconds (4.00001), &PrintMemory, memoryAtStart);
+  Simulator::Schedule (Seconds (4.00000), &PrintMemory, memoryAtStart);
 
   Simulator::Stop (duration);
   Simulator::Run ();
@@ -348,10 +351,10 @@ int main (int argc, char *argv[])
     {
       bytes = g_sinkRxBytes;
     }
-  double pt = packetSize * (elapsedMs * 1000) / bytes;
+  double pps = bytes / size / elapsedMs;
 
-  std::cout << "packet size(bytes),n nodes,packet time(us),memory(bytes)" << std::endl;
-  std::cout << packetSize << "," << size << "," << pt << "," << g_memory * 1000 << std::endl;
+  std::cout << "packet size(bytes),n nodes,pps,memory(bytes)" << std::endl;
+  std::cout << packetSize << "," << size << "," << pps << "," << g_memory * 1000 << std::endl;
 
   return 0;
 }
