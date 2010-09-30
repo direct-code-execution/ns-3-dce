@@ -8,16 +8,26 @@ class KingsleyAlloc
 {
 public:
   KingsleyAlloc (void);
-  virtual ~KingsleyAlloc ();
+  ~KingsleyAlloc ();
 
-  virtual uint8_t * Malloc (uint32_t size);
-  virtual void Free (uint8_t *buffer, uint32_t size);
-  virtual uint8_t *Realloc(uint8_t *oldBuffer, uint32_t oldSize, uint32_t newSize);
+  KingsleyAlloc *Clone (void);
+  void SwitchTo (void);
+  uint8_t * Malloc (uint32_t size);
+  void Free (uint8_t *buffer, uint32_t size);
+  uint8_t *Realloc(uint8_t *oldBuffer, uint32_t oldSize, uint32_t newSize);
 private:
+  struct Mmap
+  {
+    uint32_t refcount;
+    uint32_t size;
+    uint8_t *buffer;
+    uint8_t *current;
+  };
+
   struct MmapChunk
   {
-    uint8_t *buffer;
-    uint32_t size;
+    struct Mmap *mmap;
+    uint8_t *copy;
     uint32_t brk;
   };
   struct Available
