@@ -8,6 +8,7 @@
 #include "dce-stdio.h"
 #include "loader-factory.h"
 #include "task-manager.h"
+#include "kingsley-alloc.h"
 #include "ns3/log.h"
 #include "ns3/simulator.h"
 #include <errno.h>
@@ -99,14 +100,15 @@ static void pthread_do_start (void *context)
 
 static void PthreadTaskSwitch (enum Task::SwitchType type, void *context)
 {
-  Loader *loader = (Loader *)context;
+  Process *process = (Process *) context;
   switch (type)
     {
     case Task::TO:
-      loader->NotifyStartExecute ();
+      process->loader->NotifyStartExecute ();
+      process->alloc->SwitchTo ();
       break;
     case Task::FROM:
-      loader->NotifyEndExecute ();
+      process->loader->NotifyEndExecute ();
       break;
     }
 }
@@ -128,7 +130,7 @@ int dce_pthread_create(pthread_t *thread_handle,
   uint32_t mainStackSize = manager->GetStackSize (current->process->threads[0]->task);
   Task *task = manager->Start (&pthread_do_start, startContext, mainStackSize);
   task->SetContext (thread);
-  task->SetSwitchNotifier (&PthreadTaskSwitch, current->process->loader);
+  task->SetSwitchNotifier (&PthreadTaskSwitch, current->process);
   thread->task = task;
   manager->Yield ();
   return 0;

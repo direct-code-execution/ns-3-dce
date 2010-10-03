@@ -1071,9 +1071,15 @@ int timerfd_gettime (int fd, struct itimerspec *cur_value)
   return g_libc.timerfd_gettime_fn (fd, cur_value);
 }
 
-unsigned if_nametoindex (const char *ifname) {
+unsigned if_nametoindex (const char *ifname)
+{
   return g_libc.if_nametoindex_fn (ifname);
 }
+pid_t fork (void)
+{
+  return g_libc.fork_fn ();
+}
+
 void LIBSETUP (const struct Libc *fn)
 {
   /* The following assignment of fn to g_libc is a bit weird: we perform a copy of the data 

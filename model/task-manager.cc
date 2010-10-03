@@ -163,6 +163,26 @@ TaskManager::Start (void (*fn)(void*), void *context, uint32_t stackSize)
   return task;
 }
 
+Task *
+TaskManager::Clone (Task *task)
+{
+  Task *clone = new Task ();
+  clone->m_state = Task::BLOCKED; // must call Wakeup on task later.
+  clone->m_context = 0;
+  clone->m_extraContext = 0;
+  clone->m_switchNotifier = 0;
+  clone->m_switchNotifierContext = 0;
+  clone->m_fiber = m_fiberManager->Clone (task->m_fiber);
+  NS_LOG_DEBUG ("clone " << clone << " fiber=" << clone->m_fiber);
+  if (clone->m_fiber != 0)
+    {
+      // parent.
+      Wakeup (clone);
+      return clone;
+    }
+  return 0;
+}
+
 void
 TaskManager::Trampoline (void *context)
 {

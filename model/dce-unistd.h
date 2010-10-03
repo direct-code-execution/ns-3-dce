@@ -45,6 +45,7 @@ off_t dce_lseek(int fildes, off_t offset, int whence);
 off64_t dce_lseek64(int fildes, off64_t offset, int whence);
 int dce_unlink (const char *pathname);
 int dce_rmdir(const char *pathname);
+pid_t dce_fork (void);
 
 #ifdef __cplusplus
 }

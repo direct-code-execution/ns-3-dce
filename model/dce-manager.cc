@@ -220,7 +220,7 @@ DceManager::DoStartProcess (void *context)
 
 struct Process *
 DceManager::CreateProcess (std::string name, std::vector<std::string> args,
-                               std::vector<std::pair<std::string,std::string> > envs)
+                           std::vector<std::pair<std::string,std::string> > envs)
 {
   struct Process *process = new Process ();
   process->euid = 0;
@@ -280,14 +280,15 @@ DceManager::CreateProcess (std::string name, std::vector<std::string> args,
 void 
 DceManager::TaskSwitch (enum Task::SwitchType type, void *context)
 {
-  Loader *loader = (Loader *)context;
+  Process *process = (Process *)context;
   switch (type)
     {
     case Task::TO:
-      loader->NotifyStartExecute ();
+      process->loader->NotifyStartExecute ();
+      process->alloc->SwitchTo ();
       break;
     case Task::FROM:
-      loader->NotifyEndExecute ();
+      process->loader->NotifyEndExecute ();
       break;
     }
 }
@@ -302,7 +303,7 @@ DceManager::Start (std::string name, std::vector<std::string> args,
   struct Thread *thread = CreateThread (process);
   Task *task = TaskManager::Current ()->Start (&DceManager::DoStartProcess, thread);
   task->SetContext (thread);
-  task->SetSwitchNotifier (&DceManager::TaskSwitch, process->loader);
+  task->SetSwitchNotifier (&DceManager::TaskSwitch, process);
   thread->task = task;
   return process->pid;
 }
@@ -315,7 +316,7 @@ DceManager::Start (std::string name, uint32_t stackSize, std::vector<std::string
   struct Thread *thread = CreateThread (process);
   Task *task = TaskManager::Current ()->Start (&DceManager::DoStartProcess, thread, stackSize);
   task->SetContext (thread);
-  task->SetSwitchNotifier (&DceManager::TaskSwitch, process->loader);
+  task->SetSwitchNotifier (&DceManager::TaskSwitch, process);
   thread->task = task;
   return process->pid;
 }
@@ -417,6 +418,72 @@ DceManager::ThreadExists (Thread *thread)
         }
     }
   return false;
+}
+
+uint16_t 
+DceManager::Clone (Thread *thread)
+{
+  NS_LOG_FUNCTION (this << thread);
+  Process *clone = new Process ();
+  clone->euid = 0;
+  clone->ruid = 0;
+  clone->suid = 0;
+  clone->egid = 0;
+  clone->rgid = 0;
+  clone->sgid = 0;
+  // XXX setup
+  clone->originalArgv = 0;
+  clone->originalArgc = 0;
+  clone->originalEnvp = 0;
+  clone->exitValue = 0;
+  clone->name = thread->process->name;
+  clone->ppid = thread->process->pid;
+  clone->pid = AllocatePid ();
+  // dup each file descriptor.
+  for (uint32_t index = 0; index < thread->process->openFiles.size (); index++)
+    {
+      std::pair<int,UnixFd*> i = thread->process->openFiles[index];
+      i.second->Ref ();
+      clone->openFiles.push_back (i);
+    }
+  // don't copy threads, semaphores, mutexes, condition vars
+  // XXX: what about file streams ?
+  clone->manager = this;
+  sigemptyset (&clone->pendingSignals);
+  // setup a signal handler for SIGKILL which calls dce_exit.
+  struct SignalHandler handler;
+  handler.signal = SIGKILL;
+  handler.flags = 0;
+  sigemptyset (&handler.mask);
+  handler.handler = &DceManager::SigkillHandler;
+  clone->signalHandlers.push_back (handler);
+  clone->nextMid = thread->process->nextMid;
+  clone->nextSid = thread->process->nextSid;
+  clone->nextCid = thread->process->nextCid;
+  clone->cwd = thread->process->cwd;
+  clone->pstdin = thread->process->pstdin;
+  clone->pstdout = thread->process->pstdout;
+  clone->pstderr = thread->process->pstderr;
+  clone->penvp = thread->process->penvp;
+
+  //"seeding" random variable
+  clone->rndVarible = UniformVariable (0, RAND_MAX);
+  m_processes.push_back (clone);
+  Thread *cloneThread = CreateThread (clone);
+
+  clone->loader = thread->process->loader->Clone ();
+  clone->alloc = thread->process->alloc->Clone ();
+  Task *task = TaskManager::Current ()->Clone (thread->task);
+  if (task != 0)
+    {
+      // parent. complete setup. return.
+      task->SetContext (cloneThread);
+      task->SetSwitchNotifier (&DceManager::TaskSwitch, clone);
+      cloneThread->task = task;
+      return clone->pid;
+    }
+  // child.
+  return 0;
 }
 
 void 

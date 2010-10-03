@@ -130,12 +130,12 @@ PthreadFiberManager::Clone (struct Fiber *fib)
   if (status == 0)
     {
       // returning directly. parent
-      return 0;
+      return clone;
     }
   else
     {
       // child
-      return clone;
+      return 0;
     }
 }
 

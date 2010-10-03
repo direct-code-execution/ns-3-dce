@@ -69,6 +69,8 @@ public:
   Task *Start (void (*fn)(void*), void *context);
   Task *Start (void (*fn)(void*), void *context, uint32_t stackSize);
 
+  Task *Clone (Task *task);
+
   /**
    * Stop and delete a task. This task will never run again.
    * This method returns immediately.

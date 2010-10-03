@@ -555,3 +555,10 @@ unsigned dce_if_nametoindex (const char *ifname)
     }
   return 0;
 }
+pid_t dce_fork (void)
+{
+  Thread *thread = Current ();
+  NS_LOG_FUNCTION (thread);
+  DceManager *manager = thread->process->manager;
+  return manager->Clone (thread);
+}

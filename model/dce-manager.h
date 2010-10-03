@@ -96,6 +96,7 @@ public:
   void Wait (void);
   Time Wait (Time timeout);
   void Yield (void);
+  uint16_t Clone (Thread *thread);
 
 private:
 

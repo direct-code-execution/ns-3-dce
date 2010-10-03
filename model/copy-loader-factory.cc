@@ -23,6 +23,7 @@ private:
   };
 
   virtual ~CopyLoader ();
+  virtual Loader *Clone (void) {return 0; /* XXX */}
   virtual void UnloadAll (void);
   virtual void *Load (std::string filename, int flag);
   virtual void Unload (void *module);

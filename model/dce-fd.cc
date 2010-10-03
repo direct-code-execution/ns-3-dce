@@ -727,9 +727,9 @@ int dce_dup(int oldfd)
       current->err = EMFILE;
       return -1;
     }
-
-  current->process->openFiles.push_back 
-    (std::make_pair (fd, current->process->openFiles[index].second));
+  UnixFd *unixFd = current->process->openFiles[index].second;
+  unixFd->Ref ();
+  current->process->openFiles.push_back (std::make_pair (fd, unixFd));
   return fd;
 }
 int dce_dup2(int oldfd, int newfd)
@@ -748,9 +748,9 @@ int dce_dup2(int oldfd, int newfd)
     {
       dce_close (newfd);
     }
-
-  current->process->openFiles.push_back 
-    (std::make_pair (newfd, current->process->openFiles[index].second));
+  UnixFd *unixFd = current->process->openFiles[index].second;
+  unixFd->Ref ();
+  current->process->openFiles.push_back (std::make_pair (newfd, unixFd));
   return newfd;
 }
 void *dce_mmap64 (void *start, size_t length, int prot, int flags,

@@ -12,6 +12,7 @@ class Loader
   virtual ~Loader () = 0;
   virtual void NotifyStartExecute (void);
   virtual void NotifyEndExecute (void);
+  virtual Loader *Clone (void) = 0;
   virtual void UnloadAll (void) = 0;
   virtual void *Load (std::string filename, int flag) = 0;
   virtual void Unload (void *module) = 0;

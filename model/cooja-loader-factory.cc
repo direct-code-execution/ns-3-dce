@@ -55,6 +55,7 @@ private:
   virtual ~CoojaLoader ();
   virtual void NotifyStartExecute (void);
   virtual void NotifyEndExecute (void);
+  virtual Loader *Clone (void);
   virtual void UnloadAll (void);
   virtual void *Load (std::string filename, int flag);
   virtual void Unload (void *module);
@@ -115,6 +116,13 @@ CoojaLoader::NotifyEndExecute (void)
 	      (void *)(module->load_base + module->cached.data_p_vaddr),
 	      module->cached.data_p_memsz);
     }
+}
+
+Loader *
+CoojaLoader::Clone (void)
+{
+  // XXX
+  return 0;
 }
 
 void *

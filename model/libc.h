@@ -294,6 +294,7 @@ struct Libc
 
   unsigned (*if_nametoindex_fn) (const char *ifname);
 
+  pid_t (*fork_fn) (void);
 };
 
 #ifdef __cplusplus

@@ -272,6 +272,7 @@ void libc_dce (struct Libc *libc)
   libc->timerfd_gettime_fn = dce_timerfd_gettime;
 
   libc->if_nametoindex_fn = dce_if_nametoindex;
+  libc->fork_fn = dce_fork;
 }
 
 #ifdef __cplusplus
