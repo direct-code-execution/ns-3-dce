@@ -16,11 +16,16 @@
 #include <errno.h>
 
 namespace {
-struct Template
+struct SharedModule
 {
-  void *buffer;
+  void *handle;
+  void *template_buffer;
+  void *data_buffer;
+  void *current_buffer;
+  uint32_t buffer_size;
   uint32_t id;
   uint32_t refcount;
+  std::list<struct SharedModule *> deps;
 };
 }
 
@@ -29,12 +34,12 @@ namespace ns3 {
 NS_LOG_COMPONENT_DEFINE ("CoojaLoaderFactory");
 NS_OBJECT_ENSURE_REGISTERED (CoojaLoaderFactory);
 
-struct SharedCoojaNamespace
+struct SharedModules
 {
-  SharedCoojaNamespace ();
-  ~SharedCoojaNamespace ();
+  SharedModules ();
+  ~SharedModules ();
   ElfCache cache;
-  std::list<struct Template *> templates;
+  std::list<struct SharedModule *> modules;
 };
 
 class CoojaLoader : public Loader
@@ -44,12 +49,10 @@ public:
 private:
   struct Module
   {
-    void *handle;
-    uint32_t refcount;
+    struct SharedModule *module;
     std::list<struct Module *> deps;
-    void *dataPrivateStart;
-    long load_base;
-    ElfCache::ElfCachedFile cached;
+    uint32_t refcount;
+    void *buffer;
   };
 
   virtual ~CoojaLoader ();
@@ -61,62 +64,64 @@ private:
   virtual void Unload (void *module);
   virtual void *Lookup (void *module, std::string symbol);
 
-  static struct SharedCoojaNamespace *Peek (void);
+  static struct SharedModules *Peek (void);
   struct CoojaLoader::Module *SearchModule (uint32_t id);
+  struct SharedModule *SearchSharedModule (uint32_t id);
   struct CoojaLoader::Module *LoadModule (std::string filename, int flag);
-  struct Template *SearchTemplate (uint32_t id);
-  void UnrefTemplate (uint32_t id);
+  void UnrefSharedModule (SharedModule *search);
 
   std::list<struct Module *> m_modules;
 };
 
-SharedCoojaNamespace::SharedCoojaNamespace ()
+SharedModules::SharedModules ()
   : cache ("elf-cache", 0)
 {}
 
-SharedCoojaNamespace::~SharedCoojaNamespace ()
+SharedModules::~SharedModules ()
 {
-  for (std::list<struct Template *>::iterator i = templates.begin ();
-       i != templates.end (); ++i)
+  for (std::list<struct SharedModule *>::iterator i = modules.begin ();
+       i != modules.end (); ++i)
     {
-      struct Template *tmpl = *i;
-      free (tmpl->buffer);
-      delete tmpl;
+      struct SharedModule *module = *i;
+      free (module->template_buffer);
+      dlclose (module->handle);
+      delete module;
     }
-  templates.clear ();
+  modules.clear ();
 }
 
-struct SharedCoojaNamespace *
+struct SharedModules *
 CoojaLoader::Peek (void)
 {
-  static SharedCoojaNamespace ns;
-  return &ns;
+  static SharedModules modules;
+  return &modules;
 }
 
 void 
 CoojaLoader::NotifyStartExecute (void)
 {
-  // restore the loader private data sections
   for (std::list<struct Module *>::const_iterator i = m_modules.begin (); i != m_modules.end (); ++i)
     {
       const struct Module *module = *i;
-      memcpy ((void*)(module->load_base + module->cached.data_p_vaddr),
-	      module->dataPrivateStart,
-	      module->cached.data_p_memsz);
+      if (module->buffer == module->module->current_buffer)
+	{
+	  continue;
+	}
+      // save the previous one
+      memcpy (module->module->current_buffer,
+	      module->module->data_buffer,
+	      module->module->buffer_size);
+      // restore our own
+      memcpy (module->module->data_buffer,
+	      module->buffer,
+	      module->module->buffer_size);
+      // remember what we did
+      module->module->current_buffer = module->buffer;
     }
 }
 void 
 CoojaLoader::NotifyEndExecute (void)
-{
-  // save the loader private data sections
-  for (std::list<struct Module *>::const_iterator i = m_modules.begin (); i != m_modules.end (); ++i)
-    {
-      const struct Module *module = *i;
-      memcpy (module->dataPrivateStart, 
-	      (void *)(module->load_base + module->cached.data_p_vaddr),
-	      module->cached.data_p_memsz);
-    }
-}
+{}
 
 Loader *
 CoojaLoader::Clone (void)
@@ -132,7 +137,7 @@ CoojaLoader::Load (std::string filename, int flag)
   
   // acquire ref for client
   module->refcount++;
-  return module->handle;
+  return module->module->handle;
 }
 
 struct CoojaLoader::Module *
@@ -141,7 +146,7 @@ CoojaLoader::SearchModule (uint32_t id)
   for (std::list<struct Module *>::iterator i = m_modules.begin (); i != m_modules.end (); ++i)
     {
       struct Module *module = *i;
-      if (module->cached.id == id)
+      if (module->module->id == id)
 	{
 	  // already in, ignore.
 	  return module;
@@ -150,12 +155,12 @@ CoojaLoader::SearchModule (uint32_t id)
   return 0;
 }
 
-struct Template *
-CoojaLoader::SearchTemplate (uint32_t id)
+struct SharedModule *
+CoojaLoader::SearchSharedModule (uint32_t id)
 {
-  struct SharedCoojaNamespace *ns = Peek ();  
-  for (std::list<struct Template *>::iterator i = ns->templates.begin ();
-       i != ns->templates.end (); ++i)
+  struct SharedModules *ns = Peek ();  
+  for (std::list<struct SharedModule *>::iterator i = ns->modules.begin ();
+       i != ns->modules.end (); ++i)
     {
       if ((*i)->id == id)
 	{
@@ -172,87 +177,95 @@ struct CoojaLoader::Module *
 CoojaLoader::LoadModule (std::string filename, int flag)
 {
   NS_LOG_FUNCTION (this << filename << flag);
-  struct SharedCoojaNamespace *ns = Peek ();
+  struct SharedModules *modules = Peek ();
   ElfDependencies deps = ElfDependencies (filename);
   struct Module *module = 0;
   for (ElfDependencies::Iterator i = deps.Begin (); i != deps.End (); ++i)
     {
-      ElfCache::ElfCachedFile cached = ns->cache.Add (i->found);
-      module = SearchModule (cached.id);
-      if (module == 0)
+      ElfCache::ElfCachedFile cached = modules->cache.Add (i->found);
+      struct SharedModule *sharedModule = SearchSharedModule (cached.id);
+      if (sharedModule == 0)
 	{
 	  void *handle = dlopen (cached.cachedFilename.c_str (), RTLD_LAZY | RTLD_DEEPBIND | RTLD_LOCAL);
 	  NS_ASSERT_MSG (handle != 0, "Could not open " << cached.cachedFilename << " " << dlerror ());
 	  struct link_map *link_map;
 	  dlinfo (handle, RTLD_DI_LINKMAP, &link_map);
 
+	  sharedModule = new SharedModule ();
+	  NS_LOG_DEBUG ("create shared module=" << sharedModule << " file=" << cached.cachedFilename);
+	  sharedModule->refcount = 0;
+	  sharedModule->id = cached.id;
+	  sharedModule->handle = handle;
+	  sharedModule->buffer_size = cached.data_p_memsz;
+	  sharedModule->template_buffer = malloc (cached.data_p_memsz);
+	  sharedModule->data_buffer = (void *)(link_map->l_addr + cached.data_p_vaddr);
+	  memcpy (sharedModule->template_buffer, 
+		  sharedModule->data_buffer,
+		  sharedModule->buffer_size);
+	  sharedModule->current_buffer = 0;
+	  for (std::vector<uint32_t>::const_iterator j = cached.deps.begin (); 
+	       j != cached.deps.end (); ++j)
+	    {
+	      struct SharedModule *dep = SearchSharedModule (*j);
+	      dep->refcount++;
+	      sharedModule->deps.push_back (dep);
+	    }
+	  modules->modules.push_back (sharedModule);
+	}
+      sharedModule->refcount++;
+      module = SearchModule (sharedModule->id);
+      if (module == 0)
+	{
 	  module = new Module ();
-	  module->cached = cached;
-	  module->handle = handle;
-	  module->refcount = 0; // will be incremented later in ::Load or as a dep below.
-	  module->dataPrivateStart = malloc (cached.data_p_memsz);
-	  struct Template *tmpl = SearchTemplate (cached.id);
-	  if (tmpl == 0)
-	    {
-	      // save the template
-	      NS_LOG_DEBUG ("create template " << cached.id);
-	      tmpl = new Template ();
-	      tmpl->buffer = malloc (cached.data_p_memsz);
-	      tmpl->id = cached.id;
-	      tmpl->refcount = 1;
-	      ns->templates.push_back (tmpl);
-	      // The libc loader maps the rw PT_LOAD segment as ro. 
-	      // Why ? I don't know but changing its protection here 
-	      // is sufficient to make this work.
-	      int pagesize = sysconf(_SC_PAGE_SIZE);
-	      NS_ASSERT_MSG (pagesize != -1, "Unable to obtain page size " << strerror (errno));
-	      int retval;
-	      retval = mprotect ((void *)ROUND_DOWN(link_map->l_addr + cached.data_p_vaddr, pagesize), 
-				 cached.data_p_memsz, 
-				 PROT_READ | PROT_WRITE | PROT_EXEC);
-	      NS_ASSERT_MSG (retval == 0, "mprotect failed " << strerror (errno));
-	      memcpy (tmpl->buffer, (void *)(link_map->l_addr + cached.data_p_vaddr),
-		      cached.data_p_memsz);
-	    }
-	  else
-	    {
-	      // restore the current state from the template state
-	      NS_LOG_DEBUG ("reuse template " << cached.id);
-	      tmpl->refcount++;
-	      // now, we can safely copy the data without triggering a segfault.
-	      memcpy ((void *)(link_map->l_addr + cached.data_p_vaddr), 
-		      tmpl->buffer, cached.data_p_memsz);
-	    }
-	  module->load_base = link_map->l_addr;
-	  for (std::vector<uint32_t>::const_iterator j = cached.deps.begin (); j != cached.deps.end (); ++j)
+	  NS_LOG_DEBUG ("Create module for " << sharedModule->handle);
+	  module->module = sharedModule;
+	  module->refcount = 0;
+	  module->buffer = malloc (sharedModule->buffer_size);
+	  // make sure we re-initialize the data section with the template
+	  memcpy (sharedModule->data_buffer, 
+		  sharedModule->template_buffer,
+		  sharedModule->buffer_size);
+	  // record current buffer to ensure that it is saved later
+	  sharedModule->current_buffer = module->buffer;
+	  // setup deps.
+	  for (std::vector<uint32_t>::const_iterator j = cached.deps.begin (); 
+	       j != cached.deps.end (); ++j)
 	    {
 	      struct Module *dep = SearchModule (*j);
 	      dep->refcount++;
 	      module->deps.push_back (dep);
 	    }
+	  NS_LOG_DEBUG ("add " << module);
 	  m_modules.push_back (module);
 	}
     }
   return module;
 }
 void
-CoojaLoader::UnrefTemplate (uint32_t id)
+CoojaLoader::UnrefSharedModule (SharedModule *search)
 {
-  NS_LOG_FUNCTION (this << id);
-  struct SharedCoojaNamespace *ns = Peek ();  
-  for (std::list<struct Template *>::iterator i = ns->templates.begin ();
-       i != ns->templates.end (); ++i)
+  NS_LOG_FUNCTION (this << search << search->refcount);
+  struct SharedModules *ns = Peek ();  
+  for (std::list<struct SharedModule *>::iterator i = ns->modules.begin ();
+       i != ns->modules.end (); ++i)
     {
-      struct Template *tmpl = *i;
-      if (tmpl->id == id)
+      struct SharedModule *module = *i;
+      if (module == search)
 	{
-	  tmpl->refcount--;
-	  if (tmpl->refcount == 0)
+	  module->refcount--;
+	  if (module->refcount == 0)
 	    {
-	      NS_LOG_DEBUG ("delete template " << id);
-	      free (tmpl->buffer);
-	      delete tmpl;
-	      ns->templates.erase (i);
+	      NS_LOG_DEBUG ("delete shared module " << module);
+	      for (std::list<struct SharedModule *>::iterator j = module->deps.begin (); 
+		   j != module->deps.end (); ++j)
+		{
+		  struct SharedModule *dep = *j;
+		  UnrefSharedModule (dep);
+		}
+	      dlclose (module->handle);
+	      free (module->template_buffer);
+	      delete module;
+	      ns->modules.erase (i);
 	    }
 	  break;
 	}
@@ -265,8 +278,9 @@ CoojaLoader::UnloadAll (void)
   for (std::list<struct Module *>::const_iterator i = m_modules.begin (); i != m_modules.end (); ++i)
     {
       struct Module *module = *i;
-      dlclose (module->handle);
-      UnrefTemplate (module->cached.id);
+      NS_LOG_DEBUG ("Delete module " << module);
+      UnrefSharedModule (module->module);
+      free (module->buffer);
       delete module;
     }
   m_modules.clear ();
@@ -278,7 +292,7 @@ CoojaLoader::Unload (void *handle)
   for (std::list<struct Module *>::iterator i = m_modules.begin (); i != m_modules.end (); ++i)
     {
       struct Module *module = *i;
-      if (module->handle == handle)
+      if (module->module->handle == handle)
 	{
 	  module->refcount--;
 	  if (module->refcount == 0)
@@ -288,11 +302,12 @@ CoojaLoader::Unload (void *handle)
 		   j != module->deps.end (); ++j)
 		{
 		  struct Module *dep = *j;
-		  Unload (dep->handle);
+		  Unload (dep->module->handle);
 		}
 	      // close only after unloading the deps.
-	      UnrefTemplate (module->cached.id);
-	      dlclose (module->handle);
+	      NS_LOG_DEBUG ("Delete module for " << module->module->handle);
+	      UnrefSharedModule (module->module);
+	      free (module->buffer);
 	      delete module;
 	    }
 	  break;
