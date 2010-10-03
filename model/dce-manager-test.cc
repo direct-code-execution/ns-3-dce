@@ -110,6 +110,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
   "test-select",
   "test-nanosleep",
   "test-random",
+  "test-fork",
   };
   for (unsigned int i = 0; i < sizeof(tests)/sizeof(char*);i++)
     {

@@ -36,3 +36,4 @@ def build(bld):
     new_test(bld, 'test-select', '')
     new_test(bld, 'test-random', '')
     new_test(bld, 'test-ioctl', '')
+    new_test(bld, 'test-fork', '')
