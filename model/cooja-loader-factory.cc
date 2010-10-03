@@ -126,8 +126,28 @@ CoojaLoader::NotifyEndExecute (void)
 Loader *
 CoojaLoader::Clone (void)
 {
-  // XXX
-  return 0;
+  CoojaLoader *clone = new CoojaLoader ();
+  for (std::list<struct Module *>::const_iterator i = m_modules.begin (); i != m_modules.end (); ++i)
+    {
+      struct Module *module = *i;
+      struct Module *clonedModule = new Module ();
+      clonedModule->module = module->module;
+      clonedModule->refcount = module->refcount;
+      clonedModule->buffer = malloc (module->module->buffer_size);
+      memcpy (clonedModule->buffer, 
+	      clonedModule->buffer, // XXX
+	      clonedModule->module->buffer_size);
+      // setup deps.
+      for (std::list<struct Module *>::iterator j = module->deps.begin ();
+	   j != module->deps.end (); ++j)
+	{
+	  struct Module *dep = clone->SearchModule (module->module->id);
+	  dep->refcount++;
+	  clonedModule->deps.push_back (dep);
+	}
+      clone->m_modules.push_back (module);
+    }
+  return clone;
 }
 
 void *
