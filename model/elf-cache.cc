@@ -157,6 +157,8 @@ ElfCache::EditBuffer (uint8_t *map, uint32_t selfId) const
 
   // find DYNAMIC and fill DataSection
   struct FileInfo fileInfo;
+  ElfW(Phdr) *pt_load_rw = 0;
+  ElfW(Phdr) *pt_gnu_relro = 0;
   for (uint32_t i = 0; i < header->e_phnum; i++, phdr++)
     {
       switch (phdr->p_type)
@@ -165,16 +167,28 @@ ElfCache::EditBuffer (uint8_t *map, uint32_t selfId) const
 	  if (phdr->p_flags & PF_W)
 	    {
 	      // data section !
-	      fileInfo.p_vaddr = phdr->p_vaddr;
-	      fileInfo.p_memsz = phdr->p_memsz;
+	      pt_load_rw = phdr;
 	    }
 	  break;
 	case PT_DYNAMIC:
 	  // now, seek DT_NEEDED
 	  dyn = (ElfW(Dyn) *)(map + phdr->p_offset);
 	  break;
+	case PT_GNU_RELRO:
+	  pt_gnu_relro = phdr;
+	  break;
 	}
     }
+  NS_ASSERT (pt_load_rw != 0);
+  fileInfo.p_vaddr = pt_load_rw->p_vaddr;
+  fileInfo.p_memsz = pt_load_rw->p_memsz;
+  if (pt_gnu_relro != 0)
+    {
+      NS_ASSERT (pt_gnu_relro->p_vaddr == pt_load_rw->p_vaddr);
+      fileInfo.p_vaddr += pt_gnu_relro->p_memsz;
+      fileInfo.p_memsz -= pt_gnu_relro->p_memsz;
+    }
+
   // first, Patch the DT_NEEDED, and, DT_SONAME entries
   // and save the DT_INIT entry
   long dt_strtab = GetDtStrTab (dyn, base_address);
