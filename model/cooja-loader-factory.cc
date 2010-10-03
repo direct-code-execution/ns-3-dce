@@ -141,11 +141,13 @@ CoojaLoader::Clone (void)
       for (std::list<struct Module *>::iterator j = module->deps.begin ();
 	   j != module->deps.end (); ++j)
 	{
-	  struct Module *dep = clone->SearchModule (module->module->id);
-	  dep->refcount++;
-	  clonedModule->deps.push_back (dep);
+	  struct Module *dep = *j;
+	  struct Module *cloneDep = clone->SearchModule (dep->module->id);
+	  cloneDep->refcount++;
+	  clonedModule->deps.push_back (cloneDep);
 	}
-      clone->m_modules.push_back (module);
+      NS_LOG_DEBUG ("add " << clonedModule->module->id);
+      clone->m_modules.push_back (clonedModule);
     }
   return clone;
 }
@@ -206,13 +208,16 @@ CoojaLoader::LoadModule (std::string filename, int flag)
       struct SharedModule *sharedModule = SearchSharedModule (cached.id);
       if (sharedModule == 0)
 	{
-	  void *handle = dlopen (cached.cachedFilename.c_str (), RTLD_LAZY | RTLD_DEEPBIND | RTLD_LOCAL);
+	  void *handle = dlopen (cached.cachedFilename.c_str (), 
+				 RTLD_LAZY | RTLD_DEEPBIND | RTLD_LOCAL);
 	  NS_ASSERT_MSG (handle != 0, "Could not open " << cached.cachedFilename << " " << dlerror ());
 	  struct link_map *link_map;
 	  dlinfo (handle, RTLD_DI_LINKMAP, &link_map);
 
 	  sharedModule = new SharedModule ();
-	  NS_LOG_DEBUG ("create shared module=" << sharedModule << " file=" << cached.cachedFilename);
+	  NS_LOG_DEBUG ("create shared module=" << sharedModule << 
+			" file=" << cached.cachedFilename << 
+			" id=" << cached.id);
 	  sharedModule->refcount = 0;
 	  sharedModule->id = cached.id;
 	  sharedModule->handle = handle;
