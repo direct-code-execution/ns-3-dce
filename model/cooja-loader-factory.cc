@@ -83,6 +83,7 @@ SharedModules::~SharedModules ()
        i != modules.end (); ++i)
     {
       struct SharedModule *module = *i;
+      NS_LOG_DEBUG ("delete shared module " << module);
       free (module->template_buffer);
       dlclose (module->handle);
       delete module;
@@ -135,6 +136,7 @@ CoojaLoader::Clone (void)
       struct Module *module = *i;
       struct Module *clonedModule = new Module ();
       clonedModule->module = module->module;
+      clonedModule->module->refcount++;
       clonedModule->refcount = module->refcount;
       clonedModule->buffer = malloc (module->module->buffer_size);
       memcpy (clonedModule->buffer, 
@@ -240,13 +242,13 @@ CoojaLoader::LoadModule (std::string filename, int flag)
 	    }
 	  modules->modules.push_back (sharedModule);
 	}
-      sharedModule->refcount++;
       module = SearchModule (sharedModule->id);
       if (module == 0)
 	{
 	  module = new Module ();
 	  NS_LOG_DEBUG ("Create module for " << sharedModule->handle);
 	  module->module = sharedModule;
+	  sharedModule->refcount++;
 	  module->refcount = 0;
 	  module->buffer = malloc (sharedModule->buffer_size);
 	  // make sure we re-initialize the data section with the template
