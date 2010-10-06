@@ -8,15 +8,20 @@ static void test_fork (void)
   if (pid == 0)
     {
       // child.
+      TEST_ASSERT_EQUAL (parent, 1);
       parent = 2;
       sleep (2);
       TEST_ASSERT_EQUAL (parent, 2);
+      sleep (10);
     }
   else
     {
+      TEST_ASSERT_EQUAL (parent, 1);
       sleep (1);
+      TEST_ASSERT_EQUAL (parent, 1);
       parent = 0;
       sleep (10);
+      TEST_ASSERT_EQUAL (parent, 0);
     }
 }
 
