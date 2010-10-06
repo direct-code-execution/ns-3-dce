@@ -8,6 +8,7 @@
 namespace ns3 {
 
 struct PthreadFiber;
+class StackTrampoline;
 
 class PthreadFiberManager : public FiberManager
 {
@@ -32,6 +33,7 @@ private:
   static void *SelfStackBottom (void);
   void RestoreFiber (struct PthreadFiber *fiber);
   void (*m_notifySwitch) (void);
+  StackTrampoline *m_trampoline;
 };
 
 } // namespace ns3
