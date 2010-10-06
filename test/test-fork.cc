@@ -1,7 +1,7 @@
 #include <unistd.h>
 #include "test-macros.h"
 
-int main (int argc, char *argv[])
+static void test_fork (void)
 {
   int parent = 1;
   pid_t pid = fork ();
@@ -18,5 +18,10 @@ int main (int argc, char *argv[])
       parent = 0;
       sleep (10);
     }
+}
+
+int main (int argc, char *argv[])
+{
+  test_fork ();
   return 0;
 }
