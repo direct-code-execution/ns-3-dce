@@ -107,10 +107,13 @@ CoojaLoader::NotifyStartExecute (void)
 	{
 	  continue;
 	}
-      // save the previous one
-      memcpy (module->module->current_buffer,
-	      module->module->data_buffer,
-	      module->module->buffer_size);
+      if (module->module->current_buffer != 0)
+	{
+	  // save the previous one
+	  memcpy (module->module->current_buffer,
+		  module->module->data_buffer,
+		  module->module->buffer_size);
+	}
       // restore our own
       memcpy (module->module->data_buffer,
 	      module->buffer,
@@ -135,7 +138,7 @@ CoojaLoader::Clone (void)
       clonedModule->refcount = module->refcount;
       clonedModule->buffer = malloc (module->module->buffer_size);
       memcpy (clonedModule->buffer, 
-	      clonedModule->buffer, // XXX
+	      module->module->data_buffer,
 	      clonedModule->module->buffer_size);
       // setup deps.
       for (std::list<struct Module *>::iterator j = module->deps.begin ();
@@ -304,6 +307,10 @@ CoojaLoader::UnloadAll (void)
     {
       struct Module *module = *i;
       NS_LOG_DEBUG ("Delete module " << module);
+      if (module->module->current_buffer == module->buffer)
+	{
+	  module->module->current_buffer = 0;
+	}
       UnrefSharedModule (module->module);
       free (module->buffer);
       delete module;
@@ -331,6 +338,10 @@ CoojaLoader::Unload (void *handle)
 		}
 	      // close only after unloading the deps.
 	      NS_LOG_DEBUG ("Delete module for " << module->module->handle);
+	      if (module->module->current_buffer == module->buffer)
+		{
+		  module->module->current_buffer = 0;
+		}
 	      UnrefSharedModule (module->module);
 	      free (module->buffer);
 	      delete module;
