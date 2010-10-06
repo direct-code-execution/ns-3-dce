@@ -172,11 +172,12 @@ TaskManager::Clone (Task *task)
   clone->m_extraContext = 0;
   clone->m_switchNotifier = 0;
   clone->m_switchNotifierContext = 0;
-  clone->m_fiber = m_fiberManager->Clone (task->m_fiber);
-  NS_LOG_DEBUG ("clone " << clone << " fiber=" << clone->m_fiber);
-  if (clone->m_fiber != 0)
+  struct Fiber *cloneFiber = m_fiberManager->Clone (task->m_fiber);
+  NS_LOG_DEBUG ("clone " << clone << " fiber=" << cloneFiber);
+  if (cloneFiber != 0)
     {
       // parent.
+      clone->m_fiber = cloneFiber;
       Wakeup (clone);
       return clone;
     }
