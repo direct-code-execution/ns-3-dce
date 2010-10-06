@@ -160,14 +160,17 @@ private:
     struct PthreadFiber *previous = self->m_jumpTarget->previous;
     if (previous != next)
       {
-	// first, we save the stack of previous.
-	if (previous->stack_copy == 0)
+	if (previous != 0)
 	  {
-	    previous->stack_copy = malloc (previous->thread->stack_size);
+	    // first, we save the stack of previous.
+	    if (previous->stack_copy == 0)
+	      {
+		previous->stack_copy = malloc (previous->thread->stack_size);
+	      }
+	    memcpy (previous->stack_copy,
+		    previous->stack_bounds.GetStart (),
+		    previous->stack_bounds.GetSize ());
 	  }
-	memcpy (previous->stack_copy,
-		previous->stack_bounds.GetStart (),
-		previous->stack_bounds.GetSize ());
 	// then, we restore the stack of next
 	memcpy (next->stack_bounds.GetStart (), 
 		next->stack_copy,
@@ -405,6 +408,10 @@ PthreadFiberManager::Delete (struct Fiber *fib)
       status = pthread_cond_destroy (&fiber->thread->condvar);
       NS_ASSERT (status == 0);
       delete fiber->thread;
+    }
+  else if (fiber->thread->previous == fiber)
+    {
+      fiber->thread->previous = 0;
     }
   if (fiber->stack_copy != 0)
     {
