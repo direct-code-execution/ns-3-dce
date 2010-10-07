@@ -88,6 +88,12 @@ int dce_sigaction (int signum, const struct sigaction *act,
 	}
       current->process->signalHandlers.push_back (handler);
     }
+  if (oldact != 0)
+    {
+      oldact->sa_handler = SIG_IGN;
+      oldact->sa_flags = 0;
+      sigemptyset (&oldact->sa_mask);
+    }
 
   return 0;
 }
