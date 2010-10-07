@@ -30,6 +30,16 @@
 #include <unistd.h>
 #include <signal.h>
 
+#ifdef HAVE_VALGRIND_H
+# include "valgrind/valgrind.h"
+# include "valgrind/memcheck.h"
+#else
+# define VALGRIND_STACK_REGISTER(start,end) (0)
+# define VALGRIND_STACK_DEREGISTER(id)
+# define VALGRIND_MAKE_MEM_DEFINED(start,sz) 
+#endif
+
+
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE("PthreadFiberManager");
@@ -115,19 +125,19 @@ public:
     newstack.ss_sp = m_stack;
     newstack.ss_size = SIGSTKSZ;
     newstack.ss_flags = 0;
+    m_vgId = VALGRIND_STACK_REGISTER(m_stack,((unsigned long)m_stack)+SIGSTKSZ);
     status = sigaltstack (&newstack, &oldstack);
     NS_ASSERT_MSG (status == 0, "first sigaltstack failed stack=" << m_stack << 
 		   " stacksize=" << SIGSTKSZ);
     struct sigaction newact;
     struct sigaction oldact;
     newact.sa_handler = &StackTrampoline::SignalHandler;
-    newact.sa_flags = SA_ONSTACK;
+    newact.sa_flags = SA_ONSTACK | SA_RESETHAND;
+    sigemptyset (&newact.sa_mask);
     status = sigaction (SIGUSR1, &newact, &oldact);
     NS_ASSERT_MSG (status == 0, "first sigaction failed");
     status = raise (SIGUSR1);
     NS_ASSERT_MSG (status == 0, "raise failed");
-    status = sigaction (SIGUSR1, &oldact, 0);
-    NS_ASSERT_MSG (status == 0, "second sigaction failed");
     status = sigaltstack (&oldstack, 0);
     NS_ASSERT_MSG (status == 0, "second sigaltstack failed");
     g_current = 0;
@@ -136,6 +146,7 @@ public:
   }
   ~StackTrampoline ()
   {
+    VALGRIND_STACK_DEREGISTER(m_vgId);
     free (m_stack);
   }
 
@@ -143,6 +154,7 @@ public:
   {
     NS_LOG_FUNCTION (this << thread);
     m_jumpTarget = thread;
+    VALGRIND_MAKE_MEM_DEFINED (m_stack, SIGSTKSZ);
     longjmp (m_buf, 1);
   }
 
@@ -150,14 +162,18 @@ private:
   static void SignalHandler (int signo)
   {
     StackTrampoline *self = g_current;
-    int retval = setjmp (self->m_buf);
-    if (retval == 0)
+    if (setjmp (self->m_buf) == 0)
       {
 	return;
       }
+    VALGRIND_MAKE_MEM_DEFINED (self->m_stack, SIGSTKSZ);
+    DoWork (self->m_jumpTarget);
+  }
+  static void DoWork (PthreadFiberThread *thread)
+  {
     NS_LOG_DEBUG ("alternate trampoline stack");
-    struct PthreadFiber *next = self->m_jumpTarget->next;
-    struct PthreadFiber *previous = self->m_jumpTarget->previous;
+    struct PthreadFiber *next = thread->next;
+    struct PthreadFiber *previous = thread->previous;
     if (previous != next)
       {
 	if (previous != 0)
@@ -181,6 +197,7 @@ private:
   void *m_stack;
   jmp_buf m_buf;
   PthreadFiberThread *m_jumpTarget;
+  unsigned int m_vgId;
   static pthread_mutex_t g_mutex;
   static StackTrampoline *g_current;
 };
@@ -194,10 +211,12 @@ StackTrampoline *StackTrampoline::g_current = 0;
 PthreadFiberManager::PthreadFiberManager ()
   : m_notifySwitch (0)
 {
+  NS_LOG_FUNCTION (this);
   m_trampoline = new StackTrampoline ();
 }
 PthreadFiberManager::~PthreadFiberManager ()
 {
+  NS_LOG_FUNCTION (this);
   delete m_trampoline;
 }
 
@@ -226,8 +245,7 @@ PthreadFiberManager::Clone (struct Fiber *fib)
 	  clone->stack_bounds.GetSize ());
   // save the current state in jmp_buf so that the next call to 
   // SwitchTo on the clone comes back here.
-  int status = setjmp (clone->yield_env);
-  if (status == 0)
+  if (setjmp (clone->yield_env) == 0)
     {
       // returning directly. parent
       NS_LOG_DEBUG ("created clone " << clone);
@@ -313,16 +331,20 @@ PthreadFiberManager::Yield (struct PthreadFiber *fiber)
 	  fiber->stack_bounds = fiber->thread->stack_bounds;
 	  fiber->stack_bounds.AddBound (__builtin_frame_address (0));
 	  fiber->stack_bounds.AddBound (SelfStackBottom ());
-	  int status = setjmp (fiber->yield_env);
-	  NS_LOG_DEBUG ("Yield after setjmp");
-	  if (status == 0)
+	  if (setjmp (fiber->yield_env) == 0)
 	    {
+	      PthreadFiberThread *thread = fiber->thread;
+	      // force the thread variable to be stored on the stack.
+	      asm volatile ("" ::"r"(&thread));
+	      NS_LOG_DEBUG ("Yield after setjmp before wait");
 	      // wait for the master thread to re-schedule us.
-	      pthread_cond_wait (&fiber->thread->condvar, &fiber->thread->mutex);
+	      pthread_cond_wait (&thread->condvar, 
+				 &thread->mutex);
 	      NS_LOG_DEBUG ("Yield after wait");
 	      // finally, jump back where we want to go within this thread
-	      fiber->thread->trampoline->Jump (fiber->thread);
+	      thread->trampoline->Jump (thread);
 	    }
+	  NS_LOG_DEBUG ("Yield after setjmp");
         }
     }
 }
