@@ -87,7 +87,7 @@ int dce_getaddrinfo(const char *node, const char *service,
     }
   else
     {
-      memset (*res, 0, sizeof (struct addrinfo));
+      *res = 0;
     }
   ::freeaddrinfo (tmp);
   return status;
