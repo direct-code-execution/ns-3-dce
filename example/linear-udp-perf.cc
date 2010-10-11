@@ -351,10 +351,11 @@ int main (int argc, char *argv[])
     {
       bytes = g_sinkRxBytes;
     }
-  double pps = bytes / size / elapsedMs;
+  double pktSize = AsNumber (packetSize);
+  double pps = bytes / pktSize / elapsedMs * 1000.0;
 
-  std::cout << "packet size(bytes),n nodes,pps,memory(bytes)" << std::endl;
-  std::cout << packetSize << "," << size << "," << pps << "," << g_memory * 1000 << std::endl;
+  std::cout << "packet size(bytes),n nodes,pps,memory(kbytes)" << std::endl;
+  std::cout << packetSize << "," << size << "," << pps << "," << g_memory << std::endl;
 
   return 0;
 }

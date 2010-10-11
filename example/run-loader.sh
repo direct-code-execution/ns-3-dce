@@ -1,6 +1,6 @@
 #/bin/bash
 nodes="1 2 3 4 8 10 16 20 32 50 63"
-loaders="Cooja Dlm Copy"
+loaders="Cooja Dlm"
 ARGS="--TxBandwidth=1000000 --LinkBandwidth=2MBps --ns3::TaskManager::FiberManagerType=UcontextFiberManager --LinuxPath=./libnet-next-2.6-pic.so --Duration=200s"
 PRGM="./build/optimized/src/dce/example/linear-udp-perf"
 DCE_RUNNER="./build/optimized/src/dce/utils/dce-runner"
