@@ -72,7 +72,7 @@ int main (int argc, char *argv[])
 #elif defined (__i386__)
   __asm__ ("\txor %%ebp,%%ebp\n"
 	   "\txor %%edx,%%edx\n"
-	   "\tmov %0,%%rsp\n"
+	   "\tmov %0,%%esp\n"
 	   "\tjmp *%1\n" 
 	   : 
 	   : "r"(&argv[-1]), "r" (entry)

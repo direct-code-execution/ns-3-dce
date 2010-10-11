@@ -81,10 +81,18 @@ long GetCurrentMemoryUsage (void)
 	  std::string::size_type cur = 0, next = 0;
 	  cur = line.find_first_not_of (" \t", cur);
 	  next = line.find_first_of (" \t", cur);
+	  if (cur == std::string::npos || next == std::string::npos)
+	    {
+	      break;
+	    }
 	  std::string line_pid = line.substr(cur, next-cur);
 	  cur = next+1;
 	  cur = line.find_first_not_of (" \t", cur);
 	  next = line.find_first_of (" \t", cur);
+	  if (cur == std::string::npos || next == std::string::npos)
+	    {
+	      break;
+	    }
 	  std::string line_uss = line.substr(cur, next-cur);
 	  if (AsLong (line_pid) == pid)
 	    {

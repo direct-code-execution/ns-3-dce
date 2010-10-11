@@ -158,7 +158,7 @@ CoojaLoader::SearchTemplate (uint32_t id)
 }
 
 #define ROUND_DOWN(addr, align) \
-  (((long)addr) - (((long)(addr)) % (align)))
+  (((unsigned long)addr) - (((unsigned long)(addr)) % (align)))
 
 struct CoojaLoader::Module *
 CoojaLoader::LoadModule (std::string filename, int flag)
