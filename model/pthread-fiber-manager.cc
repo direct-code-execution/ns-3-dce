@@ -183,11 +183,15 @@ private:
 	      {
 		previous->stack_copy = malloc (previous->thread->stack_size);
 	      }
+	    VALGRIND_MAKE_MEM_DEFINED (previous->stack_bounds.GetStart (),
+				       previous->stack_bounds.GetSize ());
 	    memcpy (previous->stack_copy,
 		    previous->stack_bounds.GetStart (),
 		    previous->stack_bounds.GetSize ());
 	  }
 	// then, we restore the stack of next
+	VALGRIND_MAKE_MEM_DEFINED (next->stack_bounds.GetStart (),
+				   next->stack_bounds.GetSize ());
 	memcpy (next->stack_bounds.GetStart (), 
 		next->stack_copy,
 		next->stack_bounds.GetSize ());
@@ -240,9 +244,13 @@ PthreadFiberManager::Clone (struct Fiber *fib)
   // save current stack so that the next call to SwitchTo
   // on the clone restores the stack before jumping back
   // to the below.
-  memcpy (clone->stack_copy, 
-	  clone->stack_bounds.GetStart (),
-	  clone->stack_bounds.GetSize ());
+  {
+    void *src = clone->stack_bounds.GetStart ();
+    void *dst = clone->stack_copy;
+    size_t sz = clone->stack_bounds.GetSize ();
+    VALGRIND_MAKE_MEM_DEFINED (src, sz);
+    memcpy (dst, src, sz);
+  }
   // save the current state in jmp_buf so that the next call to 
   // SwitchTo on the clone comes back here.
   if (setjmp (clone->yield_env) == 0)
@@ -353,22 +361,23 @@ void *
 PthreadFiberManager::Run (void *arg)
 {
   struct PthreadFiber *fiber = (struct PthreadFiber *) arg;
-  fiber->thread->stack_bounds.AddBound (__builtin_frame_address (0));
-  fiber->thread->stack_bounds.AddBound (SelfStackBottom ());
-  pthread_mutex_lock (&fiber->thread->mutex);
-  if (setjmp (fiber->thread->initial_env) == 0)
+  struct PthreadFiberThread *thread = (struct PthreadFiberThread *) fiber->thread;
+  thread->stack_bounds.AddBound (__builtin_frame_address (0));
+  thread->stack_bounds.AddBound (SelfStackBottom ());
+  pthread_mutex_lock (&thread->mutex);
+  if (setjmp (thread->initial_env) == 0)
     {
-      fiber->thread->func (fiber->thread->context);
+      thread->func (thread->context);
       fiber->state = DESTROY;
-      pthread_cond_signal (&fiber->thread->condvar);
-      pthread_mutex_unlock (&fiber->thread->mutex);
+      pthread_cond_signal (&thread->condvar);
+      pthread_mutex_unlock (&thread->mutex);
     }
   else
     {
       // oops, we are returning from a Delete
       // we can easily return and we are done !
     }
-  pthread_detach (fiber->thread->thread);
+  pthread_detach (thread->thread);
   return 0;
 }
 
