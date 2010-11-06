@@ -154,11 +154,26 @@ public:
   {
     NS_LOG_FUNCTION (this << thread);
     m_jumpTarget = thread;
-    VALGRIND_MAKE_MEM_DEFINED (m_stack, SIGSTKSZ);
-    longjmp (m_buf, 1);
+    struct PthreadFiber *next = thread->next;
+    struct PthreadFiber *previous = thread->previous;
+    // this is a CPU optimization: we make sure that
+    // there is indeed data to save and restore before
+    // switching to a temporary stack to do save/restore.
+    if (previous != next)
+      {
+	VALGRIND_MAKE_MEM_DEFINED (m_stack, SIGSTKSZ);
+	longjmp (m_buf, 1);
+      }
   }
 
 private:
+  // This is the handler that gets invoked the first time
+  // we trigger the SIGUSR1 signal. The first time this function
+  // enters, we return immediately (setjmp returns 0)
+  // Every other time that setjmp returns because someone called
+  // longjmp in StackTrampoline::Jump, we call instead DoWork
+  // to save the current stack frame and restore the stack of the
+  // thread that is going to be executed.
   static void SignalHandler (int signo)
   {
     StackTrampoline *self = g_current;
@@ -185,6 +200,8 @@ private:
 	      }
 	    VALGRIND_MAKE_MEM_DEFINED (previous->stack_bounds.GetStart (),
 				       previous->stack_bounds.GetSize ());
+	    NS_LOG_DEBUG ("save start=" << previous->stack_bounds.GetStart () <<
+			  " size=" << previous->stack_bounds.GetSize ());
 	    memcpy (previous->stack_copy,
 		    previous->stack_bounds.GetStart (),
 		    previous->stack_bounds.GetSize ());
@@ -192,10 +209,14 @@ private:
 	// then, we restore the stack of next
 	VALGRIND_MAKE_MEM_DEFINED (next->stack_bounds.GetStart (),
 				   next->stack_bounds.GetSize ());
+	NS_LOG_DEBUG ("restore start=" << next->stack_bounds.GetStart () <<
+		      " size=" << next->stack_bounds.GetSize ());
 	memcpy (next->stack_bounds.GetStart (), 
 		next->stack_copy,
 		next->stack_bounds.GetSize ());
       }
+    // Finally, we can go back to the thread's last suspend point
+    // which was either in Yield or in Clone.
     longjmp (next->yield_env, 1);
   }
   void *m_stack;
@@ -249,6 +270,8 @@ PthreadFiberManager::Clone (struct Fiber *fib)
     void *dst = clone->stack_copy;
     size_t sz = clone->stack_bounds.GetSize ();
     VALGRIND_MAKE_MEM_DEFINED (src, sz);
+    NS_LOG_DEBUG ("save start=" << clone->stack_bounds.GetStart () <<
+		  " size=" << clone->stack_bounds.GetSize ());
     memcpy (dst, src, sz);
   }
   // save the current state in jmp_buf so that the next call to 
@@ -341,16 +364,15 @@ PthreadFiberManager::Yield (struct PthreadFiber *fiber)
 	  fiber->stack_bounds.AddBound (SelfStackBottom ());
 	  if (setjmp (fiber->yield_env) == 0)
 	    {
-	      PthreadFiberThread *thread = fiber->thread;
 	      // force the thread variable to be stored on the stack.
-	      asm volatile ("" ::"r"(&thread));
+	      volatile PthreadFiberThread *thread = fiber->thread;
 	      NS_LOG_DEBUG ("Yield after setjmp before wait");
 	      // wait for the master thread to re-schedule us.
-	      pthread_cond_wait (&thread->condvar, 
-				 &thread->mutex);
+	      pthread_cond_wait (&((PthreadFiberThread *)thread)->condvar, 
+				 &((PthreadFiberThread *)thread)->mutex);
 	      NS_LOG_DEBUG ("Yield after wait");
 	      // finally, jump back where we want to go within this thread
-	      thread->trampoline->Jump (thread);
+	      ((PthreadFiberThread *)thread)->trampoline->Jump ((PthreadFiberThread *)thread);
 	    }
 	  NS_LOG_DEBUG ("Yield after setjmp");
         }
