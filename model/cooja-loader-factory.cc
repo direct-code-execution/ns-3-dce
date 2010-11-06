@@ -246,11 +246,19 @@ CoojaLoader::LoadModule (std::string filename, int flag)
       if (module == 0)
 	{
 	  module = new Module ();
-	  NS_LOG_DEBUG ("Create module for " << sharedModule->handle);
+	  NS_LOG_DEBUG ("Create module for " << sharedModule->handle <<
+			" " << cached.cachedFilename);
 	  module->module = sharedModule;
 	  sharedModule->refcount++;
 	  module->refcount = 0;
 	  module->buffer = malloc (sharedModule->buffer_size);
+	  if (sharedModule->current_buffer != 0)
+	    {
+	      // save the previous one
+	      memcpy (module->module->current_buffer,
+		      module->module->data_buffer,
+		      module->module->buffer_size);
+	    }
 	  // make sure we re-initialize the data section with the template
 	  memcpy (sharedModule->data_buffer, 
 		  sharedModule->template_buffer,
