@@ -68,14 +68,52 @@ and get this:::
   did write all buffers
 
 Other things that you can now do involve playing with the different thread
-and loader implementations to check that they all work:::
+and loader implementations to check that they all work. First, let's see the impact
+of the faster but harder to debug ucontext-based fiber manager:::
 
-  build/debug/src/dce/example/dce-udp-simple --ns3::DceManagerHelper::LoaderFactory=ns3::CoojaLoaderFactory[]
-  build/debug/src/dce/example/dce-udp-simple --ns3::DceManagerHelper::LoaderFactory=ns3::CopyLoaderFactory[]
-  build/debug/src/dce/example/dce-udp-simple --ns3::DceManagerHelper::LoaderFactory=ns3::DlmLoaderFactory[]
-  build/debug/src/dce/example/dce-udp-simple --ns3::TaskManager::FiberManagerType=UcontextFiberManager
-  build/debug/src/dce/example/dce-udp-simple --ns3::TaskManager::FiberManagerType=PthreadFiberManager
+  time -p build/debug/src/dce/example/dce-udp-simple --ns3::TaskManager::FiberManagerType=UcontextFiberManager
+  real 31.08
+  user 29.83
+  sys 0.60
 
+versus the default fiber manager which is nicer to run under gdb:::
+
+  time -p ./build/debug/src/dce/example/dce-udp-simple
+  real 36.83
+  user 30.00
+  sys 5.90
+
+To use the so-called dlm loader, you need to run your simulation scenario with a special
+runner program which takes care of setting up the DlmLoaderFactory for you:::
+
+  time -p ./build/debug/src/dce/utils/dce-runner ./build/debug/src/dce/example/dce-udp-simple 
+  real 32.97
+  user 26.67
+  sys 5.84
+
+versus the default loader:::
+
+  time -p ./build/debug/src/dce/example/dce-udp-simple
+  real 36.83
+  user 30.00
+  sys 5.90
+
+If you put it all together, it's obvious how you can make your code magically faster:::
+
+  time -p ./build/debug/src/dce/utils/dce-runner ./build/debug/src/dce/example/dce-udp-simple --ns3::TaskManager::FiberManagerType=UcontextFiberManager
+  real 23.60
+  user 23.08
+  sys 0.34
+
+Or, summarized:
+
++-------------------+------------------------+------------+
+|                   | Cooja loader (default) | Dlm loader |
++-------------------+------------------------+------------+
+| pthread (default) |   36.8s                |   33s      |
++-------------------+------------------------+------------+
+| ucontext          |   31.1s                |   23s      |
++-------------------+------------------------+------------+
 
 
 Gdb
