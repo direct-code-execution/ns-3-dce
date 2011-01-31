@@ -117,6 +117,7 @@ private:
   static void EnsureDirectoryExists (struct Thread *current, std::string dirName);
   static int CreatePidFile (struct Thread *current, std::string prefix);
   static void TaskSwitch (enum Task::SwitchType type, void *context);
+  static void StartProcessDebugHook (void);
 
   std::vector<Process *> m_processes;
   uint16_t m_nextPid;

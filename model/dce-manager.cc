@@ -214,9 +214,16 @@ DceManager::DoStartProcess (void *context)
   symbol = current->process->loader->Lookup (h, "main");
   int (*main) (int, char **);
   main = (int (*) (int, char **)) symbol;
+
+  StartProcessDebugHook ();
+
   int retval = main (current->process->originalArgc, current->process->originalArgv);
   dce_exit (retval);
 }
+
+void
+DceManager::StartProcessDebugHook (void)
+{}
 
 struct Process *
 DceManager::CreateProcess (std::string name, std::vector<std::string> args,
