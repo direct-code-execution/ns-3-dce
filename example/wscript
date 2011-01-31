@@ -14,6 +14,11 @@ def build(bld):
     obj = bld.create_dce_program('tcp-loopback')
     obj.source = ['tcp-loopback.cc']
 
+    obj = bld.create_ns3_program('dce-tcp-simple', 
+                                 ['core', 'simulator', 'point-to-point', 
+                                  'internet-stack', 'dce-manager'])
+    obj.source = 'dce-tcp-simple.cc'
+
     obj = bld.create_ns3_program('dce-iperf', 
                                  ['core', 'simulator', 'point-to-point', 
                                   'internet-stack', 'dce-manager'])
