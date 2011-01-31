@@ -13,9 +13,6 @@ static void *client_run (void *ctx)
   int sock;
   sock = socket (PF_INET, SOCK_STREAM, 0);
 
-  int result;
-  result = bind (sock, 0, 0);
-
   struct sockaddr_in addr;
   addr.sin_family = AF_INET;
   addr.sin_port = htons (SERVER_PORT);
@@ -23,6 +20,7 @@ static void *client_run (void *ctx)
   struct hostent *host = gethostbyname ("127.0.0.1");
   memcpy (&addr.sin_addr.s_addr, host->h_addr_list[0], host->h_length);
 
+  int result;
   result = connect (sock, (const struct sockaddr *) &addr, sizeof (addr));
 
   uint8_t buf[1024];
