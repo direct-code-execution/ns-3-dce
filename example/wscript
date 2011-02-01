@@ -24,6 +24,11 @@ def build(bld):
                                   'internet-stack', 'dce-manager'])
     obj.source = 'dce-udp-simple.cc'
 
+    obj = bld.create_ns3_program('dce-linux-simple', 
+                                 ['core', 'simulator', 'point-to-point', 
+                                  'internet-stack', 'dce-manager'])
+    obj.source = 'dce-linux-simple.cc'
+
     obj = bld.create_ns3_program('dce-iperf', 
                                  ['core', 'simulator', 'point-to-point', 
                                   'internet-stack', 'dce-manager'])
