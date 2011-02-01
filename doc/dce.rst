@@ -208,7 +208,7 @@ Gdb
 ===
 
 Install
--------
++++++++
 
 Although it is not strictly necessary, it is recommended that you recompile a CVS Gdb 
 for use with ns-3-dce. First, download:::
@@ -230,7 +230,7 @@ And, then, invoke the version of gdb located in gdb/gdb instead of your system-i
 whenever you need to debug a DCE-based program.
 
 Using
------
++++++
 
 If you use gdb (a CVS or stable version), do not forget to execute the following command prior
 to running any DCE-based program:::
@@ -247,7 +247,7 @@ inside:::
   handle SIGUSR1 nostop
 
 Helpful debugging hints
------------------------
++++++++++++++++++++++++
 
 There are a couple of functions which are useful to put breakpoints into:
 
