@@ -6,7 +6,7 @@ System packages
 
 Ubuntu 1004-32:::
 
-  sudo apt-get install g++ libc-dbg mercurial git-core
+  sudo apt-get install g++ libc-dbg mercurial git-core flex bison libdb-dev
 
 Basic install (no Linux stack)
 ==============================
@@ -49,7 +49,7 @@ thread. The client thread connects to the server thread and sends a bunch of dat
 this server. When the simulation completes, you can look at the standard output of 
 this process which interleaves the client and server output with the following command:::
 
-  cat cat files-0/var/log/*/stdout
+  cat files-0/var/log/*/stdout
 
 Where files-0 is the directory where all files for node 0 are located.
 
@@ -114,6 +114,94 @@ Or, summarized:
 +-------------------+------------------------+------------+
 | ucontext          |   31.1s                |   23s      |
 +-------------------+------------------------+------------+
+
+Advanced install (Linux stack)
+==============================
+
+The kernel
+++++++++++
+
+If you want to use the Linux network stack instead of the native ns-3 stack
+(or a mix of both stacks), you can try the ns-3-linux plugin: the following set
+of commands will eat about 1.6GB of hard disk space to download a recent
+version of the linux kernel with the glue needed to make it work in ns-3:::
+
+  hg clone http://code.nsnam.org/mathieu/ns-3-linux
+  cd ns-3-linux
+  make setup
+
+Once you have this Linux kernel, you can configure it: if you are not familiar 
+with this process, try:::
+
+  make defconfig
+
+If you know what you are doing, you can try to mess with:::
+
+  make menuconfig
+
+Anyway, you are now ready to build a Linux kernel library:::
+
+  make
+
+Which should create a couple of hundreds of megabytes later a single 
+libnet-next-2.6.so file. There are a couple of options that you can
+try here but the most useful one to build an optimized Linux network
+stack once you have debugged everything and you want things to run fast:::
+
+  make OPT=yes
+
+The network utilities
++++++++++++++++++++++
+
+Now that you have a kernel built, you also need to get the associated 
+utilities used to configure the network stack of that kernel:::
+
+
+  wget http://devresources.linuxfoundation.org/dev/iproute2/download/iproute2-2.6.33.tar.bz2
+  tar jxf iproute2-2.6.33.tar.bz2
+  cd iproute2-2.6.33
+
+Now, you can rebuild them:::
+
+  LDFLAGS=-pie make CCOPTS='-fpic -D_GNU_SOURCE -O0 -U_FORTIFY_SOURCE'
+
+ns-3
+++++
+
+You are now ready to test all this stuff:::
+
+  cd ns-3-dce
+  cp ../ns-3-linux/libnet-next-2.6.so .
+  cp ../iproute2-2.6.33/ip/ip .
+  ./waf configure --disable-python --with-linux-stack=../ns-3-linux
+
+Which should, this time, output the following:::
+
+  Linux stack                   : enabled
+  Magic Elf Loader              : enabled
+
+We can re-build ns-3 now that it is reconfigured:::
+
+  ./waf
+
+And, then get the goodies with the simplest example possible that uses
+a single ns-3 node with the Linux IP stack and two udp applications 
+talking over the simulated kernel loopback device:::
+
+  time -p ./build/debug/src/dce/example/dce-linux-simple
+
+This example should generate something like this:::
+
+  cat files-0/var/log/*/stdout
+  1: lo: <LOOPBACK,UP,LOWER_UP> mtu 16436 qdisc noqueue state UNKNOWN 
+      link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+      inet 127.0.0.1/8 scope host lo
+  broadcast 127.255.255.255 dev lo  table local  proto kernel  scope link  src 127.0.0.1 
+  broadcast 127.0.0.0 dev lo  table local  proto kernel  scope link  src 127.0.0.1 
+  local 127.0.0.1 dev lo  table local  proto kernel  scope host  src 127.0.0.1 
+  local 127.0.0.0/8 dev lo  table local  proto kernel  scope host  src 127.0.0.1 
+  did read all buffers
+  did write all buffers
 
 
 Gdb
