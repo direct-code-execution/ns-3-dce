@@ -46,7 +46,7 @@ def configure(conf):
 
 
 def build(bld):
-    dce = bld.create_ns3_module('dce', ['core', 'common', 'simulator', 'node'])
+    dce = bld.create_ns3_module('dce', ['core', 'network'])
     dce.source = [
         'dce-manager.cc',
 	'dce-application.cc',

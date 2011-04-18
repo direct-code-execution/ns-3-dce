@@ -1,9 +1,9 @@
 ## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
 
 def build(bld):
-    helper = bld.create_ns3_module('dce-helper', ['internet-stack', 'wifi', 'point-to-point', 'csma', 'olsr', 
-                                                  'global-routing', 'onoff', 'packet-sink', 'udp-echo',
-                                                  'dce', 'spectrum', 'helper'])
+    helper = bld.create_ns3_module('dce-helper', ['internet', 'wifi', 'point-to-point', 'csma', 'olsr', 
+                                                  'applications',
+                                                  'dce', 'spectrum'])
     helper.source = [
         'dce-manager-helper.cc',
         'dce-application-helper.cc',
