@@ -176,6 +176,11 @@ NetlinkSocket::GetErrno (void) const
   NS_LOG_FUNCTION_NOARGS ();
   return m_errno;
 }
+enum Socket::SocketType 
+NetlinkSocket::GetSocketType (void) const
+{
+  return Socket::NS3_SOCK_DGRAM;
+}
 
 Ptr<Node>
 NetlinkSocket::GetNode (void) const

@@ -3,7 +3,7 @@
 #include "unix-socket-fd.h"
 #include "unix-datagram-socket-fd.h"
 #include "unix-stream-socket-fd.h"
-#include "netlink/netlink-socket-factory.h"
+#include "netlink-socket-factory.h"
 #include "ns3/socket-factory.h"
 #include "ns3/socket.h"
 #include "ns3/uinteger.h"

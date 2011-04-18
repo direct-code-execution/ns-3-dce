@@ -51,12 +51,14 @@ def build(bld):
 
     obj = bld.create_ns3_program('dce-linux', 
                                  ['core', 'point-to-point', 
-                                  'internet', 'dce'])
+                                  'internet', 'dce', 'csma', 'wifi', 'mobility'])
     obj.source = 'dce-linux.cc'
 
     obj = bld.create_dce_program('udp-perf')
     obj.env.append_value('LINKFLAGS', '-lm')
     obj.source = 'udp-perf.cc'
 
-    obj = bld.create_ns3_program('linear-udp-perf')
+    obj = bld.create_ns3_program('linear-udp-perf', 
+                                 ['core', 'point-to-point', 
+                                  'internet', 'dce'])
     obj.source = [ 'linear-udp-perf.cc', 'memory-usage.cc']

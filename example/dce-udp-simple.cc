@@ -1,6 +1,7 @@
-#include "ns3/helper-module.h"
-#include "ns3/simulator-module.h"
+#include "ns3/network-module.h"
 #include "ns3/core-module.h"
+#include "ns3/internet-module.h"
+#include "ns3/dce-module.h"
 
 using namespace ns3;
 

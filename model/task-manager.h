@@ -5,6 +5,7 @@
 #include "ns3/object.h"
 #include "ns3/event-id.h"
 #include "ns3/nstime.h"
+#include "task-scheduler.h"
 #include <list>
 
 namespace ns3 {

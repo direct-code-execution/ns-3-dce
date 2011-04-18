@@ -1,10 +1,10 @@
 #include "memory-usage.h"
-#include "ns3/helper-module.h"
-#include "ns3/dce-application-helper.h"
-#include "ns3/dce-manager-helper.h"
-#include "ns3/simulator-module.h"
+#include "ns3/network-module.h"
+#include "ns3/dce-module.h"
 #include "ns3/core-module.h"
-#include "ns3/node-module.h"
+#include "ns3/internet-module.h"
+#include "ns3/csma-module.h"
+#include "ns3/applications-module.h"
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <fstream>

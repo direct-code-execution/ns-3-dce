@@ -32,9 +32,8 @@
 #include "ns3/assert.h"
 #include "ns3/log.h"
 #include "ns3/socket.h"
-#include "netlink-socket-factory.h"
-#include "netlink-message.h"
-#include "netlink-socket-address.h"
+#include "ns3/netlink-message.h"
+#include "ns3/netlink-socket-address.h"
 #include <sys/socket.h>
 #include <string>
 #include <list>
@@ -49,7 +48,7 @@ class NetlinkSocketTestCase: public TestCase
 {
 public:
   NetlinkSocketTestCase ();
-  virtual bool DoRun (void);
+  virtual void DoRun (void);
 private:
   NetlinkMessage BuildGetMessage (uint16_t type, uint16_t flags);
   NetlinkMessage BuildAddressMessage (uint16_t type, uint16_t flags);
@@ -63,17 +62,18 @@ private:
   bool CheckIsEqual (NetlinkMessage nlmsg1, NetlinkMessage nlmsg2);
   bool CheckIsEqual (MultipartNetlinkMessage mulmsg1, MultipartNetlinkMessage mulmsg2);
 
-  bool TestNetlinkSerilization ();
-  bool TestInterfaceAddressMessage ();
-  bool TestInferfaceInfoMessage ();
-  bool TestRouteMessage ();
-  bool TestBroadcastMessage ();
+  void TestNetlinkSerialization ();
+  void TestInterfaceAddressMessage ();
+  void TestInferfaceInfoMessage ();
+  void TestRouteMessage ();
+  void TestBroadcastMessage ();
 
   void ReceiveUnicastPacket (Ptr<Socket> socket);
   void ReceiveMulticastPacket (Ptr<Socket> socket);
   void SendCmdToKernel (uint16_t type);
   void SendNetlinkMessage (NetlinkMessage nlmsg);
   void MonitorKernelChanges ();
+  Ptr<SocketFactory> CreateNetlinkFactory (void);
 
   std::list<MultipartNetlinkMessage> m_unicastList;
   std::list<MultipartNetlinkMessage> m_multicastList;
@@ -231,26 +231,22 @@ NetlinkSocketTestCase::CheckIsEqual (MultipartNetlinkMessage mulmsg1, MultipartN
   return true;  
 }
 
-bool
-NetlinkSocketTestCase::TestNetlinkSerilization ()
+void
+NetlinkSocketTestCase::TestNetlinkSerialization ()
 {
   MultipartNetlinkMessage multinlmsg1, multinlmsg2;
   Ptr<Packet> p = Create<Packet> ();
-  bool result = true;
 
   multinlmsg1 = BuildMultipartMessage (NETLINK_RTM_NEWADDR, NETLINK_MSG_F_REQUEST|NETLINK_MSG_F_MULTI);
   p->AddHeader (multinlmsg1);
   p->RemoveHeader (multinlmsg2);
   NS_TEST_ASSERT_MSG_EQ (CheckIsEqual (multinlmsg1, multinlmsg2), true, "Should be equal");
-
-  return result;
 }
-bool
+void
 NetlinkSocketTestCase::TestInterfaceAddressMessage ()
 {
   MultipartNetlinkMessage dump1, dump2, dump3;
   NetlinkMessage nlmsg1,nlmsg2;
-  bool result = true;
 
   //dump interface address
   SendNetlinkMessage (BuildGetMessage (NETLINK_RTM_GETADDR, 0));
@@ -294,17 +290,14 @@ NetlinkSocketTestCase::TestInterfaceAddressMessage ()
   NS_TEST_ASSERT_MSG_EQ (CheckIsDump (dump3), true, "msg should be dump");
 
   NS_TEST_ASSERT_MSG_EQ (CheckIsEqual (dump1, dump3), true, "Dump msg should be same");
-
-  return result;
 }
 
 
-bool
+void
 NetlinkSocketTestCase::TestRouteMessage ()
 {
   MultipartNetlinkMessage dump1, dump2, dump3;
   NetlinkMessage nlmsg1,nlmsg2;
-  bool result = true;
 
   //dump route entry
   SendNetlinkMessage (BuildGetMessage (NETLINK_RTM_GETROUTE, 0));
@@ -342,16 +335,13 @@ NetlinkSocketTestCase::TestRouteMessage ()
   NS_TEST_ASSERT_MSG_EQ (CheckIsDump (dump3), true, "msg should be dump");
 
   NS_TEST_ASSERT_MSG_EQ (CheckIsEqual (dump1, dump3), true, "msg should be same");
-
-  return result;
 }
 
-bool
+void
 NetlinkSocketTestCase::TestInferfaceInfoMessage ()
 {
   //now netlink not support NEWLINK/DELLINK yet
   MultipartNetlinkMessage multinlmsg;
-  bool result = true;
 
   //dump interface address
   SendNetlinkMessage (BuildGetMessage (NETLINK_RTM_GETLINK, 0));
@@ -362,14 +352,11 @@ NetlinkSocketTestCase::TestInferfaceInfoMessage ()
 
   NS_TEST_ASSERT_MSG_EQ ((multinlmsg.GetNMessages () > 1) && (multinlmsg.GetMessage (0).GetMsgType () == NETLINK_RTM_NEWLINK),
                         true, "msg might be incorrect");
-
-  return result;
 }
 
-bool
+void
 NetlinkSocketTestCase::TestBroadcastMessage ()
 {
-  bool result = true;
   //at 2Xs, m_cmdSock send an request to kernel to add/del an interface address
   //and an route entry,  the m_groupSock will recv the changed information
   //through the broadcast way  
@@ -385,8 +372,6 @@ NetlinkSocketTestCase::TestBroadcastMessage ()
   Simulator::Schedule (Seconds (6), &NetlinkSocketTestCase::SendCmdToKernel, this, NETLINK_RTM_DELADDR);
 #endif
   Simulator::Schedule (Seconds (8), &NetlinkSocketTestCase::SendCmdToKernel, this, NETLINK_RTM_DELROUTE);
-
-  return result;
 };
 
 
@@ -487,11 +472,17 @@ NetlinkSocketTestCase::NetlinkSocketTestCase ()
   : TestCase ("Netlink"),
     m_pid(1) {}
 
-bool
+Ptr<SocketFactory>
+NetlinkSocketTestCase::CreateNetlinkFactory (void)
+{
+  ObjectFactory factory;
+  factory.SetTypeId ("ns3::NetlinkSocketFactory");
+  return factory.Create<SocketFactory> ();
+}
+
+void
 NetlinkSocketTestCase::DoRun (void)
 {
-  bool result = false;
-
   //init nodes with stacks and device
   // Network topology
   //
@@ -531,10 +522,8 @@ NetlinkSocketTestCase::DoRun (void)
   one is to monitor the changes happened in kernel
   */
   Ptr<Node> node0 = nodes.Get (1);
-  Ptr<NetlinkSocketFactory> factory = CreateObject<NetlinkSocketFactory> ();
-  node0->AggregateObject (factory);
-  TypeId tid = TypeId::LookupByName ("ns3::NetlinkSocketFactory");
-  Ptr<SocketFactory> socketFactory = node0->GetObject<SocketFactory> (tid);
+  Ptr<SocketFactory> socketFactory = CreateNetlinkFactory();
+  node0->AggregateObject (socketFactory);
   NetlinkSocketAddress addr;
 
   /*creat an cmd netlink socket, it send cmd to kernel space*/
@@ -552,23 +541,21 @@ NetlinkSocketTestCase::DoRun (void)
   m_groupSock->Bind (addr); 
 
   /*test 1: for Serialize and Deserialize*/
-  NS_TEST_ASSERT_MSG_EQ (TestNetlinkSerilization (), true, "test1");
+  TestNetlinkSerialization ();
 
   /*test 2: for interface address dump/add/get message*/
-  NS_TEST_ASSERT_MSG_EQ (TestInterfaceAddressMessage (), true, "test2");
+  TestInterfaceAddressMessage ();
 
   /*test 3: for interface info dump message*/
-  NS_TEST_ASSERT_MSG_EQ (TestInferfaceInfoMessage (), true, "test3");
+  TestInferfaceInfoMessage ();
 
   /*test 4: for route dump/add/get message*/
-  NS_TEST_ASSERT_MSG_EQ (TestRouteMessage (), true, "test4");
+  TestRouteMessage ();
 
   /*test 5: for netlink broadcast */
-  NS_TEST_ASSERT_MSG_EQ (TestBroadcastMessage (), true, "test5");
+  TestBroadcastMessage ();
 
   Simulator::Run ();
-
-  return result;
 }
 
 static class NetlinkSocketTestSuite : public TestSuite

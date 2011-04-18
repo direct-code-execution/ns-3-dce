@@ -72,6 +72,7 @@ public:
   void SetNode (Ptr<Node> node);
 
   virtual enum SocketErrno GetErrno (void) const;
+  virtual enum Socket::SocketType GetSocketType (void) const;
   virtual Ptr<Node> GetNode (void) const;
   virtual int Bind (void);
   virtual int Bind (const Address & address);

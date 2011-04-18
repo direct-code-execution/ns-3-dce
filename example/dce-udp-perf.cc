@@ -1,9 +1,8 @@
-#include "ns3/helper-module.h"
-#include "ns3/dce-application-helper.h"
-#include "ns3/dce-manager-helper.h"
-#include "ns3/simulator-module.h"
+#include "ns3/dce-module.h"
 #include "ns3/core-module.h"
-#include "ns3/node-module.h"
+#include "ns3/point-to-point-module.h"
+#include "ns3/internet-module.h"
+#include "ns3/network-module.h"
 
 using namespace ns3;
 

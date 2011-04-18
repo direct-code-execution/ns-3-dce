@@ -1,6 +1,10 @@
-#include "ns3/helper-module.h"
-#include "ns3/simulator-module.h"
 #include "ns3/core-module.h"
+#include "ns3/network-module.h"
+#include "ns3/dce-module.h"
+#include "ns3/point-to-point-module.h"
+#include "ns3/csma-module.h"
+#include "ns3/wifi-module.h"
+#include "ns3/mobility-module.h"
 #include <fstream>
 
 using namespace ns3;
