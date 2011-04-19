@@ -8,6 +8,16 @@ import ns3waf
 def options(opt):
     opt.tool_options('compiler_cc') 
     ns3waf.options(opt)
+    opt.add_option('--enable-kernel-stack',
+                   help=('Path to the prefix where the kernel wrapper headers are installed'),
+                   default=None,
+                   dest='kernel_stack', type="string")
+
+def search_file(files):
+    for f in files:
+        if os.path.isfile (f):
+            return f
+    return None
 
 def configure(conf):
     ns3waf.check_modules(conf, ['core', 'network', 'internet'], mandatory = True)
@@ -22,7 +32,47 @@ def configure(conf):
     if vg_h and vg_memcheck_h:
         conf.env.append_value('CXXDEFINES', 'HAVE_VALGRIND_H')
 
+    conf.start_msg('Searching C library')
+    libc = search_file ([
+            '/lib64/libc.so.6',
+            '/lib/libc.so.6',
+            ])
+    if libc is None:
+        conf.fatal('not found')
+    else:
+        conf.end_msg(libc, True)
+    conf.env['LIBC_FILE'] = libc
+
+    conf.start_msg('Searching pthread library')
+    libpthread = search_file ([
+            '/lib64/libpthread.so.0',
+            '/lib/libpthread.so.0',
+            ])
+    if libpthread is None:
+        conf.fatal('not found')
+    else:
+        conf.end_msg(libpthread, True)
+    conf.env['LIBPTHREAD_FILE'] = libpthread
+
+    if Options.options.kernel_stack is not None and os.path.isdir(Options.options.kernel_stack):
+        conf.check(header_name='sim/sim.h',
+                   includes=os.path.join(Options.options.kernel_stack, 'include'))
+        conf.check()
+        conf.env['KERNEL_STACK'] = Options.options.kernel_stack
+
 def build(bld):
+    if bld.env['KERNEL_STACK']:
+        kernel_source = [
+            'linux-socket-fd-factory.cc',
+            'linux-socket-fd.cc',
+            ]
+        kernel_headers = [ 'linux-socket-fd-factory.h']
+        kernel_includes = [os.path.join(bld.env['KERNEL_STACK'], 'include')]
+    else:
+        kernel_source = []
+        kernel_headers = []
+        kernel_includes = []
+
     module_source = [
         'model/dce-manager.cc',
 	'model/dce-application.cc',
@@ -95,12 +145,47 @@ def build(bld):
         'model/netlink-attribute.h',
         'model/netlink-socket-address.h',
         ]
+    module_source = module_source + kernel_source
+    module_headers = module_headers + kernel_headers
     module_test = [
         'test/dce-manager-test.cc',
         'test/netlink-socket-test.cc',
         ]
     uselib = ns3waf.modules_uselib(bld, ['core', 'network', 'internet'])
-    ns3waf.build_module(bld, 'dce',
+    ns3waf.build_module(bld, name='dce',
                         source=module_source,
                         headers=module_headers,
-                        use=uselib)
+                        use=uselib,
+                        includes=kernel_includes)
+
+    bld.add_group('dce_version_files')
+
+    bld(source=['model/libc-ns3.version'],
+            target='model/libc.version',
+            rule='readversiondef ' + bld.env['LIBC_FILE'] + ' |' \
+                'cat ${SRC[0].abspath()} - > ${TGT}')
+
+    bld(source=['model/libpthread-ns3.version'],
+            target='model/libpthread.version',
+            rule='readversiondef ' + bld.env['LIBPTHREAD_FILE'] + ' |' \
+                'cat ${SRC[0].abspath()} - > ${TGT}')
+
+    bld.add_group('dce_use_version_files')
+
+    # The very small libc used to replace the glibc
+    # and forward to the dce_* code
+    bld.shlib(source = ['model/libc.c', 'model/libc-global-variables.c'],
+              target='c-ns3', cflags=['-g'],
+              defines=['LIBSETUP=libc_setup'],
+              linkflags=['-nostdlib', 
+                         '-Wl,--version-script=' + os.path.join('model', 'libc.version'),
+                         '-Wl,-soname=libc.so.6'])
+
+    # The very small libpthread used to replace the glibc
+    # and forward to the dce_* code
+    bld.shlib(source = ['model/libc.c'],
+              target='pthread-ns3', cflags=['-g'],
+              defines=['LIBSETUP=libpthread_setup'],
+              linkflags=['-nostdlib', '-lc',
+                         '-Wl,--version-script=' + os.path.join('model', 'libpthread.version'),
+                         '-Wl,-soname=libpthread.so.0'])
