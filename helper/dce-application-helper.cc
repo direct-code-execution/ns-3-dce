@@ -1,5 +1,5 @@
 #include "dce-application-helper.h"
-#include "ns3/dce-application.h"
+#include "dce-application.h"
 #include "ns3/log.h"
 #include <stdarg.h>
 
