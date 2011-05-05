@@ -4,6 +4,8 @@ import os
 import Options
 import os.path
 import ns3waf
+import sys
+
 
 def options(opt):
     opt.tool_options('compiler_cc') 
@@ -21,11 +23,12 @@ def search_file(files):
 
 def configure(conf):
     ns3waf.check_modules(conf, ['core', 'network', 'internet'], mandatory = True)
+    ns3waf.check_modules(conf, ['point-to-point'], mandatory = False)
 
     conf.check_tool('compiler_cc')
 
     conf.env.append_value('LINKFLAGS', '-pthread')
-    conf.env['HAVE_DL'] = conf.check (lib='dl')
+    conf.check (lib='dl', mandatory = True)
 
     vg_h = conf.check(header_name='valgrind/valgrind.h', mandatory=False)
     vg_memcheck_h = conf.check(header_name='valgrind/memcheck.h', mandatory=False)
@@ -60,7 +63,89 @@ def configure(conf):
         conf.check()
         conf.env['KERNEL_STACK'] = Options.options.kernel_stack
 
+    ns3waf.print_feature_summary(conf)
+
+def build_netlink(bld):
+    module_source = [
+        'netlink/netlink-socket.cc',
+        'netlink/netlink-socket-address.cc',
+        'netlink/netlink-socket-factory.cc',
+        'netlink/netlink-attribute.cc',
+        'netlink/netlink-message.cc',
+        'netlink/netlink-message-route.cc',
+        ]
+    module_headers = [
+        'netlink/netlink-socket-factory.h'
+        ]
+    if ns3waf.modules_found(bld, ['internet', 'core']):
+        uselib = ns3waf.modules_uselib(bld, ['internet', 'core'])
+        module = ns3waf.create_module(bld, name='netlink',
+                                      source=module_source,
+                                      headers=module_headers,
+                                      use=uselib)
+
+        if ns3waf.modules_found(bld, ['point-to-point']):
+            module_tests = [
+                'test/netlink-socket-test.cc',
+                ]
+            uselib = ns3waf.modules_uselib(bld, ['internet', 
+                                                 'point-to-point', 
+                                                 'core'])
+            module.add_tests(source=module_tests, use = uselib)
+
+def create_dce_program(bld, **kw):
+    if os.uname()[4] == 'x86_64':
+        mcmodel = ['-mcmodel=large']
+    else:
+        mcmodel = []
+    nofortify = ['-U_FORTIFY_SOURCE']
+    #debug_dl = ['-Wl,--dynamic-linker=/usr/lib/debug/ld-linux-x86-64.so.2']
+    debug_dl = []
+    kw['cxxflags'] = kw.get('cxxflags', []) + ['-fpie'] + mcmodel + nofortify
+    kw['cflags'] = kw.get('cflags', []) + ['-fpie'] + mcmodel + nofortify
+    kw['linkflags'] = kw.get('linkflags', []) + ['-pie'] + debug_dl
+    bld.program(**kw)
+
+def new_test(bld,name,uselib):
+    obj = create_dce_program(bld, target='bin/' + name, source = ['test/' + name + '.cc'],
+                             use = uselib + ['lib/test'])
+
+
+def build_dce_tests(bld):
+    test = bld.shlib(source=['test/test-macros.cc'], target='lib/test',
+                     linkflags=['-Wl,-soname=libtest.so'])
+
+    tests = [['test-empty', []],
+             ['test-sleep', []],
+             ['test-nanosleep', []],
+             ['test-pthread', ['PTHREAD']],
+             ['test-mutex', ['PTHREAD']],
+             ['test-once', ['PTHREAD']],
+             ['test-pthread-key', ['PTHREAD']],
+             ['test-sem', ['PTHREAD']],
+             ['test-malloc', []],
+             ['test-malloc-2', []],
+             ['test-fd-simple', []],
+             ['test-strerror', []],
+             ['test-stdio', []],
+             ['test-string', []],
+             ['test-netdb', []],
+             ['test-env', []],
+             ['test-cond', ['PTHREAD']],
+             ['test-timer-fd', []],
+             ['test-stdlib', []],
+             ['test-select', []],
+             ['test-random', []],
+             ['test-ioctl', []],
+             ['test-fork', []],
+             ]
+    for name,uselib in tests:
+        new_test(bld, name, uselib)
+
+
 def build(bld):
+    build_netlink(bld)
+
     if bld.env['KERNEL_STACK']:
         kernel_source = [
             'linux-socket-fd-factory.cc',
@@ -119,13 +204,6 @@ def build(bld):
         'model/dlm-loader-factory.cc',
         'model/socket-fd-factory.cc',
         'model/ns3-socket-fd-factory.cc',
-        # netlink code
-        'model/netlink-socket.cc',
-        'model/netlink-socket-address.cc',
-        'model/netlink-socket-factory.cc',
-        'model/netlink-attribute.cc',
-        'model/netlink-message.cc',
-        'model/netlink-message-route.cc',
         # helper.
         'helper/dce-manager-helper.cc',
         'helper/dce-application-helper.cc',
@@ -139,24 +217,21 @@ def build(bld):
 	'model/dce-application.h',
         'helper/dce-manager-helper.h',
         'helper/dce-application-helper.h',
-# needed only for test module.
-        'model/netlink-message.h',
-        'model/netlink-message-route.h',
-        'model/netlink-attribute.h',
-        'model/netlink-socket-address.h',
         ]
     module_source = module_source + kernel_source
     module_headers = module_headers + kernel_headers
-    module_test = [
+    uselib = ns3waf.modules_uselib(bld, ['core', 'network', 'internet', 'netlink'])
+    module = ns3waf.create_module(bld, name='dce',
+                                  source=module_source,
+                                  headers=module_headers,
+                                  use=uselib,
+                                  includes=kernel_includes,
+                                  lib=['dl'])
+    module_tests = [
         'test/dce-manager-test.cc',
-        'test/netlink-socket-test.cc',
         ]
-    uselib = ns3waf.modules_uselib(bld, ['core', 'network', 'internet'])
-    ns3waf.build_module(bld, name='dce',
-                        source=module_source,
-                        headers=module_headers,
-                        use=uselib,
-                        includes=kernel_includes)
+    module.add_tests(source=module_tests, use = uselib)
+    build_dce_tests (bld)
 
     bld.add_group('dce_version_files')
 
@@ -175,7 +250,7 @@ def build(bld):
     # The very small libc used to replace the glibc
     # and forward to the dce_* code
     bld.shlib(source = ['model/libc.c', 'model/libc-global-variables.c'],
-              target='c-ns3', cflags=['-g'],
+              target='lib/c-ns3', cflags=['-g'],
               defines=['LIBSETUP=libc_setup'],
               linkflags=['-nostdlib', 
                          '-Wl,--version-script=' + os.path.join('model', 'libc.version'),
@@ -184,7 +259,7 @@ def build(bld):
     # The very small libpthread used to replace the glibc
     # and forward to the dce_* code
     bld.shlib(source = ['model/libc.c'],
-              target='pthread-ns3', cflags=['-g'],
+              target='lib/pthread-ns3', cflags=['-g'],
               defines=['LIBSETUP=libpthread_setup'],
               linkflags=['-nostdlib', '-lc',
                          '-Wl,--version-script=' + os.path.join('model', 'libpthread.version'),

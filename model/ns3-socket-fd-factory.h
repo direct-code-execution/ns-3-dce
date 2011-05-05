@@ -5,7 +5,7 @@
 
 namespace ns3 {
 
-class NetlinkSocketFactory;
+class SocketFactory;
 
 class Ns3SocketFdFactory : public SocketFdFactory
 {
@@ -14,7 +14,7 @@ public:
   Ns3SocketFdFactory ();
   virtual UnixFd *CreateSocket (int domain, int type, int protocol);
  private:
-  Ptr<NetlinkSocketFactory> m_netlink;
+  Ptr<SocketFactory> m_netlink;
 };
 
 } // namespace ns3

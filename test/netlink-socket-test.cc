@@ -32,8 +32,8 @@
 #include "ns3/assert.h"
 #include "ns3/log.h"
 #include "ns3/socket.h"
-#include "ns3/netlink-message.h"
-#include "ns3/netlink-socket-address.h"
+#include "netlink-message.h"
+#include "netlink-socket-address.h"
 #include <sys/socket.h>
 #include <string>
 #include <list>

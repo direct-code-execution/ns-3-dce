@@ -1,0 +1,10 @@
+\.rej$
+\.orig$
+\.o$
+~$
+^build
+^objdir
+^elf-cache
+^files-
+^.waf-
+^.lock-
