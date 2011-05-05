@@ -83,6 +83,11 @@ int my_close_unconditional (_IO_FILE *file)
 {
   return 0;
 }
+int my_write_unconditional (_IO_FILE *file)
+{
+  errno = EBADF;
+  return -1;
+}
 int my_stat (_IO_FILE *file, void *buf)
 {
   int result = dce_fstat64 (file->_fileno, (struct stat64 *)buf);
@@ -299,11 +304,14 @@ remove_stream (FILE *fp)
 }
 int dce_fclose_unconditional(FILE *file)
 {
-  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << file);
+  // Note: it is important here not to call the Current function here
+  // because we need to be able to run this function even if there is no context.
+  // For example, this is why we have no call to NS_LOG_FUNCTION (Current () ...);
   struct my_IO_FILE_plus *fp = (struct my_IO_FILE_plus *)file;
   static struct my_IO_jump_t vtable;
   memcpy (&vtable, fp->vtable, sizeof(struct my_IO_jump_t));
   vtable.__close = (void*)my_close_unconditional;
+  vtable.__write = (void*)my_write_unconditional;
   fp->vtable = &vtable;
   fclose (file);
   return 0;
