@@ -142,6 +142,51 @@ def build_dce_tests(bld):
     for name,uselib in tests:
         new_test(bld, name, uselib)
 
+def build_example(bld, needed, **kw):
+    external = [i for i in needed if not i == 'dce' ]
+    if not ns3waf.modules_found(bld, external):
+        return
+    kw['use'] = kw.get('use', []) + ns3waf.modules_uselib(bld, needed)
+    bld.program(**kw)
+    
+
+def build_dce_examples(bld):
+    create_dce_program(bld, target = 'bin/udp-server', 
+                       source = ['example/udp-server.cc'])
+    create_dce_program(bld, target = 'bin/udp-client', 
+                       source = ['example/udp-client.cc'])
+    create_dce_program(bld, target = 'bin/tcp-server', 
+                       source = ['example/tcp-server.cc'])
+    create_dce_program(bld, target = 'bin/tcp-client', 
+                       source = ['example/tcp-client.cc'])
+    create_dce_program(bld, target = 'bin/tcp-loopback', 
+                       source = ['example/tcp-loopback.cc'])
+    create_dce_program(bld, target = 'bin/udp-perf', 
+                       source = ['example/udp-perf.cc'],
+                       lib='m')
+
+    build_example(bld, ['core', 'internet', 'dce'], 
+                  target='bin/dce-tcp-simple',
+                  source=['example/dce-tcp-simple.cc'])
+
+    build_example(bld, ['core', 'internet', 'dce'], 
+                  target='bin/dce-udp-simple',
+                  source=['example/dce-udp-simple.cc'])
+
+    build_example(bld, ['core', 'internet', 'dce', 'point-to-point'], 
+                  target='bin/dce-udp-perf',
+                  source=['example/dce-udp-perf.cc'])
+
+
+    if bld.env['KERNEL_STACK']:
+        build_example(bld, ['core', 'network', 'dce'], 
+                      target='bin/dce-linux-simple',
+                      source=['example/dce-linux-simple.cc'])
+
+        build_example(bld, ['core', 'network', 'dce', 'wifi', 'point-to-point', 'csma', 'mobility'],
+                      target='bin/dce-linux',
+                      source=['example/dce-linux.cc'])
+
 
 def build(bld):
     build_netlink(bld)
@@ -231,7 +276,8 @@ def build(bld):
         'test/dce-manager-test.cc',
         ]
     module.add_tests(source=module_tests, use = uselib)
-    build_dce_tests (bld)
+    build_dce_tests(bld)
+    build_dce_examples(bld)
 
     bld.add_group('dce_version_files')
 
