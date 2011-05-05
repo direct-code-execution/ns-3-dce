@@ -228,6 +228,7 @@ KingsleyAlloc::Free (uint8_t *buffer, uint32_t size)
 	    {
 	      REPORT_FREE(buffer);
 	      MmapFree (buffer, size);
+	      m_chunks.erase (i);
 	      return;
 	    }
 	}
