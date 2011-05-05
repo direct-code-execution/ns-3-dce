@@ -77,23 +77,20 @@ def build_netlink(bld):
     module_headers = [
         'netlink/netlink-socket-factory.h'
         ]
-    if ns3waf.modules_found(bld, ['internet', 'core']):
-        uselib = ns3waf.modules_uselib(bld, ['internet', 'core'])
-        module = ns3waf.create_module(bld, name='netlink',
-                                      source=module_source,
-                                      headers=module_headers,
-                                      use=uselib)
+    module = ns3waf.create_module(bld, 
+                                  name='netlink',
+                                  needed = ['internet', 'core'],
+                                  source=module_source,
+                                  headers=module_headers)
 
-        if ns3waf.modules_found(bld, ['point-to-point']):
-            module_tests = [
-                'test/netlink-socket-test.cc',
-                ]
-            uselib = ns3waf.modules_uselib(bld, ['internet', 
-                                                 'point-to-point', 
-                                                 'core'])
-            module.add_tests(source=module_tests, use = uselib)
+    module_tests = [
+        'test/netlink-socket-test.cc',
+        ]
+    module.add_runner_test(needed = ['internet', 'point-to-point', 'core', 'netlink'],
+                           source=module_tests)
 
-def create_dce_program(bld, **kw):
+def dce_kw(**kw):
+    d = dict(**kw)
     if os.uname()[4] == 'x86_64':
         mcmodel = ['-mcmodel=large']
     else:
@@ -101,19 +98,15 @@ def create_dce_program(bld, **kw):
     nofortify = ['-U_FORTIFY_SOURCE']
     #debug_dl = ['-Wl,--dynamic-linker=/usr/lib/debug/ld-linux-x86-64.so.2']
     debug_dl = []
-    kw['cxxflags'] = kw.get('cxxflags', []) + ['-fpie'] + mcmodel + nofortify
-    kw['cflags'] = kw.get('cflags', []) + ['-fpie'] + mcmodel + nofortify
-    kw['linkflags'] = kw.get('linkflags', []) + ['-pie'] + debug_dl
-    bld.program(**kw)
+    d['cxxflags'] = d.get('cxxflags', []) + ['-fpie'] + mcmodel + nofortify
+    d['cflags'] = d.get('cflags', []) + ['-fpie'] + mcmodel + nofortify
+    d['linkflags'] = d.get('linkflags', []) + ['-pie'] + debug_dl
+    return d
 
-def new_test(bld,name,uselib):
-    obj = create_dce_program(bld, target='bin/' + name, source = ['test/' + name + '.cc'],
-                             use = uselib + ['lib/test'])
-
-
-def build_dce_tests(bld):
-    test = bld.shlib(source=['test/test-macros.cc'], target='lib/test',
-                     linkflags=['-Wl,-soname=libtest.so'])
+def build_dce_tests(module):
+    module.add_runner_test(needed=['core', 'dce', 'internet'], source=['test/dce-manager-test.cc'])
+    module.add_test(features='cxx cxxshlib', source=['test/test-macros.cc'], 
+                    target='lib/test', linkflags=['-Wl,-soname=libtest.so'])
 
     tests = [['test-empty', []],
              ['test-sleep', []],
@@ -140,52 +133,43 @@ def build_dce_tests(bld):
              ['test-fork', []],
              ]
     for name,uselib in tests:
-        new_test(bld, name, uselib)
+        module.add_test(**dce_kw(target='bin/' + name, source = ['test/' + name + '.cc'],
+                                 use = uselib + ['lib/test']))
 
-def build_example(bld, needed, **kw):
-    external = [i for i in needed if not i == 'dce' ]
-    if not ns3waf.modules_found(bld, external):
-        return
-    kw['use'] = kw.get('use', []) + ns3waf.modules_uselib(bld, needed)
-    bld.program(**kw)
+def build_dce_examples(module):
+    dce_examples = [['udp-server', []],
+                    ['udp-client', []],
+                    ['udp-perf', ['m']],
+                    ['tcp-server', []],
+                    ['tcp-client', []],
+                    ]
+    for name,lib in dce_examples:
+        module.add_example(**dce_kw(target = 'bin/' + name, 
+                                    source = ['example/' + name + '.cc'],
+                                    lib = lib))
+
+    module.add_example(needed = ['core', 'internet', 'dce'], 
+                       target='bin/dce-tcp-simple',
+                       source=['example/dce-tcp-simple.cc'])
+
+    module.add_example(needed = ['core', 'internet', 'dce'], 
+                       target='bin/dce-udp-simple',
+                       source=['example/dce-udp-simple.cc'])
     
-
-def build_dce_examples(bld):
-    create_dce_program(bld, target = 'bin/udp-server', 
-                       source = ['example/udp-server.cc'])
-    create_dce_program(bld, target = 'bin/udp-client', 
-                       source = ['example/udp-client.cc'])
-    create_dce_program(bld, target = 'bin/tcp-server', 
-                       source = ['example/tcp-server.cc'])
-    create_dce_program(bld, target = 'bin/tcp-client', 
-                       source = ['example/tcp-client.cc'])
-    create_dce_program(bld, target = 'bin/tcp-loopback', 
-                       source = ['example/tcp-loopback.cc'])
-    create_dce_program(bld, target = 'bin/udp-perf', 
-                       source = ['example/udp-perf.cc'],
-                       lib='m')
-
-    build_example(bld, ['core', 'internet', 'dce'], 
-                  target='bin/dce-tcp-simple',
-                  source=['example/dce-tcp-simple.cc'])
-
-    build_example(bld, ['core', 'internet', 'dce'], 
-                  target='bin/dce-udp-simple',
-                  source=['example/dce-udp-simple.cc'])
-
-    build_example(bld, ['core', 'internet', 'dce', 'point-to-point'], 
-                  target='bin/dce-udp-perf',
-                  source=['example/dce-udp-perf.cc'])
+    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point'], 
+                       target='bin/dce-udp-perf',
+                       source=['example/dce-udp-perf.cc'])
 
 
-    if bld.env['KERNEL_STACK']:
-        build_example(bld, ['core', 'network', 'dce'], 
-                      target='bin/dce-linux-simple',
-                      source=['example/dce-linux-simple.cc'])
+def build_dce_kernel_examples(module):
+    module.add_example(needed = ['core', 'network', 'dce'], 
+                       target='bin/dce-linux-simple',
+                       source=['example/dce-linux-simple.cc'])
 
-        build_example(bld, ['core', 'network', 'dce', 'wifi', 'point-to-point', 'csma', 'mobility'],
-                      target='bin/dce-linux',
-                      source=['example/dce-linux.cc'])
+    module.add_example(needed = ['core', 'network', 'dce', 'wifi', 
+                                 'point-to-point', 'csma', 'mobility'],
+                       target='bin/dce-linux',
+                       source=['example/dce-linux.cc'])
 
 
 def build(bld):
@@ -272,24 +256,23 @@ def build(bld):
                                   use=uselib,
                                   includes=kernel_includes,
                                   lib=['dl'])
-    module_tests = [
-        'test/dce-manager-test.cc',
-        ]
-    module.add_tests(source=module_tests, use = uselib)
-    build_dce_tests(bld)
-    build_dce_examples(bld)
+    build_dce_tests(module)
+    build_dce_examples(module)
+
+    if bld.env['KERNEL_STACK']:
+        build_dce_kernel_examples(module)
 
     bld.add_group('dce_version_files')
 
     bld(source=['model/libc-ns3.version'],
-            target='model/libc.version',
-            rule='readversiondef ' + bld.env['LIBC_FILE'] + ' |' \
-                'cat ${SRC[0].abspath()} - > ${TGT}')
+        target='model/libc.version',
+        rule='readversiondef ' + bld.env['LIBC_FILE'] + ' |' \
+            'cat ${SRC[0].abspath()} - > ${TGT}')
 
     bld(source=['model/libpthread-ns3.version'],
-            target='model/libpthread.version',
-            rule='readversiondef ' + bld.env['LIBPTHREAD_FILE'] + ' |' \
-                'cat ${SRC[0].abspath()} - > ${TGT}')
+        target='model/libpthread.version',
+        rule='readversiondef ' + bld.env['LIBPTHREAD_FILE'] + ' |' \
+            'cat ${SRC[0].abspath()} - > ${TGT}')
 
     bld.add_group('dce_use_version_files')
 

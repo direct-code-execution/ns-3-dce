@@ -399,12 +399,34 @@ def _build_pkgconfig(bld, name, use):
     bld.install_files(os.path.join('${PREFIX}', 'lib', 'pkgconfig'), [target])
 
 class Module:
-    def __init__(self, dirs, bld, name):
-        self._source_dirs = dirs
+    def __init__(self, bld, name, *k, **kw):
+        self._source_dirs = _dirs(kw.get('source'))
         self._bld = bld
         self._name = name
-    def add_tests(self, name = None, **kw):
-        import copy
+        needed = kw.get('needed', [])
+        if modules_found(bld, needed):
+            self._needed_ok = True
+        else:
+            self._needed_ok = False
+            return
+        kw['use'] = kw.get('use', []) + modules_uselib(bld, needed)
+        _build_library(bld, name, *k, **kw)
+        _build_headers(bld, name, kw.get('headers'))
+        _build_pkgconfig(bld, name, kw.get('use', []))
+    def add_example(self, needed = [], **kw):
+        if not self._needed_ok:
+            return
+        if not self._bld.env['NS3_ENABLE_EXAMPLES']:
+            return
+        external = [i for i in needed if not i == self._name]
+        if not modules_found(self._bld, external):
+            return
+        kw['use'] = kw.get('use', []) + modules_uselib(self._bld, needed)
+        if 'features' not in kw:
+            kw['features'] = 'cxx cxxprogram'
+        self._bld(**kw)
+
+    def add_runner_test(self, needed = [], name = None, **kw):
         import os
         import tempfile
 
@@ -413,24 +435,7 @@ class Module:
         else:
             target='ns3test-%s' % self._name
         target = os.path.join('bin', target)
-
-        uselib = kw.get('use', [])
-        if not modules_uselib(self._bld, [self._name]) in uselib:
-            uselib = uselib + modules_uselib(self._bld, [self._name])
-        kw['use'] = uselib
-        kw['includes'] = kw.get('includes', []) + self._source_dirs
-
-        tmp = self._bld.path.relpath_gen(self._bld.srcnode)
-        objects = []
-        for src in kw['source']:
-            src_target = '%s_object' % src
-            objects.append(src_target)
-            kw_copy = copy.copy (kw)
-            path = os.path.dirname(os.path.join(tmp, src))
-            kw_copy['source'] = [src]
-            kw_copy['target'] = src_target
-            kw_copy['defines'] = kw_copy.get('defines', []) + ['NS_TEST_SOURCEDIR=%s' % path]
-            self._bld.objects(**kw_copy)
+        kw['target'] = target
         handle, filename = tempfile.mkstemp(suffix='.cc')
         os.write (handle, """
 #include "ns3/test.h"
@@ -441,25 +446,44 @@ int main (int argc, char *argv[])
 }
 """)
         os.close(handle)
-        kw['source'] = [os.path.relpath(filename, self._bld.bldnode.abspath())]
-        kw['use'] = uselib + objects
-        kw['target'] = target
+        kw['source'] = kw['source'] + [os.path.relpath(filename, self._bld.bldnode.abspath())]
+        self.add_test(needed, **kw)
+
+    def add_test(self, needed = [], **kw):
+        if not self._needed_ok:
+            return
+        if not self._bld.env['NS3_ENABLE_TESTS']:
+            return
+        external = [i for i in needed if not i == self._name]
+        if not modules_found(self._bld, external):
+            return
+        kw['use'] = kw.get('use', []) + modules_uselib(self._bld, needed)
+
+        import copy
+        import os
+
+        kw['includes'] = kw.get('includes', []) + self._source_dirs
+
+        tmp = self._bld.path.relpath_gen(self._bld.srcnode)
+        objects = []
+        for src in kw['source'][0:-1]:
+            src_target = '%s_object' % src
+            objects.append(src_target)
+            kw_copy = copy.copy (kw)
+            path = os.path.dirname(os.path.join(tmp, src))
+            kw_copy['source'] = [src]
+            kw_copy['target'] = src_target
+            kw_copy['defines'] = kw_copy.get('defines', []) + ['NS_TEST_SOURCEDIR=%s' % path]
+            self._bld.objects(**kw_copy)
+        kw['use'] = kw.get('use', []) + objects
+        kw['source'] = kw['source'][-1:]
+        path = os.path.dirname(os.path.join(tmp, kw['source'][0]))
+        kw['defines'] = kw.get('defines', []) + ['NS_TEST_SOURCEDIR=%s' % path]
         kw['install_path'] = None
-        self._bld.program(**kw)
+        if 'features' not in kw:
+            kw['features'] = 'cxx cxxprogram'
+        self._bld(**kw)
 
 
 def create_module(bld, name, *k, **kw):
-    _build_library(bld, name, *k, **kw)
-    _build_headers(bld, name, kw.get('headers'))
-    _build_pkgconfig(bld, name, kw.get('use'))
-    return Module(_dirs(kw.get('source')), bld, name)
-
-def build_program(bld, target=None, source = None, use = None):
-    bld.program(source=source, target=target, use=use)
-
-def build_example(bld, target=None, source = None, use = None):
-    if bld.env['NS3_ENABLE_EXAMPLES']:
-        bld.program(source=source, target=target, use=use)
-
-
-
+    return Module(bld, name, *k, **kw)
