@@ -26,6 +26,7 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include "ns3/node.h"
+#include "local-socket-fd-factory.h"
 
 NS_LOG_COMPONENT_DEFINE ("SimuFd");
 
@@ -95,9 +96,25 @@ int dce_creat (const char *path, mode_t mode)
   return dce_open (path, O_CREAT|O_WRONLY|O_TRUNC, mode);
 }
 
-int dce_unlink (const char *pathname)
+int dce_unlink_real (const char *pathname)
 {
   DEFINE_FORWARDER_PATH (unlink, pathname);
+}
+
+int dce_unlink (const char *pathname)
+{
+  int ret = dce_unlink_real (pathname);
+
+  if (0 == ret)
+    {
+      Ptr<LocalSocketFdFactory> factory = Current ()->process->manager->GetObject<LocalSocketFdFactory> ();
+
+      if ( 0 != factory )
+        {
+          factory->UnRegisterBinder (UtilsGetRealFilePath (pathname) );
+        }
+    }
+  return ret;
 }
 int dce_mkdir(const char *pathname, mode_t mode)
 {
@@ -122,6 +139,11 @@ int dce_close (int fd)
   int retval = 0;
   if (unixFd->GetReferenceCount () == 1)
     {
+      // Note to the attentive reader: the logical and clean way to handle this call
+      // to Close would be to move it to the UnixFd destructor and make the Close method
+      // private so that it is invoked automatically upon the last call to Unref below.
+      // However, we do not do this and for good reasons: one must never invoke virtual
+      // methods from a destructor unless one is prepared to suffer considerably.
       retval = unixFd->Close ();
     }
   unixFd->Unref ();
@@ -345,7 +367,6 @@ int dce_select(int nfds, fd_set *readfds, fd_set *writefds,
               unixFd->SetSendWaiter (&waiter);
               mustWait = true;
 	    }
-
 	}
     }
   if (timeout && (timeout->tv_sec == 0) && (timeout->tv_usec == 0))
@@ -516,9 +537,25 @@ int dce_socket (int domain, int type, int protocol)
       return -1;
     }
 
-  Ptr<SocketFdFactory>  factory = manager->GetObject<SocketFdFactory> ();
+  Ptr<SocketFdFactory>  factory = 0 ;
+
+  if (domain != AF_UNIX)
+    {
+      factory = manager->GetObject<SocketFdFactory> ();
+  }
+  else
+    {
+      factory = manager->GetObject<LocalSocketFdFactory> ();
+      if (0 == factory)
+        {
+          factory = CreateObject<LocalSocketFdFactory> ();
+          manager->AggregateObject(factory);
+        }
+    }
   UnixFd *socket = factory->CreateSocket (domain, type, protocol);
+
   current->process->openFiles.push_back (std::make_pair (fd, socket));
+
   return fd;
 }
 int dce_bind (int fd, const struct sockaddr *my_addr, socklen_t addrlen)

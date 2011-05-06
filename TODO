@@ -1,0 +1,1 @@
+ - remove the need for AllDirectoriesExist and add calls to mkdir in test setup.

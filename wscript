@@ -57,6 +57,8 @@ def configure(conf):
         conf.end_msg(libpthread, True)
     conf.env['LIBPTHREAD_FILE'] = libpthread
 
+    conf.find_program('readversiondef', var='READVERSIONDEF', mandatory=True)
+
     if Options.options.kernel_stack is not None and os.path.isdir(Options.options.kernel_stack):
         conf.check(header_name='sim/sim.h',
                    includes=os.path.join(Options.options.kernel_stack, 'include'))
@@ -127,10 +129,11 @@ def build_dce_tests(module):
              ['test-cond', ['PTHREAD']],
              ['test-timer-fd', []],
              ['test-stdlib', []],
-             ['test-select', []],
+             ['test-select', ['PTHREAD']],
              ['test-random', []],
              ['test-ioctl', []],
              ['test-fork', []],
+             ['test-local-socket', ['PTHREAD']],
              ]
     for name,uselib in tests:
         module.add_test(**dce_kw(target='bin/' + name, source = ['test/' + name + '.cc'],
@@ -142,6 +145,8 @@ def build_dce_examples(module):
                     ['udp-perf', ['m']],
                     ['tcp-server', []],
                     ['tcp-client', []],
+                    ['unix-server', []],
+                    ['unix-client', []],
                     ]
     for name,lib in dce_examples:
         module.add_example(**dce_kw(target = 'bin/' + name, 
@@ -160,11 +165,18 @@ def build_dce_examples(module):
                        target='bin/dce-udp-perf',
                        source=['example/dce-udp-perf.cc'])
 
+    module.add_example(needed = ['core', 'internet', 'dce'], 
+                       target='bin/dce-ccnd',
+                       source=['example/dce-ccnd.cc'])
 
 def build_dce_kernel_examples(module):
     module.add_example(needed = ['core', 'network', 'dce'], 
                        target='bin/dce-linux-simple',
                        source=['example/dce-linux-simple.cc'])
+
+    module.add_example(needed = ['core', 'network', 'dce'], 
+                       target='bin/dce-linux-ccnd',
+                       source=['example/dce-linux-ccnd.cc'])
 
     module.add_example(needed = ['core', 'network', 'dce', 'wifi', 
                                  'point-to-point', 'csma', 'mobility'],
@@ -233,6 +245,8 @@ def build(bld):
         'model/dlm-loader-factory.cc',
         'model/socket-fd-factory.cc',
         'model/ns3-socket-fd-factory.cc',
+        'model/local-socket-fd.cc',
+        'model/local-socket-fd-factory.cc',
         # helper.
         'helper/dce-manager-helper.cc',
         'helper/dce-application-helper.cc',
@@ -266,13 +280,13 @@ def build(bld):
 
     bld(source=['model/libc-ns3.version'],
         target='model/libc.version',
-        rule='readversiondef ' + bld.env['LIBC_FILE'] + ' |' \
-            'cat ${SRC[0].abspath()} - > ${TGT}')
+        rule='%s %s | cat ${SRC[0].abspath()} - > ${TGT}' %
+        (bld.env['READVERSIONDEF'], bld.env['LIBC_FILE']))
 
     bld(source=['model/libpthread-ns3.version'],
         target='model/libpthread.version',
-        rule='readversiondef ' + bld.env['LIBPTHREAD_FILE'] + ' |' \
-            'cat ${SRC[0].abspath()} - > ${TGT}')
+        rule='%s %s | cat ${SRC[0].abspath()} - > ${TGT}' %
+        (bld.env['READVERSIONDEF'], bld.env['LIBPTHREAD_FILE']))
 
     bld.add_group('dce_use_version_files')
 
