@@ -42,29 +42,24 @@ Waiter::Wait (void)
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current);
   NS_ASSERT (current != 0);
-  EventId timer;
-  if (!m_timeout.IsZero ())
-    {
-      timer = Simulator::Schedule (m_timeout, &Waiter::Wakeup, this);
-    }
+
   m_waiting = current;
-  current->process->manager->Wait ();
+  Time left = current->process->manager->Wait (m_timeout);
   m_waiting = 0;
   if (HasPendingSignal ())
     {
-      timer.Cancel ();
       m_timeout = Seconds (0.0);
       NS_LOG_DEBUG ("interrupted self=" << this << " current=" << current);
       return Waiter::INTERRUPTED;
     }
-  if (!m_timeout.IsZero () && timer.IsExpired ())
+  if (!m_timeout.IsZero () && left.IsZero())
     {
       m_timeout = Seconds (0.0);
       NS_LOG_DEBUG ("timeout self=" << this << " current=" << current);
       return Waiter::TIMEOUT;
     }
-  timer.Cancel ();
-  m_timeout = Simulator::GetDelayLeft (timer);
+
+  m_timeout = left;
   NS_LOG_DEBUG ("ok self=" << this << " current=" << current);
   return Waiter::OK;
 }
