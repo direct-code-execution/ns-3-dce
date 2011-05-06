@@ -393,13 +393,13 @@ PthreadFiberManager::Run (void *arg)
       fiber->state = DESTROY;
       pthread_cond_signal (&thread->condvar);
       pthread_mutex_unlock (&thread->mutex);
+      pthread_detach (thread->thread);
     }
   else
     {
       // oops, we are returning from a Delete
       // we can easily return and we are done !
     }
-  pthread_detach (thread->thread);
   return 0;
 }
 
