@@ -50,6 +50,18 @@ UtilsGetRealFilePath (std::string path)
   return nodeDir + UtilsGetVirtualFilePath (path);
 }
 
+void
+UtilsEnsureAllDirectoriesExist (std::string realPath)
+{
+  int idx = 0;
+  
+  while ((idx = realPath.find ('/', idx)) >= 0)
+    {
+      UtilsEnsureDirectoryExists (realPath.substr (0, idx + 1));
+      idx++;
+    }
+}
+  
 void UtilsEnsureDirectoryExists (std::string realPath)
 {
   ::DIR *dir = ::opendir (realPath.c_str ());

@@ -27,6 +27,7 @@ class Thread;
 class Process;
 
 void UtilsEnsureDirectoryExists (std::string realPath);
+void UtilsEnsureAllDirectoriesExist (std::string realPath);
 std::string UtilsGetRealFilePath (std::string path);
 std::string UtilsGetAbsRealFilePath (uint32_t node, std::string path);
 std::string UtilsGetVirtualFilePath (std::string path);
