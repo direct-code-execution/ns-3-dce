@@ -180,7 +180,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-nanosleep", 0 },
       {  "test-random", 0 },
       {  "test-fork", 0 },
-      {  "test-local-socket", 0 }, */
+      {  "test-local-socket", 0 },*/
   };
   for (unsigned int i = 0; i < sizeof(tests)/sizeof(testPair);i++)
     {

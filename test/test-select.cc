@@ -163,7 +163,7 @@ client1 (void *arg)
   // Can I Write ?
   test_select_write (sock, 1, true);
   // Read ?
-//  TEST_ASSERT (test_select_read (sock, 1, false)); // XXX : failed with DCE
+  TEST_ASSERT (test_select_read (sock, 1, false));
   sleep(5);
   // Read ?
   TEST_ASSERT (test_select_read (sock, 10, true));
@@ -235,7 +235,7 @@ server1 (void *arg)
   close (sockin);
   close (sockin2);
 
-//  sleep(1); // XXX : failed with NS3/DCE do not time out ? the time is stopped ?
+  sleep(1);
 
   printf ("Server1: end\n ");
 
@@ -259,7 +259,7 @@ client2 (void *arg)
   res = inet_aton ("127.0.0.1", &(addr.sin_addr));
   TEST_ASSERT_EQUAL ( res, 1);
   addr.sin_family = AF_INET;
-  addr.sin_port = htons (1234);
+  addr.sin_port = htons (1235);
 
   sleep (1);
 
@@ -289,7 +289,7 @@ server2 (void *arg)
   // TEST_ASSERT_EQUAL ( res, 1);
 
   addr.sin_family = AF_INET;
-  addr.sin_port = htons (1234);
+  addr.sin_port = htons (1235);
 
   res = bind (sock, (struct sockaddr *) &addr, sizeof(addr));
   TEST_ASSERT_EQUAL ( res, 0);
@@ -327,7 +327,7 @@ client3 (void *arg)
   TEST_ASSERT_EQUAL ( res, 1);
 
   addr.sin_family = AF_INET;
-  addr.sin_port = htons (1234);
+  addr.sin_port = htons (1236);
 
   sleep (1);
 
@@ -357,7 +357,7 @@ server3 (void *arg)
   TEST_ASSERT_EQUAL ( res, 1);
 
   addr.sin_family = AF_INET;
-  addr.sin_port = htons (1234);
+  addr.sin_port = htons (1236);
 
   res = bind (sock, (struct sockaddr *) &addr, sizeof(addr));
   printf ("Server3: bind -> %d, errno:%d\n ", res, errno);
@@ -446,17 +446,18 @@ main (int argc, char *argv[])
 {
   signal (SIGPIPE, SIG_IGN);
 
-  test_select_null_null ();
+  if (1>2)
+    {
+      test_select_stdin ();
+      test_select_stdout_stdin ();
+      test_select_null_null ();
+
+      test_select_stdout ();
+    }
+  launch (client1, server1);
   launch (client2, server2);
-  test_select_stdout ();
   launch (client3, server3);
 
-  if (1 > 2)
-    {
-      test_select_stdin (); // XXX : failed with NS3/DCE
-      launch (client1, server1); // XXX : failed with NS3/DCE
-      test_select_stdout_stdin (); // XXX : failed with NS3/DCE
-    }
   printf("test-select end.\n ");
   fflush (stdout);
   fflush (stderr);

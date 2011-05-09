@@ -60,9 +60,9 @@ def configure(conf):
     conf.find_program('readversiondef', var='READVERSIONDEF', mandatory=True)
 
     if Options.options.kernel_stack is not None and os.path.isdir(Options.options.kernel_stack):
-        conf.check(header_name='sim/sim.h',
-                   includes=os.path.join(Options.options.kernel_stack, 'include'))
-        conf.check()
+        conf.check(header_name='sim.h',
+                   includes=os.path.join(Options.options.kernel_stack, 'sim/include'))
+      #  conf.check()
         conf.env['KERNEL_STACK'] = Options.options.kernel_stack
 
     ns3waf.print_feature_summary(conf)
@@ -189,11 +189,11 @@ def build(bld):
 
     if bld.env['KERNEL_STACK']:
         kernel_source = [
-            'linux-socket-fd-factory.cc',
-            'linux-socket-fd.cc',
+            'model/linux-socket-fd-factory.cc',
+            'model/linux-socket-fd.cc',
             ]
-        kernel_headers = [ 'linux-socket-fd-factory.h']
-        kernel_includes = [os.path.join(bld.env['KERNEL_STACK'], 'include')]
+        kernel_headers = [ 'model/linux-socket-fd-factory.h']
+        kernel_includes = [bld.env['KERNEL_STACK']]
     else:
         kernel_source = []
         kernel_headers = []

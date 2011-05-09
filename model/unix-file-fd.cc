@@ -261,12 +261,38 @@ UnixFileFdBase::Gettime (struct itimerspec *cur_value) const
 bool 
 UnixFileFdBase::CanRecv (void) const
 {
-  return true;
+  NS_LOG_FUNCTION (this << " fd:" << m_realFd);
+  // Must do a real select
+  fd_set readFd;
+  struct timeval timeOut;
+  int ret = 0;
+
+  timeOut.tv_sec = 0;
+  timeOut.tv_usec = 0;
+  FD_ZERO (&readFd);
+  FD_SET (m_realFd, &readFd);
+
+  ret = select (1 + m_realFd, &readFd, NULL, NULL, &timeOut);
+
+  return (ret == 1) && (FD_ISSET(m_realFd, &readFd));
 }
-bool 
+bool
 UnixFileFdBase::CanSend (void) const
 {
-  return true;
+  NS_LOG_FUNCTION (this << " fd:" << m_realFd);
+  // Must do a real select
+  fd_set writeFd;
+  struct timeval timeOut;
+  int ret = 0;
+
+  timeOut.tv_sec = 0;
+  timeOut.tv_usec = 0;
+  FD_ZERO (&writeFd);
+  FD_SET (m_realFd, &writeFd);
+
+  ret = select (1 + m_realFd, &writeFd, NULL, NULL, &timeOut);
+
+  return (ret == 1) && (FD_ISSET(m_realFd, &writeFd));
 }
 
 UnixFileFd::UnixFileFd (int realFd)

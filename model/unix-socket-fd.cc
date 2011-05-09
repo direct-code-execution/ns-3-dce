@@ -116,7 +116,10 @@ UnixSocketFd::ErrnoToSimuErrno (void) const
     return EHOSTUNREACH;
   case Socket::SOCKET_ERRNO_LAST:
   case Socket::ERROR_NOTERROR:
+  case Socket::ERROR_ADDRINUSE:
+    return EADDRINUSE;
   default:
+    NS_LOG_ERROR("Unknown Errno:" <<  m_socket->GetErrno ());
     NS_ASSERT (false);
     return 0; // quiet compiler
     break;

@@ -330,8 +330,8 @@ int dce_select(int nfds, fd_set *readfds, fd_set *writefds,
   for (int fd = 0; fd < nfds; fd++)
     {
       if ((readfds != 0 && FD_ISSET(fd, readfds))
-	  ||(writefds != 0 &&  FD_ISSET (fd, writefds))
-	  ||(exceptfds != 0 && FD_ISSET (fd, exceptfds)))
+          ||(writefds != 0 &&  FD_ISSET (fd, writefds))
+          ||(exceptfds != 0 && FD_ISSET (fd, exceptfds)))
         {
           int index = UtilsSearchOpenFd (fd);
           if (index == -1)
@@ -339,69 +339,113 @@ int dce_select(int nfds, fd_set *readfds, fd_set *writefds,
               current->err = EBADF;
               return -1;
             }
-	}
+        }
     }
 
-  bool mustWait = false;
+  bool mustWait = true;
   Waiter waiter;
-  for (int fd = 0; fd < nfds; fd++)
-    {
-      if (readfds != 0 && FD_ISSET(fd, readfds))
-	{
-          int index = UtilsSearchOpenFd (fd);
-	  NS_ASSERT (index != -1);
-	  UnixFd *unixFd = current->process->openFiles[index].second;
-	  if (!unixFd->CanRecv ())
-	    {
-              unixFd->SetRecvWaiter (&waiter);
-              mustWait = true;
-	    }
-	}
-      else if (writefds != 0 &&  FD_ISSET (fd, writefds))
-	{
-          int index = UtilsSearchOpenFd (fd);
-	  NS_ASSERT (index != -1);
-	  UnixFd *unixFd = current->process->openFiles[index].second;
-	  if (!unixFd->CanSend ())
-	    {
-              unixFd->SetSendWaiter (&waiter);
-              mustWait = true;
-	    }
-	}
-    }
+  Time timeoutLeft = Seconds (0.0);
+
   if (timeout && (timeout->tv_sec == 0) && (timeout->tv_usec == 0))
     {
       mustWait = false;
     }
 
-  Time timeoutLeft = Seconds (0.0);
   if (mustWait)
     {
-      waiter.SetTimeout (UtilsTimevalToTime(timeout));
-      if (!waiter.WaitDoSignal ())
-	{
-	  // current->err set by call above
-	  for (int fd = 0; fd < nfds; fd++)
-	    {
-	      // cleanup all waiters setup previously
-	      if (readfds != 0 && FD_ISSET(fd, readfds))
-		{
-		  int index = UtilsSearchOpenFd (fd);
-		  NS_ASSERT (index != -1);
-		  UnixFd *unixFd = current->process->openFiles[index].second;
-		  unixFd->SetRecvWaiter (0);
-		}
-	      else if (writefds != 0 &&  FD_ISSET (fd, writefds))
-		{
-		  int index = UtilsSearchOpenFd (fd);
-		  NS_ASSERT (index != -1);
-		  UnixFd *unixFd = current->process->openFiles[index].second;
-		  unixFd->SetSendWaiter (0);
-		}
-	    }
-	  return -1;
-	}
-      timeoutLeft = waiter.GetTimeoutLeft ();
+      // First Pass: seek if there is at least one fd ready
+      bool someAreReady = false;
+
+      for (int fd = 0; fd < nfds; fd++)
+        {
+          if (readfds != 0 && FD_ISSET(fd, readfds))
+            {
+              int index = UtilsSearchOpenFd (fd);
+              NS_ASSERT (index != -1);
+              UnixFd *unixFd = current->process->openFiles[index].second;
+              if (unixFd->CanRecv ())
+                {
+                  someAreReady = true;
+                  break;
+                }
+            }
+          if (writefds != 0 && FD_ISSET (fd, writefds))
+            {
+              int index = UtilsSearchOpenFd (fd);
+              NS_ASSERT (index != -1);
+              UnixFd *unixFd = current->process->openFiles[index].second;
+              if (unixFd->CanSend ())
+                {
+                  someAreReady = true;
+                  break;
+                }
+            }
+        }
+
+      if ( !someAreReady )
+        { // We should wait so set the waiters ...
+          for (int fd = 0; fd < nfds; fd++)
+            {
+              if (readfds != 0 && FD_ISSET(fd, readfds))
+                {
+                  int index = UtilsSearchOpenFd (fd);
+                  NS_ASSERT (index != -1);
+                  UnixFd *unixFd = current->process->openFiles[index].second;
+                  if (!unixFd->CanRecv ())
+                    {
+                      unixFd->SetRecvWaiter (&waiter);
+                    }
+                }
+              // not else because an fd can be in read and write at same time
+              if (writefds != 0 && FD_ISSET (fd, writefds))
+                {
+                  int index = UtilsSearchOpenFd (fd);
+                  NS_ASSERT (index != -1);
+                  UnixFd *unixFd = current->process->openFiles[index].second;
+                  if (!unixFd->CanSend ())
+                    {
+                      unixFd->SetSendWaiter (&waiter);
+                    }
+                }
+            }
+
+          waiter.SetTimeout (UtilsTimevalToTime (timeout));
+          Waiter::Result result = waiter.Wait ();
+
+          for (int fd = 0; fd < nfds; fd++)
+            {
+              // cleanup all waiters setup previously
+              if (readfds != 0 && FD_ISSET(fd, readfds))
+                {
+                  int index = UtilsSearchOpenFd (fd);
+                  if (index != -1) // no ASSERT because Meanwhile the fd should disappear
+                    {
+                      UnixFd *unixFd = current->process->openFiles[index].second;
+                      unixFd->SetRecvWaiter (0);
+                    }
+                  else
+                    {
+                      continue;
+                    }
+                }
+              if (writefds != 0 && FD_ISSET (fd, writefds))
+                {
+                  int index = UtilsSearchOpenFd (fd);
+                  if (index != -1) // no ASSERT because Meanwhile the fd should disappear
+                    {
+                      UnixFd *unixFd = current->process->openFiles[index].second;
+                      unixFd->SetSendWaiter (0);
+                    }
+                }
+            }
+          if (Waiter::INTERRUPTED == result)
+            {
+              UtilsDoSignal ();
+              current->err = EINTR;
+              return -1;
+            }
+          timeoutLeft = waiter.GetTimeoutLeft ();
+        }
     }
 
   int retval = 0;
@@ -417,21 +461,19 @@ int dce_select(int nfds, fd_set *readfds, fd_set *writefds,
       UnixFd *unixFd = current->process->openFiles[index].second;
       if (readfds != 0 && FD_ISSET(fd, readfds))
         {
-	  unixFd->SetRecvWaiter (0);
-	  if (unixFd->CanRecv ())
-	    {
-	      FD_SET(fd, &rd);
-	      retval++;
-	    }
+          if (unixFd->CanRecv ())
+            {
+              FD_SET(fd, &rd);
+              retval++;
+            }
         }
       if (writefds != 0 && FD_ISSET(fd, writefds))
         {
-	  unixFd->SetSendWaiter (0);
-	  if (unixFd->CanSend ())
-	    {
-	      FD_SET(fd, &wt);
-	      retval ++;
-	    }
+          if (unixFd->CanSend ())
+            {
+              FD_SET(fd, &wt);
+              retval ++;
+            }
         }
     }
 
@@ -453,6 +495,7 @@ int dce_select(int nfds, fd_set *readfds, fd_set *writefds,
     }
   return retval;
 }
+
 
 ssize_t dce_write (int fd, const void *buf, size_t count)
 {
