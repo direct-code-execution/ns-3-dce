@@ -37,11 +37,7 @@ UnixSocketFd::UnixSocketFd (Ptr<Socket> socket)
 UnixSocketFd::~UnixSocketFd ()
 {
   NS_LOG_FUNCTION (this);
-  if (m_socket != 0)
-    {
-      m_socket->SetRecvCallback (MakeNullCallback<void,Ptr<Socket> > ());
-      m_socket = 0;
-    }
+  ClearSocket ();
 }
 void *
 UnixSocketFd::Mmap (void *start, size_t length, int prot, int flags, off64_t offset)
@@ -149,9 +145,7 @@ UnixSocketFd::Close (void)
     {
       current->err = ErrnoToSimuErrno ();
     }
-  m_socket->SetRecvCallback (MakeNullCallback<void,Ptr<Socket> > ());
-  m_socket->SetSendCallback (MakeNullCallback<void,Ptr<Socket>,uint32_t > ());
-  m_socket = 0;
+  ClearSocket ();
   /**
    * Closing a socket while another thread is doing blocking IO
    * on it at the same time is valid behavior according to POSIX.
@@ -608,6 +602,27 @@ UnixSocketFd::Gettime (struct itimerspec *cur_value) const
   Thread *current = Current ();
   current->err = EINVAL;
   return -1;
+}
+
+void
+UnixSocketFd::ClearSocket (void)
+{
+  if ( m_socket )
+    {
+      Callback<void, Ptr< Socket > > nil = MakeNullCallback<void, Ptr<Socket> > ();
+
+      Callback<void, Ptr<Socket>, const Address &> nil2 = MakeNullCallback<void, Ptr<Socket>, const Address &> ();
+      Callback<bool, Ptr<Socket>, const Address &> nil3 = MakeNullCallback<bool, Ptr<Socket>, const Address &> ();
+
+      m_socket->SetAcceptCallback ( nil3, nil2) ;
+
+      m_socket->SetConnectCallback (nil, nil);
+      m_socket->SetCloseCallbacks  ( nil, nil);
+
+      m_socket->SetRecvCallback ( nil);
+      m_socket->SetSendCallback ( MakeNullCallback<void,Ptr<Socket>,uint32_t > ());
+    }
+  m_socket = 0;
 }
 
 } // namespace ns3

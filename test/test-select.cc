@@ -13,6 +13,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <sys/un.h>
 
 #include "test-macros.h"
 
@@ -67,7 +68,7 @@ test_select_read (int fd, int timeOutSec, bool needSuccess)
     }
   else
     {
-      return (ret == 0);
+      return (ret <= 0);
     }
 }
 
@@ -116,7 +117,7 @@ test_select_write (int fd, int timeOutSec, bool needSuccess)
     }
   else
     {
-      TEST_ASSERT_EQUAL ( ret, 0);
+      TEST_ASSERT ( ret <= 0);
     }
 }
 
@@ -229,7 +230,7 @@ server1 (void *arg)
   // buffer is full
   test_select_write (sockin, 0, false);
 
-  res = write (sockin2, writeBuf, 1024);
+//  res = write (sockin2, writeBuf, 1024);
 
   close (sock);
   close (sockin);
@@ -334,7 +335,10 @@ client3 (void *arg)
   res = connect (sock, (struct sockaddr *) &addr, sizeof(addr));
   TEST_ASSERT_EQUAL( res, 0 );
 
-  sleep (1);
+ // sleep (2);
+
+  res = read (sock, readBuf, BUF_LEN);
+  printf ("client3: read -> %d \n ", res);
 
   close (sock);
 
@@ -370,7 +374,7 @@ server3 (void *arg)
 
   sockin = accept (sock, NULL, NULL);
   TEST_ASSERT( sockin >= 0 );
-  sleep(1);
+  sleep(5);
 
   close (sock);
   close (sockin);
@@ -380,16 +384,176 @@ server3 (void *arg)
   return arg;
 }
 
+// Test select after remote TCPIP close
+static void *
+client4 (void *arg)
+{
+  int sock;
+  struct sockaddr_in addr;
+  int res;
+
+  sock = socket (AF_INET, SOCK_STREAM, 0);
+  TEST_ASSERT( sock >= 0 );
+
+  res = inet_aton ("127.0.0.1", &(addr.sin_addr));
+  TEST_ASSERT_EQUAL ( res, 1);
+
+  addr.sin_family = AF_INET;
+  addr.sin_port = htons (1237);
+
+  sleep (1);
+
+  res = connect (sock, (struct sockaddr *) &addr, sizeof(addr));
+  TEST_ASSERT_EQUAL( res, 0 );
+
+  sleep (2);
+
+  // Select over remote closed socket
+  test_select_read( sock, 1, true);
+  test_select_write( sock, 1, true);
+
+  close (sock);
+
+  // Select over closed socket
+  test_select_read( sock, 1, false);
+  test_select_write( sock, 1, false);
+
+
+  printf("Client4: end\n ");
+
+  return arg;
+}
+
+static void *
+server4 (void *arg)
+{
+  int sock, sockin;
+  struct sockaddr_in addr;
+  int res;
+  int on = 1;
+
+  sock = socket (AF_INET, SOCK_STREAM, 0);
+  TEST_ASSERT( sock >= 0 );
+
+  // Select over just created socket
+  test_select_read( sock, 1, true);
+  test_select_write( sock, 1, true);
+
+  res = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+
+  res = inet_aton ("127.0.0.1", &(addr.sin_addr));
+  TEST_ASSERT_EQUAL ( res, 1);
+
+  addr.sin_family = AF_INET;
+  addr.sin_port = htons (1237);
+  res = bind (sock, (struct sockaddr *) &addr, sizeof(addr));
+  printf ("Server4: bind -> %d, errno:%d\n ", res, errno);
+  TEST_ASSERT_EQUAL ( res, 0);
+
+  res = listen (sock, 1);
+  TEST_ASSERT_EQUAL ( res, 0);
+
+  TEST_ASSERT (test_select_read (sock, 10, true));
+
+  sockin = accept (sock, NULL, NULL);
+  TEST_ASSERT( sockin >= 0 );
+  sleep(1);
+
+  close (sock);
+  close (sockin);
+
+  printf ("Server4: end\n ");
+
+  return arg;
+}
+
+#define SOCK_PATH "/tmp/socket"
+// Test select just after creation and after remote local socket close then after closed socket.
+static void *
+client5 (void *arg)
+{
+  int sock;
+  struct sockaddr_un addr;
+  int res;
+
+  sock = socket (AF_UNIX, SOCK_STREAM, 0);
+  TEST_ASSERT( sock >= 0 );
+
+  // Select over just created socket
+  test_select_read( sock, 1, true);
+  test_select_write( sock, 1, true);
+
+  memset (&addr, 0, sizeof(addr));
+  addr.sun_family = AF_UNIX;
+  strcpy (addr.sun_path, SOCK_PATH);
+
+  sleep (1);
+
+  res = connect (sock, (struct sockaddr *) &addr, sizeof(addr));
+  TEST_ASSERT_EQUAL( res, 0 );
+
+  sleep (2);
+
+  // Select over remote closed socket
+  test_select_read( sock, 1, true);
+  test_select_write( sock, 1, true);
+
+  close (sock);
+
+  // Select over closed socket
+  test_select_read( sock, 1, false);
+  test_select_write( sock, 1, false);
+
+  printf("Client5: end\n ");
+
+  return arg;
+}
+
+static void *
+server5 (void *arg)
+{
+  int sock, sockin;
+  struct sockaddr_un addr;
+  int res;
+  int on = 1;
+
+  sock = socket (AF_UNIX, SOCK_STREAM, 0);
+  TEST_ASSERT( sock >= 0 );
+
+  memset (&addr, 0, sizeof(addr));
+  addr.sun_family = AF_UNIX;
+  strcpy (addr.sun_path, SOCK_PATH);
+  unlink (SOCK_PATH);
+
+  res = bind (sock, (struct sockaddr *) &addr, sizeof(addr));
+  printf ("Server5: bind -> %d, errno:%d\n ", res, errno);
+  TEST_ASSERT_EQUAL ( res, 0);
+
+  res = listen (sock, 1);
+  TEST_ASSERT_EQUAL ( res, 0);
+
+  sockin = accept (sock, NULL, NULL);
+  TEST_ASSERT( sockin >= 0 );
+  sleep(1);
+
+  close (sock);
+  close (sockin);
+
+  printf ("Server5: end\n ");
+
+  return arg;
+}
+
+
 static void
 test_select_stdout_stdin (void)
 {
   fd_set rFd;
   fd_set wFd;
   struct timeval timeOut;
- // int maxFd = 1 + 1;
   int ret = 0;
   time_t before, after;
-  int sock = socket (AF_INET, SOCK_DGRAM, 0); // Workaround should be stdin
+  int sock = 0;
 
   timeOut.tv_sec = 10;
   timeOut.tv_usec = 0;
@@ -400,7 +564,7 @@ test_select_stdout_stdin (void)
 
   // should immediately return 1 because stdout is writable.
   before = time (NULL);
-  ret = select (sock + 1, &rFd, &wFd, NULL, &timeOut);
+  ret = select (1 + 1, &rFd, &wFd, NULL, &timeOut);
   after = time (NULL);
 
   printf("After select -> %d before time %ld after time %ld errno:%d \n ", ret, before ,after, errno );
@@ -409,13 +573,10 @@ test_select_stdout_stdin (void)
   TEST_ASSERT ( ( 1 == ret ) &&  ( (after - before ) <= 1 ) );
 
   close(sock);
-
 }
 
 static void
-launch (void *
-(*clientStart) (void *), void *
-(*serverStart) (void *))
+launch (void *(*clientStart) (void *), void *(*serverStart) (void *))
 {
   int status;
   pthread_t theClient;
@@ -446,17 +607,18 @@ main (int argc, char *argv[])
 {
   signal (SIGPIPE, SIG_IGN);
 
-  if (1>2)
+  if ( 1 < 2 )
     {
       test_select_stdin ();
       test_select_stdout_stdin ();
       test_select_null_null ();
-
       test_select_stdout ();
+      launch (client1, server1);
+      launch (client2, server2);
+      launch (client3, server3);
+      launch (client4, server4);
+      launch (client5, server5);
     }
-  launch (client1, server1);
-  launch (client2, server2);
-  launch (client3, server3);
 
   printf("test-select end.\n ");
   fflush (stdout);

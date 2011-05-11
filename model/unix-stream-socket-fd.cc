@@ -15,17 +15,29 @@ namespace ns3 {
 
 UnixStreamSocketFd::UnixStreamSocketFd (Ptr<Socket> sock)
   : UnixSocketFd (sock),
-    m_backlog (0)
+    m_backlog (0),
+    m_connected (0),
+    m_connecting (0)
 {
   NS_LOG_FUNCTION (this << sock);
   m_socket->SetAcceptCallback (MakeCallback (&UnixStreamSocketFd::ConnectionRequest, this),
-			       MakeCallback (&UnixStreamSocketFd::ConnectionCreated, this));
+                               MakeCallback (&UnixStreamSocketFd::ConnectionCreated, this));
+  m_socket->SetConnectCallback (MakeCallback (&UnixStreamSocketFd::ConnectionSuccess, this),
+                                MakeCallback (&UnixStreamSocketFd::ConnectionError, this));
+  m_socket->SetCloseCallbacks  (MakeCallback (&UnixStreamSocketFd::CloseSuccess, this),
+                                MakeCallback (&UnixStreamSocketFd::CloseError, this));
 }
+
+UnixStreamSocketFd::~UnixStreamSocketFd (void)
+{
+  NS_LOG_FUNCTION (this << m_socket);
+}
+
 ssize_t 
 UnixStreamSocketFd::DoRecvmsg(struct msghdr *msg, int flags)
 {
   Thread *current = Current ();
-  NS_LOG_FUNCTION (this << current << msg << flags);
+  NS_LOG_FUNCTION (this << current << msg << flags << m_connected);
   NS_ASSERT (current != 0);
 
   if (!WaitRecvDoSignal (flags & MSG_DONTWAIT))
@@ -33,6 +45,7 @@ UnixStreamSocketFd::DoRecvmsg(struct msghdr *msg, int flags)
       // current->err set by callee
       return -1;
     }
+  if (!m_connected) return 0;
 
   uint32_t totalAvailable = 0;
   for (uint32_t i = 0; i < msg->msg_iovlen; i++)
@@ -172,7 +185,8 @@ UnixStreamSocketFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
       if (!waiter.Wait ())
 	{
 	  // current->err set by caller above.
-	  return -1;
+          SetRecvWaiter (0);
+          return -1;
 	}
     }
   SetRecvWaiter (0);
@@ -197,12 +211,19 @@ UnixStreamSocketFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
 bool 
 UnixStreamSocketFd::CanRecv (void) const
 {
-  return m_socket != 0 && (m_socket->GetRxAvailable () != 0 || !m_connectionQueue.empty ());
+
+  return m_socket != 0 && ( ( m_connected && (m_socket->GetRxAvailable () != 0 || !m_connectionQueue.empty ())) ||
+        !m_connected );
 }
 bool
 UnixStreamSocketFd::CanSend (void) const
 {
   return m_socket != 0 && m_socket->GetTxAvailable () != 0;
+}
+bool
+UnixStreamSocketFd::HangupReceived (void) const
+{
+  return false;
 }
 bool 
 UnixStreamSocketFd::ConnectionRequest (Ptr<Socket> sock, const Address & from)
@@ -249,7 +270,89 @@ UnixStreamSocketFd::Shutdown (int how)
       current->err = ErrnoToSimuErrno ();
       return -1;
     }
+  m_connected = false;
   return 0;
+}
+void
+UnixStreamSocketFd::ConnectionSuccess (Ptr<Socket> sock)
+{
+  NS_LOG_FUNCTION (this);
+  m_connected = true;
+  m_connecting = false;
+  WakeupRecv ();
+}
+void
+UnixStreamSocketFd::ConnectionError(Ptr<Socket> sock)
+{
+  NS_LOG_FUNCTION (this);
+  m_connecting = false;
+  WakeupRecv ();
+}
+void
+UnixStreamSocketFd::CloseSuccess (Ptr<Socket> sock)
+{
+  NS_LOG_FUNCTION (this);
+  m_connected = false;
+  m_connecting = false;
+  WakeupRecv ();
+}
+void
+UnixStreamSocketFd::CloseError(Ptr<Socket> sock)
+{
+  NS_LOG_FUNCTION (this);
+  m_connecting = false;
+}
+
+int
+UnixStreamSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (this << current);
+  NS_ASSERT (current != 0);
+
+  if (m_connecting)
+    {
+      current -> err = EINVAL;
+      return -1;
+    }
+
+  m_connecting = true;
+
+  int sup = UnixSocketFd::Connect( my_addr, addrlen);
+
+  if (0 == sup) {
+      sup = -1;
+      Waiter waiter;
+
+      while (m_connecting)
+        {
+          SetRecvWaiter (&waiter);
+          waiter.SetTimeout (GetRecvTimeout ());
+          Waiter::Result result = waiter.Wait ();
+          NS_LOG_DEBUG("Connect: wait result:" << result);
+          SetRecvWaiter (0);
+
+          switch (result)
+          {
+            case Waiter::OK:
+
+              break;
+            case Waiter::INTERRUPTED:
+              {
+                UtilsDoSignal ();
+                current->err = EINTR;
+                return -1;
+              }
+            case Waiter::TIMEOUT:
+              {
+                current->err = EAGAIN;
+                return -1;
+              }
+          }
+        }
+  }
+  if (m_connected) sup = 0; else sup = -1;
+  return sup;
 }
 
 

@@ -68,6 +68,8 @@ protected:
 private:
   void RecvSocketData (Ptr<Socket> socket);
   void SendSocketData (Ptr<Socket> socket, uint32_t available);
+  // Clear m_socket and its callbacks.
+  void ClearSocket (void);
 
   Time m_sendTimeout;
   Time m_recvTimeout;

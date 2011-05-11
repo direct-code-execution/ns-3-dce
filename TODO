@@ -1,1 +1,12 @@
  - remove the need for AllDirectoriesExist and add calls to mkdir in test setup.
+ 
+ - res = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) seems with no effect on TCPIP sockets 
+   look and fix if possible.
+   
+ - test read over closed socket should return 0 : fixed but found another :
+ 
+ - When you try to Connect a TCPIP socket over a not open port  the connect never failed but block forever.
+ 
+ 
+ 
+  
