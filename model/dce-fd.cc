@@ -225,6 +225,8 @@ int dce_poll(struct pollfd *fds, nfds_t nfds, int timeout)
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fds << nfds << timeout);
   NS_ASSERT (current != 0);
+  int validFdCount = 0;
+
   for (uint32_t i = 0; i < nfds; ++i)
     {
       // initialize all outgoing events.
@@ -233,73 +235,154 @@ int dce_poll(struct pollfd *fds, nfds_t nfds, int timeout)
   for (uint32_t i = 0; i < nfds; ++i)
     {
       int index = UtilsSearchOpenFd (fds[i].fd);
-      if (index == -1)
-	{
-	  current->err = EBADF;
-	  return -1;
-	}
+      if (index >= 0) validFdCount++;
     }
-  bool mustWait = false;
-  Waiter waiter;
-  for (uint32_t i = 0; i < nfds; ++i)
+
+  if (validFdCount > 0)
     {
-      int index = UtilsSearchOpenFd (fds[i].fd);
-      NS_ASSERT (index != -1);
-      UnixFd *unixFd = current->process->openFiles[index].second;
-      if (fds[i].events & POLLIN && !unixFd->CanRecv ())
-	{
-	  unixFd->SetRecvWaiter (&waiter);
-	  mustWait = true;
-	}
-      if (fds[i].events & POLLOUT && !unixFd->CanSend ())
-	{
-	  unixFd->SetSendWaiter (&waiter);
-	  mustWait = true;
-	}
-    }
-  if (mustWait)
-    {
-      waiter.SetTimeout (MilliSeconds (timeout));
-      if (!waiter.WaitDoSignal ())
-	{
-	  // current->err set by call above.
-	  for (uint32_t i = 0; i < nfds; ++i)
-	    {
-	      // make sure we remove all waiters we setup earlier.
-	      int index = UtilsSearchOpenFd (fds[i].fd);
-	      NS_ASSERT (index != -1);
-	      UnixFd *unixFd = current->process->openFiles[index].second;
-	      if (fds[i].events & POLLOUT)
-		{
-		  unixFd->SetSendWaiter (0);
-		}
-	      if (fds[i].events & POLLIN)
-		{
-		  unixFd->SetRecvWaiter (0);
-		}
-	    }
-	  return -1;
-	}
+      bool mustWait = true;
+
+      if (timeout == 0)
+        {
+          mustWait = false;
+        }
+
+      if (mustWait)
+        {
+          // First Pass: seek if there is at least one fd ready
+          bool someAreReady = false;
+          Waiter waiter;
+
+          for (int i = 0; i < nfds; i++)
+            {
+              if ( fds[i].events & POLLIN )
+                {
+                  int index = UtilsSearchOpenFd (fds[i].fd);
+                  if (index >= 0)
+                    {
+                      UnixFd *unixFd = current->process->openFiles[index].second;
+                      if ( unixFd->CanRecv ())
+                        {
+                          someAreReady = true;
+                          break;
+                        }
+                    }
+                }
+              if ( fds[i].events & POLLOUT )
+                {
+                  int index = UtilsSearchOpenFd (fds[i].fd);
+                  if (index >= 0)
+                    {
+                      UnixFd *unixFd = current->process->openFiles[index].second;
+                      if (unixFd->CanSend ())
+                        {
+                          someAreReady = true;
+                          break;
+                        }
+                    }
+                }
+            }
+
+          if ( !someAreReady )
+            { // We should wait, set the waiters ...
+              for (int i = 0; i < nfds; i++)
+                {
+                  if (fds[i].events & POLLIN )
+                    {
+                      int index = UtilsSearchOpenFd (fds[i].fd);
+                      if (index >= 0)
+                        {
+                          UnixFd *unixFd = current->process->openFiles[index].second;
+                          if (!unixFd->CanRecv ())
+                            {
+                              unixFd->SetRecvWaiter (&waiter);
+                            }
+                        }
+                    }
+                  // not else because an fd can be in read and write at same time
+                  if ( fds[i].events & POLLOUT )
+                    {
+                      int index = UtilsSearchOpenFd (fds[i].fd);
+                      if (index >= 0)
+                        {
+                          UnixFd *unixFd = current->process->openFiles[index].second;
+                          if (!unixFd->CanSend ())
+                            {
+                              unixFd->SetSendWaiter (&waiter);
+                            }
+                        }
+                    }
+                }
+
+              waiter.SetTimeout (  MilliSeconds (timeout));
+              Waiter::Result result = waiter.Wait ();
+
+              for (int i = 0; i < nfds; i++)
+                {
+                  // cleanup all waiters setup previously
+                  if (fds[i].events & POLLIN )
+                    {
+                      int index = UtilsSearchOpenFd (fds[i].fd);
+                      if (index != -1) // no ASSERT because Meanwhile the fd should disappear
+                        {
+                          UnixFd *unixFd = current->process->openFiles[index].second;
+                          unixFd->SetRecvWaiter (0);
+                        }
+                      else
+                        {
+                          continue;
+                        }
+                    }
+                  if ( fds[i].events & POLLOUT )
+                    {
+                      int index = UtilsSearchOpenFd (fds[i].fd);
+                      if (index != -1) // no ASSERT because Meanwhile the fd should disappear
+                        {
+                          UnixFd *unixFd = current->process->openFiles[index].second;
+                          unixFd->SetSendWaiter (0);
+                        }
+                    }
+                }
+              if (Waiter::INTERRUPTED == result)
+                {
+                  UtilsDoSignal ();
+                  current->err = EINTR;
+                  return -1;
+                }
+            }
+        }
     }
   int retval = 0;
-  for (uint32_t i = 0; i < nfds; ++i)
+
+  for (int i = 0; i < nfds; i++)
     {
       int index = UtilsSearchOpenFd (fds[i].fd);
-      NS_ASSERT (index != -1);
-      UnixFd *unixFd = current->process->openFiles[index].second;
-      if (fds[i].events & POLLOUT && unixFd->CanSend ())
-	{
-	  unixFd->SetSendWaiter (0);
-	  fds[i].revents |= POLLOUT;
-	  retval++;
-	}
-      if (fds[i].events & POLLIN && unixFd->CanRecv ())
-	{
-	  unixFd->SetRecvWaiter (0);
-	  fds[i].revents |= POLLIN;
-	  retval++;
-	}
+      if (index == -1)
+        {
+          fds[i].revents = POLLNVAL;
+        }
+      else
+        {
+          UnixFd *unixFd = current->process->openFiles[index].second;
+          if (fds[i].events & POLLIN )
+            {
+              if (unixFd->CanRecv ())
+                {
+                  fds[i].revents |= POLLIN;
+                }
+            }
+          if (fds[i].events & POLLOUT )
+            {
+              if (unixFd->CanSend ())
+                {
+                  fds[i].revents |= POLLOUT;
+                }
+            }
+          if (unixFd->HangupReceived()) fds[i].revents |= POLLHUP;
+        }
+      if ( 0 !=  fds[i].revents) retval++;
     }
+
   return retval;
 }
 int dce_select(int nfds, fd_set *readfds, fd_set *writefds,

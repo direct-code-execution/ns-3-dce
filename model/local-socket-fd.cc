@@ -993,18 +993,22 @@ LocalSocketFd::CanRecv (void) const
         return m_cnxQueue.size() > 0;
       }
 
-    default: return 0;
+    default: return 0; // XXX: must be verified with tests with poll and select
 
   }
 }
 bool
 LocalSocketFd::CanSend (void) const
 {
-  if ( CONNECTED != m_state ) return false;
-  if ( 0 == m_peer ) return false;
-  return ( m_peer->m_readBufferSize < LOCAL_SOCKET_MAX_BUFFER );
+  return ( ( CONNECTED == m_state ) && (0 != m_peer) && ( m_peer->m_readBufferSize < LOCAL_SOCKET_MAX_BUFFER ) )
+         || ( CONNECTED != m_state );
 }
-
+bool
+LocalSocketFd::HangupReceived (void) const
+{
+  NS_LOG_FUNCTION( this << " state:" << m_state);
+  return ( REMOTECLOSED == m_state );
+}
 bool
 LocalSocketFd::InternalConnect (void)
 {

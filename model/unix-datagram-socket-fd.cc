@@ -35,7 +35,11 @@ UnixDatagramSocketFd::CanSend (void) const
 {
   return m_socket != 0 && m_socket->GetTxAvailable () != 0;
 }
-
+bool
+UnixDatagramSocketFd::HangupReceived (void) const
+{
+  return false;
+}
 void 
 UnixDatagramSocketFd::QueueErr (sock_extended_err ee, struct sockaddr_in offender, uint8_t ttl)
 {

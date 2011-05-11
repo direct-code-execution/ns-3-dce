@@ -294,7 +294,11 @@ UnixFileFdBase::CanSend (void) const
 
   return (ret == 1) && (FD_ISSET(m_realFd, &writeFd));
 }
-
+bool
+UnixFileFdBase::HangupReceived (void) const
+{
+  return false;
+}
 UnixFileFd::UnixFileFd (int realFd)
   : UnixFileFdBase (realFd)
 {}

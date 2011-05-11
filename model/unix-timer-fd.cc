@@ -265,5 +265,9 @@ UnixTimerFd::CanSend (void) const
 {
   return false;
 }
-
+bool
+UnixTimerFd::HangupReceived (void) const
+{
+  return false;
+}
 } // namespace ns3

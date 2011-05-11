@@ -43,8 +43,12 @@ public:
 
   void SetRecvWaiter (Waiter *waiter);
   void SetSendWaiter (Waiter *waiter);
+  // CanRecv and CanSend return true only if a following Read or Write will not block,
+  // so a remote closed socket should return true because read or write will not block but will fail.
   virtual bool CanRecv (void) const = 0;
   virtual bool CanSend (void) const = 0;
+  // Return true if a select on this fd should return POLLHUP
+  virtual bool HangupReceived (void) const = 0;
 
 protected:
   UnixFd ();
