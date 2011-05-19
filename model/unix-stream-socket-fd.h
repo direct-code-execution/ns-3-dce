@@ -9,9 +9,20 @@ namespace ns3 {
 class UnixStreamSocketFd : public UnixSocketFd
 {
 public:
-  UnixStreamSocketFd (Ptr<Socket> sock);
+  UnixStreamSocketFd (Ptr<Socket> sock, bool connected=0);
   virtual ~UnixStreamSocketFd (void);
 private:
+  enum State
+  {
+    CREATED,
+//    BINDED,
+//    LISTENING,
+//    ACCEPTING,
+    CONNECTING,
+    CONNECTED,
+    REMOTECLOSED,
+    CLOSED
+  };
   virtual ssize_t DoRecvmsg(struct msghdr *msg, int flags);
   virtual ssize_t DoSendmsg(const struct msghdr *msg, int flags);
   virtual int Listen (int backlog);
@@ -21,6 +32,7 @@ private:
   virtual bool CanSend (void) const;
   virtual bool HangupReceived (void) const;
   virtual int Connect (const struct sockaddr *my_addr, socklen_t addrlen);
+  virtual int Getpeername(struct sockaddr *name, socklen_t *namelen);
 
   bool ConnectionRequest (Ptr<Socket> sock, const Address & from);
   void ConnectionCreated (Ptr<Socket> sock, const Address & from);
@@ -33,10 +45,8 @@ private:
 
   std::list<std::pair<Ptr<Socket>,Address> > m_connectionQueue;
   int m_backlog;
-  bool m_connected;
-
-  bool m_connecting;
-
+  State m_state;
+  Address* m_peerAddress;
 };
 
 } // namespace ns3

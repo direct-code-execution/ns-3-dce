@@ -99,7 +99,7 @@ UnixSocketFd::ErrnoToSimuErrno (void) const
   case Socket::ERROR_AGAIN:
     return EAGAIN;
   case Socket::ERROR_SHUTDOWN:
-    return ESHUTDOWN;
+    return EPIPE;
   case Socket::ERROR_OPNOTSUPP:
     return EOPNOTSUPP;
   case Socket::ERROR_AFNOSUPPORT:
@@ -112,6 +112,7 @@ UnixSocketFd::ErrnoToSimuErrno (void) const
     return EHOSTUNREACH;
   case Socket::SOCKET_ERRNO_LAST:
   case Socket::ERROR_NOTERROR:
+    return EAGAIN;
   case Socket::ERROR_ADDRINUSE:
     return EADDRINUSE;
   default:
@@ -624,5 +625,16 @@ UnixSocketFd::ClearSocket (void)
     }
   m_socket = 0;
 }
+void
+UnixSocketFd::ChangeSocket (Ptr<Socket> socket)
+{
+  ClearSocket ();
+  m_socket = socket;
+  m_socket->SetAttributeFailSafe ("SndBufSize", UintegerValue (4096));
+  m_socket->SetAttributeFailSafe ("RcvBufSize", UintegerValue (4096));
+  m_socket->SetRecvCallback (MakeCallback (&UnixSocketFd::RecvSocketData, this));
+  m_socket->SetSendCallback (MakeCallback (&UnixSocketFd::SendSocketData, this));
+}
+
 
 } // namespace ns3

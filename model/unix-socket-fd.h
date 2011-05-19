@@ -64,12 +64,13 @@ protected:
   bool IsRecvTtl (void) const;
 
   Ptr<Socket> m_socket;
+  void ChangeSocket (Ptr<Socket> socket);
+  void ClearSocket (void);
 
 private:
   void RecvSocketData (Ptr<Socket> socket);
   void SendSocketData (Ptr<Socket> socket, uint32_t available);
   // Clear m_socket and its callbacks.
-  void ClearSocket (void);
 
   Time m_sendTimeout;
   Time m_recvTimeout;

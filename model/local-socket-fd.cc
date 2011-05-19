@@ -683,7 +683,11 @@ LocalSocketFd::Bind (const struct sockaddr *my_addr, socklen_t addrlen)
 {
   NS_LOG_FUNCTION (this);
 
-  NS_ASSERT (my_addr->sa_family == AF_UNIX);
+  if (my_addr->sa_family != AF_UNIX)
+    {
+      Current ()->err = EINVAL;
+      return -1;
+    }
 
   if (m_state != CREATED)
     return -1;

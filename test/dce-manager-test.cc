@@ -7,10 +7,7 @@
 #include "rr-task-scheduler.h"
 #include "cooja-loader-factory.h"
 #include "ns3/socket-fd-factory.h"
-#include "ns3/ipv4.h"
-#include "ns3/packet-socket-factory.h"
-#include "ns3/ipv4-list-routing-helper.h"
-#include "ns3/ipv4-static-routing-helper.h"
+#include "ns3/internet-stack-helper.h"
 
 static std::string g_testError;
 
@@ -39,6 +36,8 @@ private:
   ObjectFactory m_tcpFactory;
   const Ipv4RoutingHelper *m_routing;
   Time m_maxDuration;
+  InternetStackHelper m_internet;
+
 };
 
 DceManagerTestCase::DceManagerTestCase (std::string filename, Time maxDuration)
@@ -67,35 +66,18 @@ DceManagerTestCase::CreateAndAggregateObjectFromTypeId (Ptr<Node> node, const st
 void
 DceManagerTestCase::SetupSimpleStack (Ptr<Node> node)
 {
+  m_internet.SetIpv6StackInstall(false);
+  m_internet.SetTcp("ns3::TcpL4Protocol");
+  m_internet.Install (node);
+
   m_networkStackFactory.SetTypeId ("ns3::Ns3SocketFdFactory");
-  m_tcpFactory.SetTypeId ("ns3::TcpL4Protocol");
-  Ipv4StaticRoutingHelper staticRouting;
-  Ipv4ListRoutingHelper listRouting;
-  listRouting.Add (staticRouting, 0);
-  m_routing = listRouting.Copy ();
-
-  if (node->GetObject<Ipv4> () != 0)
-    {
-      NS_FATAL_ERROR ("InternetStackHelper::Install (): Aggregating "
-                      "an InternetStack to a node with an existing Ipv4 object");
-    }
-
-  CreateAndAggregateObjectFromTypeId (node, "ns3::ArpL3Protocol");
-  CreateAndAggregateObjectFromTypeId (node, "ns3::Ipv4L3Protocol");
-  CreateAndAggregateObjectFromTypeId (node, "ns3::Icmpv4L4Protocol");
-  CreateAndAggregateObjectFromTypeId (node, "ns3::UdpL4Protocol");
-  node->AggregateObject (m_tcpFactory.Create<Object> ());
-  Ptr<PacketSocketFactory> factory = CreateObject<PacketSocketFactory> ();
-  node->AggregateObject (factory);
-  // Set routing
-  Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> ();
-  Ptr<Ipv4RoutingProtocol> ipv4Routing = m_routing->Create (node);
-  ipv4->SetRoutingProtocol (ipv4Routing);
 
   Ptr<SocketFdFactory> networkStack = m_networkStackFactory.Create<SocketFdFactory> ();
   NS_ASSERT( 0 != networkStack );
 
   node->AggregateObject (networkStack);
+
+  m_internet.EnablePcapIpv4All("IPV4_DCE_TEST");
 
 }
 Ptr<DceManager>
@@ -175,13 +157,14 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-env", 0 },
       {  "test-cond", 0 },
       {  "test-timer-fd", 0 },
-      {  "test-stdlib", 0 }, */
-      {  "test-select", 3600 }, /*
+      {  "test-stdlib", 0 },
+      {  "test-select", 3600 },
       {  "test-nanosleep", 0 },
       {  "test-random", 0 },
       {  "test-fork", 0 },
-      {  "test-local-socket", 0 }, */
-      {  "test-poll", 320 },
+      {  "test-local-socket", 0 },
+      {  "test-poll", 320 }, */
+      {  "test-tcp-socket", 320 },
   };
   for (unsigned int i = 0; i < sizeof(tests)/sizeof(testPair);i++)
     {

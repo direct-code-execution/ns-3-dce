@@ -135,6 +135,7 @@ def build_dce_tests(module):
              ['test-fork', []],
              ['test-local-socket', ['PTHREAD']],
              ['test-poll', ['PTHREAD']],
+             ['test-tcp-socket', ['PTHREAD']],
              ]
     for name,uselib in tests:
         module.add_test(**dce_kw(target='bin/' + name, source = ['test/' + name + '.cc'],
