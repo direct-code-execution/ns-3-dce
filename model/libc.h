@@ -317,6 +317,9 @@ struct Libc
 
   pid_t (*fork_fn) (void);
 
+  void (*qsort_fn) (void *base, size_t nmemb, size_t size, int(*compar)(const void *, const void *));
+
+
 };
 
 #ifdef __cplusplus

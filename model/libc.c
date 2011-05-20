@@ -1180,6 +1180,11 @@ char *strncat(char *dest, const char *src, size_t n)
   return g_libc.strncat_fn ( dest, src, n);
 }
 
+void qsort(void *base, size_t nmemb, size_t size, int(*compar)(const void *, const void *))
+{
+  g_libc.qsort_fn ( base, nmemb, size, compar);
+}
+
 void LIBSETUP (const struct Libc *fn)
 {
   /* The following assignment of fn to g_libc is a bit weird: we perform a copy of the data 

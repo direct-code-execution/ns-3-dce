@@ -294,6 +294,8 @@ void libc_dce (struct Libc *libc)
 
   libc->if_nametoindex_fn = dce_if_nametoindex;
   libc->fork_fn = dce_fork;
+
+  libc->qsort_fn = qsort;
 }
 
 #ifdef __cplusplus

@@ -1283,6 +1283,15 @@ launch (void *
   fflush (stderr);
 }
 
+int LongCompare(const void *A, const void *B)
+{
+  long *a = (long*)A;
+  long *b = (long*)B;
+  if ( *a == *b ) return 0;
+  if ( *a < *b ) return -1;
+  return 1;
+ }
+
 int
 main (int argc, char *argv[])
 {
@@ -1314,6 +1323,20 @@ main (int argc, char *argv[])
   printf("strcat test %s \n \n ", strcat ( destination, "Hello DCE :)") );
 
   printf("strcat test %s \n \n ", strncat ( destination, " Hello DCE :)", 3) );
+
+  long tab[10000];
+
+  for(int i=0; i < 10000 ; i++)
+    {
+      tab [i] = mrand48 ();
+    }
+
+  qsort( tab , 10000, sizeof(long), LongCompare);
+
+  for(int i=0; i < 10000 ; i++)
+    {
+      printf ("%d: sorted random result %ld \n \n ", i, tab[i] );
+    }
 
 
   fflush(stdout);
