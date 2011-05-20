@@ -306,6 +306,87 @@ int dce_rand (void) {
   Thread *current = Current ();
   return current->process->rndVarible.GetInteger ();
 }
+unsigned short int *dce_seed48 (unsigned short int seed16v[3])
+{
+  Thread *current = Current ();
+  seed48_r (seed16v, &(current->process->seed48Current));
+
+  return current->process->seed48Current.__old_x;
+}
+double dce_drand48 (void)
+{
+  Thread *current = Current ();
+  double res;
+
+  drand48_r (&(current->process->seed48Current), &res);
+
+  return res;
+}
+long int dce_nrand48 (unsigned short int xsubi[3])
+{
+  Thread *current = Current ();
+
+  long int res = 0;
+
+  nrand48_r (xsubi, &(current->process->seed48Current), &res);
+
+  return res;
+}
+long int dce_lrand48 (void)
+{
+  Thread *current = Current ();
+
+  long int res = 0;
+
+  lrand48_r (&(current->process->seed48Current), &res);
+
+  return res;
+}
+
+long int dce_mrand48 (void)
+{
+  Thread *current = Current ();
+
+  long int res;
+
+  jrand48_r ( current->process->seed48Current.__x ,  &(current->process->seed48Current), &res);
+
+  return res;
+}
+
+double dce_erand48(unsigned short xsubi[3])
+{
+  Thread *current = Current ();
+  double res;
+
+  erand48_r (xsubi,  &(current->process->seed48Current), &res);
+
+  return res;
+}
+long int dce_jrand48 (unsigned short int xsubi[3])
+{
+  Thread *current = Current ();
+
+  long int res = 0;
+
+  jrand48_r (xsubi, &(current->process->seed48Current), &res);
+
+  return res;
+}
+
+void dce_srand48 (long int seedval)
+{
+  Thread *current = Current ();
+
+  srand48_r (seedval, &(current->process->seed48Current) );
+}
+
+void dce_lcong48(unsigned short param[7])
+{
+  Thread *current = Current ();
+
+  lcong48_r (param, &(current->process->seed48Current) );
+}
 
 //ignore seeds as RandomVariable implementation ensures that we take different random streams.
 //TODO: support getting the same rng stream for several processes

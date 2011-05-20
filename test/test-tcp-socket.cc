@@ -1288,6 +1288,27 @@ main (int argc, char *argv[])
 {
   signal (SIGPIPE, SIG_IGN);
 
+  unsigned short int rac[3] = { 3 , 2, 1 };
+
+  seed48(rac);
+
+  for(int i=0;i < 20; i++)
+    {
+      unsigned short param[7];
+
+      srand48( (unsigned long) i*i );
+
+      for (int j=0; j < 7 ; j++)
+        {
+          param[j] = (unsigned short) lrand48() ;
+        }
+
+      lcong48(param);
+
+      printf("nrand48 %ld %ld %ld %f %ld \n", nrand48 (rac), lrand48 (), mrand48 (), erand48 (rac), jrand48 (rac));
+    }
+  fflush(stdout);
+
   readBuffer = (char *)malloc( BUFF_LEN );
   sendBuffer = (char *)malloc( BUFF_LEN );
 

@@ -1080,6 +1080,96 @@ pid_t fork (void)
   return g_libc.fork_fn ();
 }
 
+unsigned short int *seed48 (unsigned short int seed16v[3])
+{
+  return g_libc.seed48_fn (seed16v);
+}
+
+double drand48 (void)
+{
+  return g_libc.drand48_fn ();
+}
+
+long int nrand48 (unsigned short int xsubi[3])
+{
+  return g_libc.nrand48_fn (xsubi);
+}
+
+long int lrand48 (void)
+{
+  return g_libc.lrand48_fn ();
+}
+
+long int mrand48 (void)
+{
+  return g_libc.mrand48_fn ();
+}
+
+double erand48(unsigned short xsubi[3])
+{
+  return g_libc.erand48_fn (xsubi);
+}
+
+long int jrand48 (unsigned short int xsubi[3])
+{
+  return g_libc.jrand48_fn (xsubi);
+}
+
+void srand48(long int seedval)
+{
+  return g_libc.srand48_fn (seedval);
+}
+
+void lcong48(unsigned short param[7])
+{
+  return g_libc.lcong48_fn (param);
+}
+
+int drand48_r(struct drand48_data *buffer, double *result)
+{
+  return g_libc.drand48_r_fn (buffer, result);
+}
+
+int erand48_r(unsigned short xsubi[3], struct drand48_data *buffer, double *result)
+{
+  return g_libc.erand48_r_fn ( xsubi, buffer, result);
+}
+
+int lrand48_r(struct drand48_data *buffer, long int *result)
+{
+  return g_libc.lrand48_r_fn ( buffer, result);
+}
+
+int nrand48_r(unsigned short int xsubi[3], struct drand48_data *buffer, long int *result)
+{
+  return g_libc.nrand48_r_fn ( xsubi, buffer, result);
+}
+
+int mrand48_r(struct drand48_data *buffer,long int *result)
+{
+  return g_libc.mrand48_r_fn ( buffer, result);
+}
+
+int jrand48_r(unsigned short int xsubi[3], struct drand48_data *buffer, long int *result)
+{
+  return g_libc.jrand48_r_fn ( xsubi, buffer, result);
+}
+
+int srand48_r(long int seedval, struct drand48_data *buffer)
+{
+  return g_libc.srand48_r_fn ( seedval, buffer);
+}
+
+int seed48_r(unsigned short int seed16v[3], struct drand48_data *buffer)
+{
+  return g_libc.seed48_r_fn ( seed16v, buffer);
+}
+
+int lcong48_r(unsigned short int param[7], struct drand48_data *buffer)
+{
+  return g_libc.lcong48_r_fn( param, buffer);
+}
+
 void LIBSETUP (const struct Libc *fn)
 {
   /* The following assignment of fn to g_libc is a bit weird: we perform a copy of the data 

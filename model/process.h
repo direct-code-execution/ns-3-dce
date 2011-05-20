@@ -154,6 +154,8 @@ struct Process
   std::vector<void *> allocated;
   //random variable for rand and random implementation
   RandomVariable rndVarible;
+  // srand48 seed
+  struct drand48_data seed48Current;
 };
 
 struct ThreadKeyValue

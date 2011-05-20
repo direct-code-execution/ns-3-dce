@@ -124,6 +124,25 @@ void libc_dce (struct Libc *libc)
   libc->rand_fn = dce_rand;
   libc->srandom_fn = dce_srandom;
   libc->srand_fn = dce_srand;
+  libc->seed48_fn = dce_seed48;
+  libc->drand48_fn = dce_drand48;
+  libc->nrand48_fn = dce_nrand48;
+  libc->lrand48_fn = dce_lrand48;
+  libc->mrand48_fn = dce_mrand48;
+  libc->erand48_fn = dce_erand48;
+  libc->jrand48_fn = dce_jrand48;
+  libc->srand48_fn = dce_srand48;
+  libc->lcong48_fn = dce_lcong48;
+
+  libc->drand48_r_fn = drand48_r;
+  libc->erand48_r_fn = erand48_r;
+  libc->lrand48_r_fn = lrand48_r;
+  libc->nrand48_r_fn = nrand48_r;
+  libc->mrand48_r_fn = mrand48_r;
+  libc->jrand48_r_fn = jrand48_r;
+  libc->srand48_r_fn = srand48_r;
+  libc->seed48_r_fn = seed48_r;
+  libc->lcong48_r_fn = lcong48_r;
 
   libc->__errno_location_fn = dce_get_errno;
   libc->getopt_r_fn = dce_getopt_r;

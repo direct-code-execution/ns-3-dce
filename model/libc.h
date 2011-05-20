@@ -15,6 +15,7 @@
 #include <netinet/in.h>
 #include <stdio.h>
 #include <signal.h>
+#include <stdlib.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -112,6 +113,24 @@ struct Libc
   int (*rand_fn)(void);
   void (*srandom_fn)(unsigned int seed);
   void (*srand_fn)(unsigned int seed);
+  unsigned short int * (*seed48_fn) (unsigned short int seed16v[3]);
+  double (*drand48_fn) (void);
+  long int (*nrand48_fn) (unsigned short int xsubi[3]);
+  long int (*lrand48_fn) (void);
+  long int (*mrand48_fn) (void);
+  double (*erand48_fn) (unsigned short xsubi[3]);
+  long int (*jrand48_fn) (unsigned short int xsubi[3]);
+  void (*srand48_fn) (long int seedval);
+  void (*lcong48_fn) (unsigned short param[7]);
+  int (*drand48_r_fn) (struct drand48_data *buffer, double *result);
+  int (*erand48_r_fn) (unsigned short xsubi[3], struct drand48_data *buffer, double *result);
+  int (*lrand48_r_fn) (struct drand48_data *buffer, long int *result);
+  int (*nrand48_r_fn) (unsigned short int xsubi[3], struct drand48_data *buffer, long int *result);
+  int (*mrand48_r_fn) (struct drand48_data *buffer,long int *result);
+  int (*jrand48_r_fn) (unsigned short int xsubi[3], struct drand48_data *buffer, long int *result);
+  int (*srand48_r_fn) (long int seedval, struct drand48_data *buffer);
+  int (*seed48_r_fn) (unsigned short int seed16v[3], struct drand48_data *buffer);
+  int (*lcong48_r_fn) (unsigned short int param[7], struct drand48_data *buffer);
 
   FILE *(*fopen_fn) (const char *path, const char *mode);
   FILE *(*fdopen_fn) (int fildes, const char *mode);
@@ -295,6 +314,8 @@ struct Libc
   unsigned (*if_nametoindex_fn) (const char *ifname);
 
   pid_t (*fork_fn) (void);
+
+
 };
 
 #ifdef __cplusplus
