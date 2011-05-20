@@ -1170,6 +1170,16 @@ int lcong48_r(unsigned short int param[7], struct drand48_data *buffer)
   return g_libc.lcong48_r_fn( param, buffer);
 }
 
+char *strcat(char *dest, const char *src)
+{
+  return g_libc.strcat_fn ( dest, src);
+}
+
+char *strncat(char *dest, const char *src, size_t n)
+{
+  return g_libc.strncat_fn ( dest, src, n);
+}
+
 void LIBSETUP (const struct Libc *fn)
 {
   /* The following assignment of fn to g_libc is a bit weird: we perform a copy of the data 

@@ -96,6 +96,8 @@ struct Libc
   int (*memcmp_fn) (const void *s1, const void *s2, size_t n);
   void *(*memmove_fn) (void *dest, const void *src, size_t n);
   char *(*strcpy_fn) (char *dest, const char *src);
+  char *(*strcat_fn) (char *dest, const char *src);
+  char *(*strncat_fn) (char *dest, const char *src, size_t n);
   char *(*strncpy_fn) (char *dest, const char *src, size_t n);
   int (*strcmp_fn)(const char *s1, const char *s2);
   int (*strncmp_fn) (const char *s1, const char *s2, size_t n);
@@ -314,7 +316,6 @@ struct Libc
   unsigned (*if_nametoindex_fn) (const char *ifname);
 
   pid_t (*fork_fn) (void);
-
 
 };
 

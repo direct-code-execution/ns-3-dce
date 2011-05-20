@@ -1307,6 +1307,15 @@ main (int argc, char *argv[])
 
       printf("nrand48 %ld %ld %ld %f %ld \n", nrand48 (rac), lrand48 (), mrand48 (), erand48 (rac), jrand48 (rac));
     }
+
+  char destination[1024];
+
+  *destination = 0;
+  printf("strcat test %s \n \n ", strcat ( destination, "Hello DCE :)") );
+
+  printf("strcat test %s \n \n ", strncat ( destination, " Hello DCE :)", 3) );
+
+
   fflush(stdout);
 
   readBuffer = (char *)malloc( BUFF_LEN );
