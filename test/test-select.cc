@@ -602,10 +602,71 @@ launch (void *(*clientStart) (void *), void *(*serverStart) (void *))
   fflush (stderr);
 }
 
+// test, that select () returns a fd if it is available for writing when it is not availabe for reading
+// solved with else mustWait=false and take out the else in the if for writefds
+static void test_select_rfds_wfds (void)
+{
+  int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+
+  // prepare fd_set to select() on it
+  fd_set rfds;
+  FD_ZERO (&rfds);
+  FD_SET (sockfd, &rfds);
+
+  // prepare fd_set to select() on it
+  fd_set wfds;
+  FD_ZERO (&wfds);
+  FD_SET (sockfd, &wfds);
+
+  // doing select() with timeout = {0, 0}
+  struct timeval timeout = {5, 0};
+  int nfds = select (sockfd + 1, &rfds, &wfds, NULL, &timeout);
+  close (sockfd);
+  // no fds must be ready and select() should complete without errors
+  TEST_ASSERT_EQUAL (nfds, 1);
+  TEST_ASSERT (FD_ISSET(sockfd, &wfds));
+}
+
+// test, that select () returns correctly if there is two fds for reading and only one available
+// solved with else mustWait=false
+static void test_select_rfds (void)
+{
+  // create timer to check whether a following call to select() blocks
+  int timerfd = timerfd_create (CLOCK_MONOTONIC, 0);
+  TEST_ASSERT_UNEQUAL (timerfd, -1);
+
+  // arm timer to fire in 5 seconds
+  struct itimerspec new_value;
+  new_value.it_value.tv_sec = 5;
+  new_value.it_value.tv_nsec = 0;
+  new_value.it_interval.tv_sec = 0;
+  new_value.it_interval.tv_nsec = 0;
+  int status = timerfd_settime (timerfd, 0, &new_value, 0);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  int filefd = open ("X1", O_CREAT | O_TRUNC | O_RDWR, S_IRWXU);
+
+
+  // prepare fd_set to select() on it
+  fd_set fds;
+  FD_ZERO (&fds);
+  FD_SET (timerfd, &fds);
+  FD_SET (filefd, &fds);
+
+  // doing select() with timeout = {0, 0}
+  struct timeval timeout = {6, 0};
+  int nfds = select (timerfd > filefd ? timerfd + 1 : filefd + 1, &fds, NULL, NULL, &timeout);
+  close (timerfd);
+  close (filefd);
+  // no fds must be ready and select() should complete without errors
+  TEST_ASSERT_EQUAL (nfds, 1);
+}
+
 int
 main (int argc, char *argv[])
 {
   signal (SIGPIPE, SIG_IGN);
+
 
   if ( 1 < 2 )
     {
@@ -613,6 +674,8 @@ main (int argc, char *argv[])
       test_select_stdout_stdin ();
       test_select_null_null ();
       test_select_stdout ();
+      test_select_rfds_wfds ();
+      test_select_rfds ();
       launch (client1, server1);
       launch (client2, server2);
       launch (client3, server3);

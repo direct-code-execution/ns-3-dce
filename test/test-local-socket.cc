@@ -165,7 +165,7 @@ client2 (void *arg)
   status = connect (sock, (struct sockaddr *) &address, SUN_LEN(&address));
   TEST_ASSERT_EQUAL (status, 0);
 
-  struct timeval tiout;
+  struct timeval tiout; // XXX TEMPOFUR
 
   tiout.tv_sec = 3;
   tiout.tv_usec = 42;
@@ -1411,11 +1411,654 @@ server15 (void *arg)
   return arg;
 }
 
+static int
+CreateDgramConnect (void)
+{
+  int status;
+  struct sockaddr_un address;
+  int sock = socket (AF_UNIX, SOCK_DGRAM, 0);
+
+  memset (&address, 0, sizeof(address));
+  address.sun_family = AF_UNIX;
+  strcpy (address.sun_path, SOCK_PATH);
+
+  status = connect (sock, (struct sockaddr *) &address, SUN_LEN(&address));
+
+  if (status == 0)
+    {
+      return sock;
+    }
+  close (sock);
+
+  return -1;
+}
+
+static int
+CreateDgramBind (void)
+{
+  int status;
+  int sock = -1;
+  struct sockaddr_un address;
+
+  sock = socket (AF_UNIX, SOCK_DGRAM, 0);
+
+  memset (&address, 0, sizeof(address));
+  address.sun_family = AF_UNIX;
+  strcpy (address.sun_path, SOCK_PATH);
+  status = bind (sock, (struct sockaddr *) &address, SUN_LEN(&address));;
+  if (status == 0)
+    {
+      return sock;
+    }
+  printf ("bind failed: errno %d\n \n ", errno);
+  close (sock);
+  return -1;
+}
+
+// SOCK_DGRAM familly
+// TEST 16, listen should failed, only one bind over same file, accept should failed too
+// write should failed, read too
+// connect should success
+
+static void *
+client16 (void *arg)
+{
+  int sock = -1;
+  int status = 0;
+
+  sleep (1);
+  sock = CreateDgramBind ();
+  TEST_ASSERT_EQUAL ( sock, -1 );
+  TEST_ASSERT_EQUAL ( errno, EADDRINUSE );
+
+  sock = CreateDgramConnect ();
+  TEST_ASSERT( sock >= 0 );
+
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  printf ("Client16: end \n\n ");
+
+  return arg;
+}
+
+static void *
+server16 (void *arg)
+{
+  unlink (SOCK_PATH);
+  int sock = CreateDgramBind ();
+  int buf = -1;
+  int status;
+
+  TEST_ASSERT( sock >= 0 );
+
+  status = listen (sock, 12);
+  TEST_ASSERT_EQUAL (status , -1);
+  TEST_ASSERT_EQUAL (errno , EOPNOTSUPP);
+
+  status = accept (sock, NULL, NULL);
+  TEST_ASSERT_EQUAL (status , -1);
+  TEST_ASSERT_EQUAL (errno , EOPNOTSUPP);
+
+  status = write (sock, &buf, sizeof(buf));
+  TEST_ASSERT_EQUAL (status , -1);
+  TEST_ASSERT_EQUAL (errno , ENOTCONN);
+
+  sleep (5);
+
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  unlink (SOCK_PATH);
+
+  printf ("Server16: end \n\n ");
+
+  return arg;
+}
+
+// Simple data exchange using connected socket, bind, write and read.
+#define BUF_LEN17 ((size_t) 1024)
+
+static char readBuf17[BUF_LEN17];
+static char sendBuf17[BUF_LEN17];
+
+static void *
+client17 (void *arg)
+{
+  int sock = -1;
+  int status = 0;
+
+  sleep (1);
+  sock = CreateDgramConnect ();
+  TEST_ASSERT ( sock > 0 );
+
+  memset (sendBuf17, 17, sizeof(sendBuf17));
+
+  status = write (sock, sendBuf17, sizeof(sendBuf17));
+  TEST_ASSERT_EQUAL (status, sizeof(sendBuf17));
+
+  sleep(1);
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  printf ("Client17: end \n\n ");
+
+  return arg;
+}
+
+static void *
+server17 (void *arg)
+{
+  unlink (SOCK_PATH);
+  int sock = CreateDgramBind ();
+  int buf = -1;
+  int status;
+
+  TEST_ASSERT( sock >= 0 );
+
+  status = read ( sock, readBuf17, sizeof ( readBuf17 ));
+  TEST_ASSERT_EQUAL (status, sizeof(readBuf17));
+
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  unlink (SOCK_PATH);
+
+  printf ("Server17: end \n\n ");
+
+  return arg;
+}
+
+static struct sockaddr_un stAddress;
+
+static struct sockaddr *
+PrepAddr (void)
+{
+  memset (&stAddress, 0, sizeof(stAddress));
+  stAddress.sun_family = AF_UNIX;
+  strcpy (stAddress.sun_path, SOCK_PATH);
+  return (struct sockaddr *) &stAddress;
+}
+
+// Simple data exchange using bind, sendto and recvfrom
+#define BUF_LEN18 ((size_t) 1024)
+
+static char readBuf18[BUF_LEN18];
+static char sendBuf18[BUF_LEN18];
+
+static void *
+client18 (void *arg)
+{
+  int sock = -1;
+  int status = 0;
+
+  sleep (1);
+  sock = socket (AF_UNIX, SOCK_DGRAM, 0);
+  TEST_ASSERT ( sock > 0 );
+
+  memset (sendBuf18, 18, sizeof(sendBuf18));
+
+  status = sendto (sock, sendBuf18, sizeof(sendBuf18), 0, PrepAddr (), sizeof(sockaddr_un) );
+  TEST_ASSERT_EQUAL (status, sizeof(sendBuf18));
+
+  sleep(1);
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  printf ("Client18: end \n\n ");
+
+  return arg;
+}
+
+static void *
+server18 (void *arg)
+{
+  unlink (SOCK_PATH);
+  int sock = CreateDgramBind ();
+  int buf = -1;
+  int status;
+  socklen_t l = sizeof(sockaddr_un);
+  TEST_ASSERT( sock >= 0 );
+
+  status = recvfrom( sock, readBuf18, sizeof(readBuf18), 0, PrepAddr (), &l );
+  TEST_ASSERT_EQUAL (status, sizeof(readBuf18));
+
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  unlink (SOCK_PATH);
+
+  printf ("Server18: end \n\n ");
+
+  return arg;
+}
+
+// Simple data exchange using  sendmsg, bind and recvmsg
+#define BUF_LEN19 ((size_t) 1024)
+static char readBuf19[BUF_LEN19];
+static char sendBuf19[BUF_LEN19];
+static void *
+client19 (void *arg)
+{
+  int sock = -1;
+  int status = 0;
+  struct msghdr mes;
+  struct iovec msg1;
+
+  sleep (1);
+  sock = socket (AF_UNIX, SOCK_DGRAM, 0);
+  TEST_ASSERT ( sock > 0 );
+
+  memset (sendBuf19, 19, sizeof(sendBuf19));
+
+  msg1.iov_base = &sendBuf19;
+  msg1.iov_len = sizeof(sendBuf19);
+
+  mes.msg_name = (void*) PrepAddr ();
+  mes.msg_namelen = sizeof(sockaddr_un);
+  mes.msg_iov = &msg1;
+  mes.msg_iovlen = 1;
+  mes.msg_control = 0;
+  mes.msg_controllen = 0;
+  mes.msg_flags = 0;
+
+  ssize_t res =  sendmsg( sock, &mes, 0);
+  printf ("sendmsg --> %d, errno: %d \n \n ", res, errno);
+  TEST_ASSERT_EQUAL ( res, sizeof(sendBuf19) );
+
+  sleep(1);
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  printf ("Client19: end \n\n ");
+
+  return arg;
+}
+
+static void *
+server19 (void *arg)
+{
+  unlink (SOCK_PATH);
+  int sock = CreateDgramBind ();
+  int buf = -1;
+  int status;
+  struct msghdr mes;
+  struct iovec msgs[2];
+
+  TEST_ASSERT( sock >= 0 );
+
+  msgs[0].iov_base = &(readBuf19[ sizeof( readBuf19 ) / 2  ]);
+  msgs[0].iov_len = sizeof( readBuf19 ) / 2;
+  msgs[1].iov_base = readBuf19;
+  msgs[1].iov_len = sizeof( readBuf19 ) / 2;
+  mes.msg_name = 0;
+  mes.msg_namelen = 0;
+  mes.msg_iov = msgs;
+  mes.msg_iovlen = 2;
+  mes.msg_control = 0;
+  mes.msg_controllen = 0;
+  mes.msg_flags = 0;
+
+  ssize_t lu = recvmsg( sock, &mes, 0);
+  printf ("recvmsg -> %d, errno: %d \n\n ", lu, errno);
+  TEST_ASSERT_EQUAL ( lu, sizeof(sendBuf19) );
+
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  unlink (SOCK_PATH);
+
+  printf ("Server19: end \n\n ");
+
+  return arg;
+}
+
+// Data exchange without same buffer size , TEST MSG_TRUNC flag
+#define BUF_LEN20 ((size_t) 1024)
+static char readBuf20[BUF_LEN20];
+static char sendBuf20[BUF_LEN20];
+static void *
+client20 (void *arg)
+{
+  sleep (1);
+
+  int sock = CreateDgramConnect ();
+  int status = 0;
+  struct msghdr mes;
+  struct iovec msg1;
+
+  TEST_ASSERT ( sock > 0 );
+
+  memset (sendBuf20, 20, sizeof(sendBuf20));
+  msg1.iov_base = &sendBuf20;
+  msg1.iov_len = sizeof(sendBuf20);
+
+  mes.msg_name = 0;
+  mes.msg_namelen = 0;
+  mes.msg_iov = &msg1;
+  mes.msg_iovlen = 1;
+  mes.msg_control = 0;
+  mes.msg_controllen = 0;
+  mes.msg_flags = 0;
+
+  ssize_t res =  sendmsg( sock, &mes, 0);
+  printf ("sendmsg --> %d, errno: %d \n \n ", res, errno);
+  TEST_ASSERT_EQUAL ( res, sizeof(sendBuf20) );
+
+  sleep(1);
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  printf ("Client20: end \n\n ");
+
+  return arg;
+}
+
+static void *
+server20 (void *arg)
+{
+  unlink (SOCK_PATH);
+  int sock = CreateDgramBind ();
+  int buf = -1;
+  int status;
+  struct msghdr mes;
+  struct iovec msgs[2];
+
+  TEST_ASSERT( sock >= 0 );
+
+  msgs[0].iov_base = &(readBuf20[ sizeof( readBuf20 ) / 2  ]);
+  msgs[0].iov_len = sizeof( readBuf20 ) / 2;
+
+  mes.msg_name = 0;
+  mes.msg_namelen = 0;
+  mes.msg_iov = msgs;
+  mes.msg_iovlen = 1;
+  mes.msg_control = 0;
+  mes.msg_controllen = 0;
+  mes.msg_flags = 0;
+  ssize_t lu = recvmsg( sock, &mes, 0);
+  printf ("recvmsg -> %d, errno: %d \n\n ", lu, errno);
+  TEST_ASSERT_EQUAL ( lu, sizeof(sendBuf20) / 2 );
+  TEST_ASSERT_EQUAL ( mes.msg_flags & MSG_TRUNC, MSG_TRUNC);
+
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  unlink (SOCK_PATH);
+
+  printf ("Server20: end \n\n ");
+
+  return arg;
+}
+
+// TEST test MSG_PEEK behavior, and MSG_DONWAIT
+#define BUF_LEN21 ((size_t) 1024)
+static char readBuf21[BUF_LEN21];
+static char sendBuf21[BUF_LEN21];
+static void *
+client21 (void *arg)
+{
+  sleep (1);
+
+  int sock = CreateDgramConnect ();
+  int status = 0;
+  struct msghdr mes;
+  struct iovec msg1;
+
+  TEST_ASSERT ( sock > 0 );
+
+  memset (sendBuf21, 21, sizeof(sendBuf21));
+  msg1.iov_base = &sendBuf21;
+  msg1.iov_len = sizeof(sendBuf21);
+
+  mes.msg_name = 0;
+  mes.msg_namelen = 0;
+  mes.msg_iov = &msg1;
+  mes.msg_iovlen = 1;
+  mes.msg_control = 0;
+  mes.msg_controllen = 0;
+  mes.msg_flags = 0;
+
+  ssize_t res =  sendmsg( sock, &mes, 0);
+  printf ("sendmsg --> %d, errno: %d \n \n ", res, errno);
+  TEST_ASSERT_EQUAL ( res, sizeof(sendBuf21) );
+
+  sleep(1);
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  printf ("Client21: end \n\n ");
+
+  return arg;
+}
+
+static void *
+server21 (void *arg)
+{
+  unlink (SOCK_PATH);
+  int sock = CreateDgramBind ();
+  int buf = -1;
+  int status;
+  struct msghdr mes;
+  struct iovec msgs[2];
+
+  TEST_ASSERT( sock >= 0 );
+
+  msgs[0].iov_base = readBuf21;
+  msgs[0].iov_len = sizeof( readBuf21 );
+
+  mes.msg_name = 0;
+  mes.msg_namelen = 0;
+  mes.msg_iov = msgs;
+  mes.msg_iovlen = 1;
+  mes.msg_control = 0;
+  mes.msg_controllen = 0;
+  mes.msg_flags = 0;
+  ssize_t lu = recvmsg( sock, &mes, MSG_PEEK);
+  printf ("First recvmsg -> %d, errno: %d \n\n ", lu, errno);
+  TEST_ASSERT_EQUAL ( lu, sizeof(sendBuf21));
+  TEST_ASSERT_EQUAL ( mes.msg_flags & MSG_TRUNC, 0);
+
+  msgs[0].iov_base = readBuf21;
+  msgs[0].iov_len = sizeof( readBuf21 );
+
+  mes.msg_name = 0;
+  mes.msg_namelen = 0;
+  mes.msg_iov = msgs;
+  mes.msg_iovlen = 1;
+  mes.msg_control = 0;
+  mes.msg_controllen = 0;
+  mes.msg_flags = 0;
+  lu = recvmsg( sock, &mes, 0);
+  printf ("Second recvmsg -> %d, errno: %d \n\n ", lu, errno);
+  TEST_ASSERT_EQUAL ( lu, sizeof(sendBuf21));
+  TEST_ASSERT_EQUAL ( mes.msg_flags & MSG_TRUNC, 0);
+
+  msgs[0].iov_base = readBuf21;
+  msgs[0].iov_len = sizeof( readBuf21 );
+
+  mes.msg_name = 0;
+  mes.msg_namelen = 0;
+  mes.msg_iov = msgs;
+  mes.msg_iovlen = 1;
+  mes.msg_control = 0;
+  mes.msg_controllen = 0;
+  mes.msg_flags = 0;
+  lu = recvmsg( sock, &mes, MSG_DONTWAIT);
+  printf ("Third recvmsg -> %d, errno: %d \n\n ", lu, errno);
+  TEST_ASSERT_EQUAL ( lu, -1);
+  TEST_ASSERT_EQUAL ( errno, EAGAIN);
+
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  unlink (SOCK_PATH);
+
+  printf ("Server21: end \n\n ");
+
+  return arg;
+}
+
+// Some Timeouts...
+// Receive Timeout
+#define BUF_LEN22 ((size_t) 1024)
+static char readBuf22[BUF_LEN22];
+static void *
+client22 (void *arg)
+{
+  printf ("Client22: end \n\n ");
+
+  return arg;
+}
+
+static void *
+server22 (void *arg)
+{
+  unlink (SOCK_PATH);
+  int sock = CreateDgramBind ();
+  int buf = -1;
+  int status;
+  struct msghdr mes;
+  struct iovec msgs[2];
+
+  TEST_ASSERT( sock >= 0 );
+  struct timeval tiout;
+
+  tiout.tv_sec = 3;
+  tiout.tv_usec = 42;
+  status = setsockopt (sock, SOL_SOCKET, SO_RCVTIMEO, &tiout, sizeof(tiout));
+  TEST_ASSERT_EQUAL (status, 0);
+
+  msgs[0].iov_base = readBuf22;
+  msgs[0].iov_len = sizeof( readBuf22 );
+
+  mes.msg_name = 0;
+  mes.msg_namelen = 0;
+  mes.msg_iov = msgs;
+  mes.msg_iovlen = 1;
+  mes.msg_control = 0;
+  mes.msg_controllen = 0;
+  mes.msg_flags = 0;
+  ssize_t lu = recvmsg( sock, &mes, 0);
+  printf ("First recvmsg -> %d, errno: %d \n\n ", lu, errno);
+  TEST_ASSERT_EQUAL ( lu, -1);
+  TEST_ASSERT_EQUAL ( errno, EAGAIN );
+
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  unlink (SOCK_PATH);
+
+  printf ("Server22: end \n\n ");
+
+  return arg;
+}
+
+// Some Timeouts...
+// Send Timeout
+#define BUF_LEN23 ((size_t) 1024)
+static char readBuf23[BUF_LEN23];
+static char sendBuf23[BUF_LEN23];
+static void *
+client23 (void *arg)
+{
+  sleep( 1 );
+
+  int sock = CreateDgramConnect ();
+  int status = 0;
+  struct msghdr mes;
+  struct iovec msg1;
+
+  TEST_ASSERT ( sock > 0 );
+  struct timeval tiout;
+
+  tiout.tv_sec = 1;
+  tiout.tv_usec = 0;
+  status = setsockopt (sock, SOL_SOCKET, SO_SNDTIMEO, &tiout, sizeof(tiout));
+  TEST_ASSERT_EQUAL (status, 0);
+
+  while (true)
+    {
+      memset (sendBuf23, 23, sizeof(sendBuf23));
+      msg1.iov_base = &sendBuf23;
+      msg1.iov_len = sizeof(sendBuf23);
+
+      mes.msg_name = 0;
+      mes.msg_namelen = 0;
+      mes.msg_iov = &msg1;
+      mes.msg_iovlen = 1;
+      mes.msg_control = 0;
+      mes.msg_controllen = 0;
+      mes.msg_flags = 0;
+
+      ssize_t res = sendmsg( sock, &mes, 0);
+      printf ("sendmsg --> %d, errno: %d \n \n ", res, errno);
+
+      if (res < 0)
+        {
+          break;
+        }
+
+    }
+  TEST_ASSERT_EQUAL ( errno, EAGAIN );
+
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  printf ("Client23: end \n\n ");
+
+  return arg;
+}
+
+static void *
+server23 (void *arg)
+{
+  unlink (SOCK_PATH);
+  int sock = CreateDgramBind ();
+  int buf = -1;
+  int status;
+  struct msghdr mes;
+  struct iovec msgs[2];
+  int sec = 1;
+
+  TEST_ASSERT( sock >= 0 );
+  struct timeval tiout;
+
+  tiout.tv_sec = 2;
+  tiout.tv_usec = 0;
+  status = setsockopt (sock, SOL_SOCKET, SO_RCVTIMEO, &tiout, sizeof(tiout));
+  TEST_ASSERT_EQUAL (status, 0);
+
+  while(true)
+    {
+      msgs[0].iov_base = readBuf22;
+      msgs[0].iov_len = sizeof( readBuf22 );
+
+      mes.msg_name = 0;
+      mes.msg_namelen = 0;
+      mes.msg_iov = msgs;
+      mes.msg_iovlen = 1;
+      mes.msg_control = 0;
+      mes.msg_controllen = 0;
+      mes.msg_flags = 0;
+      ssize_t lu = recvmsg( sock, &mes, 0);
+      printf ("recvmsg -> %d, errno: %d \n\n ", lu, errno);
+      if ( lu < 0 ) break;
+      sleep (2);
+    }
+
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  unlink (SOCK_PATH);
+
+  printf ("Server23: end \n\n ");
+
+  return arg;
+}
 
 static void
-launch (void *
-(*clientStart) (void *), void *
-(*serverStart) (void *))
+launch (void * (*clientStart) (void *), void *(*serverStart) (void *))
 {
   int status;
   pthread_t theClient;
@@ -1446,8 +2089,10 @@ main (int argc, char *argv[])
 {
   signal (SIGPIPE, SIG_IGN);
 
-  if (1 > 2)
+  if (1 < 2)
     {
+      launch (client22, server22);
+      launch (client23, server23);
     }
   else
     {
@@ -1466,6 +2111,14 @@ main (int argc, char *argv[])
       launch (client13, server13);
       launch (client14, server14); // Failed
       launch (client15, server15);
+
+      // DGRAMs
+      launch (client16, server16);
+      launch (client17, server17);
+      launch (client18, server18);
+      launch (client19, server19);
+      launch (client20, server20);
+      launch (client21, server21);
     }
   //
 
