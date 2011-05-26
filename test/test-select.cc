@@ -539,6 +539,8 @@ server5 (void *arg)
   close (sock);
   close (sockin);
 
+  unlink (SOCK_PATH);
+
   printf ("Server5: end\n ");
 
   return arg;

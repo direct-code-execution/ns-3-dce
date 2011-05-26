@@ -248,6 +248,8 @@ def build(bld):
         'model/socket-fd-factory.cc',
         'model/ns3-socket-fd-factory.cc',
         'model/local-socket-fd.cc',
+        'model/local-stream-socket-fd.cc',
+        'model/local-datagram-socket-fd.cc',
         'model/local-socket-fd-factory.cc',
         # helper.
         'helper/dce-manager-helper.cc',

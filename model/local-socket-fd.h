@@ -25,6 +25,7 @@
 #include "ns3/ptr.h"
 #include <list>
 #include "ns3/nstime.h"
+#include "ns3/object.h"
 
 namespace ns3 {
 
@@ -45,29 +46,30 @@ class LocalSocketFdFactory;
 class LocalSocketFd : public UnixFd
 {
 public:
-  LocalSocketFd (Ptr<LocalSocketFdFactory> f);
-  LocalSocketFd (LocalSocketFd *peer, std::string connectPath);
+  static TypeId GetTypeId (void);
+  virtual TypeId GetInstanceTypeId (void) const;
 
+  LocalSocketFd ();
   virtual ~LocalSocketFd ();
 
-  virtual int Close (void);
-  virtual ssize_t Write (const void *buf, size_t count);
-  virtual ssize_t Read(void *buf, size_t count);
-  virtual ssize_t Recvmsg(struct msghdr *msg, int flags);
-  virtual ssize_t Sendmsg(const struct msghdr *msg, int flags);
+  virtual int Close (void) = 0;
+  virtual ssize_t Write (const void *buf, size_t count) = 0;
+  virtual ssize_t Read(void *buf, size_t count) = 0;
+  virtual ssize_t Recvmsg(struct msghdr *msg, int flags) = 0;
+  virtual ssize_t Sendmsg(const struct msghdr *msg, int flags) = 0;
   virtual bool Isatty (void) const;
   virtual int Setsockopt (int level, int optname,
-                          const void *optval, socklen_t optlen);
+                          const void *optval, socklen_t optlen) = 0;
   virtual int Getsockopt (int level, int optname,
-                          void *optval, socklen_t *optlen);
-  virtual int Getsockname(struct sockaddr *name, socklen_t *namelen);
-  virtual int Getpeername(struct sockaddr *name, socklen_t *namelen);
+                          void *optval, socklen_t *optlen) = 0;
+  virtual int Getsockname(struct sockaddr *name, socklen_t *namelen) = 0;
+  virtual int Getpeername(struct sockaddr *name, socklen_t *namelen) = 0;
   virtual int Ioctl (int request, char *argp);
-  virtual int Bind (const struct sockaddr *my_addr, socklen_t addrlen);
-  virtual int Connect (const struct sockaddr *my_addr, socklen_t addrlen);
-  virtual int Listen (int backlog);
-  virtual int Shutdown(int how);
-  virtual int Accept (struct sockaddr *my_addr, socklen_t *addrlen);
+  virtual int Bind (const struct sockaddr *my_addr, socklen_t addrlen) = 0;
+  virtual int Connect (const struct sockaddr *my_addr, socklen_t addrlen) = 0;
+  virtual int Listen (int backlog) = 0;
+  virtual int Shutdown(int how) = 0;
+  virtual int Accept (struct sockaddr *my_addr, socklen_t *addrlen) = 0;
   virtual void *Mmap (void *start, size_t length, int prot, int flags, off64_t offset);
   virtual off64_t Lseek (off64_t offset, int whence);
   virtual int Fxstat (int ver, struct ::stat *buf);
@@ -78,32 +80,25 @@ public:
                        struct itimerspec *old_value);
   virtual int Gettime (struct itimerspec *cur_value) const;
 
-  virtual bool CanRecv (void) const;
-  virtual bool CanSend (void) const;
-  virtual bool HangupReceived (void) const;
+  virtual bool CanRecv (void) const = 0;
+  virtual bool CanSend (void) const = 0;
+  virtual bool HangupReceived (void) const = 0;
 
-private:
-  bool InternalConnect (void);
-  bool IsAccepting (void);
-  bool IsListening (void);
-  void ConnectionCreated (Ptr<LocalSocketFd> sock);
-  void RemoveFromQueue (Ptr<LocalSocketFd> sock);
-  void SetPeer (LocalSocketFd *sock);
-  void PeerClosed(void);
-  void ClearAll(bool andWakeUp);
+protected:
+  void ClearReadBuffer (void);
+  virtual void ClearAll(bool andWakeUp) = 0;
+  virtual bool IsClosed (void) const = 0;
 
-  size_t ReadData (uint8_t* buf, size_t len);
+  Time GetRecvTimeout (void);
+  Time GetSendTimeout (void);
   // Return :
   //   the size readed ,
   //  or 0 if no more space available,
   //  or -1 if fatal error occurs
   //  or -2 if read part is shuted down
   ssize_t DoRecvPacket (uint8_t* buf, size_t len);
-  bool IsShutWrite(void) const;
 
-
-  Time GetRecvTimeout (void);
-  Time GetSendTimeout (void);
+  size_t ReadData (uint8_t* buf, size_t len, bool peek);
 
   struct Buffer
   {
@@ -111,36 +106,20 @@ private:
     size_t size;
     size_t readOffset;
   };
-  enum State
-  {
-    CREATED,
-    BINDED,
-    LISTENING,
-    ACCEPTING,
-    CONNECTING,
-    CONNECTED,
-    REMOTECLOSED,
-    CLOSED
-  };
-  typedef std::list<Ptr<LocalSocketFd> > FifoCnx;
-  typedef std::list<Buffer> FifoData;
+  typedef std::list<struct Buffer*> FifoData;
+
+  FifoData m_readBuffer;
+  size_t m_readBufferSize;
 
   Time m_sendTimeout;
   Time m_recvTimeout;
-
   Ptr<LocalSocketFdFactory> m_factory;
+  int32_t m_linger;
+  int m_statusFlags;
   std::string m_bindPath;
   std::string m_connectPath;
-  enum State m_state;
-  FifoCnx m_cnxQueue;
-  int m_backLog;
-  FifoData m_readBuffer;
-  size_t m_readBufferSize;
-  LocalSocketFd *m_peer;
-  int32_t m_linger;
   bool m_shutRead;
   bool m_shutWrite;
-  int m_statusFlags;
  };
 
 } // namespace ns3

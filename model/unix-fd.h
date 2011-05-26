@@ -4,15 +4,17 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <time.h>
-#include "ns3/ref-count-base.h"
+//#include "ns3/ref-count-base.h"
+#include "ns3/object.h"
 
 namespace ns3 {
 
 class Waiter;
 
-class UnixFd : public RefCountBase
+class UnixFd : public Object
 {
 public:
+  static TypeId GetTypeId (void);
   virtual int Close (void) = 0;
   virtual ssize_t Write (const void *buf, size_t count) = 0;
   virtual ssize_t Read(void *buf, size_t count) = 0;

@@ -139,7 +139,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
     int duration;
   } testPair;
 
-  const testPair tests[] = { /*
+  const testPair tests[] = {
       { "test-empty", 0 },
       {  "test-sleep", 0 },
       {  "test-pthread", 0 },
@@ -157,14 +157,14 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-env", 0 },
       {  "test-cond", 0 },
       {  "test-timer-fd", 0 },
-      {  "test-stdlib", 0 }, */
-      {  "test-select", 3600 }, /*
+      {  "test-stdlib", 0 },
+      {  "test-select", 3600 },
       {  "test-nanosleep", 0 },
       {  "test-random", 0 },
       {  "test-fork", 0 },
       {  "test-local-socket", 0 },
       {  "test-poll", 320 },
-      {  "test-tcp-socket", 320 },*/
+      {  "test-tcp-socket", 320 },
   };
   for (unsigned int i = 0; i < sizeof(tests)/sizeof(testPair);i++)
     {

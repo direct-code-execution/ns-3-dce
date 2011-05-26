@@ -165,7 +165,7 @@ client2 (void *arg)
   status = connect (sock, (struct sockaddr *) &address, SUN_LEN(&address));
   TEST_ASSERT_EQUAL (status, 0);
 
-  struct timeval tiout; // XXX TEMPOFUR
+  struct timeval tiout;
 
   tiout.tv_sec = 3;
   tiout.tv_usec = 42;
@@ -1599,6 +1599,7 @@ client18 (void *arg)
   memset (sendBuf18, 18, sizeof(sendBuf18));
 
   status = sendto (sock, sendBuf18, sizeof(sendBuf18), 0, PrepAddr (), sizeof(sockaddr_un) );
+  printf ("Server18: sendto -> %d, errno: %d \n \n ", status, errno);
   TEST_ASSERT_EQUAL (status, sizeof(sendBuf18));
 
   sleep(1);
@@ -1618,9 +1619,15 @@ server18 (void *arg)
   int buf = -1;
   int status;
   socklen_t l = sizeof(sockaddr_un);
+  struct sockaddr_un exp;
+
+
   TEST_ASSERT( sock >= 0 );
 
-  status = recvfrom( sock, readBuf18, sizeof(readBuf18), 0, PrepAddr (), &l );
+  memset ( &exp, 0, l);
+
+  status = recvfrom( sock, readBuf18, sizeof(readBuf18), 0, (struct sockaddr *) &exp, &l );
+  printf ("Server18: recvfrom -> %d, errno: %d FROM: %s \n \n ", status, errno, exp.sun_path );
   TEST_ASSERT_EQUAL (status, sizeof(readBuf18));
 
   status = close (sock);
@@ -1683,7 +1690,7 @@ server19 (void *arg)
   int buf = -1;
   int status;
   struct msghdr mes;
-  struct iovec msgs[2];
+  struct iovec msgs[3];
 
   TEST_ASSERT( sock >= 0 );
 
@@ -1691,10 +1698,12 @@ server19 (void *arg)
   msgs[0].iov_len = sizeof( readBuf19 ) / 2;
   msgs[1].iov_base = readBuf19;
   msgs[1].iov_len = sizeof( readBuf19 ) / 2;
+  msgs[2].iov_base = readBuf19;
+  msgs[2].iov_len = sizeof( readBuf19 ) / 2;
   mes.msg_name = 0;
   mes.msg_namelen = 0;
   mes.msg_iov = msgs;
-  mes.msg_iovlen = 2;
+  mes.msg_iovlen = 3;
   mes.msg_control = 0;
   mes.msg_controllen = 0;
   mes.msg_flags = 0;
@@ -1799,7 +1808,6 @@ static void *
 client21 (void *arg)
 {
   sleep (1);
-
   int sock = CreateDgramConnect ();
   int status = 0;
   struct msghdr mes;
@@ -2057,6 +2065,178 @@ server23 (void *arg)
   return arg;
 }
 
+// Client Write Until blocage, then block in a last send
+// Server wait long then close.
+#define BUF_LEN24 ((size_t) 1024)
+static char readBuf24[BUF_LEN24];
+static char sendBuf24[BUF_LEN24];
+static void *
+client24 (void *arg)
+{
+  sleep( 1 );
+  int sock = CreateDgramConnect ();
+  int status = 0;
+  struct msghdr mes;
+  struct iovec msg1;
+
+  TEST_ASSERT ( sock > 0 );
+
+  struct timeval tiout;
+
+  tiout.tv_sec = 1;
+  tiout.tv_usec = 0;
+  status = setsockopt (sock, SOL_SOCKET, SO_SNDTIMEO, &tiout, sizeof(tiout));
+  TEST_ASSERT_EQUAL (status, 0);
+
+  while (true)
+    {
+      memset (sendBuf24, 24, sizeof(sendBuf24));
+      msg1.iov_base = &sendBuf24;
+      msg1.iov_len = sizeof(sendBuf24);
+
+      mes.msg_name = 0;
+      mes.msg_namelen = 0;
+      mes.msg_iov = &msg1;
+      mes.msg_iovlen = 1;
+      mes.msg_control = 0;
+      mes.msg_controllen = 0;
+      mes.msg_flags = 0;
+
+      ssize_t res = sendmsg( sock, &mes, 0);
+      printf ("C24: sendmsg --> %d, errno: %d \n \n ", res, errno);
+
+      if (res < 0)
+        {
+          tiout.tv_sec = 0;
+          tiout.tv_usec = 0;
+          status = setsockopt (sock, SOL_SOCKET, SO_SNDTIMEO, &tiout, sizeof(tiout));
+          TEST_ASSERT_EQUAL (status, 0);
+          mes.msg_name = 0;
+          mes.msg_namelen = 0;
+          mes.msg_iov = &msg1;
+          mes.msg_iovlen = 1;
+          mes.msg_control = 0;
+          mes.msg_controllen = 0;
+          mes.msg_flags = 0;
+
+          ssize_t res = sendmsg( sock, &mes, 0);
+          printf ("C24: LAST sendmsg --> %d, errno: %d \n \n ", res, errno);
+          break;
+        }
+
+    }
+  TEST_ASSERT_EQUAL ( errno, ECONNREFUSED );
+
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  printf ("Client24: end \n\n ");
+
+  return arg;
+}
+
+static void *
+server24 (void *arg)
+{
+  unlink (SOCK_PATH);
+  int sock = CreateDgramBind ();
+  int buf = -1;
+  int status;
+  struct msghdr mes;
+  struct iovec msgs[2];
+  int sec = 1;
+
+  TEST_ASSERT( sock >= 0 );
+
+  sleep (30);
+
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  unlink (SOCK_PATH);
+
+  printf ("Server24: end \n\n ");
+
+  return arg;
+}
+
+//
+//
+#define BUF_LEN25 ((size_t) 1024)
+static char readBuf25[BUF_LEN25];
+static char sendBuf25[BUF_LEN25];
+static void *
+client25 (void *arg)
+{
+  sleep( 1 );
+  int sock = CreateDgramConnect ();
+  int status = 0;
+  struct msghdr mes;
+  struct iovec msg1;
+
+  TEST_ASSERT ( sock > 0 );
+
+  sleep (4);
+
+  memset (sendBuf25, 25, sizeof(sendBuf25));
+  msg1.iov_base = &sendBuf25;
+  msg1.iov_len = sizeof(sendBuf25);
+
+  mes.msg_name = 0;
+  mes.msg_namelen = 0;
+  mes.msg_iov = &msg1;
+  mes.msg_iovlen = 1;
+  mes.msg_control = 0;
+  mes.msg_controllen = 0;
+  mes.msg_flags = 0;
+
+  ssize_t res = sendmsg( sock, &mes, 0);
+  printf ("C25: sendmsg --> %d, errno: %d \n \n ", res, errno);
+
+
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  printf ("Client25: end \n\n ");
+
+  return arg;
+}
+
+static void *
+server25 (void *arg)
+{
+  unlink (SOCK_PATH);
+  int sock = CreateDgramBind ();
+  int buf = -1;
+  int status;
+  struct msghdr mes;
+  struct iovec msgs[2];
+  int sec = 1;
+
+  TEST_ASSERT( sock >= 0 );
+
+  sleep (2);
+
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  unlink (SOCK_PATH);
+  sock = CreateDgramBind ();
+  TEST_ASSERT( sock >= 0 );
+
+  sleep (10);
+
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  unlink (SOCK_PATH);
+
+  printf ("Server25: end \n\n ");
+
+  return arg;
+}
+
+
 static void
 launch (void * (*clientStart) (void *), void *(*serverStart) (void *))
 {
@@ -2089,10 +2269,10 @@ main (int argc, char *argv[])
 {
   signal (SIGPIPE, SIG_IGN);
 
-  if (1 < 2)
+  if (  (1 > 2) )
     {
-      launch (client22, server22);
-      launch (client23, server23);
+      // DGRAMs
+
     }
   else
     {
@@ -2119,6 +2299,11 @@ main (int argc, char *argv[])
       launch (client19, server19);
       launch (client20, server20);
       launch (client21, server21);
+      launch (client22, server22);
+      launch (client23, server23);
+      launch (client24, server24);
+      launch (client25, server25);
+
     }
   //
 

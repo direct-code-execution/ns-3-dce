@@ -146,6 +146,10 @@ int dce_close (int fd)
       // methods from a destructor unless one is prepared to suffer considerably.
       retval = unixFd->Close ();
     }
+  else
+    {
+      NS_LOG_FUNCTION ( " TEMPOFUR more references : " << unixFd->GetReferenceCount () );
+    }
   unixFd->Unref ();
   current->process->openFiles[index].second = 0;
   current->process->openFiles[index].first = -1;
@@ -656,19 +660,12 @@ int dce_socket (int domain, int type, int protocol)
   NS_ASSERT (current != 0);
   NS_ASSERT (manager != 0);
 
-  int fd = UtilsAllocateFd ();
-  if (fd == -1)
-    {
-      current->err = EMFILE;
-      return -1;
-    }
-
   Ptr<SocketFdFactory>  factory = 0 ;
 
   if (domain != AF_UNIX)
     {
       factory = manager->GetObject<SocketFdFactory> ();
-  }
+    }
   else
     {
       factory = manager->GetObject<LocalSocketFdFactory> ();
@@ -677,7 +674,20 @@ int dce_socket (int domain, int type, int protocol)
           factory = CreateObject<LocalSocketFdFactory> ();
           manager->AggregateObject(factory);
         }
+      if ( type != SOCK_DGRAM && type != SOCK_STREAM )
+        {
+          current->err = EINVAL;
+          return -1;
+        }
     }
+
+  int fd = UtilsAllocateFd ();
+  if (fd == -1)
+    {
+      current->err = EMFILE;
+      return -1;
+    }
+
   UnixFd *socket = factory->CreateSocket (domain, type, protocol);
 
   current->process->openFiles.push_back (std::make_pair (fd, socket));

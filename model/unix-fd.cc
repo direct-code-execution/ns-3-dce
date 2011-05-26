@@ -3,6 +3,15 @@
 
 namespace ns3 {
 
+TypeId
+UnixFd::GetTypeId (void)
+{
+  static TypeId tid = TypeId ("ns3::UnixFd")
+    .SetParent<Object> ()
+    ;
+  return tid;
+}
+
 UnixFd::UnixFd ()
   : m_recvWaiter (0),
     m_sendWaiter (0)
