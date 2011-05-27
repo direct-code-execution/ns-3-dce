@@ -36,7 +36,8 @@ class LinuxSocketFdFactory : public SocketFdFactory
 public:
   static TypeId GetTypeId (void);
   LinuxSocketFdFactory ();
-  ~LinuxSocketFdFactory ();
+  virtual ~LinuxSocketFdFactory ();
+
   virtual UnixFd *CreateSocket (int domain, int type, int protocol);
 
   void Set (std::string path, std::string value);

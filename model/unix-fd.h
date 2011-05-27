@@ -11,7 +11,7 @@ namespace ns3 {
 
 class Waiter;
 
-class UnixFd : public Object
+class UnixFd: public Object
 {
 public:
   static TypeId GetTypeId (void);
@@ -52,6 +52,12 @@ public:
   // Return true if a select on this fd should return POLLHUP
   virtual bool HangupReceived (void) const = 0;
 
+  // File Descriptor Reference count
+  void IncRef (void);
+  void DecRef (void);
+  int32_t GetRef (void) const;
+
+
 protected:
   UnixFd ();
   void WakeupSend (void);
@@ -59,6 +65,7 @@ protected:
 private:
   Waiter *m_recvWaiter;
   Waiter *m_sendWaiter;
+  int32_t m_refCount;
 };
 
 } // namespace ns3

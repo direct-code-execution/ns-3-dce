@@ -2236,6 +2236,198 @@ server25 (void *arg)
   return arg;
 }
 
+// TEST 26: lot of connexions lot of fd whitout close
+static void *
+client26 (void *arg)
+{
+  int status;
+  struct sockaddr_un address;
+  int sock = -1;
+  std::vector<int> closeList;
+  int first = 1;
+  int first_socket = -1;
+
+  do {
+      sock = socket (AF_UNIX, SOCK_STREAM, 0);
+      if (sock < 0) break;
+      closeList.push_back(sock);
+
+      memset (&address, 0, sizeof(address));
+      address.sun_family = AF_UNIX;
+      strcpy (address.sun_path, SOCK_PATH);
+
+      status = connect (sock, (struct sockaddr *) &address, SUN_LEN(&address));
+      printf("Client26: connect -> %d \n ", status);
+
+      if ( first )
+        {
+          first = 0;
+          first_socket = sock;
+        }
+
+  } while(true);
+
+  printf("Client26: out of do-while\n ");
+
+    close(first_socket);
+
+  printf ("Client26: end \n\n ");
+
+  return arg;
+}
+
+static void *
+server26 (void *arg)
+{
+  int status;
+  int sock = -1;
+  int sockin = -1;
+  struct sockaddr_un address;
+  std::vector<int> closeList;
+
+  sock = socket (AF_UNIX, SOCK_STREAM, 0);
+  TEST_ASSERT( sock >= 0 );
+
+  memset (&address, 0, sizeof(address));
+  address.sun_family = AF_UNIX;
+  strcpy (address.sun_path, SOCK_PATH);
+  unlink (SOCK_PATH);
+  status = bind (sock, (struct sockaddr *) &address, SUN_LEN(&address));
+  TEST_ASSERT_EQUAL (status, 0);
+
+  status = listen (sock, 1);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  sockin = accept (sock, NULL, NULL);
+  TEST_ASSERT( sockin >= 0 );
+
+  closeList.push_back(sockin);
+
+  do
+    {
+      fd_set readFd;
+      int maxFd = (sock > sockin) ? sock : sockin;
+
+      FD_ZERO(&readFd);
+
+      FD_SET( sock, &readFd );
+      FD_SET( sockin, &readFd );
+
+      printf ("Server26: selecting ... \n ");
+
+      status = select ( 1 + maxFd, &readFd, NULL, NULL, NULL);
+      printf ("Server26: select -> %d \n ", status);
+      if (status > 0)
+        {
+          if ( FD_ISSET( sockin, &readFd) )
+            {
+              // The client close it !
+              break;
+            }
+          if ( FD_ISSET( sock, &readFd) )
+            {
+              // Incoming Connexion
+              int newSock = accept (sock, NULL, NULL);
+              if ( newSock >= 0 )
+                {
+                  closeList.push_back( newSock );
+                }
+            }
+        }
+      else
+        {
+          // workaround
+
+          break;
+        }
+    }
+  while (true);
+
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  unlink (SOCK_PATH);
+
+  printf ("Server26: end \n ");
+
+  return arg;
+}
+#define SOCK_PATH2 "/tmp/socket2"
+// TEST 27: lot of connexions lot of fd whitout close using DATAGRAM
+static void *
+client27 (void *arg)
+{
+  int status;
+  struct sockaddr_un address;
+  int sock = -1;
+  int first = 1;
+  int first_socket = socket (AF_UNIX, SOCK_STREAM, 0);
+
+  memset (&address, 0, sizeof(address));
+  address.sun_family = AF_UNIX;
+  strcpy (address.sun_path, SOCK_PATH2);
+
+  status = connect (first_socket, (struct sockaddr *) &address, SUN_LEN(&address));
+  printf("Client27: first connect -> %d \n ", status);
+
+  do {
+      sock = CreateDgramConnect ();
+      if (sock < 0) break;
+  } while(true);
+
+  printf("Client27: out of do-while\n ");
+
+  close(first_socket);
+
+  printf ("Client27: end \n\n ");
+
+  return arg;
+}
+
+static void *
+server27 (void *arg)
+{
+  int status;
+  int sock = -1;
+  int sockin = -1;
+  int sockd = CreateDgramBind ();
+  struct sockaddr_un address;
+
+  sock = socket (AF_UNIX, SOCK_STREAM, 0);
+  TEST_ASSERT( sock >= 0 );
+
+  memset (&address, 0, sizeof(address));
+  address.sun_family = AF_UNIX;
+  strcpy (address.sun_path, SOCK_PATH2);
+  unlink (SOCK_PATH2);
+  status = bind (sock, (struct sockaddr *) &address, SUN_LEN(&address));
+  TEST_ASSERT_EQUAL (status, 0);
+
+  status = listen (sock, 1);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  sockin = accept (sock, NULL, NULL);
+  TEST_ASSERT( sockin >= 0 );
+
+  do
+    {
+      int r = read (sockin, &status, sizeof(status));
+      if (r <= 0 ) break;
+    }
+  while (true);
+
+
+
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  unlink (SOCK_PATH);
+
+  printf ("Server27: end \n ");
+
+  return arg;
+}
+
 
 static void
 launch (void * (*clientStart) (void *), void *(*serverStart) (void *))
@@ -2269,12 +2461,7 @@ main (int argc, char *argv[])
 {
   signal (SIGPIPE, SIG_IGN);
 
-  if (  (1 > 2) )
-    {
-      // DGRAMs
-
-    }
-  else
+  if (  (1 < 2) )
     {
       launch (client1, server1);
       launch (client2, server2);
@@ -2291,7 +2478,7 @@ main (int argc, char *argv[])
       launch (client13, server13);
       launch (client14, server14); // Failed
       launch (client15, server15);
-
+      launch (client26, server26);
       // DGRAMs
       launch (client16, server16);
       launch (client17, server17);
@@ -2303,7 +2490,10 @@ main (int argc, char *argv[])
       launch (client23, server23);
       launch (client24, server24);
       launch (client25, server25);
-
+      launch (client27, server27);
+    }
+  else
+    {
     }
   //
 

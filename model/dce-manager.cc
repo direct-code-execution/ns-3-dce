@@ -451,6 +451,7 @@ DceManager::Clone (Thread *thread)
     {
       std::pair<int,UnixFd*> i = thread->process->openFiles[index];
       i.second->Ref ();
+      i.second->IncRef ();
       clone->openFiles.push_back (i);
     }
   // don't copy threads, semaphores, mutexes, condition vars
@@ -596,9 +597,21 @@ DceManager::DeleteProcess (struct Process *process)
   // close all its fds.
   for (uint32_t index = 0; index < process->openFiles.size (); index++)
     {
+      UnixFd *freeOne = process->openFiles[index].second;
+
       process->openFiles[index].first = -1;
-      process->openFiles[index].second->Unref ();
       process->openFiles[index].second = 0;
+
+      if ( 0 != freeOne )
+        {
+          freeOne->DecRef();
+
+          if ( freeOne->GetRef() == 0 )
+            {
+              freeOne->Dispose();
+            }
+          freeOne->Unref ();
+        }
     }
   process->openFiles.clear ();
   // finally, delete remaining threads

@@ -84,13 +84,13 @@ LocalSocketFdFactory::CreateSocket (int domain, int type, int protocol)
   return 0;
 }
 
-LocalSocketFd*
+Ptr<LocalSocketFd>
 LocalSocketFdFactory::FindBinder (std::string path, TypeId type) const
 {
   BindMap::const_iterator i = m_bindByPath.find (path);
   if (m_bindByPath.end () == i) return 0;
 
-  LocalSocketFd *winner = i->second;
+  Ptr<LocalSocketFd> winner = i->second;
 
 
   if ( ( winner != 0 ) && ( winner->GetInstanceTypeId() == type ) ) return winner;
@@ -99,7 +99,7 @@ LocalSocketFdFactory::FindBinder (std::string path, TypeId type) const
 }
 
 void
-LocalSocketFdFactory::RegisterBinder (std::string path, LocalSocketFd* socket)
+LocalSocketFdFactory::RegisterBinder (std::string path, Ptr<LocalSocketFd> socket)
 {
   m_bindByPath[path] = socket;
 }

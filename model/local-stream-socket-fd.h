@@ -51,9 +51,11 @@ public:
   virtual TypeId GetInstanceTypeId (void) const;
 
   LocalStreamSocketFd (Ptr<LocalSocketFdFactory> f);
-  LocalStreamSocketFd (LocalStreamSocketFd *peer, std::string connectPath);
+  LocalStreamSocketFd (Ptr<LocalStreamSocketFd> peer, std::string connectPath);
 
   virtual ~LocalStreamSocketFd ();
+
+  virtual void DoDispose (void);
 
   virtual int Close (void);
   virtual ssize_t Write (const void *buf, size_t count);
@@ -78,7 +80,7 @@ public:
   virtual bool HangupReceived (void) const;
 
 protected:
-  virtual void ClearAll(bool andWakeUp);
+  virtual void ClearAll (bool andWakeUp);
   virtual bool IsClosed (void) const ;
 
 private:
@@ -87,7 +89,7 @@ private:
   bool IsListening (void);
   void ConnectionCreated (Ptr<LocalStreamSocketFd> sock);
   void RemoveFromQueue (Ptr<LocalStreamSocketFd> sock);
-  void SetPeer (LocalStreamSocketFd *sock);
+  void SetPeer (Ptr<LocalStreamSocketFd> sock);
   void PeerClosed(void);
   bool IsShutWrite (void) const;
 
@@ -107,7 +109,7 @@ private:
   enum State m_state;
   FifoCnx m_cnxQueue;
   int m_backLog;
-  LocalStreamSocketFd *m_peer;
+  Ptr<LocalStreamSocketFd> m_peer;
 
  };
 

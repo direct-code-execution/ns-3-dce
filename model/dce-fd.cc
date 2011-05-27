@@ -136,8 +136,11 @@ int dce_close (int fd)
       return -1;
     }
   UnixFd *unixFd = current->process->openFiles[index].second;
+  current->process->openFiles[index].second = 0;
+  current->process->openFiles[index].first = -1;
   int retval = 0;
-  if (unixFd->GetReferenceCount () == 1)
+  unixFd->DecRef ();
+  if (unixFd->GetRef () <= 0)
     {
       // Note to the attentive reader: the logical and clean way to handle this call
       // to Close would be to move it to the UnixFd destructor and make the Close method
@@ -146,13 +149,7 @@ int dce_close (int fd)
       // methods from a destructor unless one is prepared to suffer considerably.
       retval = unixFd->Close ();
     }
-  else
-    {
-      NS_LOG_FUNCTION ( " TEMPOFUR more references : " << unixFd->GetReferenceCount () );
-    }
   unixFd->Unref ();
-  current->process->openFiles[index].second = 0;
-  current->process->openFiles[index].first = -1;
   current->process->openFiles.erase(current->process->openFiles.begin() + index);
   return retval;
 }
@@ -902,6 +899,7 @@ int dce_dup(int oldfd)
     }
   UnixFd *unixFd = current->process->openFiles[index].second;
   unixFd->Ref ();
+  unixFd->IncRef ();
   current->process->openFiles.push_back (std::make_pair (fd, unixFd));
   return fd;
 }
@@ -923,6 +921,7 @@ int dce_dup2(int oldfd, int newfd)
     }
   UnixFd *unixFd = current->process->openFiles[index].second;
   unixFd->Ref ();
+  unixFd->IncRef ();
   current->process->openFiles.push_back (std::make_pair (newfd, unixFd));
   return newfd;
 }

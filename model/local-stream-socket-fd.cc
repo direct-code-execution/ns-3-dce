@@ -51,20 +51,31 @@ LocalStreamSocketFd::GetInstanceTypeId (void) const
 LocalStreamSocketFd::LocalStreamSocketFd (Ptr<LocalSocketFdFactory> f) :
   m_state (CREATED), m_backLog (0)
 {
+  NS_LOG_FUNCTION (this);
   m_factory = f;
 }
 
-LocalStreamSocketFd::LocalStreamSocketFd (LocalStreamSocketFd *peer, std::string bindPath) :
+LocalStreamSocketFd::LocalStreamSocketFd (Ptr<LocalStreamSocketFd> peer, std::string bindPath) :
   m_state (CONNECTED), m_backLog (0),
   m_peer (peer)
 {
+  NS_LOG_FUNCTION (this);
   m_bindPath = bindPath;
-
 }
 
 LocalStreamSocketFd::~LocalStreamSocketFd ()
 {
+  NS_LOG_FUNCTION (this);
+
   ClearAll (false);
+}
+
+void
+LocalStreamSocketFd::DoDispose (void)
+{
+  NS_LOG_FUNCTION (this);
+  ClearAll (false);
+  LocalSocketFd::DoDispose ();
 }
 
 int
@@ -747,8 +758,8 @@ LocalStreamSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
     }
   std::string realPath = UtilsGetRealFilePath (std::string (((struct sockaddr_un*) my_addr)->sun_path));
 
-  LocalSocketFd* l1 =   m_factory->FindBinder (realPath , this->GetTypeId () ) ;
-  LocalStreamSocketFd *listener =  ( 0 == l1)?0:dynamic_cast<LocalStreamSocketFd*>( l1 );
+  Ptr<LocalSocketFd> l1 =   m_factory->FindBinder (realPath , this->GetTypeId () ) ;
+  LocalStreamSocketFd *listener =  ( 0 == l1)?0:dynamic_cast<LocalStreamSocketFd*>( PeekPointer (l1) );
 
   if (0 != listener)
     {
@@ -995,7 +1006,7 @@ LocalStreamSocketFd::RemoveFromQueue (Ptr<LocalStreamSocketFd> sock)
 }
 
 void
-LocalStreamSocketFd::SetPeer (LocalStreamSocketFd *sock)
+LocalStreamSocketFd::SetPeer (Ptr<LocalStreamSocketFd> sock)
 {
   m_peer = sock;
 }
