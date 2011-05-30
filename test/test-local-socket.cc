@@ -2383,10 +2383,10 @@ client27 (void *arg)
 
   printf("Client27: out of do-while\n ");
 
+
+
   close(first_socket);
-
   CloseAll(closeList);
-
   printf ("Client27: end \n\n ");
 
   return arg;
@@ -2436,6 +2436,155 @@ server27 (void *arg)
   return arg;
 }
 
+// Shutdown test and getpeername and ...
+static void *
+client28 (void *arg)
+{
+  int sock = -1;
+  int status = 0;
+  int data = 42;
+  struct sockaddr_un peerAddr, locAddr;
+
+  sleep (1);
+  sock = CreateDgramConnect ();
+  TEST_ASSERT ( sock > 0 );
+
+
+  socklen_t len = sizeof(struct sockaddr_un);
+  memset (&peerAddr, 0, sizeof(peerAddr));
+  status = getpeername (sock, (struct sockaddr *) &peerAddr, &len);
+  printf( "client28: getpeername -> %d, errno %d  %s  \n\n ", status, errno, peerAddr.sun_path);
+  TEST_ASSERT_EQUAL ( status , 0 );
+  TEST_ASSERT_EQUAL ( peerAddr.sun_family, AF_UNIX);
+  TEST_ASSERT_EQUAL ( strcmp( peerAddr.sun_path, SOCK_PATH), 0);
+
+  len = sizeof(struct sockaddr_un);
+  memset (&locAddr, 0, len);
+  status = getsockname (sock, (struct sockaddr *) &locAddr, &len);
+  printf( "client28: getsockname -> %d, errno %d  %s  \n\n ", status, errno, locAddr.sun_path);
+  TEST_ASSERT_EQUAL ( status , 0 );
+  TEST_ASSERT_EQUAL ( locAddr.sun_family, AF_UNIX);
+  TEST_ASSERT_EQUAL ( strlen( locAddr.sun_path) , 0 );
+
+  status = write (sock, &data, sizeof(data));
+  TEST_ASSERT_EQUAL (status, sizeof(data));
+
+  status = shutdown (sock, SHUT_RD);
+  printf( "client28: shutdown -> %d, errno %d\n\n ", status, errno);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  status = write (sock, &data, sizeof(data));
+  TEST_ASSERT_EQUAL (status, sizeof(data));
+
+  sleep (1);
+
+  status = write (sock, &data, sizeof(data));
+  TEST_ASSERT_EQUAL (status, -1);
+  TEST_ASSERT_EQUAL (errno, EPIPE);
+  printf( "client28: write -> %d, errno %d\n\n ", status, errno);
+
+  status = shutdown (sock, SHUT_RD);
+  printf( "client28: shutdown -> %d, errno %d\n\n ", status, errno);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  status = shutdown (sock, SHUT_WR);
+  printf( "client28: shutdown -> %d, errno %d\n\n ", status, errno);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  status = write (sock, &data, sizeof(data));
+  TEST_ASSERT_EQUAL (status, -1);
+  TEST_ASSERT_EQUAL (errno, EPIPE);
+
+  status = shutdown (sock, SHUT_WR);
+  printf( "client28: shutdown -> %d, errno %d\n\n ", status, errno);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  sleep(3);
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  status = shutdown (sock, SHUT_WR);
+  printf( "client28: shutdown -> %d, errno %d\n\n ", status, errno);
+  TEST_ASSERT_EQUAL (status, -1);
+  TEST_ASSERT_EQUAL (errno, EBADF);
+
+  printf ("Client28: end \n\n ");
+
+  return arg;
+}
+
+static void *
+server28 (void *arg)
+{
+  unlink (SOCK_PATH);
+  int sock = CreateDgramBind ();
+  int buf = -1;
+  int status;
+  int data = 0;
+  struct sockaddr_un peerAddr, locAddr;
+
+  TEST_ASSERT( sock >= 0 );
+
+  socklen_t len = sizeof(struct sockaddr_un);
+  memset (&peerAddr, 0, sizeof(peerAddr));
+  status = getpeername (sock, (struct sockaddr *) &peerAddr, &len);
+  printf( "server28: getpeername -> %d, errno %d  %s  \n\n ", status, errno, peerAddr.sun_path);
+  TEST_ASSERT_EQUAL ( status , -1 );
+  TEST_ASSERT_EQUAL ( errno, ENOTCONN );
+
+  len = sizeof(struct sockaddr_un);
+  memset (&locAddr, 0, len);
+  status = getsockname (sock, (struct sockaddr *) &locAddr, &len);
+  printf( "server28: getsockname -> %d, errno %d  %s  \n\n ", status, errno, locAddr.sun_path);
+  TEST_ASSERT_EQUAL ( status , 0 );
+  TEST_ASSERT_EQUAL ( locAddr.sun_family, AF_UNIX);
+  TEST_ASSERT_EQUAL ( strcmp( locAddr.sun_path, SOCK_PATH), 0);
+
+  status = shutdown (sock, SHUT_WR);
+  printf( "server28: shutdown -> %d, errno %d\n\n ", status, errno);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  status = shutdown (sock, SHUT_WR);
+  printf( "server28: shutdown -> %d, errno %d\n\n ", status, errno);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  status = read ( sock, &data, sizeof(data));
+  TEST_ASSERT_EQUAL (status, sizeof(data));
+
+  status = read ( sock, &data, sizeof(data));
+  TEST_ASSERT_EQUAL (status, sizeof(data));
+
+  status = shutdown (sock, SHUT_RD);
+  printf( "server28: shutdown -> %d, errno %d\n\n ", status, errno);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  status = read ( sock, &data, sizeof(data));
+  TEST_ASSERT_EQUAL (status, 0);
+
+  sleep (5);
+
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  status = shutdown (sock, SHUT_WR);
+  printf( "server28: shutdown -> %d, errno %d\n\n ", status, errno);
+  TEST_ASSERT_EQUAL (status, -1);
+  TEST_ASSERT_EQUAL (errno, EBADF);
+
+  sock = socket (AF_UNIX, SOCK_DGRAM, 0);
+  status = shutdown (sock, SHUT_WR);
+  printf( "server28: shutdown -> %d, errno %d\n\n ", status, errno);
+  TEST_ASSERT_EQUAL (status, 0);
+  status = shutdown (sock, SHUT_RD);
+  printf( "server28: shutdown -> %d, errno %d\n\n ", status, errno);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  unlink (SOCK_PATH);
+
+  printf ("Server28: end \n\n ");
+
+  return arg;
+}
 
 static void
 launch (void * (*clientStart) (void *), void *(*serverStart) (void *))
@@ -2499,11 +2648,13 @@ main (int argc, char *argv[])
       launch (client24, server24);
       launch (client25, server25);
       launch (client27, server27);
+      launch (client28, server28);
 
       launch (client26, server26);
     }
   else
     {
+
     }
 
   printf ("That's All Folks ....\n \n " );

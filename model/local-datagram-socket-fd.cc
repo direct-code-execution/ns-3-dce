@@ -113,7 +113,7 @@ LocalDatagramSocketFd::Read (void *buf, size_t count, bool noWait, bool peek)
         }
 
       // Should Wait data ?
-      if (noWait) return 0;
+      if (noWait || m_shutRead) return 0;
       if (  m_statusFlags & O_NONBLOCK  )
         {
           // Socket do not want to wait
@@ -234,25 +234,182 @@ LocalDatagramSocketFd::Setsockopt (int level, int optname, const void *optval, s
 int
 LocalDatagramSocketFd::Getsockopt (int level, int optname, void *optval, socklen_t *optlen)
 {
-  // XXX
-  NS_LOG_FUNCTION (this << "NYI" );
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (this << current << level << optname << optval << optlen);
+  NS_ASSERT (current != 0);
+
+  if (level != SOL_SOCKET)
+    {
+      current->err = EINVAL;
+      return -1;
+    }
+
+  switch (optname)
+    {
+    case SO_PASSCRED:
+      {
+        NS_LOG_DEBUG("LocalDatagramSocketFd SO_PASSCRED NOT IMPLEMENTED");
+        current->err = EINVAL;
+        return -1;
+      }
+
+    case SO_RCVBUF:
+    case SO_SNDBUF:
+      {
+        if ((0 == optval) || (0 == optlen) || ((*optlen) < sizeof(int)))
+          {
+            current->err = EINVAL;
+            return -1;
+          }
+
+        int *ival = (int*)optval;
+
+        *ival = LOCAL_SOCKET_MAX_BUFFER;
+
+        (*optlen) = sizeof(int);
+
+        return 0;
+      }
+    case SO_SNDLOWAT:
+    case SO_RCVLOWAT:
+      {
+        if ((0 == optval) || (0 == optlen) || ((*optlen) < sizeof(int)))
+          {
+            current->err = EINVAL;
+            return -1;
+          }
+
+        int *ival = (int*)optval;
+
+        *ival = 1;
+
+        (*optlen) = sizeof(int);
+
+        return 0;
+      }
+
+    case SO_RCVTIMEO:
+      {
+        if ((0 == optval) || (0 == optlen) || ( (*optlen) < sizeof(struct timeval)))
+          {
+            current->err = EINVAL;
+            return -1;
+          }
+
+        struct timeval *tv = (struct timeval*)optval;
+
+        *tv = UtilsTimeToTimeval(m_recvTimeout);
+
+        return 0;
+      }
+
+    case SO_SNDTIMEO:
+      {
+        if ((0 == optval) || (0 == optlen) || ( (*optlen) < sizeof(struct timeval)))
+          {
+            current->err = EINVAL;
+            return -1;
+          }
+
+        struct timeval *tv = (struct timeval*)optval;
+
+        *tv = UtilsTimeToTimeval(m_sendTimeout);
+
+        return 0;
+      }
+
+    case SO_TYPE:
+      {
+        if ((0 == optval) || (0 == optlen) || ((*optlen) < sizeof(int)))
+          {
+            current->err = EINVAL;
+            return -1;
+          }
+
+        int *ival = (int*)optval;
+
+        *ival = SOCK_DGRAM;
+
+        (*optlen) = sizeof(int);
+
+        return 0;
+      }
+
+    default:
+      {
+        current->err = EINVAL;
+        return -1;
+      }
+    }
+
   return -1;
 }
 
 int
 LocalDatagramSocketFd::Getsockname(struct sockaddr *name, socklen_t *namelen)
 {
-  // XXX
-  NS_LOG_FUNCTION (this << "NYI" );
-  return -1;
+  NS_LOG_FUNCTION (this);
+
+  if ( (0 == name) || (0 == namelen) )
+    {
+      Current() -> err = EINVAL;
+      return -1;
+    }
+  struct sockaddr_un address;
+
+  memset (&address , 0, sizeof(sockaddr_un));
+  address.sun_family = AF_UNIX;
+  if ((m_bindPath.length() > 0)&&(m_state != CLOSED))
+    {
+      std::string root = UtilsGetRealFilePath ("/");
+      std::string virtualPath = m_bindPath.substr(root.length()-1);
+
+      memcpy(&address.sun_path, virtualPath.c_str(), std::min(108, (int)virtualPath.length()));
+    }
+
+  socklen_t len = std::min( (int) *namelen, (int) sizeof(struct sockaddr_un) );
+
+  memcpy(name, &address, len);
+
+  *namelen = len;
+
+  return 0;
 }
 
 int
 LocalDatagramSocketFd::Getpeername(struct sockaddr *name, socklen_t *namelen)
 {
-  // XXX
-  NS_LOG_FUNCTION (this << "NYI" );
-  return -1;
+  NS_LOG_FUNCTION (this);
+
+  if ( (0 == name) || (0 == namelen) )
+    {
+      Current() -> err = EINVAL;
+      return -1;
+    }
+  if ( (m_state != CONNECTED) && (m_state != REMOTECLOSED) )
+    {
+      Current() -> err = ENOTCONN;
+      return -1;
+    }
+  struct sockaddr_un address;
+
+  memset (&address , 0, sizeof(sockaddr_un));
+  address.sun_family = AF_UNIX;
+  if (m_connectPath.length() > 0)
+    {
+      std::string root = UtilsGetRealFilePath ("/");
+      std::string virtualPath = m_connectPath.substr(root.length()-1);
+
+      memcpy(&address.sun_path, virtualPath.c_str(), std::min(108, (int)virtualPath.length()));
+    }
+
+  socklen_t len = std::min( (int) *namelen, (int) sizeof(struct sockaddr_un) );
+
+  memcpy(name, &address, len);
+
+  *namelen = len;
+
+  return 0;
 }
 
 int
@@ -368,9 +525,35 @@ LocalDatagramSocketFd::Listen (int backlog)
 int
 LocalDatagramSocketFd::Shutdown(int how)
 {
-  // XXX
-  NS_LOG_FUNCTION (this << "NYI" );
-  return -1;
+  NS_LOG_FUNCTION (this << how);
+  if ( m_state == CLOSED )
+    {
+      Current() -> err = EPIPE;
+      return -1;
+    }
+  switch (how)
+  {
+    case SHUT_RD:
+      {
+        m_shutRead = true;
+      }
+      break;
+
+    case SHUT_WR:
+      {
+
+        m_shutWrite = true;
+      }
+      break;
+
+    case SHUT_RDWR:
+      {
+        m_shutWrite = true;
+        m_shutRead = true;
+      }
+      break;
+  }
+  return 0;
 }
 
 int
@@ -408,9 +591,8 @@ LocalDatagramSocketFd::CanSend (void) const
 bool
 LocalDatagramSocketFd::HangupReceived (void) const
 {
-  // XXX
-  NS_LOG_FUNCTION (this << "NYI" );
-  return false;
+  NS_LOG_FUNCTION( this << " state:" << m_state);
+  return ( REMOTECLOSED == m_state );
 }
 
 ssize_t
