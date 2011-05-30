@@ -569,6 +569,188 @@ server5 (void *arg)
   return arg;
 }
 
+static int
+CreateDgramConnect (void)
+{
+  int status;
+  struct sockaddr_un address;
+  int sock = socket (AF_UNIX, SOCK_DGRAM, 0);
+
+  memset (&address, 0, sizeof(address));
+  address.sun_family = AF_UNIX;
+  strcpy (address.sun_path, SOCK_PATH);
+
+  status = connect (sock, (struct sockaddr *) &address, SUN_LEN(&address));
+
+  if (status == 0)
+    {
+      return sock;
+    }
+  close (sock);
+
+  return -1;
+}
+
+static int
+CreateDgramBind (void)
+{
+  int status;
+  int sock = -1;
+  struct sockaddr_un address;
+
+  sock = socket (AF_UNIX, SOCK_DGRAM, 0);
+
+  memset (&address, 0, sizeof(address));
+  address.sun_family = AF_UNIX;
+  strcpy (address.sun_path, SOCK_PATH);
+  status = bind (sock, (struct sockaddr *) &address, SUN_LEN(&address));;
+  if (status == 0)
+    {
+      return sock;
+    }
+  printf ("bind failed: errno %d\n \n ", errno);
+  close (sock);
+  return -1;
+}
+
+// Test, poll using unix socket datagram,
+static void *
+client6 (void *arg)
+{
+  sleep (1);
+  int sock = CreateDgramConnect ();
+  struct sockaddr_in addr;
+  int res = 1;
+  int status = -1;
+  TEST_ASSERT( sock >= 0 );
+
+  sleep (2);
+
+  struct pollfd fd;
+
+  fd.fd = sock;
+  fd.events = POLLOUT;
+  fd.revents = 0;
+  status = poll (&fd, 1, 2000);
+  printf("Client6: poll -> %d, revents : %d, errno %d \n " , status, fd.revents, errno);
+  TEST_ASSERT( fd.revents & POLLOUT );
+
+  status = write (sock, &res, sizeof (res));
+  TEST_ASSERT_EQUAL (status, sizeof (res));
+
+  sleep (6);
+
+  fd.fd = sock;
+  fd.events = POLLOUT;
+  fd.revents = 0;
+  status = poll (&fd, 1, -1);
+  printf("Client6: poll -> %d, revents : %d, errno %d \n " , status, fd.revents, errno);
+  TEST_ASSERT( fd.revents & POLLOUT );
+
+  status = write (sock, &res, sizeof (res));
+  TEST_ASSERT_EQUAL (status, sizeof (res));
+
+  sleep (2);
+  fd.fd = sock;
+  fd.events = POLLOUT;
+  fd.revents = 0;
+  status = poll (&fd, 1, -1);
+  printf("Client6: poll -> %d, revents : %d, errno %d \n " , status, fd.revents, errno);
+  TEST_ASSERT( fd.revents & POLLOUT );
+
+  status = write (sock, &res, sizeof (res));
+  TEST_ASSERT_EQUAL (status, -1);
+  TEST_ASSERT_EQUAL (errno, ECONNREFUSED);
+
+  close (sock);
+
+  sleep (1);
+  sock = CreateDgramConnect ();
+  TEST_ASSERT( sock >= 0 );
+
+  fd.fd = sock;
+  fd.events = POLLOUT;
+  fd.revents = 0;
+  status = poll (&fd, 1, -1);
+  printf("Client6: poll -> %d, revents : %d, errno %d \n " , status, fd.revents, errno);
+  TEST_ASSERT( fd.revents & POLLOUT );
+
+  status = write (sock, &res, sizeof (res));
+  TEST_ASSERT_EQUAL (status, sizeof (res));
+
+  close (sock);
+
+  printf ("Client6: end\n ");
+
+  return arg;
+}
+
+static void *
+server6 (void *arg)
+{
+  unlink (SOCK_PATH);
+  int sock = CreateDgramBind ();
+  int res = 1;
+  int status = -1;
+
+  TEST_ASSERT( sock >= 0 );
+
+  struct pollfd fd;
+
+  fd.fd = sock;
+  fd.events = POLLIN;
+  fd.revents = 0;
+  status = poll (&fd, 1, 2000);
+  printf("Server6: poll -> %d, revents : %d, errno %d \n " , status, fd.revents, errno);
+  TEST_ASSERT(  ( fd.revents & POLLIN ) == 0 );
+
+  sleep (3);
+
+  fd.fd = sock;
+  fd.events = POLLIN;
+  fd.revents = 0;
+  status = poll (&fd, 1, 1000);
+  printf("Server6: poll -> %d, revents : %d, errno %d \n " , status, fd.revents, errno);
+  TEST_ASSERT( fd.revents & POLLIN );
+
+  status = read (sock, &res, sizeof (res));
+  TEST_ASSERT_EQUAL (status, sizeof (res));
+
+  fd.fd = sock;
+  fd.events = POLLIN;
+  fd.revents = 0;
+  status = poll (&fd, 1, -1);
+  printf("Server6: poll -> %d, revents : %d, errno %d \n " , status, fd.revents, errno);
+  TEST_ASSERT( fd.revents & POLLIN );
+
+  status = read (sock, &res, sizeof (res));
+  TEST_ASSERT_EQUAL (status, sizeof (res));
+
+  sleep (1);
+  close(sock);
+
+  unlink (SOCK_PATH);
+  sock = CreateDgramBind ();
+  TEST_ASSERT( sock >= 0 );
+
+  fd.fd = sock;
+  fd.events = POLLIN;
+  fd.revents = 0;
+  status = poll (&fd, 1, -1);
+  printf("Server6: poll -> %d, revents : %d, errno %d \n " , status, fd.revents, errno);
+  TEST_ASSERT( fd.revents & POLLIN );
+
+  status = read (sock, &res, sizeof (res));
+  TEST_ASSERT_EQUAL (status, sizeof (res));
+
+  close (sock);
+  unlink (SOCK_PATH);
+
+  printf ("Server6: end\n ");
+
+  return arg;
+}
+
 static void
 launch (void *(*clientStart) (void *), void *(*serverStart) (void *))
 {
@@ -602,7 +784,6 @@ main (int argc, char *argv[])
 {
   signal (SIGPIPE, SIG_IGN);
 
-  if ( 1 > 2 ) {
   test_poll_stdin ();
   test_poll_stdout_stdin ();
   test_poll_stdout ();
@@ -610,10 +791,9 @@ main (int argc, char *argv[])
   launch (client2, server2);
   launch (client3, server3);
   test_nval ();
-
   launch (client5, server5);
-  }
   launch (client4, server4);
+  launch (client6, server6);
 
   printf("test-poll end.\n ");
   fflush (stdout);

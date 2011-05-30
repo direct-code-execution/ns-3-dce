@@ -314,8 +314,9 @@ int dce_poll(struct pollfd *fds, nfds_t nfds, int timeout)
                         }
                     }
                 }
-
-              waiter.SetTimeout (  MilliSeconds (timeout));
+              if ( timeout > 0 ) {
+                  waiter.SetTimeout (  MilliSeconds (timeout));
+              }
               Waiter::Result result = waiter.Wait ();
 
               for (int i = 0; i < nfds; i++)

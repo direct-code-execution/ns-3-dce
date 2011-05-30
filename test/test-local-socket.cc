@@ -2269,7 +2269,7 @@ client26 (void *arg)
 
   printf("Client26: out of do-while\n ");
 
-    close(first_socket);
+  close(first_socket);
 
   printf ("Client26: end \n\n ");
 
@@ -2352,16 +2352,21 @@ server26 (void *arg)
 
   return arg;
 }
+
 #define SOCK_PATH2 "/tmp/socket2"
 // TEST 27: lot of connexions lot of fd whitout close using DATAGRAM
 static void *
 client27 (void *arg)
 {
+  printf ("Client27: start \n\n ");
+
   int status;
   struct sockaddr_un address;
   int sock = -1;
   int first = 1;
   int first_socket = socket (AF_UNIX, SOCK_STREAM, 0);
+  std::vector<int> closeList;
+
 
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
@@ -2373,11 +2378,14 @@ client27 (void *arg)
   do {
       sock = CreateDgramConnect ();
       if (sock < 0) break;
+      closeList.push_back (sock);
   } while(true);
 
   printf("Client27: out of do-while\n ");
 
   close(first_socket);
+
+  CloseAll(closeList);
 
   printf ("Client27: end \n\n ");
 
@@ -2387,6 +2395,8 @@ client27 (void *arg)
 static void *
 server27 (void *arg)
 {
+  printf ("Server27: start \n\n ");
+
   int status;
   int sock = -1;
   int sockin = -1;
@@ -2415,8 +2425,6 @@ server27 (void *arg)
       if (r <= 0 ) break;
     }
   while (true);
-
-
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -2478,7 +2486,7 @@ main (int argc, char *argv[])
       launch (client13, server13);
       launch (client14, server14); // Failed
       launch (client15, server15);
-      launch (client26, server26);
+
       // DGRAMs
       launch (client16, server16);
       launch (client17, server17);
@@ -2491,11 +2499,12 @@ main (int argc, char *argv[])
       launch (client24, server24);
       launch (client25, server25);
       launch (client27, server27);
+
+      launch (client26, server26);
     }
   else
     {
     }
-  //
 
   printf ("That's All Folks ....\n \n " );
   fflush (stdout);

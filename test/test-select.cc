@@ -61,7 +61,8 @@ test_select_read (int fd, int timeOutSec, bool needSuccess)
   FD_ZERO (&readFd);
   FD_SET (fd, &readFd);
 
-  ret = select (maxFd, &readFd, NULL, NULL, &timeOut);
+  ret = select (maxFd, &readFd, NULL, NULL, (timeOutSec>0)?&timeOut:NULL);
+  printf ("read select -> %d, errno:%d\n\n ", ret, errno);
   if (needSuccess)
     {
       return (ret == 1) && (FD_ISSET (fd, &readFd) );
@@ -546,6 +547,136 @@ server5 (void *arg)
   return arg;
 }
 
+static int
+CreateDgramConnect (void)
+{
+  int status;
+  struct sockaddr_un address;
+  int sock = socket (AF_UNIX, SOCK_DGRAM, 0);
+
+  memset (&address, 0, sizeof(address));
+  address.sun_family = AF_UNIX;
+  strcpy (address.sun_path, SOCK_PATH);
+
+  status = connect (sock, (struct sockaddr *) &address, SUN_LEN(&address));
+
+  if (status == 0)
+    {
+      return sock;
+    }
+  close (sock);
+
+  return -1;
+}
+
+static int
+CreateDgramBind (void)
+{
+  int status;
+  int sock = -1;
+  struct sockaddr_un address;
+
+  sock = socket (AF_UNIX, SOCK_DGRAM, 0);
+
+  memset (&address, 0, sizeof(address));
+  address.sun_family = AF_UNIX;
+  strcpy (address.sun_path, SOCK_PATH);
+  status = bind (sock, (struct sockaddr *) &address, SUN_LEN(&address));;
+  if (status == 0)
+    {
+      return sock;
+    }
+  printf ("bind failed: errno %d\n \n ", errno);
+  close (sock);
+  return -1;
+}
+
+// Test, select using unix socket datagram,
+static void *
+client6 (void *arg)
+{
+  sleep (1);
+  int sock = CreateDgramConnect ();
+  struct sockaddr_in addr;
+  int res = 1;
+  int status = -1;
+  TEST_ASSERT( sock >= 0 );
+
+  sleep (2);
+
+  test_select_write (sock, 2, true);
+
+  status = write (sock, &res, sizeof (res));
+  TEST_ASSERT_EQUAL (status, sizeof (res));
+
+  sleep (6);
+  test_select_write (sock, 0, true);
+  status = write (sock, &res, sizeof (res));
+  TEST_ASSERT_EQUAL (status, sizeof (res));
+
+  sleep (2);
+  test_select_write (sock, 0, true);
+  status = write (sock, &res, sizeof (res));
+  TEST_ASSERT_EQUAL (status, -1);
+  TEST_ASSERT_EQUAL (errno, ECONNREFUSED);
+
+  close (sock);
+
+  sleep (1);
+  sock = CreateDgramConnect ();
+  TEST_ASSERT( sock >= 0 );
+  test_select_write (sock, 0, true);
+  status = write (sock, &res, sizeof (res));
+  TEST_ASSERT_EQUAL (status, sizeof (res));
+
+  close (sock);
+
+
+  printf ("Client6: end\n ");
+
+  return arg;
+}
+
+static void *
+server6 (void *arg)
+{
+  unlink (SOCK_PATH);
+  int sock = CreateDgramBind ();
+  int res = 1;
+  int status = -1;
+
+  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT (test_select_read (sock, 2, false));
+
+  sleep (3);
+
+  TEST_ASSERT (test_select_read (sock, 1, true));
+  status = read (sock, &res, sizeof (res));
+  TEST_ASSERT_EQUAL (status, sizeof (res));
+
+  TEST_ASSERT (test_select_read (sock, 0, true));
+  status = read (sock, &res, sizeof (res));
+  TEST_ASSERT_EQUAL (status, sizeof (res));
+
+  sleep (1);
+
+  close(sock);
+
+  unlink (SOCK_PATH);
+  sock = CreateDgramBind ();
+  TEST_ASSERT( sock >= 0 );
+
+  TEST_ASSERT (test_select_read (sock, 0, true));
+  status = read (sock, &res, sizeof (res));
+  TEST_ASSERT_EQUAL (status, sizeof (res));
+
+  close (sock);
+  unlink (SOCK_PATH);
+
+  printf ("Server6: end\n ");
+
+  return arg;
+}
 
 static void
 test_select_stdout_stdin (void)
@@ -648,7 +779,6 @@ static void test_select_rfds (void)
 
   int filefd = open ("X1", O_CREAT | O_TRUNC | O_RDWR, S_IRWXU);
 
-
   // prepare fd_set to select() on it
   fd_set fds;
   FD_ZERO (&fds);
@@ -683,6 +813,7 @@ main (int argc, char *argv[])
       launch (client3, server3);
       launch (client4, server4);
       launch (client5, server5);
+      launch (client6, server6);
     }
 
   printf("test-select end.\n ");
