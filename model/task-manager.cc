@@ -9,11 +9,17 @@
 #include "ns3/simulator.h"
 #include "ns3/node.h"
 #include "ns3/node-list.h"
+#include "dce-manager.h"
+#include "dce-stdio.h"
+#include "process.h"
+#include "utils.h"
 
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE("TaskManager");
 NS_OBJECT_ENSURE_REGISTERED(TaskManager);
+
+
 
 bool 
 Task::IsActive (void) const
@@ -93,7 +99,8 @@ TaskManager::GetTypeId (void)
 TaskManager::TaskManager ()
   : m_current (0),
     m_scheduler (0),
-    m_fiberManager (0)
+    m_fiberManager (0),
+    m_disposing (0)
 {
   NS_LOG_FUNCTION (this);
 }
@@ -111,6 +118,28 @@ TaskManager::~TaskManager ()
 
 void TaskManager::DoDispose (void)
 {
+  if ( m_disposing ) return;
+  m_disposing = 1;
+
+  // Flush every FILEs in every processes.
+  Ptr<DceManager> dceManager = this->GetObject<DceManager>();
+
+  if (0 != dceManager)
+    {
+      std::vector<Process *> procs = dceManager->GetProcs();
+      std::vector<Process *>::iterator it;
+
+      for ( it = procs.begin(); it != procs.end (); it++)
+        {
+          gDisposingThreadContext = (*it)->threads.back ();
+
+          if ( 0 != gDisposingThreadContext)
+            {
+              dce_fflush(0);
+            }
+          gDisposingThreadContext = 0;
+        }
+    }
   Object::DoDispose ();
 }
 

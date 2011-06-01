@@ -302,6 +302,8 @@ void libc_dce (struct Libc *libc)
 
   libc->abort_fn = dce_abort;
 
+  libc->ctype_tolower_loc_fn =  __ctype_tolower_loc;
+
 }
 
 #ifdef __cplusplus

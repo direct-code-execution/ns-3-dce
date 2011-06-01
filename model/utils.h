@@ -26,6 +26,9 @@ namespace ns3 {
 class Thread;
 class Process;
 
+// Little hack in order to have a context usable when disposing the Task Manager and the hidden goal is to flush the open FILEs.
+extern Thread *gDisposingThreadContext;
+
 void UtilsEnsureDirectoryExists (std::string realPath);
 void UtilsEnsureAllDirectoriesExist (std::string realPath);
 std::string UtilsGetRealFilePath (std::string path);

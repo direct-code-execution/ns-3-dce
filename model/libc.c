@@ -1202,6 +1202,12 @@ void abort(void)
     }
 }
 
+int32_t * *
+__ctype_tolower_loc (void)
+{
+  return g_libc.ctype_tolower_loc_fn ();
+}
+
 void LIBSETUP (const struct Libc *fn)
 {
   /* The following assignment of fn to g_libc is a bit weird: we perform a copy of the data 

@@ -154,6 +154,7 @@ private:
   EventId m_nextSchedule;
   EventId m_nextGc;
   std::list<Task *> m_deadTasks;
+  bool m_disposing; // In order to never loop while disposing me.
 };
 
 } // namespace

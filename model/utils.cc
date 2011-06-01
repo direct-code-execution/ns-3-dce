@@ -117,8 +117,13 @@ UtilsSearchOpenFd (int fd)
     }
   return -1;
 }
+
+Thread *gDisposingThreadContext = 0;
+
 Thread *Current (void)
 {
+  if ( 0 != gDisposingThreadContext ) return gDisposingThreadContext;
+
   TaskManager *manager = TaskManager::Current ();
   if (manager == 0)
     {

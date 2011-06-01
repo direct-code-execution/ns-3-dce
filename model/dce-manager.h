@@ -73,7 +73,7 @@ public:
   static TypeId GetTypeId (void);
 
   DceManager ();
-  ~DceManager ();
+  virtual ~DceManager ();
 
   uint16_t Start (std::string name, std::vector<std::string> args,
                   std::vector<std::pair<std::string,std::string> > envs);
@@ -97,6 +97,7 @@ public:
   Time Wait (Time timeout);
   void Yield (void);
   uint16_t Clone (Thread *thread);
+  std::vector<Process *> GetProcs ();
 
 private:
 

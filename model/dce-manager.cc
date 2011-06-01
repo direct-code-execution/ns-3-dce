@@ -774,4 +774,9 @@ DceManager::SetEnvp (struct Process *process,
   process->originalEnvp = envp;
 }
 
+std::vector<Process *>
+DceManager::GetProcs ()
+{
+  return m_processes;
+}
 } // namespace ns3

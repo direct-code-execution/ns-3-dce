@@ -323,6 +323,8 @@ struct Libc
 
   void (*abort_fn) (void);
 
+  int32_t * * (*ctype_tolower_loc_fn) (void);
+
 };
 
 #ifdef __cplusplus
