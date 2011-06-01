@@ -319,6 +319,9 @@ struct Libc
 
   void (*qsort_fn) (void *base, size_t nmemb, size_t size, int(*compar)(const void *, const void *));
 
+  mode_t (*umask_fn) (mode_t mask);
+
+  void (*abort_fn) (void);
 
 };
 

@@ -110,6 +110,7 @@ private:
   uint16_t AllocatePid (void);
   uint16_t AllocateTid (const struct Process *process) const;
   static void SigkillHandler (int signal);
+  static void SigabrtHandler (int signal);
   bool ThreadExists (Thread *thread);
   static struct ::Libc *GetLibc (void);
   void SetArgv (struct Process *process, std::string filename, std::vector<std::string> args);

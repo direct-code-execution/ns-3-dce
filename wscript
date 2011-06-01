@@ -251,6 +251,7 @@ def build(bld):
         'model/local-stream-socket-fd.cc',
         'model/local-datagram-socket-fd.cc',
         'model/local-socket-fd-factory.cc',
+        'model/dce-umask.cc',
         # helper.
         'helper/dce-manager-helper.cc',
         'helper/dce-application-helper.cc',

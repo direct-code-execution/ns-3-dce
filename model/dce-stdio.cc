@@ -119,6 +119,7 @@ bool mode_valid (const char *mode)
 	case 'r':
 	case 'w':
 	case '+':
+	case 'b':
 	  break;
 	default:
 	  return false;
@@ -213,7 +214,7 @@ FILE *dce_fopen(const char *path, const char *mode)
       current->err = EINVAL;
       return 0;
     }
-  int fd = dce_open (path, mode_posix_flags (mode), S_IRWXU | S_IRWXG | S_IRWXO);
+  int fd = dce_open (path, mode_posix_flags (mode), 0666 & ~ (current->process->hurd_mask) );
   if (fd == -1)
     {
       current->err = errno;

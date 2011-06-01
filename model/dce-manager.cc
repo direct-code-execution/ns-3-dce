@@ -258,6 +258,15 @@ DceManager::CreateProcess (std::string name, std::vector<std::string> args,
   sigemptyset (&handler.mask);
   handler.handler = &DceManager::SigkillHandler;
   process->signalHandlers.push_back (handler);
+
+  // setup a signal handler for SIGABRT which calls dce_exit.
+  handler.signal = SIGABRT;
+  handler.flags = 0;
+  sigemptyset (&handler.mask);
+  handler.handler = &DceManager::SigabrtHandler;
+  process->signalHandlers.push_back (handler);
+
+
   // we reserve 0 for the mutex initialized with PTHREAD_MUTEX_INITIALIZER 
   // we reserve 2 for a destroyed mutex
   // 1 is such a common value that we try to avoid it.
@@ -276,6 +285,8 @@ DceManager::CreateProcess (std::string name, std::vector<std::string> args,
   process->pstdout = 0;
   process->pstderr = 0;
   process->penvp = 0;
+
+  process->hurd_mask = 022;
 
   //"seeding" random variable
   process->rndVarible = UniformVariable (0, RAND_MAX);
@@ -465,6 +476,14 @@ DceManager::Clone (Thread *thread)
   sigemptyset (&handler.mask);
   handler.handler = &DceManager::SigkillHandler;
   clone->signalHandlers.push_back (handler);
+
+  // setup a signal handler for SIGABRT which calls dce_exit.
+  handler.signal = SIGABRT;
+  handler.flags = 0;
+  sigemptyset (&handler.mask);
+  handler.handler = &DceManager::SigabrtHandler;
+  clone->signalHandlers.push_back (handler);
+
   clone->nextMid = thread->process->nextMid;
   clone->nextSid = thread->process->nextSid;
   clone->nextCid = thread->process->nextCid;
@@ -546,6 +565,12 @@ DceManager::SigkillHandler (int signal)
 {
   NS_ASSERT (signal == SIGKILL);
   dce_exit (-1);
+}
+void
+DceManager::SigabrtHandler (int signal)
+{
+  NS_ASSERT (signal == SIGABRT);
+  dce_exit (-2);
 }
 void
 DceManager::DeleteThread (struct Thread *thread)

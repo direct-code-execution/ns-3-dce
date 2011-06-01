@@ -156,6 +156,8 @@ struct Process
   RandomVariable rndVarible;
   // srand48 seed
   struct drand48_data seed48Current;
+  // Current umask
+  mode_t hurd_mask;
 };
 
 struct ThreadKeyValue

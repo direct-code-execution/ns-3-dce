@@ -1185,6 +1185,23 @@ void qsort(void *base, size_t nmemb, size_t size, int(*compar)(const void *, con
   g_libc.qsort_fn ( base, nmemb, size, compar);
 }
 
+mode_t umask (mode_t mask)
+{
+  return g_libc.umask_fn ( mask);
+}
+
+void abort(void)
+{
+  g_libc.abort_fn ();
+  int a = 0;
+  while (1)
+    {
+      // loop forever to quiet compiler warning:
+      // warning: ‘noreturn’ function does return
+      a++;
+    }
+}
+
 void LIBSETUP (const struct Libc *fn)
 {
   /* The following assignment of fn to g_libc is a bit weird: we perform a copy of the data 

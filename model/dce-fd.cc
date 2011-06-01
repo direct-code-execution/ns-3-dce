@@ -118,7 +118,8 @@ int dce_unlink (const char *pathname)
 }
 int dce_mkdir(const char *pathname, mode_t mode)
 {
-  DEFINE_FORWARDER_PATH (mkdir, pathname, mode);
+  mode_t m =  (mode & ~(Current ()->process->hurd_mask ));
+  DEFINE_FORWARDER_PATH (mkdir, pathname, m ) ;
 }
 int dce_rmdir(const char *pathname)
 {
@@ -659,6 +660,12 @@ int dce_socket (int domain, int type, int protocol)
   NS_ASSERT (manager != 0);
 
   Ptr<SocketFdFactory>  factory = 0 ;
+
+  if ( domain == AF_INET6 )
+    {
+      current->err = EAFNOSUPPORT;
+      return -1;
+    }
 
   if (domain != AF_UNIX)
     {

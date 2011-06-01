@@ -35,6 +35,7 @@
 #include "sys/dce-timerfd.h"
 #include "dce-random.h"
 #include "net/dce-if.h"
+#include "dce-umask.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -296,6 +297,11 @@ void libc_dce (struct Libc *libc)
   libc->fork_fn = dce_fork;
 
   libc->qsort_fn = qsort;
+
+  libc->umask_fn = dce_umask;
+
+  libc->abort_fn = dce_abort;
+
 }
 
 #ifdef __cplusplus

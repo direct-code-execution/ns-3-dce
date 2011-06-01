@@ -243,6 +243,18 @@ int dce_kill (pid_t pid, int sig)
   return 0;
 }
 
+int dce_abort ()
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (current);
+
+  UtilsSendSignal ( Current ()->process, SIGABRT);
+  // If we are still alive force the exitation
+  dce_exit (-2);
+
+  return 0;
+}
+
 int dce_pause (void)
 {
   //Thread *current = Current ();
@@ -409,10 +421,6 @@ const char *dce_inet_ntop(int af, const void *src,
     }
   return retval;
 }
-
-
-
-
 
 int dce_getopt_r (int argc, char * const argv[], const char *optstring, 
 		   char **poptarg, int *poptind, int *popterr, int *poptopt)
