@@ -325,6 +325,8 @@ struct Libc
 
   int32_t * * (*ctype_tolower_loc_fn) (void);
 
+  char * (*ctime_fn) (const time_t *timep);
+
 };
 
 #ifdef __cplusplus

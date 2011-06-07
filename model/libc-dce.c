@@ -304,6 +304,8 @@ void libc_dce (struct Libc *libc)
 
   libc->ctype_tolower_loc_fn =  __ctype_tolower_loc;
 
+  libc->ctime_fn = ctime;
+
 }
 
 #ifdef __cplusplus

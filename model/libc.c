@@ -1208,6 +1208,11 @@ __ctype_tolower_loc (void)
   return g_libc.ctype_tolower_loc_fn ();
 }
 
+char *ctime (const time_t *timep)
+{
+  return g_libc.ctime_fn (timep);
+}
+
 void LIBSETUP (const struct Libc *fn)
 {
   /* The following assignment of fn to g_libc is a bit weird: we perform a copy of the data 
