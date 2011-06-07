@@ -223,6 +223,7 @@ UnixStreamSocketFd::Listen (int backlog)
       current->err = ErrnoToSimuErrno ();
       return -1;
     }
+  m_state = LISTENING;
   m_backlog = backlog;
   return 0;
 }
@@ -282,8 +283,29 @@ UnixStreamSocketFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
 bool 
 UnixStreamSocketFd::CanRecv (void) const
 {
-  return m_socket != 0 && ( ( (CONNECTED == m_state) && (m_socket->GetRxAvailable () != 0 || !m_connectionQueue.empty ())) ||
-        (CONNECTED != m_state) );
+  bool ret = 0;
+
+  if ( 0 == m_socket ) ret = 0;
+  else
+    {
+      switch (m_state)
+      {
+        case CREATED : ret = 1; break;
+        case LISTENING : ret = ( 0 == m_connectionQueue.empty () ); break;
+        case CONNECTING : ret = 0; break;
+        case CONNECTED : ret = ( m_socket->GetRxAvailable () > 0 ); break;
+
+        case REMOTECLOSED :
+        case CLOSED : ret = 1; break;
+
+        default: ret = 0;
+        break;
+      }
+    }
+
+  NS_LOG_FUNCTION ( m_socket << m_state <<  m_socket->GetRxAvailable () << m_connectionQueue.empty () << " ret " << ret );
+
+  return ret;
 }
 bool
 UnixStreamSocketFd::CanSend (void) const
