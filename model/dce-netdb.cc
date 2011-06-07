@@ -45,7 +45,7 @@ int dce_getaddrinfo(const char *node, const char *service,
 		     const struct addrinfo *hints,
 		     struct addrinfo **res)
 {
-  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << node << service << hints << res);
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << ((NULL==node)?"":node) << ((NULL==service)?"":service) << hints << res);
   NS_ASSERT (Current () != 0);
   struct addrinfo *tmp = 0;
   int status = ::getaddrinfo (node, service, hints, &tmp);

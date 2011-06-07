@@ -530,7 +530,7 @@ void dce_rewind(FILE *stream)
 }
 int dce_setvbuf(FILE *stream, char *buf, int mode, size_t size)
 {
-  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream << buf << mode << size);
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream << ((NULL==buf)?"":buf) << mode << size);
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
   int status = setvbuf (stream, buf, mode, size);
