@@ -29,7 +29,7 @@ int main (int argc, char *argv[])
   dce.ResetEnvironment();
 
   dce.AddEnvironment("CCND_CAP", "50000");
-  dce.AddEnvironment("CCND_DEBUG", "1");
+  dce.AddEnvironment("CCND_DEBUG", "-1");
   dce.AddEnvironment("CCN_LOCAL_PORT", "");
 
   dce.AddEnvironment("CCND_CAP", "");
@@ -47,8 +47,8 @@ int main (int argc, char *argv[])
   dce.ResetArguments();
 //  dce.ResetEnvironment();
   dce.SetBinary ("ccnput");
-  dce.SetStdinFile ("/etc/passwd");
-  dce.AddArgument ("ccnx:/ETCPASSWD");
+  dce.SetStdinFile ("/tmp/README");
+  dce.AddArgument ("ccnx:/LeReadme");
   dce.AddEnvironment("HOME", "/home/furbani");
 
   putter = dce.Install (nodes.Get (0));
@@ -58,12 +58,13 @@ int main (int argc, char *argv[])
 //  dce.ResetEnvironment();
   dce.SetBinary ("ccnget");
   dce.SetStdinFile ("");
-  dce.AddArgument ("ccnx:/ETCPASSWD");
+  dce.AddArgument ("ccnx:/LeReadme");
 
   getter = dce.Install (nodes.Get (0));
   getter.Start (Seconds (6.0));
 
-  Simulator::Stop (Seconds(10.0));
+
+  Simulator::Stop (Seconds(60.0));
   Simulator::Run ();
   Simulator::Destroy ();
 

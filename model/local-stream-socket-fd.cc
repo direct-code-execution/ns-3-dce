@@ -273,9 +273,13 @@ LocalStreamSocketFd::Read (void *buf, size_t count)
         {
           if (  m_statusFlags & O_NONBLOCK  )
             {
-              // Socket do not want to wait
-              Current ()->err = EAGAIN;
-              return -1;
+              if ( 0 == filled )
+                {
+                  // Socket do not want to wait
+                  Current ()->err = EAGAIN;
+                  return -1;
+                }
+              return filled;
             }
           if ( ( 0 != m_peer) && ( m_peer->IsShutWrite()) ) return 0;
           // Nothing should wait
@@ -344,6 +348,13 @@ LocalStreamSocketFd::Recvmsg (struct msghdr *msg, int flags)
       ssize_t len = msg->msg_iov[i].iov_len;
 
       size_t ret = Read (buf, len);
+
+      if ( ( msg->msg_namelen > 0 ) && ( 0 != msg->msg_name ) )
+        {
+          memset ( msg->msg_name, 0, msg->msg_namelen );
+        }
+
+      msg->msg_namelen = 0;
 
       if (ret == 0)
         {
@@ -748,7 +759,8 @@ int
 LocalStreamSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
 {
   Thread *current = Current ();
-  NS_LOG_FUNCTION (this << current << my_addr << addrlen);NS_ASSERT (current != 0);
+  NS_LOG_FUNCTION (this << current << my_addr << addrlen);
+  NS_ASSERT (current != 0);
 
   // first seek bind one
   if (0 == m_factory)
@@ -757,7 +769,6 @@ LocalStreamSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
       return -1;
     }
   std::string realPath = UtilsGetRealFilePath (std::string (((struct sockaddr_un*) my_addr)->sun_path));
-
   Ptr<LocalSocketFd> l1 =   m_factory->FindBinder (realPath , this->GetTypeId () ) ;
   LocalStreamSocketFd *listener =  ( 0 == l1)?0:dynamic_cast<LocalStreamSocketFd*>( PeekPointer (l1) );
 
@@ -925,6 +936,12 @@ LocalStreamSocketFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
           current->process->openFiles.push_back (std::make_pair (fd, socket));
 
           first->SetPeer (socket);
+
+          if ( ( 0 != my_addr) && ( 0 != addrlen) && ( (*addrlen) >= sizeof (sa_family_t) ) )
+            {
+              my_addr->sa_family = AF_UNIX;
+              *addrlen = sizeof (sa_family_t);
+            }
 
           return fd;
         }
