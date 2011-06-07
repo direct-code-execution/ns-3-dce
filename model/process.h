@@ -115,6 +115,7 @@ struct Process
   uint16_t ppid;
   uint16_t pid;
   std::string name;
+  std::string stdinFilename;
   std::vector<std::pair<int,UnixFd *> > openFiles;
   std::vector<FILE *> openStreams;
   std::vector<SignalHandler> signalHandlers;

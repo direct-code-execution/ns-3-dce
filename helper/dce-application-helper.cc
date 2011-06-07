@@ -21,6 +21,11 @@ DceApplicationHelper::SetStackSize (uint32_t stackSize)
   m_stackSize = stackSize;
 }
 void 
+DceApplicationHelper::SetStdinFile (std::string filename)
+{
+  m_stdinFilename = filename;
+}
+void
 DceApplicationHelper::AddArgument (std::string arg)
 {
   NS_LOG_FUNCTION (this << arg);
@@ -133,6 +138,7 @@ DceApplicationHelper::Install (NodeContainer c)
       dce->SetStackSize (m_stackSize);
       dce->SetArguments (m_args);
       dce->SetEnvironment (m_envs);
+      dce->SetStdinFile (m_stdinFilename);
       (*j)->AddApplication (dce);
       apps.Add (dce);
     }

@@ -22,7 +22,7 @@ namespace ns3 {
 class DceManagerTestCase : public TestCase
 {
 public:
-  DceManagerTestCase (std::string filename, Time maxDuration);
+  DceManagerTestCase (std::string filename, Time maxDuration, std::string stdinFilename);
 private:
   virtual void DoRun (void);
   Ptr<DceManager> CreateManager (int *pstatus);
@@ -32,6 +32,7 @@ private:
   static void Finished (int *pstatus, uint16_t pid, int status);
 
   std::string m_filename;
+  std::string m_stdinFilename;
   ObjectFactory m_networkStackFactory;
   ObjectFactory m_tcpFactory;
   const Ipv4RoutingHelper *m_routing;
@@ -40,9 +41,9 @@ private:
 
 };
 
-DceManagerTestCase::DceManagerTestCase (std::string filename, Time maxDuration)
+DceManagerTestCase::DceManagerTestCase (std::string filename, Time maxDuration, std::string stdin)
   : TestCase ("Check that process \"" + filename + "\" completes correctly."),
-    m_filename (filename), m_maxDuration ( maxDuration )
+    m_filename (filename), m_stdinFilename( stdin), m_maxDuration ( maxDuration )
 {
 
 }
@@ -52,7 +53,7 @@ DceManagerTestCase::StartApplication (Ptr<DceManager> manager, int *pstatus)
   std::vector<std::string> noargs;
   std::vector<std::pair<std::string,std::string> > noenv;
   
-  uint16_t pid = manager->Start (m_filename, 1<<20, noargs, noenv);
+  uint16_t pid = manager->Start (m_filename, m_stdinFilename, 1<<20, noargs, noenv);
   manager->SetFinishedCallback (pid, MakeBoundCallback (&DceManagerTestCase::Finished, pstatus));
 }
 void
@@ -137,38 +138,39 @@ DceManagerTestSuite::DceManagerTestSuite ()
   typedef struct {
     const char *name;
     int duration;
+    const char *stdinfile;
   } testPair;
 
-  const testPair tests[] = {
-      { "test-empty", 0 },
-      {  "test-sleep", 0 },
-      {  "test-pthread", 0 },
-      {  "test-mutex", 0 },
-      {  "test-once", 0 },
-      {  "test-pthread-key", 0 },
-      {  "test-sem", 0 },
-      {  "test-malloc", 0 },
-      {  "test-malloc-2", 0 },
-      {  "test-fd-simple", 0 },
-      {  "test-strerror", 0 },
-      {  "test-stdio", 0 },
-      {  "test-string", 0 },
-      {  "test-netdb", 0 },
-      {  "test-env", 0 },
-      {  "test-cond", 0 },
-      {  "test-timer-fd", 0 },
-      {  "test-stdlib", 0 },
-      {  "test-select", 3600 },
-      {  "test-nanosleep", 0 },
-      {  "test-random", 0 },
-      {  "test-fork", 0 },
-      {  "test-local-socket", 0 },
-      {  "test-poll", 320 },
-      {  "test-tcp-socket", 320 },
+  const testPair tests[] = { /*
+      { "test-empty", 0, "" },
+      {  "test-sleep", 0, "" },
+      {  "test-pthread", 0, "" },
+      {  "test-mutex", 0, "" },
+      {  "test-once", 0, "" },
+      {  "test-pthread-key", 0, "" },
+      {  "test-sem", 0, "" },
+      {  "test-malloc", 0, "" },
+      {  "test-malloc-2", 0, "" },
+      {  "test-fd-simple", 0, "" },
+      {  "test-strerror", 0, "" },
+      {  "test-stdio", 0, "/etc/passwd" },
+      {  "test-string", 0, "" },
+      {  "test-netdb", 0, "" },
+      {  "test-env", 0, "" },
+      {  "test-cond", 0, "" },
+      {  "test-timer-fd", 0, "" },
+      {  "test-stdlib", 0, "" },
+      {  "test-select", 3600, "" },
+      {  "test-nanosleep", 0, "" },
+      {  "test-random", 0, "" },
+      {  "test-fork", 0, "" },
+      {  "test-local-socket", 0, "" },
+      {  "test-poll", 320, "" }, */
+      {  "test-tcp-socket", 320, "" },
   };
   for (unsigned int i = 0; i < sizeof(tests)/sizeof(testPair);i++)
     {
-      AddTestCase (new DceManagerTestCase (tests[i].name ,  Seconds (tests[i].duration) ) );
+      AddTestCase (new DceManagerTestCase (tests[i].name ,  Seconds (tests[i].duration) , tests[i].stdinfile) );
     }
 }
 

@@ -69,11 +69,11 @@ DceApplication::StartApplication (void)
     }
   if (m_stackSize != 0)
     {
-      m_pid = manager->Start (m_filename, m_stackSize, m_args, m_envs);
+      m_pid = manager->Start (m_filename, m_stdinFilename, m_stackSize, m_args, m_envs);
     } 
   else
     {
-      m_pid = manager->Start (m_filename, m_args, m_envs);
+      m_pid = manager->Start (m_filename, m_stdinFilename, m_args, m_envs);
     }
   m_dceStarted (m_pid);
 }
@@ -85,6 +85,10 @@ DceApplication::StopApplication (void)
   Ptr<DceManager> manager = node->GetObject<DceManager> ();
   manager->Stop (m_pid);
 }
-
+void
+DceApplication::SetStdinFile (std::string filename)
+{
+  m_stdinFilename = filename;
+}
 
 } // namespace ns3

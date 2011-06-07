@@ -157,9 +157,26 @@ DceManager::DoStartProcess (void *context)
   struct ::Libc *libc = GetLibc ();
 
   Thread *current = (Thread *)context;
+  UnixFd *unixFd = 0;
+
+  if ( current->process->stdinFilename.length() > 0 )
+    {
+      std::string fullpath = UtilsGetRealFilePath (current->process->stdinFilename);
+      int realFd = ::open (fullpath.c_str (), O_RDONLY, 0);
+
+      if ( -1 == realFd )
+        {
+          NS_FATAL_ERROR ("Unable to open stdin file : " << current->process->stdinFilename );
+        }
+      unixFd = new UnixFileFd (realFd);
+    }
+  else
+    {
+      unixFd = new TermUnixFileFd (0);
+    }
   // create fd 0
-  UnixFd *unixFd = new TermUnixFileFd (0);
   current->process->openFiles.push_back (std::make_pair(0,unixFd));
+
   // create fd 1
   int fd = CreatePidFile (current, "stdout");
   NS_ASSERT (fd == 1);
@@ -226,7 +243,7 @@ DceManager::StartProcessDebugHook (void)
 {}
 
 struct Process *
-DceManager::CreateProcess (std::string name, std::vector<std::string> args,
+DceManager::CreateProcess (std::string name, std::string stdinfilename, std::vector<std::string> args,
                            std::vector<std::pair<std::string,std::string> > envs)
 {
   struct Process *process = new Process ();
@@ -288,6 +305,8 @@ DceManager::CreateProcess (std::string name, std::vector<std::string> args,
 
   process->hurd_mask = 022;
 
+  process->stdinFilename = stdinfilename;
+
   //"seeding" random variable
   process->rndVarible = UniformVariable (0, RAND_MAX);
   m_processes.push_back (process);
@@ -313,11 +332,11 @@ DceManager::TaskSwitch (enum Task::SwitchType type, void *context)
 
 
 uint16_t
-DceManager::Start (std::string name, std::vector<std::string> args,
+DceManager::Start (std::string name, std::string stdinfilename, std::vector<std::string> args,
                        std::vector<std::pair<std::string,std::string> > envs)
 {
   NS_LOG_FUNCTION (this << name << args.size ());
-  struct Process *process = CreateProcess (name, args, envs);
+  struct Process *process = CreateProcess (name, stdinfilename, args, envs);
   struct Thread *thread = CreateThread (process);
   Task *task = TaskManager::Current ()->Start (&DceManager::DoStartProcess, thread);
   task->SetContext (thread);
@@ -326,11 +345,11 @@ DceManager::Start (std::string name, std::vector<std::string> args,
   return process->pid;
 }
 uint16_t
-DceManager::Start (std::string name, uint32_t stackSize, std::vector<std::string> args,
-                       std::vector<std::pair<std::string,std::string> > envs)
+DceManager::Start (std::string name, std::string stdinfilename, uint32_t stackSize,
+                   std::vector<std::string> args, std::vector<std::pair<std::string,std::string> > envs)
 {
   NS_LOG_FUNCTION (this << name << stackSize << args.size () << envs.size ());
-  struct Process *process = CreateProcess (name, args, envs);
+  struct Process *process = CreateProcess (name, stdinfilename, args, envs);
   struct Thread *thread = CreateThread (process);
   Task *task = TaskManager::Current ()->Start (&DceManager::DoStartProcess, thread, stackSize);
   task->SetContext (thread);

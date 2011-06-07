@@ -20,7 +20,7 @@ int main (int argc, char *argv[])
   dceManager.Install (nodes);
 
   DceApplicationHelper dce;
-  ApplicationContainer apps;
+  ApplicationContainer apps, putter, getter;
 
   dce.SetStackSize (1<<20);
 
@@ -29,7 +29,7 @@ int main (int argc, char *argv[])
   dce.ResetEnvironment();
 
   dce.AddEnvironment("CCND_CAP", "50000");
-  dce.AddEnvironment("CCND_DEBUG", "");
+  dce.AddEnvironment("CCND_DEBUG", "1");
   dce.AddEnvironment("CCN_LOCAL_PORT", "");
 
   dce.AddEnvironment("CCND_CAP", "");
@@ -44,7 +44,26 @@ int main (int argc, char *argv[])
   apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds (4.0));
 
-  Simulator::Stop (Seconds(1000100.0));
+  dce.ResetArguments();
+//  dce.ResetEnvironment();
+  dce.SetBinary ("ccnput");
+  dce.SetStdinFile ("/etc/passwd");
+  dce.AddArgument ("ccnx:/ETCPASSWD");
+  dce.AddEnvironment("HOME", "/home/furbani");
+
+  putter = dce.Install (nodes.Get (0));
+  putter.Start (Seconds (5.0));
+
+  dce.ResetArguments();
+//  dce.ResetEnvironment();
+  dce.SetBinary ("ccnget");
+  dce.SetStdinFile ("");
+  dce.AddArgument ("ccnx:/ETCPASSWD");
+
+  getter = dce.Install (nodes.Get (0));
+  getter.Start (Seconds (6.0));
+
+  Simulator::Stop (Seconds(10.0));
   Simulator::Run ();
   Simulator::Destroy ();
 

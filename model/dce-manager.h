@@ -75,9 +75,9 @@ public:
   DceManager ();
   virtual ~DceManager ();
 
-  uint16_t Start (std::string name, std::vector<std::string> args,
+  uint16_t Start (std::string name, std::string stdinfilename, std::vector<std::string> args,
                   std::vector<std::pair<std::string,std::string> > envs);
-  uint16_t Start (std::string name, uint32_t stackSize,
+  uint16_t Start (std::string name, std::string stdinfilename, uint32_t stackSize,
                   std::vector<std::string> args,
                   std::vector<std::pair<std::string,std::string> > envs);
   void SetFinishedCallback (uint16_t pid, Callback<void,uint16_t,int> cb);
@@ -104,7 +104,7 @@ private:
   // inherited from Object.
   virtual void DoDispose (void);
 
-  struct Process *CreateProcess (std::string name, std::vector<std::string> args,
+  struct Process *CreateProcess (std::string name, std::string stdinfilename, std::vector<std::string> args,
                                  std::vector<std::pair<std::string,std::string> > envs);
   static void DoStartProcess (void *context);
   bool CheckProcessContext (void) const;

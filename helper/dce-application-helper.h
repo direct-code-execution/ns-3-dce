@@ -15,6 +15,7 @@ public:
   DceApplicationHelper ();
   void SetBinary (std::string filename);
   void SetStackSize (uint32_t stackSize);
+  void SetStdinFile (std::string filename);
   void AddArgument (std::string arg);
   void AddArguments (std::string a0, std::string a1);
   void AddArguments (std::string a0, std::string a1, std::string a2);
@@ -32,12 +33,14 @@ public:
   void AddEnvironment (std::string name, std::string value);
   void ResetEnvironment (void);
   ApplicationContainer Install (NodeContainer c);
+
 private:
   bool m_isBinary;
   std::string m_filename;
   uint32_t m_stackSize;
   std::vector<std::string> m_args;
   std::vector<std::pair<std::string,std::string> > m_envs;
+  std::string m_stdinFilename;
 };
 
 } // namespace ns3

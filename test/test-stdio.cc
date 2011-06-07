@@ -290,6 +290,29 @@ void test_formatted_io (void)
   // gets
 }
 
+void test_stdin (void)
+{
+  int l = 0;
+  char buf;
+  FILE *copyIt = fopen( "/tmp/copy_stdin", "w");
+
+  while (!feof (stdin) )
+    {
+      int a = fread ( &buf, sizeof(buf), 1, stdin);
+
+      if (a > 0)
+        {
+          fwrite (&buf, sizeof(buf), 1, copyIt);
+          l += a;
+        }
+    }
+
+  fclose (copyIt);
+
+  TEST_ASSERT (l > 0);
+
+}
+
 int main (int argc, char *argv[])
 {
   test_fopen ();
@@ -299,6 +322,7 @@ int main (int argc, char *argv[])
   test_seek ();
   test_buf ();
   test_formatted_io ();
+  test_stdin ();
 
   // Should be last because it closes all open streams, including stdout et al.
   test_fcloseall ();

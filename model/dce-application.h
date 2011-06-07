@@ -32,7 +32,7 @@ public:
   void SetStackSize (uint32_t stackSize);
   void SetArguments (std::vector<std::string> args);
   void SetEnvironment (std::vector<std::pair<std::string,std::string> > envs);
-
+  void SetStdinFile (std::string filename);
 private:
   // inherited from Application base class.
   virtual void StartApplication (void);
@@ -45,6 +45,7 @@ private:
   std::vector<std::pair<std::string,std::string> > m_envs;
   uint16_t m_pid;
   TracedCallback<uint16_t> m_dceStarted;
+  std::string m_stdinFilename;
 };
 
 } // namespace ns3
