@@ -80,7 +80,17 @@ int dce_open (const char *path, int flags, mode_t mode)
       return -1;
     }
 
-  std::string fullpath = UtilsGetRealFilePath (path);
+  std::string fullpath = "";
+
+  if ( ( std::string (path) == "/dev/random" ) || ( std::string (path) == "/dev/urandom" )
+      || ( std::string (path) == "/dev/srandom" ) )
+    {
+      fullpath = path;
+    }
+  else
+    {
+      fullpath = UtilsGetRealFilePath (path);
+    }
   int realFd = ::open (fullpath.c_str (), flags, mode);
   if (realFd == -1)
     {
