@@ -89,8 +89,12 @@ int dce_open (const char *path, int flags, mode_t mode)
     }
   else
     {
-      fullpath = UtilsGetRealFilePath (path);
+      char *trim = (char*)path;
+
+      while ( *trim == ' ' ) trim++;
+      fullpath = UtilsGetRealFilePath (trim);
     }
+  NS_LOG_FUNCTION (current << "TEMPOFUR RealPath:" <<  fullpath );
   int realFd = ::open (fullpath.c_str (), flags, mode);
   if (realFd == -1)
     {
