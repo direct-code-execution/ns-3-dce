@@ -81,7 +81,7 @@ UnixStreamSocketFd::DoRecvmsg(struct msghdr *msg, int flags)
       totalAvailable += msg->msg_iov[i].iov_len;
     }
   Address from;
-  Ptr<Packet> packet = m_socket->RecvFrom (totalAvailable, flags, from);
+  Ptr<Packet> packet = m_socket->RecvFrom (totalAvailable, flags & ~MSG_DONTWAIT, from);
   if (packet == 0)
     {
       current->err = ErrnoToSimuErrno ();
