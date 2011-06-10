@@ -1213,6 +1213,31 @@ char *ctime (const time_t *timep)
   return g_libc.ctime_fn (timep);
 }
 
+char *index (const char *s, int c)
+{
+  return g_libc.index_fn (s, c);
+}
+
+char *rindex (const char *s, int c)
+{
+  return g_libc.rindex_fn (s, c);
+}
+char *strtok (char *str, const char *delim)
+{
+  return g_libc.strtok_fn (str, delim);
+}
+
+char *strtok_r (char *str, const char *delim, char **saveptr)
+{
+  return g_libc.strtok_r_fn (str, delim, saveptr);
+}
+
+int getnameinfo (const struct sockaddr *sa, socklen_t salen, char *host,
+                socklen_t hostlen, char *serv, socklen_t servlen, int flags)
+{
+  return g_libc.getnameinfo_fn ( sa, salen, host, hostlen, serv, servlen, flags);
+}
+
 void LIBSETUP (const struct Libc *fn)
 {
   /* The following assignment of fn to g_libc is a bit weird: we perform a copy of the data 

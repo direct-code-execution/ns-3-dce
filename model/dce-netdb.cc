@@ -6,6 +6,8 @@
 #include "ns3/log.h"
 #include "ns3/ipv4-address.h"
 #include <string.h>
+#include "process.h"
+#include "errno.h"
 
 NS_LOG_COMPONENT_DEFINE ("SimuNetDb");
 
@@ -113,4 +115,68 @@ const char *dce_gai_strerror(int errcode)
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << errcode);
   NS_ASSERT (Current () != 0);
   return ::gai_strerror (errcode);
+}
+int dce_getnameinfo (const struct sockaddr *sa, socklen_t salen, char *host,
+                       socklen_t hostlen, char *serv, socklen_t servlen, int flags)
+{
+  NS_LOG_FUNCTION ( Current () );
+
+  if ( ( 0 == sa ) || ( 0 == salen ) )
+    {
+      Current () -> err = EINVAL;
+      return EAI_SYSTEM;
+    }
+
+  switch ( sa->sa_family )
+  {
+    case AF_INET:
+      {
+        if ( salen < sizeof( struct sockaddr_in ) )
+          {
+            Current () -> err = EINVAL;
+            return EAI_SYSTEM;
+          }
+        const struct sockaddr_in *inAddr = (const struct sockaddr_in *) sa;
+
+        if  ( 0 != serv )
+          {
+            int r = snprintf(serv, servlen, "%d",  htons(inAddr -> sin_port) );
+
+            if ( r > servlen )
+              {
+                return EAI_OVERFLOW;
+              }
+            if ( r < 0 )
+              {
+                Current () -> err = errno;
+                return EAI_SYSTEM;
+              }
+          }
+        if  ( 0 != host )
+          {
+            Ipv4Address ipv4 = Ipv4Address ( htonl ( inAddr -> sin_addr.s_addr ) );
+            std::ostringstream oss;
+            ipv4.Print (oss);
+
+            int r = snprintf(host, hostlen, "%s", oss.str().c_str());
+
+            if ( r > servlen )
+              {
+                return EAI_OVERFLOW;
+              }
+            if ( r < 0 )
+              {
+                Current () -> err = errno;
+                return EAI_SYSTEM;
+              }
+          }
+        return 0;
+      }
+      break;
+
+    default:
+      return EAI_FAMILY;
+  }
+
+  return 0; // XXX : tricheur
 }

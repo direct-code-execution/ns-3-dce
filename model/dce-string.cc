@@ -18,3 +18,4 @@ char *dce_strndup(const char *s, size_t n)
   str[len] = 0;
   return str;
 }
+

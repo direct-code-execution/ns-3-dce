@@ -297,15 +297,15 @@ void libc_dce (struct Libc *libc)
   libc->fork_fn = dce_fork;
 
   libc->qsort_fn = qsort;
-
   libc->umask_fn = dce_umask;
-
   libc->abort_fn = dce_abort;
-
   libc->ctype_tolower_loc_fn =  __ctype_tolower_loc;
-
   libc->ctime_fn = ctime;
-
+  libc->index_fn = index;
+  libc->rindex_fn = rindex;
+  libc->strtok_fn = strtok;
+  libc->strtok_r_fn = strtok_r;
+  libc->getnameinfo_fn = dce_getnameinfo;
 }
 
 #ifdef __cplusplus

@@ -167,9 +167,15 @@ def build_dce_examples(module):
                        target='bin/dce-udp-perf',
                        source=['example/dce-udp-perf.cc'])
 
+    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point'], 
+                       target='bin/dce-ccnd-udp-2-nodes',
+                       source=['example/dce-ccnd-udp-2-nodes.cc'])
+
     module.add_example(needed = ['core', 'internet', 'dce'], 
-                       target='bin/dce-ccnd',
-                       source=['example/dce-ccnd.cc'])
+                       target='bin/dce-ccnd-simple',
+                       source=['example/dce-ccnd-simple.cc'])
+                       
+                       
 
 def build_dce_kernel_examples(module):
     module.add_example(needed = ['core', 'network', 'dce'], 

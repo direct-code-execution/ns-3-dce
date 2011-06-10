@@ -314,18 +314,18 @@ struct Libc
   int (*timerfd_gettime_fn) (int fd, struct itimerspec *cur_value);
 
   unsigned (*if_nametoindex_fn) (const char *ifname);
-
   pid_t (*fork_fn) (void);
-
   void (*qsort_fn) (void *base, size_t nmemb, size_t size, int(*compar)(const void *, const void *));
-
   mode_t (*umask_fn) (mode_t mask);
-
   void (*abort_fn) (void);
-
   int32_t * * (*ctype_tolower_loc_fn) (void);
-
   char * (*ctime_fn) (const time_t *timep);
+  char * (*index_fn) (const char *s, int c);
+  char * (*rindex_fn) (const char *s, int c);
+  char * (*strtok_fn) (char *str, const char *delim);
+  char * (*strtok_r_fn) (char *str, const char *delim, char **saveptr);
+  int (*getnameinfo_fn) (const struct sockaddr *sa, socklen_t salen, char *host,
+                         socklen_t hostlen, char *serv, socklen_t servlen, int flags);
 
 };
 
