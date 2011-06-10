@@ -58,6 +58,7 @@ int main (int argc, char *argv[])
 //  dce.ResetEnvironment();
   dce.SetBinary ("ccnget");
   dce.SetStdinFile ("");
+  dce.AddArgument ("-c");
   dce.AddArgument ("ccnx:/LeReadme");
 
   getter = dce.Install (nodes.Get (0));
