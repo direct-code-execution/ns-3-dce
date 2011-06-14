@@ -36,7 +36,7 @@ NS_OBJECT_ENSURE_REGISTERED(LocalSocketFdFactory);
 TypeId
 LocalSocketFdFactory::GetTypeId (void)
 {
-  static TypeId tid = TypeId ("ns3::LocalSocketFdFactory") .SetParent<SocketFdFactory> ()
+  static TypeId tid = TypeId ("ns3::LocalSocketFdFactory").SetParent<Object> ()
       .AddConstructor<LocalSocketFdFactory> ();
 
   return tid;
