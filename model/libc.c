@@ -1238,6 +1238,11 @@ int getnameinfo (const struct sockaddr *sa, socklen_t salen, char *host,
   return g_libc.getnameinfo_fn ( sa, salen, host, hostlen, serv, servlen, flags);
 }
 
+int uname(struct utsname *buf)
+{
+  return g_libc.uname_fn (buf);
+}
+
 void LIBSETUP (const struct Libc *fn)
 {
   /* The following assignment of fn to g_libc is a bit weird: we perform a copy of the data 

@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <sys/utsname.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -326,6 +327,7 @@ struct Libc
   char * (*strtok_r_fn) (char *str, const char *delim, char **saveptr);
   int (*getnameinfo_fn) (const struct sockaddr *sa, socklen_t salen, char *host,
                          socklen_t hostlen, char *serv, socklen_t servlen, int flags);
+  int (*uname_fn) (struct utsname *buf);
 
 };
 
