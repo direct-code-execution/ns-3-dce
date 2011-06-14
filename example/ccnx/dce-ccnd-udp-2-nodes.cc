@@ -143,6 +143,54 @@ int main (int argc, char *argv[])
   getter = dce.Install (nodes.Get (1));
   getter.Start (Seconds (42.0));
 
+  //  RETRIEVE NODE 0 STATUS : ccndsmoketest -b  send getSlash.txt recv recv
+  dce.ResetArguments();
+  dce.ResetEnvironment();
+  dce.SetBinary ("ccndsmoketest");
+  dce.SetStdinFile ("");
+  dce.AddArgument ("-b");
+  dce.AddArgument ("send");
+  dce.AddArgument ("/tmp/getSlash.txt");
+  dce.AddArgument ("timeo");
+  dce.AddArgument ("1000");
+  dce.AddArgument ("recv");
+  dce.AddArgument ("recv");
+
+  apps = dce.Install (nodes.Get (0));
+  apps.Start (Seconds (45.0));
+
+  //  RETRIEVE NODE 1 STATUS : ccndsmoketest -b  send getSlash.txt recv recv
+  dce.ResetArguments();
+  dce.ResetEnvironment();
+  dce.SetBinary ("ccndsmoketest");
+  dce.SetStdinFile ("");
+  dce.AddArgument ("-b");
+  dce.AddArgument ("send");
+  dce.AddArgument ("/tmp/getSlash.txt");
+  dce.AddArgument ("recv");
+  dce.AddArgument ("recv");
+
+  apps = dce.Install (nodes.Get (1));
+  apps.Start (Seconds (46.0));
+
+  // Stop node 0's ccnd
+  dce.ResetArguments();
+  dce.ResetEnvironment();
+  dce.SetBinary ("ccndsmoketest");
+  dce.SetStdinFile ("");
+  dce.AddArgument ("kill");
+  apps = dce.Install (nodes.Get (0));
+  apps.Start (Seconds (50.0));
+
+  // Stop node 1's ccnd
+  dce.ResetArguments();
+  dce.ResetEnvironment();
+  dce.SetBinary ("ccndsmoketest");
+  dce.SetStdinFile ("");
+  dce.AddArgument ("kill");
+  apps = dce.Install (nodes.Get (1));
+  apps.Start (Seconds (51.0));
+
   Simulator::Stop (Seconds(100.0));
   Simulator::Run ();
   Simulator::Destroy ();

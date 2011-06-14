@@ -175,6 +175,10 @@ def build_dce_examples(module):
                        target='bin/dce-ccnd-simple',
                        source=['example/ccnx/dce-ccnd-simple.cc'])
                        
+    module.add_example(needed = ['core', 'internet', 'dce'], 
+                       target='bin/dce-ccnd-short-stuff',
+                       source=['example/ccnx/dce-ccnd-short-stuff.cc'])
+                       
                        
 
 def build_dce_kernel_examples(module):

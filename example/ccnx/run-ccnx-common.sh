@@ -13,14 +13,15 @@ CCND_REAL_KEYSTORE=/var/tmp/.ccnx-user15019
 VIRTUAL_USER_KEYSTORE=/home/furbani
 ################################################################################
 # NS3 LOG LEVEL
+#export NS_LOG=
 export NS_LOG='*'
 #export NS_LOG='Simulator:DceManager:TaskManager:DceStdio'
 #export NS_LOG=LocalDatagramSocketFd:DceStdio:SimuFd:TcpSocketBase:Simulator:UnixStreamSocketFd:UnixSocketFd:LocalSocketFd:LocalStreamSocketFd
 #export NS_LOG=LocalStreamSocketFd:DceManager
 ################################################################################
 # 
-GDB=
-#GDB=gdb
+#GDB=
+GDB=gdb
 # clean previous files
 rm -rf files-*
 rm output.txt 
