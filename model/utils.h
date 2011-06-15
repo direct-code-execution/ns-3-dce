@@ -48,6 +48,9 @@ Time UtilsTimevalToTime (const struct timeval *tv);
 void UtilsSendSignal (Process *process, int signum);
 void UtilsDoSignal (void);
 int UtilsAllocateFd (void);
+// Little hack to advance time when detecting a possible infinite loop.
+void UtilsAdvanceTime (Thread *current);
+
 #define MAX_FDS 1024
 } // namespace ns3
 

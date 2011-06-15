@@ -186,6 +186,7 @@ struct Thread
   std::list<struct ThreadKeyValue> keyValues;
   sigset_t signalMask;
   sigset_t pendingSignals;
+  Time lastTime; // Last time of a possible infinite loop checkpoint.
 };
 
 } // namespace ns3

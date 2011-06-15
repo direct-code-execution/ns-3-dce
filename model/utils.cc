@@ -267,6 +267,18 @@ int UtilsAllocateFd (void)
     }
   return -1;
 }
+// Little hack to advance time when detecting a possible infinite loop.
+void UtilsAdvanceTime (Thread *current)
+{
+  Time now = Now ();
 
+  if (now == current->lastTime)
+    {
+      NS_LOG_DEBUG ("UtilsAdvanceTime current thread wait 1ms.");
+      current->process->manager->Wait (Time( MilliSeconds(1) ) );
+    }
+
+  current->lastTime = Now ();
+}
 
 } // namespace ns3

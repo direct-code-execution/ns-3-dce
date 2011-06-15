@@ -397,6 +397,11 @@ int dce_poll(struct pollfd *fds, nfds_t nfds, int timeout)
       if ( 0 !=  fds[i].revents) retval++;
     }
 
+  // Try to break infinite loop in poll with a 0 timeout !
+  if ( ( 0 == retval ) && ( 0 == timeout ) )
+    {
+      UtilsAdvanceTime (current);
+    }
   return retval;
 }
 int dce_select(int nfds, fd_set *readfds, fd_set *writefds,

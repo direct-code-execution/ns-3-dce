@@ -20,8 +20,8 @@ export NS_LOG='*'
 #export NS_LOG=LocalStreamSocketFd:DceManager
 ################################################################################
 # 
-#GDB=
-GDB=gdb
+GDB=
+#GDB=gdb
 # clean previous files
 rm -rf files-*
 rm output.txt 

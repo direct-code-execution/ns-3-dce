@@ -415,6 +415,8 @@ DceManager::CreateThread (struct Process *process)
   thread->isDetached = false;
   thread->hasExitValue = false;
   thread->joinWaiter = 0;
+  thread->lastTime = Time(0);
+
   sigemptyset (&thread->signalMask);
   if (!process->threads.empty ())
     {
