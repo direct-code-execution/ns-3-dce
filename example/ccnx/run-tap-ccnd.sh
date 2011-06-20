@@ -1,6 +1,6 @@
 #!/bin/bash
 # 
-#  Prior running please change the value of TAPCREATOR env var, it should point on NS3 tap-creator executable,
+#  Prior running please change the value of TAPCREATOR env var below, it should point on NS3 tap-creator executable,
 #  ATTENTION: the tap-creator must be owned by root and have stiky bit in order to function well.
 #
 #     tap0
