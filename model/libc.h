@@ -328,6 +328,7 @@ struct Libc
   int (*getnameinfo_fn) (const struct sockaddr *sa, socklen_t salen, char *host,
                          socklen_t hostlen, char *serv, socklen_t servlen, int flags);
   int (*uname_fn) (struct utsname *buf);
+  int (*sscanf_fn) (const char *str, const char *format, va_list);
 
 };
 

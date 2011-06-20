@@ -307,6 +307,8 @@ void libc_dce (struct Libc *libc)
   libc->strtok_r_fn = strtok_r;
   libc->getnameinfo_fn = dce_getnameinfo;
   libc->uname_fn = uname;
+  libc->sscanf_fn = vsscanf;
+
 }
 
 #ifdef __cplusplus

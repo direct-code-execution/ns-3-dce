@@ -1243,6 +1243,15 @@ int uname(struct utsname *buf)
   return g_libc.uname_fn (buf);
 }
 
+int sscanf(const char *str, const char *format, ...)
+{
+  va_list ap;
+  va_start (ap, format);
+  int retval = g_libc.sscanf_fn( str, format, ap);
+  va_end (ap);
+  return retval;
+}
+
 void LIBSETUP (const struct Libc *fn)
 {
   /* The following assignment of fn to g_libc is a bit weird: we perform a copy of the data 

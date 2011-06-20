@@ -23,7 +23,7 @@ def search_file(files):
 
 def configure(conf):
     ns3waf.check_modules(conf, ['core', 'network', 'internet'], mandatory = True)
-    ns3waf.check_modules(conf, ['point-to-point'], mandatory = False)
+    ns3waf.check_modules(conf, ['point-to-point', 'file-descriptor'], mandatory = False)
 
     conf.check_tool('compiler_cc')
 
@@ -149,6 +149,8 @@ def build_dce_examples(module):
                     ['tcp-client', []],
                     ['unix-server', []],
                     ['unix-client', []],
+                    ['udp-echo-server', []],
+                    ['udp-echo-client', []],
                     ]
     for name,lib in dce_examples:
         module.add_example(**dce_kw(target = 'bin/' + name, 
@@ -179,7 +181,13 @@ def build_dce_examples(module):
                        target='bin/dce-ccnd-short-stuff',
                        source=['example/ccnx/dce-ccnd-short-stuff.cc'])
                        
-                       
+    module.add_example(needed = ['core', 'internet', 'dce', 'file-descriptor'],
+                       target='bin/dce-tap-udp-echo',
+                       source=['example/ccnx/dce-tap-udp-echo.cc'])                
+
+    module.add_example(needed = ['core', 'internet', 'dce', 'file-descriptor'],
+                       target='bin/dce-tap-ccnd',
+                       source=['example/ccnx/dce-tap-ccnd.cc'])                
 
 def build_dce_kernel_examples(module):
     module.add_example(needed = ['core', 'network', 'dce'], 
