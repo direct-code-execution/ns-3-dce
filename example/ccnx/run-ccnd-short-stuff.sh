@@ -15,9 +15,9 @@ cp README files-0/tmp
 EXE=dce-ccnd-short-stuff
 if [ "" == "$GDB" ]
 then
-    $NS3_BIN/$EXE 2>&1 | tee -a output.txt
+    $NS3_BIN/$EXE $TIMEBEHAVIOR  2>&1 | tee -a output.txt
 else
-    $GDB $NS3_BIN/$EXE
+    $GDB $NS3_BIN/$EXE $TIMEBEHAVIOR 
 fi
 emacs output.txt  files-*/var/log/*/* &
 

@@ -14,14 +14,24 @@ VIRTUAL_USER_KEYSTORE=/home/furbani
 ################################################################################
 # NS3 LOG LEVEL
 #export NS_LOG=
-export NS_LOG='*'
+#export NS_LOG='*'
 #export NS_LOG='Simulator:DceManager:TaskManager:DceStdio'
 #export NS_LOG=LocalDatagramSocketFd:DceStdio:SimuFd:TcpSocketBase:Simulator:UnixStreamSocketFd:UnixSocketFd:LocalSocketFd:LocalStreamSocketFd
-#export NS_LOG=LocalStreamSocketFd:DceManager
+export NS_LOG=LocalStreamSocketFd:DceManager
 ################################################################################
-# 
+# GDB or not GDB ? 
 GDB=
 #GDB=gdb
+################################################################################
+# Options to NS3
+# How time is simulated
+# 1 the simulation time this the DEFAULT
+#TIMEBEHAVIOR=
+# 2 realtime besteffort
+TIMEBEHAVIOR='--SimulatorImplementationType=ns3::RealtimeSimulatorImpl'
+# 2 realtime hardlimit 30s
+#TIMEBEHAVIOR='--SimulatorImplementationType=ns3::RealtimeSimulatorImpl --ns3::RealtimeSimulatorImpl::SynchronizationMode=HardLimit --ns3::RealtimeSimulatorImpl::HardLimit=30.0s'
+################################################################################
 # clean previous files
 rm -rf files-*
 rm output.txt 

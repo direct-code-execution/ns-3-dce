@@ -34,6 +34,16 @@ int main (int argc, char *argv[])
   CommandLine cmd;
   cmd.Parse (argc, argv);
 
+  /*
+  GlobalValue::Bind ("SimulatorImplementationType",
+    StringValue ("ns3::RealtimeSimulatorImpl"));
+
+
+  Config::SetDefault ("ns3::RealtimeSimulatorImpl::SynchronizationMode",  StringValue ("HardLimit") );
+
+  Config::SetDefault ("ns3::RealtimeSimulatorImpl::HardLimit",  TimeValue ( Seconds ( 30.0 ) ) ) ;
+*/
+
   NodeContainer nodes;
   nodes.Create (1);
 
@@ -144,7 +154,18 @@ int main (int argc, char *argv[])
   getter = dce.Install (nodes.Get (0));
   getter.Start (Seconds (1.6));
 
-  Simulator::Stop (Seconds(2.0));
+  // Add-On: test ccnslurp
+  dce.ResetArguments();
+  dce.ResetEnvironment();
+  dce.SetBinary ("ccnslurp");
+  dce.SetStdinFile ("");
+  dce.AddEnvironment("HOME", "/home/furbani");
+  dce.AddArgument ("/");
+
+  getter = dce.Install (nodes.Get (0));
+  getter.Start (Seconds (1.65));
+
+  Simulator::Stop (Seconds(20.0));
   Simulator::Run ();
   Simulator::Destroy ();
 
