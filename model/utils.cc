@@ -152,18 +152,9 @@ struct timespec UtilsTimeToTimespec (Time time)
 }
 static unsigned long TimeBase (void)
 {
-// TEMPOFUR
-  /*
   unsigned long secondsSinceEpochOnFridayApril042008 = 1207284276;
   return secondsSinceEpochOnFridayApril042008;
-  */
-  static unsigned long dep = 0L;
 
-  if ( ! dep )
-    {
-      dep = time(NULL);
-    }
-  return dep;
 }
 Time UtilsSimulationTimeToTime (Time time)
 {

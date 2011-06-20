@@ -7,6 +7,9 @@
  
  - When you try to Connect a TCPIP socket over a not open port  the connect never failed but block forever.
  
+ - correct the /dev/random emulation in order to not use real device but NS3 random methods
  
+ - fix uname 
  
+ - utils.cc TimeBase: add possibility to change the start date of the Simulation ! 
   
