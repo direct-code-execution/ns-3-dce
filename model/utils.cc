@@ -154,7 +154,6 @@ static unsigned long TimeBase (void)
 {
   unsigned long secondsSinceEpochOnFridayApril042008 = 1207284276;
   return secondsSinceEpochOnFridayApril042008;
-
 }
 Time UtilsSimulationTimeToTime (Time time)
 {

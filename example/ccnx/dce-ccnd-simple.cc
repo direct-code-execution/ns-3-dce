@@ -40,7 +40,6 @@ int main (int argc, char *argv[])
   dce.AddEnvironment("CCND_DATA_PAUSE_MICROSEC", "");
   dce.AddEnvironment("CCND_KEYSTORE_DIRECTORY", "");
 
-
   apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds (4.0));
 

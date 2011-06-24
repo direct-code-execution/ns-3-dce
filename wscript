@@ -189,6 +189,10 @@ def build_dce_examples(module):
                        target='bin/dce-tap-ccnd',
                        source=['example/ccnx/dce-tap-ccnd.cc'])                
 
+    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point'], 
+                       target='bin/dce-ccnd-linear-multiple',
+                       source=['example/ccnx/dce-ccnd-linear-multiple.cc'])
+                       
 def build_dce_kernel_examples(module):
     module.add_example(needed = ['core', 'network', 'dce'], 
                        target='bin/dce-linux-simple',
