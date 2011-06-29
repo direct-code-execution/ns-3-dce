@@ -1,10 +1,11 @@
 #!/bin/bash
 # this script checkout NS3 and DCE sources, and build them.
+cd `dirname $BASH_SOURCE`/../..
 SAVE_PATH=$PATH
 SAVE_LDLP=$LD_LIBRARY_PATH
 SAVE_PKG=$PKG_CONFIG_PATH
-echo clone ns-3-dce : 
-hg clone http://code.nsnam.org/furbani/ns-3-dce
+#echo clone ns-3-dce : 
+#hg clone http://code.nsnam.org/furbani/ns-3-dce
 echo clone readversiondef
 hg clone http://code.nsnam.org/mathieu/readversiondef
 echo clone ns-3-linux
