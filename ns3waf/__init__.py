@@ -438,7 +438,7 @@ class Module:
         kw['target'] = target
         handle, filename = tempfile.mkstemp(suffix='.cc')
         os.write (handle, """
-#include "ns3/testdce.h"
+#include "testdce.h"
 
 int main (int argc, char *argv[])
 {

@@ -8,7 +8,7 @@
 #include "cooja-loader-factory.h"
 #include "ns3/socket-fd-factory.h"
 #include "ns3/internet-stack-helper.h"
-#include "ns3/testdce.h"
+#include "testdce.h"
 static std::string g_testError;
 
 extern "C" void dce_manager_test_store_test_error (const char *s)
