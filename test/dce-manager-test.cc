@@ -1,4 +1,4 @@
-#include "ns3/test.h"
+//#include "ns3/test.h"
 #include "ns3/node.h"
 #include "ns3/simulator.h"
 #include "ns3/uinteger.h"
@@ -8,7 +8,7 @@
 #include "cooja-loader-factory.h"
 #include "ns3/socket-fd-factory.h"
 #include "ns3/internet-stack-helper.h"
-
+#include "ns3/testdce.h"
 static std::string g_testError;
 
 extern "C" void dce_manager_test_store_test_error (const char *s)
@@ -16,8 +16,8 @@ extern "C" void dce_manager_test_store_test_error (const char *s)
   g_testError = s;
 }
 
-
-namespace ns3 {
+using namespace ns3;
+namespace ns3dce {
 
 class DceManagerTestCase : public TestCase
 {

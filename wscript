@@ -26,6 +26,12 @@ def configure(conf):
     ns3waf.check_modules(conf, ['point-to-point', 'file-descriptor'], mandatory = False)
 
     conf.check_tool('compiler_cc')
+    conf.check(header_name='stdint.h', define_name='HAVE_STDINT_H', mandatory=False)
+    conf.check(header_name='inttypes.h', define_name='HAVE_INTTYPES_H', mandatory=False)
+    conf.check(header_name='sys/inttypes.h', define_name='HAVE_SYS_INT_TYPES_H', mandatory=False)
+    conf.check(header_name='sys/types.h', define_name='HAVE_SYS_TYPES_H', mandatory=False)
+    conf.check(header_name='sys/stat.h', define_name='HAVE_SYS_STAT_H', mandatory=False)
+    conf.check(header_name='dirent.h', define_name='HAVE_DIRENT_H', mandatory=False)
 
     conf.env.append_value('LINKFLAGS', '-pthread')
     conf.check (lib='dl', mandatory = True)
@@ -88,7 +94,7 @@ def build_netlink(bld):
     module_tests = [
         'test/netlink-socket-test.cc',
         ]
-    module.add_runner_test(needed = ['internet', 'point-to-point', 'core', 'netlink'],
+    module.add_runner_test(needed = ['internet', 'point-to-point', 'core', 'netlink', 'dce'],
                            source=module_tests)
 
 def dce_kw(**kw):
@@ -274,6 +280,8 @@ def build(bld):
         'model/local-datagram-socket-fd.cc',
         'model/local-socket-fd-factory.cc',
         'model/dce-umask.cc',
+        'model/testdce.cc',
+        'model/system-path.cc',
         # helper.
         'helper/dce-manager-helper.cc',
         'helper/dce-application-helper.cc',
@@ -285,6 +293,7 @@ def build(bld):
         'model/socket-fd-factory.h',
         'model/loader-factory.h',
 	'model/dce-application.h',
+#        'model/testdce.h',
         'helper/dce-manager-helper.h',
         'helper/dce-application-helper.h',
         ]

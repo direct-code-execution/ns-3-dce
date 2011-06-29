@@ -7,7 +7,7 @@ echo setting test file
 mkdir -p files-0/tmp
 cp $CCNX_PATH/README files-0/tmp
 EXE=dce-ccnd-simple
-if [ "" == $GDB ]
+if [ "" == "$GDB" ]
 then
     $NS3_BIN/$EXE 2>&1 | tee -a output.txt
 else
