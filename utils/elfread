@@ -1,0 +1,387 @@
+#!/usr/bin/perl
+use Getopt::Std;
+use strict;
+#use warnings;
+
+my $Verbose = 1;
+my $Debug=0;
+
+# parse each lines of readelf -sW result like this : 
+#Symbol table '.dynsym' contains 131 entries:
+#   Num:    Value          Size Type    Bind   Vis      Ndx Name
+#     0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT  UND 
+#     1: 0000000000000200     0 SECTION LOCAL  DEFAULT    1 
+#     2: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND ctime@GLIBC_2.2.5 (2)
+#     3: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND ASN1_item_i2d
+#     4: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND OBJ_txt2obj
+#     5: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND seed48@GLIBC_2.2.5 (2)
+#     6: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND memset@GLIBC_2.2.5 (2)
+#     7: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND snprintf@GLIBC_2.2.5 (2)
+#     8: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND close@GLIBC_2.2.5 (2)
+#
+# and return an array of hash with following keys : num, value, size, type, bind, vis, ndx , symbol, version 
+# where allmost all keys are presents and symbol and version are optionals.
+# args :
+#  1 file path to binary to extract symbol list.
+sub readelf
+{
+    my @lines = `readelf -sW $_[0]`;	
+    my @tab;
+    
+    foreach (@lines) 
+    {
+	if ( / ^\s*                # leadings spaces
+         (\d+):\s            # Num   --> $1
+         ([\da-fA-F]+)\s+    # Value --> $2
+         (\d+)\s+            # Size  --> $3
+         (\w+)\s+            # Type  --> $4
+         (\w+)\s+            # Bind  --> $5
+         (\w+)\s+            # Vis   --> $6
+         (\w+)\s+            # Ndx   --> $7
+         (.*)$               # Name  --> $8
+       /x
+	    )
+	{
+	    my $detailedLine = { } ;
+	    
+	    $detailedLine->{'num'} = $1;
+	    $detailedLine->{'value'} = $2;
+	    $detailedLine->{'size'} = $3;
+	    $detailedLine->{'type'} = $4;
+	    $detailedLine->{'bind'} = $5;
+	    $detailedLine->{'vis'} = $6;
+	    $detailedLine->{'ndx'} = $7;
+	    
+	    my $name = $8;
+	    
+	    if ( length($name) > 0 )
+	    {
+		if ( $name =~ /^(\w+)@(.+)$/ ) 
+		{
+		    $detailedLine->{'symbol'}=$1;
+		    $detailedLine->{'version'}=$2;
+		}
+		elsif ( $name =~ /^(\w+)$/ ) 
+		{
+		    $detailedLine->{'symbol'}=$1;
+		}
+	    }
+	    push @tab, $detailedLine;
+	}
+    }
+    return @tab;
+}
+
+# count the number of symbols found in the array returned by readelf routine
+# return an hash where keys are symbol names and values are the number of entries with this name.
+# arg0: reference over array of hash .
+sub symbol_count
+{
+    my $ret = 0;
+    my @tab = @_;
+
+    foreach my $elem ( @tab )
+    {
+	if ( exists $elem->{'symbol'} ) { $ret++; }
+    }
+    return $ret;
+}
+
+# for a hash key return a hash of values where keys is the value name  and value is the number of it
+# arg0: an hash key 
+# arg1: reference over array of hash .
+sub distinct_values
+{
+    my $cle = $_[0];
+    my $ref = $_[1];
+    my @tab = @$ref;
+    my %distincts ;
+
+    foreach my $elem ( @tab )
+    {
+	if ( exists $elem->{$cle} ) { 
+	    my $val = $elem->{$cle};
+	    if ( length ( $val ) > 0 )
+	    {
+		$distincts{$val} += 1;
+	    }
+	}
+    }
+    foreach my $e (keys %distincts)
+    {
+	print $e . " ==> " . $distincts{$e} . "\n";
+    }
+
+    return \%distincts;
+}
+
+# seek for undefined symbol of type OBJECT or FUNC
+# return an hash : key symbol name and value the corresponding hash 
+# arg0: reference over array of hash .
+sub find_undef_func_object
+{
+    my $ref = $_[0];
+    my @tab = @$ref;
+    my %result;
+
+    foreach my $elem ( @tab )
+    {
+	if ( exists $elem->{'symbol'} ) { 
+	    my $val = $elem->{'symbol'};
+	    if ( ( length ( $val ) > 0 ) && ( $elem->{'ndx'} eq 'UND' ) 
+		 && ( ( $elem->{'type'} eq 'OBJECT') || ( $elem->{'type'} eq 'FUNC' ) ) )
+	    {
+		if ( exists $result{$val} )
+		{
+		    # get only the first occurence
+		}
+		else
+		{
+		    $result{$val} = $elem;
+		    # $cpt++;
+		}
+	    }
+	}
+    }
+    return \%result;
+}
+
+# seek for defined symbol of type OBJECT or FUNC
+# return an hash : key symbol name and value the corresponding hash 
+# arg0: reference over array of hash .
+sub find_defined_func_object
+{
+    my $ref = $_[0];
+    my @tab = @$ref;
+    my %result;
+
+    foreach my $elem ( @tab )
+    {
+	if ( exists $elem->{'symbol'} ) { 
+	    my $val = $elem->{'symbol'};
+	    if ( ( length ( $val ) > 0 ) && ( $elem->{'ndx'} ne 'UND' ) 
+		 && ( ( $elem->{'bind'} eq 'GLOBAL') || ( $elem->{'bind'} eq 'WEAK') )
+		 && ( ( $elem->{'type'} eq 'OBJECT') || ( $elem->{'type'} eq 'FUNC' ) ) )
+	    {
+		if ( exists $result{$val} )
+		{
+		    # get only the first occurence
+		}
+		else
+		{
+		    $result{$val} = $elem;
+		    # $cpt++;
+		}
+	    }
+	}
+    }
+    return \%result;
+}
+
+
+#ldd /home/furbani/dev/dce/second-try/ns-3-dce/build/debug/src/dce/example/ccnd 
+#	linux-vdso.so.1 =>  (0x00007fff7e70f000)
+#	libcrypto.so.10 => /lib64/libcrypto.so.10 (0x00007f88b37e7000)
+#	libc.so.6 => /lib64/libc.so.6 (0x00007f88b344b000)
+#	libdl.so.2 => /lib64/libdl.so.2 (0x00007f88b3247000)
+#	libz.so.1 => /lib64/libz.so.1 (0x00007f88b3030000)
+#	/lib64/ld-linux-x86-64.so.2 (0x00007f88b3b7e000)
+# return ldd result as an array of path to library minus someones ( linux-vdso libc libdl libpthread );
+sub ldd
+{
+    my @lines = `ldd $_[0]`;	
+    my @res;
+    my @skip = qw( linux-vdso libc libdl libpthread );
+# turn array to hash !
+    my %skip = map { $_ => 1 } @skip;
+    
+    foreach (@lines) 
+    {
+	if ( / ^\s* (\S+)\s* => \s* (\S*) \s* .* /x )
+	{
+	    # now extract library name
+	    my $libname = $1;
+	    my $libpath = $2;
+
+	    if ($Debug)
+	    {
+		print "ldd first filter : $1 and $2 \n";
+	    }
+
+	    # keep only name :
+	    if ( $libname =~ /([^\.]+)\.so\.?.*/ )
+	    {
+		my $shortname = $1;
+
+		if ($Debug)
+		{
+		    print "ldd second filter $shortname \n";
+		}
+
+#		print "Short Name $1 \n";
+		# now skip some libraries like linux-vdso libc libdl
+
+		if ( ! exists $skip{$shortname} )
+		{
+		    if ($Debug)
+		    {
+			print "ldd Pushing : $libpath \n";
+		    }
+		    push @res, $libpath;
+		}
+	    }
+	}
+	else
+	{
+#	    print $_;
+	}
+    }
+    return @res;
+}
+
+
+# args:
+#  1 : ref of array of binaries to check : the first should be the exe one and the other its ldd reported libs
+#  2 : ref of array of real lib you wanna to simulate actually libc and libpthread
+#  3 : ref of array of your allready done simatation libraries actually libc-ns3 and libpthread-ns3
+sub cross_reference
+{
+    my $ref = $_[0];
+    my @targets = @$ref; 
+    $ref = $_[1];
+    my @reallibs = @$ref; 
+    $ref = $_[2];
+    my @simulibs = @$ref; 
+
+    my %notdef;
+
+    foreach my $t ( @targets )
+    {
+	if ($Verbose) {
+	    print "Processing $t\n";
+	}
+	my @symbs = &readelf($t);
+	$ref = &find_undef_func_object( \@symbs );
+	my %h = %$ref;
+
+	foreach my $cle ( keys %h )
+	{
+	    $notdef{$cle} = $h{$cle};
+	}
+    }
+
+    if ($Verbose) {
+#	print "All undefined symbols : \n";
+	
+#	print ( keys %notdef ) . "\n";
+    }
+
+    my %reallydefined;
+
+    foreach my $r ( @reallibs )
+    {
+	if ($Verbose) {
+	    print "Processing $r\n";
+	}
+	my @symbs = &readelf($r);
+	$ref = &find_defined_func_object( \@symbs );
+	my %h = %$ref;
+	
+	foreach my $cle ( keys %h )
+	{
+	    $reallydefined{$cle} = $h{$cle};
+	}	
+    }
+
+    if ($Verbose) {
+#	print "All undefinedreally defined symbols : \n";
+	
+#	print ( keys %reallydefined ) . "\n";
+    }
+
+    my %simudefined;
+
+    foreach my $s ( @simulibs )
+    {
+	if ($Verbose) {
+	    print "Processing $s\n";
+	}
+	my @symbs = &readelf($s);
+	$ref = &find_defined_func_object( \@symbs );
+	my %h = %$ref;
+	
+	foreach my $cle ( keys %h )
+	{
+	    $simudefined{$cle} = $h{$cle};
+	}	
+    }
+
+# first seek undefined symbol from %notdef defined in %reallydefined
+    my %tobedefined;
+    foreach my $cle ( keys %notdef )
+    {
+	if ( exists $reallydefined{$cle} ) 
+	{
+	    $tobedefined{$cle} = 1;
+	}
+    }
+
+    if ($Debug) 
+    {
+	my $nb = scalar keys %tobedefined;
+	print "Number found: $nb \n ";
+    }
+
+    my @notdefinedinns3;
+    foreach my $cle ( keys %tobedefined )
+    {
+	if ( ! exists $simudefined{$cle} ) 
+	{
+	    push @notdefinedinns3, $cle;
+	}
+    }
+    print "$targets[0] \n";
+    print "Symbols to be defined in ns3 posix emulation : \n";
+    foreach my $symb ( @notdefinedinns3 )
+    {
+	print $symb . "\n";
+    }
+    
+    return 42;
+}
+
+# args
+
+my %Options;
+getopts('vhd', \%Options);
+if (exists $Options{'h'})
+{
+    print "Usage: [options] binary file(s) \n";
+    print "       options:  \n";
+    print "       -h : help  \n";
+    print "       -v : verbose  \n";
+    print "       -d : debug  \n";
+    exit 0;
+}
+$Verbose =  (exists $Options{'v'});
+$Debug =  (exists $Options{'d'});
+my @bins = @ARGV;
+if ($#bins < 0)
+{
+    push @bins, "/home/furbani/dev/dce/second-try/ns-3-dce/build/debug/src/dce/example/ccnd";
+}
+
+my @reallibs = qw( /lib64/libc.so.6 /lib64/libpthread.so.0 );
+my @simulibs = qw( /home/furbani/dev/dce/new-one/ns-3-dce/build/lib/libc-ns3.so
+                    /home/furbani/dev/dce/new-one/ns-3-dce/build/lib/libpthread-ns3.so );
+
+foreach my $arg0 (@bins) 
+{    
+    my @extralibs = &ldd( $arg0 );
+    my @targets = reverse ( @extralibs ) ;
+
+    push @targets , $arg0 ;
+    @targets = reverse ( @targets );
+
+    my $ret = &cross_reference( \@targets, \@reallibs, \@simulibs );
+}
