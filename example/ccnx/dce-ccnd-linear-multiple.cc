@@ -166,7 +166,7 @@ int main (int argc, char *argv[])
   apps = dce.Install (nodes.Get (nNodes - 1));
   apps.Start (Seconds (60.0));
 
-  // The second get is very fast but not furious :) because of cache usage the data is allready in the local node !
+  // The second get is very fast but not furious :) because of cache usage the data is already in the local node !
   dce.ResetArguments();
   dce.ResetEnvironment();
   dce.AddEnvironment("HOME", "/home/furbani");

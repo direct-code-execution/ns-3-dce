@@ -29,7 +29,7 @@ GDB=
 #TIMEBEHAVIOR=
 # 2 realtime besteffort
 TIMEBEHAVIOR='--SimulatorImplementationType=ns3::RealtimeSimulatorImpl'
-# 2 realtime hardlimit 30s
+# 3 realtime hardlimit 30s
 #TIMEBEHAVIOR='--SimulatorImplementationType=ns3::RealtimeSimulatorImpl --ns3::RealtimeSimulatorImpl::SynchronizationMode=HardLimit --ns3::RealtimeSimulatorImpl::HardLimit=30.0s'
 ################################################################################
 # clean previous files

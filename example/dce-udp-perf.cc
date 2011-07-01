@@ -72,11 +72,11 @@ int main (int argc, char *argv[])
   Ptr<Node> clientNode = nodes.Get (0);
   Ipv4Address serverAddress = interfaces[nHops-1].GetAddress (1, 0);
 
-  process.SetBinary ("build/debug/udp-perf");
+  process.SetBinary ("udp-perf");
   apps = process.Install (serverNode);
   apps.Start (Seconds (1.0));
 
-  process.SetBinary ("build/debug/udp-perf");
+  process.SetBinary ("udp-perf");
   process.ResetArguments ();
   process.AddArgument ("--client");
   process.AddArgument (Ipv4AddressToString (serverAddress));

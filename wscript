@@ -153,6 +153,7 @@ def build_dce_examples(module):
                     ['udp-perf', ['m']],
                     ['tcp-server', []],
                     ['tcp-client', []],
+                    ['tcp-loopback', []],
                     ['unix-server', []],
                     ['unix-client', []],
                     ['udp-echo-server', []],
