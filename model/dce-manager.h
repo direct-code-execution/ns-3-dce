@@ -98,6 +98,7 @@ public:
   void Yield (void);
   uint16_t Clone (Thread *thread);
   std::vector<Process *> GetProcs ();
+  static void AppendStatusFile (uint16_t pid, uint32_t nodeId, std::string line);
 
 private:
 

@@ -17,9 +17,6 @@
  Some ideas:
 
   - option: have the NS3 time for file attributs in place of the real time,
-  - option: add a file near cmdline ,stderr and stdin, named status, with the status of the application ie:
-      - start time (NS3 one + real One),
-      - end time (NS3 one + real One) if necessary
-      - end status, return code, signal , core dump or not ....
+
       
       

@@ -79,6 +79,16 @@ void dce_exit (int status)
   current->process->exitValue = status;
   current->task->SetSwitchNotifier (0, 0);
   current->process->loader->UnloadAll ();
+
+  if ( 0 != current->process )
+  {
+	  std::ostringstream oss;
+
+	  oss << "Exit (" << status << ")";
+
+	  DceManager::AppendStatusFile (current->process->pid, current->process->nodeId, oss.str ());
+  }
+
   current->process->manager->DeleteProcess (current->process);
   TaskManager::Current ()->Exit ();
 }

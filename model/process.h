@@ -148,6 +148,7 @@ struct Process
   FILE **pstdout;
   FILE **pstderr;
   char ***penvp;
+  uint32_t nodeId; // NS3 NODE ID
   // an array of memory buffers which must be freed upon process 
   // termination to avoid memory leaks. We stick in there a bunch
   // of buffers we allocate but for which we cannot control the 

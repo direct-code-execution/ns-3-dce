@@ -93,6 +93,10 @@ DceManager::DoDispose (void)
   while (!m_processes.empty ())
     {
       tmp = m_processes.back ();
+      if ( 0 != tmp )
+      {
+    	  AppendStatusFile (tmp->pid, tmp->nodeId, "Never ended.");
+      }
       DeleteProcess (tmp);
     }
 
@@ -185,6 +189,7 @@ DceManager::DoStartProcess (void *context)
   NS_ASSERT (fd == 2);
 
   fd = CreatePidFile (current, "cmdline");
+  NS_ASSERT (fd == 3);
   for (int i = 0; i < current->process->originalArgc; i++)
     {
       char *cur = current->process->originalArgv[i];
@@ -193,7 +198,14 @@ DceManager::DoStartProcess (void *context)
     }
   dce_write (fd, "\n", 1);
   dce_close (fd);
+
+  fd = CreatePidFile (current, "status");
   NS_ASSERT (fd == 3);
+  std::ostringstream oss;
+  oss << "Start Time: " << GetTimeStamp () << std::endl;
+  const char *str = oss.str ().c_str();
+  dce_write (fd, str, strlen (str));
+  dce_close (fd);
 
   void *h = current->process->loader->Load ("libc-ns3.so", RTLD_GLOBAL);
   if (h == 0)
@@ -309,6 +321,9 @@ DceManager::CreateProcess (std::string name, std::string stdinfilename, std::vec
 
   //"seeding" random variable
   process->rndVarible = UniformVariable (0, RAND_MAX);
+
+  process->nodeId = UtilsGetNodeId ();
+
   m_processes.push_back (process);
 
   return process;
@@ -578,6 +593,7 @@ DceManager::Stop (uint16_t pid)
     {
       return;
     }
+  AppendStatusFile (process->pid, process->nodeId, "Stopped by NS3.");
   DeleteProcess (process);
 }
 
@@ -795,6 +811,26 @@ DceManager::SetEnvp (struct Process *process,
   process->originalEnvp = envp;
 }
 
+void
+DceManager::AppendStatusFile (uint16_t pid, uint32_t nodeId,  std::string line)
+{
+	std::ostringstream oss;
+	oss << "files-" << nodeId << "/var/log/" << pid << "/status" ;
+	std::string s = oss.str();
+
+	int fd = ::open (s.c_str (), O_WRONLY | O_APPEND, 0 );
+
+	if (fd >= 0) // XXX: When fork is used the pid directory is not created, I plan to fix it when I will work on fork/exec/wait...
+	{
+		NS_ASSERT (fd > 0);
+		oss.str ("");
+		oss.clear ();
+		oss << "  End Time: " << GetTimeStamp () << " --> " << line << std::endl;
+		const char *str = oss.str ().c_str();
+		::write (fd, str, strlen (str));
+		::close (fd);
+	}
+}
 std::vector<Process *>
 DceManager::GetProcs ()
 {

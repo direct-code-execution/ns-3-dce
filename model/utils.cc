@@ -281,4 +281,38 @@ void UtilsAdvanceTime (Thread *current)
   current->lastTime = Now ();
 }
 
+std::string
+GetTimeStamp ()
+{
+  Time now = Now ();
+  time_t realnow = time (0);
+  std::ostringstream oss;
+  oss << ((long)now.GetSeconds ());
+  std::string sec = oss.str ();
+  int indent = 10;
+  std::string padding = "";
+  if ( sec.length () < indent )
+    {
+      padding = std::string ( indent-sec.length() , ' ');
+    }
+  sec = padding + sec;
+  padding = "";
+  oss.str ("");
+  oss.clear ();
+  oss << now;
+  indent = 25;
+  std::string ns = oss.str ();
+
+  if ( ns.length () < indent )
+    {
+      padding = std::string ( indent-ns.length() , ' ');
+    }
+  ns = padding + ns;
+  padding = "";
+  oss.str ("");
+  oss.clear ();
+  oss << "NS3 Time: " << sec << "s (" << ns << ") , REAL Time: " << realnow;
+  return oss.str ();
+}
+
 } // namespace ns3
