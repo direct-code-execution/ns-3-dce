@@ -4,7 +4,6 @@
 #include "dce-unistd.h"
 #include "sys/dce-stat.h"
 #include "process.h"
-#include "dce-manager.h"
 #include "utils.h"
 #include "unix-fd.h"
 #include "ns3/log.h"

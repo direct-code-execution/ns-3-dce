@@ -73,6 +73,10 @@ DceManager::GetTypeId (void)
                    UintegerValue (1),
                    MakeUintegerAccessor (&DceManager::m_nextPid),
                    MakeUintegerChecker<uint16_t> ())
+    .AddAttribute ("MinimizeOpenFiles", "Indicates whether stdout and stderr should be opened only while writting in.",
+                   BooleanValue (false),
+                   MakeBooleanAccessor (&DceManager::m_minimizeFiles),
+                   MakeBooleanChecker ())
     ;
   return tid;
 }
@@ -323,6 +327,8 @@ DceManager::CreateProcess (std::string name, std::string stdinfilename, std::vec
   process->rndVarible = UniformVariable (0, RAND_MAX);
 
   process->nodeId = UtilsGetNodeId ();
+
+  process->minimizeFiles = (m_minimizeFiles?1:0);
 
   m_processes.push_back (process);
 

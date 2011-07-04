@@ -98,10 +98,22 @@ int dce_open (const char *path, int flags, mode_t mode)
       current->err = errno;
       return -1;
     }
-  UnixFd *unixFd = new UnixFileFd (realFd);
+  UnixFd *unixFd = 0;
+
+  if ( ( ( 2 == fd) || ( 1 == fd ) ) && ( Current ()->process->minimizeFiles ) )
+    {
+      unixFd = new UnixFileFdLight (fullpath);
+      close (realFd);
+    }
+  else
+    {
+      unixFd = new UnixFileFd (realFd);
+    }
+
   current->process->openFiles.push_back (std::make_pair(fd,unixFd));
   return fd;
 }
+
 int dce_creat (const char *path, mode_t mode)
 {
   return dce_open (path, O_CREAT|O_WRONLY|O_TRUNC, mode);

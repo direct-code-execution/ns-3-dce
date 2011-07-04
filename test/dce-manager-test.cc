@@ -2,6 +2,7 @@
 #include "ns3/node.h"
 #include "ns3/simulator.h"
 #include "ns3/uinteger.h"
+#include "ns3/boolean.h"
 #include "dce-manager.h"
 #include "task-manager.h"
 #include "rr-task-scheduler.h"
@@ -9,6 +10,7 @@
 #include "ns3/socket-fd-factory.h"
 #include "ns3/internet-stack-helper.h"
 #include "testdce.h"
+
 static std::string g_testError;
 
 extern "C" void dce_manager_test_store_test_error (const char *s)
@@ -113,6 +115,8 @@ DceManagerTestCase::DoRun (void)
 {
   int status = - 1;
   Ptr<DceManager> a = CreateManager (&status);
+
+  a->SetAttribute ( "MinimizeOpenFiles", BooleanValue (true) );
 
   if (m_maxDuration.IsStrictlyPositive()) {
       Simulator::Stop ( m_maxDuration );

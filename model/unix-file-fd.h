@@ -56,6 +56,21 @@ public:
   virtual int Close (void);
 };
 
+// Only for stdout and stderr emulation, open file at each write then close it, in order
+// to have less file opened at same time see option
+class UnixFileFdLight : public UnixFileFdBase
+{
+public:
+  UnixFileFdLight (std::string path);
+  virtual ~UnixFileFdLight ();
+  virtual ssize_t Write (const void *buf, size_t count);
+  virtual int Close (void);
+  virtual bool CanSend (void) const;
+
+private:
+  std::string m_path;
+};
+
 class TermUnixFileFd : public UnixFileFdBase
 {
 public:

@@ -18,6 +18,7 @@ export NS_LOG=
 #export NS_LOG='Simulator:DceManager:TaskManager:DceStdio'
 #export NS_LOG=LocalDatagramSocketFd:DceStdio:SimuFd:TcpSocketBase:Simulator:UnixStreamSocketFd:UnixSocketFd:LocalSocketFd:LocalStreamSocketFd
 #export NS_LOG=LocalStreamSocketFd:DceManager
+#export NS_LOG=UnixFileFd
 ################################################################################
 # GDB or not GDB ? 
 GDB=

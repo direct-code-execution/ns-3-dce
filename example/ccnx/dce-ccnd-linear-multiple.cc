@@ -133,7 +133,7 @@ int main (int argc, char *argv[])
           dce.AddArgument ( Ipv4AddressToString(vInterfaces[n-1].GetAddress ( 0 )) );
 
           apps = dce.Install (nodes.Get (n));
-          apps.Start (Seconds ( ( 20.0 + n ) / 10  )); // Every 0.1s from time 2s
+          apps.Start (Seconds ( ( 200.0 + n ) / 100  )); // Every 0.01s from time 2s
         }
     }
 

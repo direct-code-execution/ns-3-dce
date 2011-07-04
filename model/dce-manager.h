@@ -125,6 +125,7 @@ private:
   std::vector<Process *> m_processes;
   uint16_t m_nextPid;
   TracedCallback<uint16_t, int> m_processExit;
+  bool m_minimizeFiles; // If true close stderr and stdout between writes .
 };
 
 } // namespace ns3

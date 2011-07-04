@@ -324,6 +324,58 @@ UnixFileFd::Close (void)
   // list of fds and deleting this class instance.
   return result;
 }
+/*
+class UnixFileFdLight : public UnixFileFd
+{
+public:
+  UnixFileFdLight (std::string path);
+  virtual ~UnixFileFdLight ();
+  virtual ssize_t Write (const void *buf, size_t count);
+
+private:
+  std::string m_path;
+};
+*/
+
+UnixFileFdLight::UnixFileFdLight (std::string path) : m_path(path), UnixFileFdBase ( -1 )
+{
+
+}
+
+UnixFileFdLight::~UnixFileFdLight ()
+{
+  m_path = "";
+}
+
+ssize_t
+UnixFileFdLight::Write (const void *buf, size_t count)
+{
+  FILE *f = fopen (m_path.c_str (), "a");
+
+  if ( !f )
+    {
+      Current ()->err = errno;
+      return -1;
+    }
+
+  ssize_t res = fwrite (buf, count, 1, f);
+
+  fclose (f);
+
+  return res;
+}
+
+int
+UnixFileFdLight::Close (void)
+{
+  return 0;
+}
+
+bool
+UnixFileFdLight::CanSend (void) const
+{
+  return true;
+}
 
 TermUnixFileFd::TermUnixFileFd (int realFd)
   : UnixFileFdBase (realFd)

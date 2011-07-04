@@ -1,7 +1,7 @@
 #!/bin/bash
 . run-ccnx-common.sh
 echo init keystores
-NNODES=100
+NNODES=1000
 for (( i=0; i<$NNODES; i++ ))
 do
     install_ccnd_keystore $i
@@ -14,17 +14,19 @@ echo setting test file
 cp README files-0/tmp
 EXE=dce-ccnd-linear-multiple
 FIBER=--ns3::TaskManager::FiberManagerType=UcontextFiberManager
+MINFILES=--ns3::DceManager::MinimizeOpenFiles=1
 NS_LOG=$NS_LOG:CcndInLine
 # Comment out to use TCP instead of UDP
 USE_TCP=--tcp=1
 echo Run NS3
 if [ "" == "$GDB" ]
 then
-    $NS3_BIN/$EXE $FIBER --nNodes=$NNODES $USE_TCP 2>&1 | tee -a output.txt
+    $NS3_BIN/$EXE $FIBER --nNodes=$NNODES $USE_TCP $MINFILES  2>&1 | tee -a output.txt
 else
-    $GDB $NS3_BIN/$EXE $FIBER --nNodes=$NNODES $USE_TCP
+    echo  $FIBER --nNodes=$NNODES $USE_TCP $MINFILES
+    $GDB $NS3_BIN/$EXE
 fi
-emacs output.txt  files-*/var/log/*/* &
+#emacs output.txt  files-*/var/log/*/* &
 
 # avec UcontextFiberManager
 #real	0m43.150s
