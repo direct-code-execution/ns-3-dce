@@ -1,7 +1,7 @@
 #!/bin/bash
 . run-ccnx-common.sh
 echo init keystores
-NNODES=1000
+NNODES=10
 for (( i=0; i<$NNODES; i++ ))
 do
     install_ccnd_keystore $i
@@ -21,7 +21,7 @@ USE_TCP=--tcp=1
 echo Run NS3
 if [ "" == "$GDB" ]
 then
-    $NS3_BIN/$EXE $FIBER --nNodes=$NNODES $USE_TCP $MINFILES  2>&1 | tee -a output.txt
+    $NS3_BIN/$EXE $FIBER --nNodes=$NNODES $USE_TCP $MINFILES 2>&1 | tee -a output.txt
 else
     echo  $FIBER --nNodes=$NNODES $USE_TCP $MINFILES
     $GDB $NS3_BIN/$EXE

@@ -283,6 +283,8 @@ def build(bld):
         'model/dce-umask.cc',
         'model/testdce.cc',
         'model/system-path.cc',
+        'model/dce-misc.cc',
+        'model/dce-node-context.cc',
         # helper.
         'helper/dce-manager-helper.cc',
         'helper/dce-application-helper.cc',

@@ -9,7 +9,7 @@
  
  - correct the /dev/random emulation in order to not use real device but NS3 random methods
  
- - fix uname 
+ - fix uname --> see ns3/examples/naming
  
  - utils.cc TimeBase: add possibility to change the start date of the Simulation ! 
   

@@ -10,6 +10,7 @@ done
 i=2
 echo 1 >files-0/tmp/100
 while [ $i -le 100 ]; do echo $i >>files-0/tmp/100; i=$((i+1)); done
+tar cf files-0/tmp/bigfile $NS3_BIN/..
 echo setting test file
 cp README files-0/tmp
 EXE=dce-ccnd-short-stuff

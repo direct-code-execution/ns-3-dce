@@ -53,6 +53,9 @@ int main (int argc, char *argv[])
   DceManagerHelper dceManager;
   dceManager.Install (nodes);
 
+//  Names::Add ("NODE_Zero", nodes.Get (0));
+  Names::Add ("NODE_One", nodes.Get (1));
+
   DceApplicationHelper dce;
   ApplicationContainer apps, putter, getter;
 

@@ -36,6 +36,7 @@
 #include "dce-random.h"
 #include "net/dce-if.h"
 #include "dce-umask.h"
+#include "dce-misc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -306,7 +307,7 @@ void libc_dce (struct Libc *libc)
   libc->strtok_fn = strtok;
   libc->strtok_r_fn = strtok_r;
   libc->getnameinfo_fn = dce_getnameinfo;
-  libc->uname_fn = uname;
+  libc->uname_fn = dce_uname;
   libc->sscanf_fn = vsscanf;
 
 }
