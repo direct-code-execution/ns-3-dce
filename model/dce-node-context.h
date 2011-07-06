@@ -27,6 +27,7 @@
 #include "ns3/traced-callback.h"
 #include "ns3/simulator.h"
 #include <sys/utsname.h>
+#include "ns3/random-variable.h"
 
 extern "C" struct Libc;
 
@@ -49,13 +50,23 @@ public:
 
   int UName (struct utsname *buf);
 
-private:
-  std::string sysName;
-  std::string nodeName;
-  std::string release;
-  std::string version;
-  std::string hardId;
+  static Ptr<DceNodeContext> GetNodeContext ();
 
+  int RandomRead (void *buf, size_t count);
+
+
+
+private:
+  inline uint8_t GetNextRnd ();
+
+  std::string m_sysName;
+  std::string m_nodeName;
+  std::string m_release;
+  std::string m_version;
+  std::string m_hardId;
+  RandomVariable m_randomCtx;
+  uint32_t m_rndBuffer;
+  uint8_t m_rndOffset;
 };
 
 } // namespace ns3

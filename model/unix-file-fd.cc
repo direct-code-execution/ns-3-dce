@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <sys/mman.h>
 #include <fcntl.h>
+#include "dce-node-context.h"
 
 NS_LOG_COMPONENT_DEFINE ("UnixFileFd");
 
@@ -324,18 +325,6 @@ UnixFileFd::Close (void)
   // list of fds and deleting this class instance.
   return result;
 }
-/*
-class UnixFileFdLight : public UnixFileFd
-{
-public:
-  UnixFileFdLight (std::string path);
-  virtual ~UnixFileFdLight ();
-  virtual ssize_t Write (const void *buf, size_t count);
-
-private:
-  std::string m_path;
-};
-*/
 
 UnixFileFdLight::UnixFileFdLight (std::string path) : m_path(path), UnixFileFdBase ( -1 )
 {
@@ -388,5 +377,91 @@ TermUnixFileFd::Close (void)
   return 0;
 }
 
+UnixRandomFd::UnixRandomFd (std::string devPath) : m_devPath(devPath), UnixFileFdBase ( -1 )
+{
+}
 
+UnixRandomFd::~UnixRandomFd ()
+{
+
+}
+
+ssize_t
+UnixRandomFd::Read (void *buf, size_t count)
+{
+  Ptr<DceNodeContext> nodeContext = DceNodeContext::GetNodeContext ();
+  NS_ASSERT ( 0 != nodeContext );
+
+  return nodeContext->RandomRead (buf, count);
+}
+
+bool
+UnixRandomFd::CanRecv (void) const
+{
+  return true;
+}
+
+int
+UnixRandomFd::Close (void)
+{
+  return 0;
+}
+bool
+UnixRandomFd::CanSend (void) const
+{
+  return true;
+}
+ssize_t
+UnixRandomFd::Write (const void *buf, size_t count)
+{
+  Thread *current = Current ();
+  NS_ASSERT (current != 0);
+  current->err = EBADF;
+
+  return -1;
+}
+int
+UnixRandomFd::Fxstat (int ver, struct ::stat *buf)
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (this << current << buf);
+  int tmpFd = open ( m_devPath.c_str (), O_RDONLY, 0);
+
+  if ( tmpFd < 0 )
+    {
+      current->err = errno;
+      return -1;
+    }
+
+  NS_ASSERT (current != 0);
+  int retval = ::__fxstat (ver, tmpFd, buf);
+  if (retval == -1)
+    {
+      current->err = errno;
+    }
+  close (tmpFd);
+  return retval;
+}
+int
+UnixRandomFd::Fxstat64 (int ver, struct ::stat64 *buf)
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (this << current << buf);
+  int tmpFd = open ( m_devPath.c_str (), O_RDONLY, 0);
+
+  if ( tmpFd < 0 )
+    {
+      current->err = errno;
+      return -1;
+    }
+
+  NS_ASSERT (current != 0);
+  int retval = ::__fxstat64 (ver, tmpFd, buf);
+  if (retval == -1)
+    {
+      current->err = errno;
+    }
+  close (tmpFd);
+  return retval;
+}
 } // namespace ns3

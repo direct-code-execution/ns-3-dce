@@ -114,7 +114,6 @@ int main (int argc, char *argv[])
   for (int n=0; n < nNodes ; n++)
     {
       float r = startR * deltaR * currentAngle / 360;
-      NS_LOG_INFO( "r:" << r << "a:" << currentAngle );
       double a =  ((currentAngle) * 2.0 * M_PI) / 360.0  ;
       float x = r * cos ( a );
       float y = r * sin ( a );
@@ -126,19 +125,15 @@ int main (int argc, char *argv[])
       if (y > maxY) maxY = y;
 
       currentAngle += angle;
-
     }
 
   float centerX = maxX / 2;
   float centerY = maxY / 2;
   currentAngle = 360;
 
-  NS_LOG_INFO( "x:" << centerX << " y:" << centerY );
-
   for (int n=0; n < nNodes ; n++)
     {
       float r = startR * deltaR * currentAngle / 360;
-      NS_LOG_INFO( "r:" << r << "a:" << currentAngle );
       double a =  (currentAngle  * 2.0 * M_PI) / 360.0  ;
       int x = r * cos ( a );
       int y = r * sin ( a );

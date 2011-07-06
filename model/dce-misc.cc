@@ -15,32 +15,8 @@ NS_LOG_COMPONENT_DEFINE ("DceMisc");
 
 int dce_uname(struct utsname *buf)
 {
-  Thread *current = Current ();
-
-  if (0 == buf)
-    {
-      current->err = EFAULT;
-      return -1;
-    }
-
-  DceManager *manager = current->process->manager;
-  NS_LOG_FUNCTION (current);
-  NS_ASSERT (current != 0);
-  NS_ASSERT (manager != 0);
-
-  Ptr<DceNodeContext> nodeContext = manager->GetObject<DceNodeContext> ();
-
-  if ( 0 == nodeContext )
-    {
-      nodeContext = CreateObject<DceNodeContext> ();
-      manager->AggregateObject( nodeContext );
-    }
-
+  Ptr<DceNodeContext> nodeContext = DceNodeContext::GetNodeContext ();
   NS_ASSERT ( 0 != nodeContext );
 
   return nodeContext->UName (buf);
-
-/*
-TEMPOFUR
-  */
 }

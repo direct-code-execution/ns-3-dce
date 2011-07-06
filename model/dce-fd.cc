@@ -79,35 +79,33 @@ int dce_open (const char *path, int flags, mode_t mode)
       current->err = EMFILE;
       return -1;
     }
-
-  std::string fullpath = "";
+  UnixFd *unixFd = 0;
 
   if ( ( std::string (path) == "/dev/random" ) || ( std::string (path) == "/dev/urandom" )
       || ( std::string (path) == "/dev/srandom" ) )
     {
-      fullpath = path;
+      unixFd = new UnixRandomFd (path);
     }
   else
     {
-      fullpath = UtilsGetRealFilePath (path);
-    }
+      std::string fullpath = UtilsGetRealFilePath (path);
 
-  int realFd = ::open (fullpath.c_str (), flags, mode);
-  if (realFd == -1)
-    {
-      current->err = errno;
-      return -1;
-    }
-  UnixFd *unixFd = 0;
+      int realFd = ::open (fullpath.c_str (), flags, mode);
+      if (realFd == -1)
+        {
+          current->err = errno;
+          return -1;
+        }
 
-  if ( ( ( 2 == fd) || ( 1 == fd ) ) && ( Current ()->process->minimizeFiles ) )
-    {
-      unixFd = new UnixFileFdLight (fullpath);
-      close (realFd);
-    }
-  else
-    {
-      unixFd = new UnixFileFd (realFd);
+      if ( ( ( 2 == fd) || ( 1 == fd ) ) && ( Current ()->process->minimizeFiles ) )
+        {
+          unixFd = new UnixFileFdLight (fullpath);
+          close (realFd);
+        }
+      else
+        {
+          unixFd = new UnixFileFd (realFd);
+        }
     }
 
   current->process->openFiles.push_back (std::make_pair(fd,unixFd));
