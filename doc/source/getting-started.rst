@@ -1,6 +1,12 @@
 Getting Started
 ---------------
 
+Prerequisite
+************
+
+DCE has been tested only on few systems see:  `Ns-3-dce portability <http://www.nsnam.org/wiki/index.php/Ns-3-dce_portability>`_.
+Now I am using it well with a Fedora 14 x86-64 and glibc 2.13-1.
+
 Building ns-3 and DCE
 *********************
 

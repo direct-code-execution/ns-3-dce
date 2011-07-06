@@ -4,8 +4,13 @@
 #include "ns3/dce-module.h"
 #include "ns3/point-to-point-module.h"
 #include "ns3/applications-module.h"
+#include "ns3/netanim-module.h"
+#include "ns3/constant-position-mobility-model.h"
 
 using namespace ns3;
+
+void setPos (Ptr<Node> n, int x, int y, int z);
+
 // ===========================================================================
 //
 //         node 0                 node 1
@@ -27,6 +32,7 @@ using namespace ns3;
 // ===========================================================================
 int main (int argc, char *argv[])
 {
+  std::string animFile = "NetAnim.tr";
   CommandLine cmd;
   cmd.Parse (argc, argv);
 
@@ -34,7 +40,8 @@ int main (int argc, char *argv[])
   nodes.Create (2);
 
   PointToPointHelper pointToPoint;
-  pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("1000Mbps"));
+  //pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("1000Mbps"));
+  pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
   pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
 
   NetDeviceContainer devices;
@@ -90,7 +97,7 @@ int main (int argc, char *argv[])
   dce.AddArgument ("/tmp/ccnd0.conf");
 
   apps = dce.Install (nodes.Get (0));
-  apps.Start (Seconds (10.0));
+  apps.Start (Seconds (2.0));
 
   // Launch ccn daemon on node 1
   dce.SetBinary ("ccnd");
@@ -110,7 +117,7 @@ int main (int argc, char *argv[])
   dce.AddEnvironment("CCND_KEYSTORE_DIRECTORY", "");
 
   apps = dce.Install (nodes.Get (1));
-  apps.Start (Seconds (2.0));
+  apps.Start (Seconds (1.0));
 
   // Configure ccn daemon on node 1 to forward interrests to node 0
   dce.SetBinary ("ccndc");
@@ -121,7 +128,7 @@ int main (int argc, char *argv[])
   dce.AddArgument ("/tmp/ccnd1.conf");
 
   apps = dce.Install (nodes.Get (1));
-  apps.Start (Seconds (11.0));
+  apps.Start (Seconds (2.0));
 
   // put a file somewhere on the Internet !
   dce.ResetArguments();
@@ -132,7 +139,7 @@ int main (int argc, char *argv[])
   dce.AddEnvironment("HOME", "/home/furbani");
 
   putter = dce.Install (nodes.Get (0));
-  putter.Start (Seconds (40.0));
+  putter.Start (Seconds (3.0));
 
   // Try to retrieve the file !
   dce.ResetArguments();
@@ -144,7 +151,7 @@ int main (int argc, char *argv[])
   dce.AddEnvironment("HOME", "/home/furbani");
 
   getter = dce.Install (nodes.Get (1));
-  getter.Start (Seconds (42.0));
+  getter.Start (Seconds (4.0));
 
   //  RETRIEVE NODE 0 STATUS : ccndsmoketest -b  send getSlash.txt recv recv
   dce.ResetArguments();
@@ -160,7 +167,7 @@ int main (int argc, char *argv[])
   dce.AddArgument ("recv");
 
   apps = dce.Install (nodes.Get (0));
-  apps.Start (Seconds (45.0));
+  apps.Start (Seconds (5.0));
 
   //  RETRIEVE NODE 1 STATUS : ccndsmoketest -b  send getSlash.txt recv recv
   dce.ResetArguments();
@@ -174,7 +181,7 @@ int main (int argc, char *argv[])
   dce.AddArgument ("recv");
 
   apps = dce.Install (nodes.Get (1));
-  apps.Start (Seconds (46.0));
+  apps.Start (Seconds (6.0));
 
   // Stop node 0's ccnd
   dce.ResetArguments();
@@ -183,7 +190,7 @@ int main (int argc, char *argv[])
   dce.SetStdinFile ("");
   dce.AddArgument ("kill");
   apps = dce.Install (nodes.Get (0));
-  apps.Start (Seconds (50.0));
+  apps.Start (Seconds (7.0));
 
   // Stop node 1's ccnd
   dce.ResetArguments();
@@ -192,11 +199,31 @@ int main (int argc, char *argv[])
   dce.SetStdinFile ("");
   dce.AddArgument ("kill");
   apps = dce.Install (nodes.Get (1));
-  apps.Start (Seconds (51.0));
+  apps.Start (Seconds (8.0));
 
-  Simulator::Stop (Seconds(100.0));
+  setPos (nodes.Get (0), 1, 10, 0);
+  setPos (nodes.Get (1), 50,10, 0);
+
+  // Create the animation object and configure for specified output
+  AnimationInterface anim;
+
+  anim.SetOutputFile (animFile);
+
+  anim.StartAnimation ();
+
+  Simulator::Stop (Seconds(10.0));
   Simulator::Run ();
   Simulator::Destroy ();
 
+  anim.StopAnimation ();
+
   return 0;
+}
+
+void setPos (Ptr<Node> n, int x, int y, int z)
+{
+  Ptr<ConstantPositionMobilityModel> loc = CreateObject<ConstantPositionMobilityModel> ();
+  n->AggregateObject (loc);
+  Vector locVec2 ( x, y, z);
+  loc->SetPosition (locVec2);
 }

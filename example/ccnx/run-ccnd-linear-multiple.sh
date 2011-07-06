@@ -1,7 +1,7 @@
 #!/bin/bash
 . run-ccnx-common.sh
 echo init keystores
-NNODES=10
+NNODES=100
 for (( i=0; i<$NNODES; i++ ))
 do
     install_ccnd_keystore $i
@@ -17,7 +17,7 @@ FIBER=--ns3::TaskManager::FiberManagerType=UcontextFiberManager
 MINFILES=--ns3::DceManager::MinimizeOpenFiles=1
 NS_LOG=$NS_LOG:CcndInLine
 # Comment out to use TCP instead of UDP
-USE_TCP=--tcp=1
+#USE_TCP=--tcp=1
 echo Run NS3
 if [ "" == "$GDB" ]
 then

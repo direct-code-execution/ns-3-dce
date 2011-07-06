@@ -24,6 +24,8 @@
 #include "ns3/internet-module.h"
 #include "ns3/dce-module.h"
 #include "ns3/point-to-point-helper.h"
+#include "ns3/netanim-module.h"
+#include "ns3/constant-position-mobility-model.h"
 
 using namespace ns3;
 //
@@ -45,6 +47,8 @@ static std::string Ipv4AddressToString (Ipv4Address ad)
   return oss.str ();
 }
 
+void setPos (Ptr<Node> n, int x, int y, int z);
+
 int main (int argc, char *argv[])
 {
   //
@@ -52,6 +56,7 @@ int main (int argc, char *argv[])
   //
   uint32_t nNodes = 8;
   bool useTcp = 0;
+  std::string animFile = "NetAnim.tr";
 
   CommandLine cmd;
   cmd.AddValue("nNodes", "Number of nodes to place in the line", nNodes);
@@ -65,7 +70,9 @@ int main (int argc, char *argv[])
 
   PointToPointHelper pointToPoint;
   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("1000Mbps"));
+  pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
   pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
+  pointToPoint.SetChannelAttribute ("Delay", StringValue ("20ms"));
 
   Ipv4AddressHelper address;
   address.SetBase ("10.0.0.0", "255.255.0.0");
@@ -94,8 +101,52 @@ int main (int argc, char *argv[])
   ApplicationContainer apps;
 
   // Install ccnd on each node
+  // And place in a spiral
+  float angle = 20;
+  float deltaR = 1.3;
+  float startR = 10;
+  float currentAngle = 360;
+  float maxX = 0;
+  float maxY = 0;
+
+  // Calculate maxX and maxY;
+
   for (int n=0; n < nNodes ; n++)
     {
+      float r = startR * deltaR * currentAngle / 360;
+      NS_LOG_INFO( "r:" << r << "a:" << currentAngle );
+      double a =  ((currentAngle) * 2.0 * M_PI) / 360.0  ;
+      float x = r * cos ( a );
+      float y = r * sin ( a );
+
+      if ( x < 0) x = -x;
+      if ( y < 0) y = -y;
+
+      if (x > maxX) maxX = x;
+      if (y > maxY) maxY = y;
+
+      currentAngle += angle;
+
+    }
+
+  float centerX = maxX / 2;
+  float centerY = maxY / 2;
+  currentAngle = 360;
+
+  NS_LOG_INFO( "x:" << centerX << " y:" << centerY );
+
+  for (int n=0; n < nNodes ; n++)
+    {
+      float r = startR * deltaR * currentAngle / 360;
+      NS_LOG_INFO( "r:" << r << "a:" << currentAngle );
+      double a =  (currentAngle  * 2.0 * M_PI) / 360.0  ;
+      int x = r * cos ( a );
+      int y = r * sin ( a );
+
+      currentAngle += angle;
+
+      setPos (nodes.Get (n), x+centerX, y+centerY, 0);
+
       dce.SetStackSize (1 << 20);
 
       dce.SetBinary ("ccnd");
@@ -115,7 +166,7 @@ int main (int argc, char *argv[])
       dce.AddEnvironment ("CCND_KEYSTORE_DIRECTORY", "");
 
       apps = dce.Install (nodes.Get (n));
-      apps.Start (Seconds (1.0));
+      apps.Start (Seconds (0.1));
     }
 
   for (int n=0; n < nNodes ; n++)
@@ -133,7 +184,7 @@ int main (int argc, char *argv[])
           dce.AddArgument ( Ipv4AddressToString(vInterfaces[n-1].GetAddress ( 0 )) );
 
           apps = dce.Install (nodes.Get (n));
-          apps.Start (Seconds ( ( 200.0 + n ) / 100  )); // Every 0.01s from time 2s
+          apps.Start (Seconds ( ( 20.0 + n ) / 100  )); // Every 0.01s from time 2s
         }
     }
 
@@ -143,11 +194,13 @@ int main (int argc, char *argv[])
   dce.AddEnvironment("HOME", "/home/furbani");
   dce.SetBinary ("ccnput");
   dce.SetStdinFile ("/tmp/README");
+  dce.AddArgument ("-x" );
+  dce.AddArgument ("3540" );
   dce.AddArgument ("/NODE0/LeReadme");
   dce.AddEnvironment("HOME", "/home/furbani");
 
   apps = dce.Install (nodes.Get (0));
-  apps.Start (Seconds (60.0));
+  apps.Start (Seconds ( (( 20.0 + nNodes ) / 100 ) + 0.5 ) ) ;
 
 
   // Retrieve the file using last NODE using a big CCN_LINGER value in order to have a chance of having a
@@ -164,7 +217,7 @@ int main (int argc, char *argv[])
   dce.AddArgument ("/NODE0/LeReadme");
 
   apps = dce.Install (nodes.Get (nNodes - 1));
-  apps.Start (Seconds (60.0));
+  apps.Start (Seconds ( (( 20.0 + nNodes ) / 100 ) + 0.5 ) ) ;
 
   // The second get is very fast but not furious :) because of cache usage the data is already in the local node !
   dce.ResetArguments();
@@ -180,9 +233,27 @@ int main (int argc, char *argv[])
   apps = dce.Install (nodes.Get (nNodes - 1));
   apps.Start (Seconds (3500.0));
 
+  // Create the animation object and configure for specified output
+  AnimationInterface anim;
+
+  anim.SetOutputFile (animFile);
+
+  anim.StartAnimation ();
+
   Simulator::Stop (Seconds(3600.0));
   Simulator::Run ();
   Simulator::Destroy ();
 
+  anim.StopAnimation ();
+
   return 0;
 }
+
+void setPos (Ptr<Node> n, int x, int y, int z)
+{
+  Ptr<ConstantPositionMobilityModel> loc = CreateObject<ConstantPositionMobilityModel> ();
+  n->AggregateObject (loc);
+  Vector locVec2 ( x, y, z);
+  loc->SetPosition (locVec2);
+}
+

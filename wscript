@@ -23,7 +23,7 @@ def search_file(files):
 
 def configure(conf):
     ns3waf.check_modules(conf, ['core', 'network', 'internet'], mandatory = True)
-    ns3waf.check_modules(conf, ['point-to-point', 'file-descriptor'], mandatory = False)
+    ns3waf.check_modules(conf, ['point-to-point', 'file-descriptor', 'netanim'], mandatory = False)
 
     conf.check_tool('compiler_cc')
     conf.check(header_name='stdint.h', define_name='HAVE_STDINT_H', mandatory=False)
@@ -176,7 +176,7 @@ def build_dce_examples(module):
                        target='bin/dce-udp-perf',
                        source=['example/dce-udp-perf.cc'])
 
-    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point'], 
+    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
                        target='bin/dce-ccnd-udp-2-nodes',
                        source=['example/ccnx/dce-ccnd-udp-2-nodes.cc'])
 
@@ -196,7 +196,7 @@ def build_dce_examples(module):
                        target='bin/dce-tap-ccnd',
                        source=['example/ccnx/dce-tap-ccnd.cc'])                
 
-    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point'], 
+    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
                        target='bin/dce-ccnd-linear-multiple',
                        source=['example/ccnx/dce-ccnd-linear-multiple.cc'])
                        
