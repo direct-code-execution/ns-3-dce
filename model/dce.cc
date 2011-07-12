@@ -651,3 +651,9 @@ pid_t dce_fork (void)
   DceManager *manager = thread->process->manager;
   return manager->Clone (thread);
 }
+int dce_execv(const char *path, char *const argv[])
+{
+  NS_LOG_FUNCTION ( path );
+  Thread *thread = Current ();
+  return thread->process->manager->Execve (thread, path, argv, 0);
+}

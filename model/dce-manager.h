@@ -98,16 +98,35 @@ public:
   void Yield (void);
   uint16_t Clone (Thread *thread);
   std::vector<Process *> GetProcs ();
-  static void AppendStatusFile (uint16_t pid, uint32_t nodeId, std::string line);
+  static void AppendStatusFile (uint16_t pid, uint32_t nodeId, std::string &line);
+
+  // Prototype for exec
+  // A new process with same pid will be created in order to clean memory, stack, data, bss
+  // then the calling process will be stopped ... I do not exactly how now : )
+  // Premiere Etape on va passer la main au thread NS3 car il se peut qu'on kill la memoire ou je suis...
+  int Execve (Thread *threadOld, const char *path, char *const argv[], char *const envp[]);
+
+
 
 private:
-
+  struct ExecContext
+  {
+    Thread *caller;
+    int execResult; // 0 OK else errno !
+  };
   // inherited from Object.
   virtual void DoDispose (void);
 
   struct Process *CreateProcess (std::string name, std::string stdinfilename, std::vector<std::string> args,
                                  std::vector<std::pair<std::string,std::string> > envs);
   static void DoStartProcess (void *context);
+
+  // Allocate new process with the same pid that the process trying to execking
+  struct Process *CopyExecProcess (struct Process *proc, std::string name, std::vector<std::string> args,
+                                   std::vector<std::pair<std::string,std::string> > envs);
+  bool StartExecProcess (struct ExecContext *context, const char *path, char *const argv[], char *const envp[]);
+  static void DoExec (void *context);
+
   bool CheckProcessContext (void) const;
   uint16_t AllocatePid (void);
   uint16_t AllocateTid (const struct Process *process) const;

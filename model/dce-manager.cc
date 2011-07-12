@@ -99,7 +99,8 @@ DceManager::DoDispose (void)
       tmp = m_processes.back ();
       if ( 0 != tmp )
       {
-    	  AppendStatusFile (tmp->pid, tmp->nodeId, "Never ended.");
+          std::string statusWord = "Never ended.";
+    	  AppendStatusFile (tmp->pid, tmp->nodeId, statusWord );
       }
       DeleteProcess (tmp);
     }
@@ -334,6 +335,30 @@ DceManager::CreateProcess (std::string name, std::string stdinfilename, std::vec
 
   return process;
 }
+
+// Allocate new process with the same pid
+struct Process *
+DceManager::CopyExecProcess (struct Process *proc, std::string name, std::vector<std::string> args,
+                         std::vector<std::pair<std::string,std::string> > envs)
+{
+  struct Process *process = CreateProcess (name, "",  args, envs);
+
+  process->euid = proc->euid;
+  process->ruid = proc->ruid;
+  process->suid = proc->suid;
+  process->egid = proc->egid;
+  process->rgid = proc->rgid;
+  process->sgid = proc->sgid;
+  process->alloc = new KingsleyAlloc ();
+  process->ppid = proc->pid; // Same as pid, to denote the current execking new stack and memory context...
+  process->pid = proc->pid;
+  process->cwd = proc->cwd;
+  process->rndVarible = proc->rndVarible;
+  process->minimizeFiles = proc->minimizeFiles;
+
+  return process;
+}
+
 
 void 
 DceManager::TaskSwitch (enum Task::SwitchType type, void *context)
@@ -594,13 +619,17 @@ void
 DceManager::Stop (uint16_t pid)
 {
   NS_LOG_FUNCTION (this << pid);
-  Process *process = SearchProcess (pid);
-  if (process == 0)
+  while (true)
     {
-      return;
+      Process *process = SearchProcess (pid);
+      if (process == 0)
+        {
+          return;
+        }
+      std::string statusWord = "Stopped by NS3.";
+      AppendStatusFile (process->pid, process->nodeId, statusWord);
+      DeleteProcess (process);
     }
-  AppendStatusFile (process->pid, process->nodeId, "Stopped by NS3.");
-  DeleteProcess (process);
 }
 
 void 
@@ -673,7 +702,6 @@ DceManager::DeleteProcess (struct Process *process)
       if ( 0 != freeOne )
         {
           freeOne->DecRef();
-
           if ( freeOne->GetRef() == 0 )
             {
               freeOne->Dispose();
@@ -818,28 +846,217 @@ DceManager::SetEnvp (struct Process *process,
 }
 
 void
-DceManager::AppendStatusFile (uint16_t pid, uint32_t nodeId,  std::string line)
+DceManager::AppendStatusFile (uint16_t pid, uint32_t nodeId,  std::string &line)
 {
-	std::ostringstream oss;
-	oss << "files-" << nodeId << "/var/log/" << pid << "/status" ;
-	std::string s = oss.str();
+  std::ostringstream oss;
+  oss << "files-" << nodeId << "/var/log/" << pid << "/status" ;
+  std::string s = oss.str();
 
-	int fd = ::open (s.c_str (), O_WRONLY | O_APPEND, 0 );
+  int fd = ::open (s.c_str (), O_WRONLY | O_APPEND, 0 );
 
-	if (fd >= 0) // XXX: When fork is used the pid directory is not created, I plan to fix it when I will work on fork/exec/wait...
-	{
-		NS_ASSERT (fd > 0);
-		oss.str ("");
-		oss.clear ();
-		oss << "  End Time: " << GetTimeStamp () << " --> " << line << std::endl;
-		const char *str = oss.str ().c_str();
-		::write (fd, str, strlen (str));
-		::close (fd);
-	}
+  if (fd >= 0) // XXX: When fork is used the pid directory is not created, I plan to fix it when I will work on fork/exec/wait...
+    {
+      oss.str ("");
+      oss.clear ();
+      oss << "      Time: " << GetTimeStamp () << " --> " << line << std::endl;
+      std::string wholeLine = oss.str ();
+      int l =  wholeLine.length();
+      const char *str = wholeLine.c_str();
+      ::write (fd, str, l);
+      ::close (fd);
+    }
 }
+
 std::vector<Process *>
 DceManager::GetProcs ()
 {
   return m_processes;
 }
+
+int
+DceManager::Execve (Thread *threadOld, const char *path, char *const argv[], char *const envp[])
+{
+   NS_LOG_FUNCTION (this << path);
+   struct ExecContext *con = new (struct ExecContext);
+
+   con->caller = threadOld;
+   con->execResult = -1;
+
+   if (!StartExecProcess (con, path, argv, envp) ) return -1;
+
+   while ( -1 == con->execResult ) // Wait exec result
+     {
+       Yield ();
+     }
+   int res = con->execResult;
+   con->execResult = -2;
+
+   if ( 0 == res )
+     { // SUCCESS
+       dce_exit_exec (0, 1);
+     }
+   else
+     { // ERROR
+       Current ()->err = res;
+       Yield ();
+     }
+
+   return -1;
+}
+
+bool
+DceManager::StartExecProcess (struct ExecContext *context, const char *path, char *const argv[], char *const envp[])
+{
+  NS_LOG_FUNCTION ( path );
+  std::vector<std::string> args;
+  std::vector<std::pair<std::string,std::string> > envs;
+  // Copy argv
+  if ( 0 != argv )
+    {
+      char **v = (char **) argv;
+      while (*v)
+        {
+          char *s = *v++;
+          args.push_back (s);
+        }
+    }
+  // Copy Env
+  if ( 0 != envp )
+    {
+      char **e = (char **) envp;
+      while (*e)
+        {
+          char *s = *e++;
+          char *c = s;
+
+          while ( ( *c != 0 ) && ( *c != '=' ) ) c++;
+
+          if (( '=' != *c ) || (s == c) )  {
+              Current () -> err = EINVAL;
+              return 0;
+          }
+          std::string key = std::string (s, c);
+          std::string val = std::string (1 + c);
+          envs.push_back(std::make_pair (key, val));
+        }
+    }
+   struct Process *process = CopyExecProcess ( context->caller->process, path, args, envs);
+   struct Thread *thread = CreateThread (process);
+   uint32_t stackSize = TaskManager::Current ()->GetStackSize (context->caller->task);
+   Task *task = TaskManager::Current ()->Start (&DceManager::DoExec, context, stackSize );
+   task->SetContext (thread);
+   task->SetSwitchNotifier (&DceManager::TaskSwitch, process);
+   thread->task = task;
+   return 1;
+}
+
+void
+DceManager::DoExec (void *context)
+{
+  struct ::Libc *libc = GetLibc ();
+  struct ExecContext *con = (struct ExecContext *) context;
+  Thread *current = Current ();
+  UnixFd *unixFd = 0;
+  struct Process *oldProc = con->caller->process;
+  int ppid = oldProc->ppid;
+  int cpt = 0;
+
+  for (std::vector<std::pair<int,UnixFd *> >::iterator i = oldProc->openFiles.begin ();
+       i != oldProc->openFiles.end (); ++i)
+    {
+      if ( ( (i->first) >= 0 ) && (  (i->first) < 3 ) )
+      {
+          cpt++;
+          i->second->IncRef ();
+          i->second->Ref ();
+          current->process->openFiles.push_back (std::make_pair( i->first, i->second ) );
+          if ( cpt >= 3 ) { break; }
+      }
+    }
+
+  std::ostringstream oss;
+  oss << "EXEC: ";
+  for (int i = 0; i < current->process->originalArgc; i++)
+    {
+      oss << current->process->originalArgv[i] << ' ';
+    }
+  std::string line = oss.str ();
+  AppendStatusFile (oldProc->pid, oldProc->nodeId, line);
+
+  void *h = current->process->loader->Load ("libc-ns3.so", RTLD_GLOBAL);
+  void *symbol = 0;
+  if (h == 0)
+    {
+      con->execResult = ENOMEM;
+    }
+  else
+    {
+      symbol = current->process->loader->Lookup (h, "libc_setup");
+      if (symbol == 0)
+        {
+          NS_FATAL_ERROR ("This is not our fake libc !");
+        }
+      // construct the libc now
+      void (*libc_setup) (const struct Libc *fn);
+      libc_setup = (void (*) (const struct Libc *))(symbol);
+      libc_setup (libc);
+
+      h = current->process->loader->Load ("libpthread-ns3.so", RTLD_GLOBAL);
+      if (h == 0)
+        {
+          con->execResult = ENOMEM;
+        }
+      else
+        {
+          symbol = current->process->loader->Lookup (h, "libpthread_setup");
+          if (symbol == 0)
+            {
+              NS_FATAL_ERROR ("This is not our fake libpthread !");
+            }
+          // construct libpthread now
+          void (*libpthread_setup) (const struct Libc *fn);
+          libpthread_setup = (void (*) (const struct Libc *))(symbol);
+          libpthread_setup (libc);
+
+          // finally, call into 'main'.
+          h = current->process->loader->Load (current->process->originalArgv[0], RTLD_GLOBAL);
+
+          if ( h == 0 )
+            {
+              con->execResult = EACCES;
+            }
+          else
+            {
+              current->process->mainHandle = h;
+              symbol = current->process->loader->Lookup (h, "main");
+              con->execResult = ( 0 != symbol ) ? 0 : ENOEXEC;
+            }
+        }
+    }
+
+  while ( -2 != con->execResult )
+    {
+      current->process->manager->Yield (); // warn caller
+    }
+  delete con;
+  current->process->ppid = ppid;
+
+  if ( 0 != symbol )
+    {
+      int (*main) (int, char **);
+      main = (int (*) (int, char **)) symbol;
+
+      StartProcessDebugHook ();
+
+      int retval = main (current->process->originalArgc, current->process->originalArgv);
+      dce_exit (retval);
+    }
+  else
+    {
+      // Destroy me ....
+      dce_exit_exec (0, 2);
+    }
+}
+
+
 } // namespace ns3

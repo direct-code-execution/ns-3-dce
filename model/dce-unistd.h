@@ -11,6 +11,11 @@ ssize_t dce_write (int fd, const void *buf, size_t count);
 ssize_t dce_writev (int fd, const struct iovec *iov, int iovcnt);
 ssize_t dce_read (int fd, void *buf, size_t count);
 void dce_exit (int status);
+// with type:
+//  0: normal exit
+//  1: exec success
+//  2: exec failed.
+void dce_exit_exec (int status, int type);
 unsigned int dce_sleep(unsigned int seconds);
 pid_t dce_getpid (void);
 pid_t dce_getppid (void);
@@ -46,6 +51,7 @@ off64_t dce_lseek64(int fildes, off64_t offset, int whence);
 int dce_unlink (const char *pathname);
 int dce_rmdir(const char *pathname);
 pid_t dce_fork (void);
+int dce_execv(const char *path, char *const argv[]);
 
 #ifdef __cplusplus
 }

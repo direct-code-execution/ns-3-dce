@@ -329,6 +329,8 @@ struct Libc
                          socklen_t hostlen, char *serv, socklen_t servlen, int flags);
   int (*uname_fn) (struct utsname *buf);
   int (*sscanf_fn) (const char *str, const char *format, va_list);
+  int (*execv_fn) (const char *path, char *const argv[]);
+
 
 };
 

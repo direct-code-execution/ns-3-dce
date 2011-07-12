@@ -1252,6 +1252,11 @@ int sscanf(const char *str, const char *format, ...)
   return retval;
 }
 
+int execv(const char *path, char *const argv[])
+{
+  return g_libc.execv_fn (path, argv);
+}
+
 void LIBSETUP (const struct Libc *fn)
 {
   /* The following assignment of fn to g_libc is a bit weird: we perform a copy of the data 

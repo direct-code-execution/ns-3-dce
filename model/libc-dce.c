@@ -309,7 +309,7 @@ void libc_dce (struct Libc *libc)
   libc->getnameinfo_fn = dce_getnameinfo;
   libc->uname_fn = dce_uname;
   libc->sscanf_fn = vsscanf;
-
+  libc->execv_fn = dce_execv;
 }
 
 #ifdef __cplusplus

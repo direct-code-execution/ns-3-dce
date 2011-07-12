@@ -67,30 +67,61 @@ CleanupPthreadKeys (void)
   current->keyValues.clear ();
 }
 
-
-void dce_exit (int status)
+// with type:
+//  0: normal exit
+//  1: exec success
+//  2: exec failed.
+void dce_exit_exec (int status, int type)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << status);
   NS_ASSERT (current != 0);
   CleanupPthreadKeys ();
-  dce__cxa_finalize (0);
+  if ( 0 == type ) dce__cxa_finalize (0);
   dce_fflush (0);
   current->process->exitValue = status;
   current->task->SetSwitchNotifier (0, 0);
   current->process->loader->UnloadAll ();
 
   if ( 0 != current->process )
-  {
-	  std::ostringstream oss;
+    {
+      std::ostringstream oss;
+      std::string line;
 
-	  oss << "Exit (" << status << ")";
+      switch (type)
+      {
+        case 0:
+          {
+            oss << "Exit (" << status << ")";
+            line = oss.str ();
+          }
+          break;
 
-	  DceManager::AppendStatusFile (current->process->pid, current->process->nodeId, oss.str ());
-  }
+        case 1:
+          {
+            line = "EXEC SUCCESS";
+          }
+          break;
+
+        case 2:
+          {
+            line = "EXEC FAILED";
+          }
+          break;
+
+        default: break;
+      }
+
+      DceManager::AppendStatusFile (current->process->pid, current->process->nodeId, line);
+    }
 
   current->process->manager->DeleteProcess (current->process);
   TaskManager::Current ()->Exit ();
+}
+
+void dce_exit (int status)
+{
+  dce_exit_exec (status, false);
 }
 
 struct PthreadStartContext

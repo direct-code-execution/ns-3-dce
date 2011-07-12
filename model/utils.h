@@ -52,6 +52,7 @@ int UtilsAllocateFd (void);
 void UtilsAdvanceTime (Thread *current);
 std::string GetTimeStamp ();
 
+
 #define MAX_FDS 1024
 } // namespace ns3
 
