@@ -146,7 +146,10 @@ wctype_t __wctype_l (__const char *__property, __locale_t __locale)
 weak_alias (__wctype_l, wctype_l);
 int puts (const char *s)
 {
-  return g_libc.fputs_fn (s, stdout);
+  int ret = g_libc.fputs_fn (s, stdout);
+  if (ret < 0) return ret;
+  g_libc.fputc_fn ('\n', stdout);
+  return ret;
 }
 int fputs (const char *s, FILE *stream)
 {
