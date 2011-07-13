@@ -2,7 +2,9 @@
 #define UTILS_H
 
 #include <string>
+#include <list>
 #include <sys/time.h>
+#include <sys/stat.h>
 #include "ns3/nstime.h"
 
 #define GET_CURRENT(x)					\
@@ -51,7 +53,9 @@ int UtilsAllocateFd (void);
 // Little hack to advance time when detecting a possible infinite loop.
 void UtilsAdvanceTime (Thread *current);
 std::string GetTimeStamp ();
-
+bool CheckExeMode (struct stat *st, uid_t uid, gid_t gid);
+std::string FindExecFile (std::string root, std::string envPath, std::string fileName, uid_t uid, gid_t gid, int *errNo);
+std::list<std::string> Split (std::string input, std::string sep);
 
 #define MAX_FDS 1024
 } // namespace ns3

@@ -11,6 +11,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <string.h>
+#include <list>
 
 NS_LOG_COMPONENT_DEFINE ("ProcessUtils");
 
@@ -302,7 +303,6 @@ GetTimeStamp ()
   oss << now;
   indent = 25;
   std::string ns = oss.str ();
-
   if ( ns.length () < indent )
     {
       padding = std::string ( indent-ns.length() , ' ');
@@ -315,4 +315,77 @@ GetTimeStamp ()
   return oss.str ();
 }
 
+std::list<std::string>
+Split (std::string input, std::string sep)
+{
+  std::list<std::string> retval;
+  std::string::size_type cur = 0, next;
+  while (true)
+    {
+      next = input.find (sep, cur);
+      if (next == cur)
+        {
+          cur ++;
+          continue;
+        }
+      else if (next == std::string::npos)
+        {
+          if (input.size () != cur)
+            {
+              retval.push_back (input.substr (cur, input.size () - cur));
+            }
+          break;
+        }
+      retval.push_back (input.substr (cur, next - cur));
+      cur = next + 1;
+    }
+  return retval;
+}
+
+std::string
+FindExecFile (std::string root, std::string envPath, std::string fileName, uid_t uid, gid_t gid, int *errNo)
+{
+  struct stat st;
+  std::string found = "";
+  *errNo = ENOENT;
+  if (fileName.substr(0, 1) == "/" )
+    {
+      if ( 0 == ::stat (fileName.c_str (), &st) )
+        {
+          if (((uid) && CheckExeMode ( &st, uid, gid )) || (!uid))
+            {
+              return fileName;
+            }
+        }
+    }
+  else
+    {
+      std::list<std::string> paths = Split (envPath, ":");
+      for (std::list<std::string>::const_iterator i = paths.begin (); i != paths.end (); i++)
+        {
+          std::string test = root + "/" + *i + "/" + fileName;
+          if ( 0 == ::stat (test.c_str (), &st) )
+            {
+              if (((uid) && CheckExeMode ( &st, uid, gid )) || (!uid))
+                {
+                  found = test;
+                  break;
+                }
+              else
+                {
+                  *errNo = EACCES;
+                }
+            }
+        }
+    }
+  return found;
+}
+
+bool
+CheckExeMode (struct stat *st, uid_t uid, gid_t gid)
+{
+  return ( ( gid != st->st_gid) && ( uid != st->st_uid ) && ( ( st->st_mode & (S_IROTH|S_IXOTH) ) ==  (S_IROTH|S_IXOTH) ) )  ||
+      ( ( gid == st->st_gid ) && ( uid != st->st_uid ) && ( ( st->st_mode & (S_IRGRP|S_IXGRP)) ==  (S_IRGRP|S_IXGRP) ) ) ||
+      ( ( uid == st->st_uid ) && ( ( st->st_mode & (S_IRUSR|S_IXUSR)) == (S_IRUSR|S_IXUSR) ) );
+}
 } // namespace ns3

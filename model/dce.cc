@@ -655,5 +655,15 @@ int dce_execv(const char *path, char *const argv[])
 {
   NS_LOG_FUNCTION ( path );
   Thread *thread = Current ();
-  return thread->process->manager->Execve (thread, path, argv, 0);
+  std::string fileName = FindExecFile ("/", std::string(getenv("PATH")) + std::string(getenv("LD_LIBRARY_PATH")) ,
+                                   path, getuid (), getgid (), &(thread->err) );
+
+  if  ( 0 == fileName.length () )
+    {
+      // Errno setted by FindExecFile
+      return -1;
+    }
+  NS_LOG_FUNCTION( "TEMPOFUR " << fileName );
+
+  return thread->process->manager->Execve (thread, fileName.c_str (), argv, 0);
 }
