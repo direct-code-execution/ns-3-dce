@@ -330,8 +330,11 @@ struct Libc
   int (*uname_fn) (struct utsname *buf);
   int (*sscanf_fn) (const char *str, const char *format, va_list);
   int (*execv_fn) (const char *path, char *const argv[]);
-
-
+  int (*execl_fn) (const char *path, const char *arg, va_list);
+  int (*execve_fn) (const char *filename, char *const argv[], char *const envp[]);
+  int (*execlp_fn) (const char *file, const char *arg, va_list ap);
+  int (*execvp_fn) (const char *file, char *const argv[]);
+  int (*execle_fn) (const char *path, const char *arg, va_list ap);
 };
 
 #ifdef __cplusplus

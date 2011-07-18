@@ -348,7 +348,10 @@ FindExecFile (std::string root, std::string envPath, std::string fileName, uid_t
   struct stat st;
   std::string found = "";
   *errNo = ENOENT;
-  if (fileName.substr(0, 1) == "/" )
+
+  int idx =  fileName.find('/',0 );
+
+  if ( idx >= 0 )  // fileName contain a '/'
     {
       if ( 0 == ::stat (fileName.c_str (), &st) )
         {

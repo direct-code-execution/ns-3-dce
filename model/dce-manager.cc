@@ -907,13 +907,14 @@ DceManager::Execve (Thread *threadOld, const char *path, char *const argv[], cha
 bool
 DceManager::StartExecProcess (struct ExecContext *context, const char *path, char *const argv[], char *const envp[])
 {
-  NS_LOG_FUNCTION ( path );
+  NS_LOG_FUNCTION ( this << path );
   std::vector<std::string> args;
   std::vector<std::pair<std::string,std::string> > envs;
   // Copy argv
   if ( 0 != argv )
     {
       char **v = (char **) argv;
+      if (*v) v++; // Ignore argv[0]
       while (*v)
         {
           char *s = *v++;
@@ -924,6 +925,7 @@ DceManager::StartExecProcess (struct ExecContext *context, const char *path, cha
   if ( 0 != envp )
     {
       char **e = (char **) envp;
+
       while (*e)
         {
           char *s = *e++;

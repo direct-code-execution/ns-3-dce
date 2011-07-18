@@ -2,6 +2,7 @@
 #define SIMU_UNISTD_H
 
 #include <sys/types.h>
+#include <stdarg.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,7 +52,12 @@ off64_t dce_lseek64(int fildes, off64_t offset, int whence);
 int dce_unlink (const char *pathname);
 int dce_rmdir(const char *pathname);
 pid_t dce_fork (void);
-int dce_execv(const char *path, char *const argv[]);
+int dce_execv (const char *path, char *const argv[]);
+int dce_execl (const char *path, const char *arg, va_list ap);
+int dce_execve (const char *filename, char *const argv[], char *const envp[]);
+int dce_execlp (const char *file, const char *arg, va_list ap);
+int dce_execvp (const char *file, char *const argv[]);
+int dce_execle (const char *path, const char *arg, va_list ap);
 
 #ifdef __cplusplus
 }

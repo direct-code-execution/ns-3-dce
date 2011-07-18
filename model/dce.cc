@@ -651,19 +651,169 @@ pid_t dce_fork (void)
   DceManager *manager = thread->process->manager;
   return manager->Clone (thread);
 }
-int dce_execv(const char *path, char *const argv[])
+int dce_execv (const char *path, char *const argv[])
 {
-  NS_LOG_FUNCTION ( path );
   Thread *thread = Current ();
-  std::string fileName = FindExecFile ("/", std::string(getenv("PATH")) + std::string(getenv("LD_LIBRARY_PATH")) ,
-                                   path, getuid (), getgid (), &(thread->err) );
+  NS_LOG_FUNCTION (thread << UtilsGetNodeId () << path);
+
+  std::string fileName = FindExecFile ("/", "" , path, getuid (), getgid (), &(thread->err) );
 
   if  ( 0 == fileName.length () )
     {
       // Errno setted by FindExecFile
       return -1;
     }
-  NS_LOG_FUNCTION( "TEMPOFUR " << fileName );
 
-  return thread->process->manager->Execve (thread, fileName.c_str (), argv, 0);
+  return thread->process->manager->Execve (thread, fileName.c_str (), argv, *(thread->process->penvp) );
+}
+int dce_execl (const char *path, const char *arg, va_list ap)
+{
+  Thread *thread = Current ();
+  NS_LOG_FUNCTION (thread << UtilsGetNodeId () << path);
+
+  std::string fileName = FindExecFile ("/", "" , path, getuid (), getgid (), &(thread->err) );
+
+  if  ( 0 == fileName.length () )
+    {
+      // Errno setted by FindExecFile
+      return -1;
+    }
+
+  int nb = 1;
+
+  va_list cp;
+  va_copy (cp, ap );
+  char *p =  0;
+  do {
+      p = va_arg (cp , char *);
+      nb ++;
+  } while ( p );
+
+  char const** argv = (char const **) dce_malloc ( nb * sizeof (char * )); // Use dce_malloc to be sure it will be freed when exec is successfull
+
+  argv[0] = arg;
+  nb = 1;
+
+  do {
+      argv[nb++] = p = va_arg (ap , char *);
+  } while ( p );
+
+  int retval = thread->process->manager->Execve (thread, fileName.c_str (), (char* const*) argv, *(thread->process->penvp) );
+
+  dce_free (argv);
+
+  return retval;
+}
+int dce_execve (const char *path, char *const argv[], char *const envp[])
+{
+  Thread *thread = Current ();
+  NS_LOG_FUNCTION (thread << UtilsGetNodeId () << path);
+  std::string fileName = FindExecFile ("/", std::string(getenv("PATH")) + std::string(getenv("LD_LIBRARY_PATH")) ,
+      path, getuid (), getgid (), &(thread->err) );
+
+  if  ( 0 == fileName.length () )
+    {
+      // Errno setted by FindExecFile
+      return -1;
+    }
+
+  return thread->process->manager->Execve (thread, fileName.c_str (), argv, envp );
+}
+
+int dce_execlp(const char *file, const char *arg, va_list ap)
+{
+  Thread *thread = Current ();
+  NS_LOG_FUNCTION (thread << UtilsGetNodeId () << file);
+  std::string fileName = FindExecFile ("/", std::string(getenv("PATH")) + std::string(getenv("LD_LIBRARY_PATH")) ,
+      file, getuid (), getgid (), &(thread->err) );
+  if  ( 0 == fileName.length () )
+    {
+      // Errno setted by FindExecFile
+      return -1;
+    }
+
+  int nb = 1;
+  va_list cp;
+  va_copy (cp, ap );
+  char *p =  0;
+  do {
+      p = va_arg (cp , char *);
+      nb ++;
+  } while ( p );
+
+  char const** argv = (char const **) dce_malloc ( nb * sizeof (char * )); // Use dce_malloc to be sure it will be freed when exec is successfull
+
+  argv[0] = arg;
+  nb = 1;
+
+  do {
+      argv[nb++] = p = va_arg (ap , char *);
+  } while ( p );
+
+  int retval = thread->process->manager->Execve (thread, fileName.c_str (), (char* const*) argv, *(thread->process->penvp) );
+
+  dce_free (argv);
+
+  return retval;
+}
+int dce_execvp(const char *file, char *const argv[])
+{
+  Thread *thread = Current ();
+  NS_LOG_FUNCTION (thread << UtilsGetNodeId () << file);
+  std::string fileName = FindExecFile ("/", std::string(getenv("PATH")) + std::string(getenv("LD_LIBRARY_PATH")) ,
+      file, getuid (), getgid (), &(thread->err) );
+
+  if  ( 0 == fileName.length () )
+    {
+      // Errno setted by FindExecFile
+      return -1;
+    }
+
+  return thread->process->manager->Execve (thread, fileName.c_str (), argv, *(thread->process->penvp) );
+}
+int dce_execle (const char *path, const char *arg, va_list ap)
+{
+  Thread *thread = Current ();
+  NS_LOG_FUNCTION (thread << UtilsGetNodeId () << path);
+  std::string fileName = FindExecFile ("/", "", path , getuid (), getgid (), &(thread->err) );
+  if  ( 0 == fileName.length () )
+    {
+      // Errno setted by FindExecFile
+      return -1;
+    }
+  int nb = 1;
+  int envSize = 0;
+
+  va_list cp;
+  va_copy (cp, ap );
+  char *p =  0;
+  do {
+      p = va_arg (cp , char *);
+      nb ++;
+  } while ( p );
+
+  do {
+      p = va_arg (cp , char *);
+      envSize++;
+  } while ( p );
+
+  char const** argv = (char const **) dce_malloc ( nb * sizeof (char * )); // Use dce_malloc to be sure it will be freed when exec is successfull
+  char const** envp = (char const **) dce_malloc ( envSize * sizeof (char * ));
+  argv[0] = arg;
+  nb = 1;
+  envSize = 0;
+
+  do {
+      argv[nb++] = p = va_arg (ap , char *);
+  } while ( p );
+
+  do {
+      envp[envSize++] = p = va_arg (ap , char *);
+  } while ( p );
+
+  int retval = thread->process->manager->Execve (thread, fileName.c_str (), (char* const*) argv, (char* const*) envp );
+
+  dce_free (argv);
+
+  return retval;
 }

@@ -1259,7 +1259,38 @@ int execv(const char *path, char *const argv[])
 {
   return g_libc.execv_fn (path, argv);
 }
-
+int execl(const char *path, const char *arg, ...)
+{
+  va_list ap;
+  va_start (ap, arg);
+  int retval =  g_libc.execl_fn (path, arg, ap);
+  va_end (ap);
+  return retval;
+}
+int execve(const char *filename, char *const argv[], char *const envp[])
+{
+  return g_libc.execve_fn (filename, argv, envp);
+}
+int execlp(const char *file, const char *arg, ...)
+{
+  va_list ap;
+  va_start (ap, arg);
+  int retval =  g_libc.execlp_fn (file, arg, ap);
+  va_end (ap);
+  return retval;
+}
+int execvp(const char *file, char *const argv[])
+{
+  return g_libc.execvp_fn (file, argv);
+}
+int execle(const char *path, const char *arg, ...)
+{
+  va_list ap;
+  va_start (ap, arg);
+  int retval =  g_libc.execle_fn (path, arg, ap);
+  va_end (ap);
+  return retval;
+}
 void LIBSETUP (const struct Libc *fn)
 {
   /* The following assignment of fn to g_libc is a bit weird: we perform a copy of the data 
