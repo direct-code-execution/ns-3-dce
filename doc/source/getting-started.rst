@@ -16,7 +16,7 @@ First you need to download NS-3 DCE using mercurial:
 
   $ mkdir test_build_ns3_dce
   $ cd test_build_ns3_dce
-  $ hg clone -r NS3.11 http://code.nsnam.org/furbani/ns-3-dce 
+  $ hg clone http://code.nsnam.org/furbani/ns-3-dce 
 
 DCE brings a script usable to retrieve the others sources and build the whole things:
 
@@ -63,12 +63,12 @@ Now you should see some directories:
 ::
 
   $ ls
-  build  ns-3.11  ns-3-dce  readversiondef 
+  build  ns-3-dev  ns-3-dce  readversiondef 
 
 Where:
  1. *build* contains the result of compilation: some binaries some libs and some include files usable to do your simulations scripts.
 
- 2. *ns-3.11* contains the sources of NS3 version 3.11, 
+ 2. *ns-3-dev* contains the current sources of NS3, 
 
  3. *ns-3-dce* contains the DCE sources,
 

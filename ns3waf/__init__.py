@@ -438,12 +438,11 @@ class Module:
         kw['target'] = target
         handle, filename = tempfile.mkstemp(suffix='.cc')
         os.write (handle, """
-#include "testdce.h"
+#include "ns3/test.h"
 
 int main (int argc, char *argv[])
 {
-  return ns3dce::TestRunner::Run(argc, argv);
-//  return TestRunnerImpl::Instance ()->Run (argc, argv);
+  return ns3::TestRunner::Run(argc, argv);
 }
 """)
         os.close(handle)
@@ -474,12 +473,12 @@ int main (int argc, char *argv[])
             path = os.path.dirname(os.path.join(tmp, src))
             kw_copy['source'] = [src]
             kw_copy['target'] = src_target
-            kw_copy['defines'] = kw_copy.get('defines', [])
+            kw_copy['defines'] = kw_copy.get('defines', []) + ['NS_TEST_SOURCEDIR=%s' % path]
             self._bld.objects(**kw_copy)
         kw['use'] = kw.get('use', []) + objects
         kw['source'] = kw['source'][-1:]
         path = os.path.dirname(os.path.join(tmp, kw['source'][0]))
-        kw['defines'] = kw.get('defines', [])
+        kw['defines'] = kw.get('defines', []) + ['NS_TEST_SOURCEDIR=%s' % path]
         kw['install_path'] = None
         if 'features' not in kw:
             kw['features'] = 'cxx cxxprogram'

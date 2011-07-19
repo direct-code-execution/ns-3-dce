@@ -10,25 +10,15 @@ echo clone readversiondef
 hg clone http://code.nsnam.org/mathieu/readversiondef
 echo clone ns-3-linux
 hg clone http://code.nsnam.org/mathieu/ns-3-linux
-echo clone ns-3-11
-hg clone http://code.nsnam.org/ns-3.11
+echo clone ns-3-dev
+hg clone http://code.nsnam.org/ns-3-dev
 mkdir build
-cd ns-3.11 
-./waf configure --prefix=`pwd`/../build
+cd ns-3-dev
+#patch -p1 < ../the_last_test.patch
+./waf configure --prefix=`pwd`/../build --enable-tests
 ./waf
 ./waf install
 cd ..
-# Replace pkg files path with the good one :)
-cd build
-pwd >path
-sed -i 's/\//\\\//g' path
-REP=$(cat path)
-cd lib/pkgconfig
-for i in *pc
-do
-    sed -i "s/\/usr\/local/$REP/g" $i
-done
-cd ../../..
 export PATH=$SAVE_PATH:`pwd`/build/bin
 export LD_LIBRARY_PATH=$SAVE_LDLP:`pwd`/build/lib
 export PKG_CONFIG_PATH=$SAVE_PKG:`pwd`/build/lib/pkgconfig

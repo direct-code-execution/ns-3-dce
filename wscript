@@ -283,7 +283,6 @@ def build(bld):
         'model/local-datagram-socket-fd.cc',
         'model/local-socket-fd-factory.cc',
         'model/dce-umask.cc',
-        'model/testdce.cc',
         'model/system-path.cc',
         'model/dce-misc.cc',
         'model/dce-node-context.cc',
@@ -297,8 +296,7 @@ def build(bld):
         'model/task-manager.h',
         'model/socket-fd-factory.h',
         'model/loader-factory.h',
-	'model/dce-application.h',
-#        'model/testdce.h',
+	    'model/dce-application.h',
         'helper/dce-manager-helper.h',
         'helper/dce-application-helper.h',
         ]
