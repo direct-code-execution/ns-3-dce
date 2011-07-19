@@ -20,4 +20,4 @@
 
       
 EXEC: do not assert when executable is not found, and use virtual PATH env or real ?      
-
+EXEC: fix stdout and stderr ,flushing bugs.

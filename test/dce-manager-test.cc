@@ -88,11 +88,13 @@ Ptr<DceManager>
 DceManagerTestCase::CreateManager (int *pstatus)
 {
   Ptr<Node> a = CreateObject<Node> ();
-  Ptr<TaskManager> taskManager = CreateObject<TaskManager> ();
+  ObjectFactory taskManagerFactory;
+  taskManagerFactory.SetTypeId ("ns3::TaskManager");
+  taskManagerFactory.Set( "FiberManagerType", StringValue ( "UcontextFiberManager" ) );
+  Ptr<TaskManager> taskManager = taskManagerFactory.Create<TaskManager>();
   Ptr<TaskScheduler> taskScheduler = CreateObject<RrTaskScheduler> ();
   Ptr<DceManager> aManager = CreateObject<DceManager> ();
   Ptr<LoaderFactory> loaderFactory = CreateObject<CoojaLoaderFactory> ();
-
 
   taskManager->SetScheduler (taskScheduler);
   a->AggregateObject (loaderFactory);
@@ -117,7 +119,7 @@ DceManagerTestCase::DoRun (void)
   int status = - 1;
   Ptr<DceManager> a = CreateManager (&status);
 
-  a->SetAttribute ( "MinimizeOpenFiles", BooleanValue (true) );
+ // a->SetAttribute ( "MinimizeOpenFiles", BooleanValue (true) );
 
   if (m_maxDuration.IsStrictlyPositive()) {
       Simulator::Stop ( m_maxDuration );
@@ -134,7 +136,7 @@ public:
   DceManagerTestSuite ();
 private:
 } g_processTests;
-
+//
 
 
 DceManagerTestSuite::DceManagerTestSuite ()

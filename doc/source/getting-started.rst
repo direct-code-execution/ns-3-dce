@@ -16,7 +16,7 @@ First you need to download NS-3 DCE using mercurial:
 
   $ mkdir test_build_ns3_dce
   $ cd test_build_ns3_dce
-  $ hg clone http://code.nsnam.org/furbani/ns-3-dce
+  $ hg clone -r NS3.11 http://code.nsnam.org/furbani/ns-3-dce 
 
 DCE brings a script usable to retrieve the others sources and build the whole things:
 
