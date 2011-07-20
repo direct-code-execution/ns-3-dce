@@ -893,6 +893,7 @@ DceManager::Execve (Thread *threadOld, const char *path, char *const argv[], cha
 
    if ( 0 == res )
      { // SUCCESS
+       dce_fflush (0);
        dce_exit_exec (0, 1);
      }
    else

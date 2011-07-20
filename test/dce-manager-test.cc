@@ -118,7 +118,7 @@ DceManagerTestCase::DoRun (void)
   int status = - 1;
   Ptr<DceManager> a = CreateManager (&status);
 
- // a->SetAttribute ( "MinimizeOpenFiles", BooleanValue (true) );
+  a->SetAttribute ( "MinimizeOpenFiles", BooleanValue (false) );
 
   if (m_maxDuration.IsStrictlyPositive()) {
       Simulator::Stop ( m_maxDuration );

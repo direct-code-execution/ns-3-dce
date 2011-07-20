@@ -162,13 +162,13 @@ void mode_setup (FILE *file, int fd, const char *mode)
 {
   if (mode_seek_start (mode))
     {
-      dce_lseek (fd, SEEK_SET, 0);
-      dce_fseek (file, SEEK_SET, 0);
+      dce_lseek (fd, 0, SEEK_SET);
+      dce_fseek (file, 0, SEEK_SET);
     }
   else
     {
-      dce_lseek (fd, SEEK_END, 0);
-      dce_fseek (file, SEEK_END, 0);
+      dce_lseek (fd, 0, SEEK_END);
+      dce_fseek (file, 0, SEEK_END);
     }
 }
 

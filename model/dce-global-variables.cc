@@ -19,8 +19,8 @@ void dce_global_variables_setup (struct SimuGlobalVariables *variables)
   process->penvp = variables->penvp;
   // Now, we initialize the process variables
   *process->pstdin = dce_fdopen (0, "r");
-  *process->pstdout = dce_fdopen (1, "w");
-  *process->pstderr = dce_fdopen (2, "w");
+  *process->pstdout = dce_fdopen (1, "a");
+  *process->pstderr = dce_fdopen (2, "a");
   *process->penvp = process->originalEnvp;
 }
 
