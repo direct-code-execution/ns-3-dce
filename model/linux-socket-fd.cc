@@ -213,6 +213,10 @@ LinuxSocketFd::CanSend (void) const
   // XXX: should be killed anyway for a Poll method
   return false;
 }
-
-
+bool
+LinuxSocketFd::HangupReceived (void) const
+{
+  // XXX: TEMPOFUR TO BE IMPLEMENTED OR NOT :)
+  return false;
+}
 } // namespace ns3

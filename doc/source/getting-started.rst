@@ -190,7 +190,7 @@ You may also create files-xx directories before launching your simulation, and y
 CCNx samples
 ############
 
-Under example/ccnx there is more realistics samples using the implementation of an experimetal protocol named CCN. In this examples we use the `PARC  <http://www.parc.com>`_ implementation named `CCNx <http://www.ccnx.org>`_ (c) in its early version 0.4.0.
+Under example/ccnx there is more realistics samples using the implementation of an experimental protocol named CCN. In this examples we use the `PARC  <http://www.parc.com>`_ implementation named `CCNx <http://www.ccnx.org>`_ (c) in its early version 0.4.0.
   
 CCNx setup
 ==========

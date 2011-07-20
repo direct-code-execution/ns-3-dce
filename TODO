@@ -17,7 +17,5 @@
  Some ideas:
 
   - option: have the NS3 time for file attributs in place of the real time,
-
       
-EXEC: do not assert when executable is not found, and use virtual PATH env or real ?      
-EXEC: fix stdout and stderr ,flushing bugs.
+EXEC: use virtual PATH env or real ?      
