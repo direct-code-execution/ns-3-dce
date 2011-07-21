@@ -367,7 +367,7 @@ LinuxSocketFdFactory::NotifyAddDeviceTask (Ptr<NetDevice> device)
       flags |= SIM_DEV_BROADCAST;
     }
   struct SimDevice *dev = m_exported->dev_create(PeekPointer(device), (enum SimDevFlags)flags);
-// TEMPOFUR  device->AddStateChangeListener (MakeCallback (&LinuxSocketFdFactory::NotifyDeviceStateChange, this));
+  device->AddStateChangeListener (MakeCallback (&LinuxSocketFdFactory::NotifyDeviceStateChange, this));
   m_devices.push_back (std::make_pair(device,dev));
   Ptr<Node> node = GetObject<Node> ();
   node->RegisterProtocolHandler (MakeCallback (&LinuxSocketFdFactory::RxFromDevice, this), 

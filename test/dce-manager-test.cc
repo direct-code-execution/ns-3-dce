@@ -20,7 +20,7 @@ namespace ns3 {
 class DceManagerTestCase : public TestCase
 {
 public:
-  DceManagerTestCase (std::string filename, Time maxDuration, std::string stdinFilename);
+  DceManagerTestCase (std::string filename, Time maxDuration, std::string stdinFilename, bool useNet);
 private:
   virtual void DoRun (void);
   static void Finished (int *pstatus, uint16_t pid, int status);
@@ -29,11 +29,12 @@ private:
   std::string m_stdinFilename;
   Time m_maxDuration;
   bool m_useKernel;
+  bool m_useNet;
 };
 
-DceManagerTestCase::DceManagerTestCase (std::string filename, Time maxDuration, std::string stdin)
+DceManagerTestCase::DceManagerTestCase (std::string filename, Time maxDuration, std::string stdin, bool useNet)
   : TestCase ("Check that process \"" + filename + "\" completes correctly."),
-    m_filename (filename), m_stdinFilename( stdin), m_maxDuration ( maxDuration ), m_useKernel (1)
+    m_filename (filename), m_stdinFilename( stdin), m_maxDuration ( maxDuration ), m_useKernel (0), m_useNet (useNet)
 {
 
 }
@@ -51,38 +52,44 @@ DceManagerTestCase::DoRun (void)
   ApplicationContainer apps;
   DceManagerHelper dceManager;
 
-  if (m_useKernel) {
-      dceManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("libnet-next-2.6.so"));
-      dceManager.Install (nodes);
+  if (m_useNet) {
+      if (m_useKernel) {
+          dceManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("libnet-next-2.6.so"));
+          dceManager.Install (nodes);
 
-      dce.SetBinary ("./ip");
-      dce.SetStackSize (1<<16);
-      dce.ResetArguments();
-      dce.ParseArguments("-f inet addr add local 127.0.0.1/8 scope host dev lo");
-      apps = dce.Install (nodes.Get (0));
+          dce.SetBinary ("./ip");
+          dce.SetStackSize (1<<16);
+          dce.ResetArguments();
+          dce.ParseArguments("-f inet addr add local 127.0.0.1/8 scope host dev lo");
+          apps = dce.Install (nodes.Get (0));
 
-      apps.Start (Seconds (2.0));
-      dce.ResetArguments();
-      dce.ParseArguments("link set lo up");
-      apps = dce.Install (nodes.Get (0));
-      apps.Start (Seconds (3.0));
-      dce.ResetArguments();
-      dce.ParseArguments("route list table all");
-      apps = dce.Install (nodes.Get (0));
-      apps.Start (Seconds (3.1));
+          apps.Start (Seconds (2.0));
+          dce.ResetArguments();
+          dce.ParseArguments("link set lo up");
+          apps = dce.Install (nodes.Get (0));
+          apps.Start (Seconds (3.0));
+          dce.ResetArguments();
+          dce.ParseArguments("route list table all");
+          apps = dce.Install (nodes.Get (0));
+          apps.Start (Seconds (3.1));
 
-      dce.ResetArguments();
-      dce.ParseArguments("addr show dev lo");
-      apps = dce.Install (nodes.Get (0));
-      apps.Start (Seconds (3.0));
+          dce.ResetArguments();
+          dce.ParseArguments("addr show dev lo");
+          apps = dce.Install (nodes.Get (0));
+          apps.Start (Seconds (3.0));
 
-      //dceManager.SetTaskManagerAttribute( "FiberManagerType", StringValue ( "UcontextFiberManager" ) );
-  } else
+          //dceManager.SetTaskManagerAttribute( "FiberManagerType", StringValue ( "UcontextFiberManager" ) );
+      } else
+        {
+          dceManager.Install (nodes);
+
+          InternetStackHelper stack;
+          stack.Install (nodes);
+        }
+  }
+  else
     {
       dceManager.Install (nodes);
-
-      InternetStackHelper stack;
-      stack.Install (nodes);
     }
   int status = -1;
 
@@ -120,12 +127,13 @@ DceManagerTestSuite::DceManagerTestSuite ()
     const char *name;
     int duration;
     const char *stdinfile;
+    bool useNet;
   } testPair;
 
-  const testPair tests[] = {
+  const testPair tests[] = { /*
       { "test-empty", 0, "" },
-      {  "test-sleep", 0, "" },
-      {  "test-pthread", 0, "" },
+      {  "test-sleep", 0, "" }, */
+      {  "test-pthread", 0, "" , false}, /*
       {  "test-mutex", 0, "" },
       {  "test-once", 0, "" },
       {  "test-pthread-key", 0, "" },
@@ -146,13 +154,13 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-random", 0, "" },
       {  "test-fork", 0, "" },
       {  "test-local-socket", 0, "" },
-      {  "test-poll", 320, "" },
-      {  "test-tcp-socket", 320, "" },
-      {  "test-exec", 1000, "" },
+      {  "test-poll", 320, "" }, * /
+      {  "test-tcp-socket", 320, "", true },
+/*      {  "test-exec", 1000, "" }, */
   };
   for (unsigned int i = 0; i < sizeof(tests)/sizeof(testPair);i++)
     {
-      AddTestCase (new DceManagerTestCase (tests[i].name ,  Seconds (tests[i].duration) , tests[i].stdinfile) );
+      AddTestCase (new DceManagerTestCase (tests[i].name ,  Seconds (tests[i].duration) , tests[i].stdinfile, tests[i].useNet ) );
     }
 }
 

@@ -19,3 +19,9 @@
   - option: have the NS3 time for file attributs in place of the real time,
       
 EXEC: use virtual PATH env or real ?      
+
+TODO: AddStateChangeListener ( ) see with Mathieu dans NS-3-DEV , 
+      http://old.nabble.com/device-state-change-notifiers-tt29303915.html#a29303915
+      
+      
+

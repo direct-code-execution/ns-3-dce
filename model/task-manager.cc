@@ -236,6 +236,7 @@ TaskManager::Stop (Task *task)
 
   // we can delete the task immediately.
   NS_LOG_DEBUG ("delete " << task << " fiber=" << task->m_fiber);
+  m_scheduler->Dequeue (task);
   m_fiberManager->Delete (task->m_fiber);
   task->m_state = Task::DEAD;
   task->m_waitTimer.Cancel ();
