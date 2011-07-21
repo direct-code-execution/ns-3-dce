@@ -4,12 +4,8 @@
 #include "ns3/uinteger.h"
 #include "ns3/boolean.h"
 #include "ns3/string.h"
-#include "dce-manager.h"
-#include "task-manager.h"
-#include "rr-task-scheduler.h"
-#include "cooja-loader-factory.h"
-#include "ns3/socket-fd-factory.h"
 #include "ns3/internet-stack-helper.h"
+#include "ns3/dce-module.h"
 
 static std::string g_testError;
 
@@ -27,85 +23,19 @@ public:
   DceManagerTestCase (std::string filename, Time maxDuration, std::string stdinFilename);
 private:
   virtual void DoRun (void);
-  Ptr<DceManager> CreateManager (int *pstatus);
-  void StartApplication (Ptr<DceManager> manager, int *pstatus);
-  void CreateAndAggregateObjectFromTypeId (Ptr<Node> node, const std::string typeId);
-  void SetupSimpleStack (Ptr<Node> node);
   static void Finished (int *pstatus, uint16_t pid, int status);
 
   std::string m_filename;
   std::string m_stdinFilename;
-  ObjectFactory m_networkStackFactory;
-  ObjectFactory m_tcpFactory;
-  const Ipv4RoutingHelper *m_routing;
   Time m_maxDuration;
-  InternetStackHelper m_internet;
-
+  bool m_useKernel;
 };
 
 DceManagerTestCase::DceManagerTestCase (std::string filename, Time maxDuration, std::string stdin)
   : TestCase ("Check that process \"" + filename + "\" completes correctly."),
-    m_filename (filename), m_stdinFilename( stdin), m_maxDuration ( maxDuration )
+    m_filename (filename), m_stdinFilename( stdin), m_maxDuration ( maxDuration ), m_useKernel (1)
 {
 
-}
-void
-DceManagerTestCase::StartApplication (Ptr<DceManager> manager, int *pstatus)
-{
-  std::vector<std::string> noargs;
-  std::vector<std::pair<std::string,std::string> > noenv;
-  
-  uint16_t pid = manager->Start (m_filename, m_stdinFilename, 1<<20, noargs, noenv);
-  manager->SetFinishedCallback (pid, MakeBoundCallback (&DceManagerTestCase::Finished, pstatus));
-}
-void
-DceManagerTestCase::CreateAndAggregateObjectFromTypeId (Ptr<Node> node, const std::string typeId)
-{
-  ObjectFactory factory;
-  factory.SetTypeId (typeId);
-  Ptr<Object> protocol = factory.Create <Object> ();
-  node->AggregateObject (protocol);
-}
-void
-DceManagerTestCase::SetupSimpleStack (Ptr<Node> node)
-{
-  m_internet.SetIpv6StackInstall(false);
-  m_internet.SetTcp("ns3::TcpL4Protocol");
-  m_internet.Install (node);
-
-  m_networkStackFactory.SetTypeId ("ns3::Ns3SocketFdFactory");
-
-  Ptr<SocketFdFactory> networkStack = m_networkStackFactory.Create<SocketFdFactory> ();
-  NS_ASSERT( 0 != networkStack );
-
-  node->AggregateObject (networkStack);
-
-  m_internet.EnablePcapIpv4All("IPV4_DCE_TEST");
-
-}
-Ptr<DceManager>
-DceManagerTestCase::CreateManager (int *pstatus)
-{
-  Ptr<Node> a = CreateObject<Node> ();
-  ObjectFactory taskManagerFactory;
-  taskManagerFactory.SetTypeId ("ns3::TaskManager");
-  taskManagerFactory.Set( "FiberManagerType", StringValue ( "UcontextFiberManager" ) );
-  Ptr<TaskManager> taskManager = taskManagerFactory.Create<TaskManager>();
-  Ptr<TaskScheduler> taskScheduler = CreateObject<RrTaskScheduler> ();
-  Ptr<DceManager> aManager = CreateObject<DceManager> ();
-  Ptr<LoaderFactory> loaderFactory = CreateObject<CoojaLoaderFactory> ();
-
-  taskManager->SetScheduler (taskScheduler);
-  a->AggregateObject (loaderFactory);
-  a->AggregateObject (taskManager);
-  a->AggregateObject (aManager);
-
-  SetupSimpleStack (a);
-
-  Simulator::ScheduleWithContext (a->GetId (), Seconds (0.0),
-				  &DceManagerTestCase::StartApplication, this, 
-				  aManager, pstatus);
-  return aManager;
 }
 void
 DceManagerTestCase::Finished (int *pstatus, uint16_t pid, int status)
@@ -115,18 +45,63 @@ DceManagerTestCase::Finished (int *pstatus, uint16_t pid, int status)
 void
 DceManagerTestCase::DoRun (void)
 {
-  int status = - 1;
-  Ptr<DceManager> a = CreateManager (&status);
+  NodeContainer nodes;
+  nodes.Create (1);
+  DceApplicationHelper dce;
+  ApplicationContainer apps;
+  DceManagerHelper dceManager;
 
-  a->SetAttribute ( "MinimizeOpenFiles", BooleanValue (false) );
+  if (m_useKernel) {
+      dceManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("libnet-next-2.6.so"));
+      dceManager.Install (nodes);
+
+      dce.SetBinary ("./ip");
+      dce.SetStackSize (1<<16);
+      dce.ResetArguments();
+      dce.ParseArguments("-f inet addr add local 127.0.0.1/8 scope host dev lo");
+      apps = dce.Install (nodes.Get (0));
+
+      apps.Start (Seconds (2.0));
+      dce.ResetArguments();
+      dce.ParseArguments("link set lo up");
+      apps = dce.Install (nodes.Get (0));
+      apps.Start (Seconds (3.0));
+      dce.ResetArguments();
+      dce.ParseArguments("route list table all");
+      apps = dce.Install (nodes.Get (0));
+      apps.Start (Seconds (3.1));
+
+      dce.ResetArguments();
+      dce.ParseArguments("addr show dev lo");
+      apps = dce.Install (nodes.Get (0));
+      apps.Start (Seconds (3.0));
+
+      //dceManager.SetTaskManagerAttribute( "FiberManagerType", StringValue ( "UcontextFiberManager" ) );
+  } else
+    {
+      dceManager.Install (nodes);
+
+      InternetStackHelper stack;
+      stack.Install (nodes);
+    }
+  int status = -1;
+
+  dce.SetBinary (m_filename);
+  dce.SetStackSize (1<<20);
+  dce.ResetArguments();
+  dce.ResetEnvironment();
+  dce.SetStdinFile (m_stdinFilename);
+  dce.SetFinishedCallback ( MakeBoundCallback (&DceManagerTestCase::Finished, &status ) );
+  apps = dce.Install (nodes.Get (0));
+  apps.Start (Seconds (10.0));
 
   if (m_maxDuration.IsStrictlyPositive()) {
       Simulator::Stop ( m_maxDuration );
   }
   Simulator::Run ();
   Simulator::Destroy ();
+
   NS_TEST_ASSERT_MSG_EQ (status, 0, "Process did not return successfully: " << g_testError);
-  //  return status != 0;
 }
 
 static class DceManagerTestSuite : public TestSuite
@@ -147,7 +122,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
     const char *stdinfile;
   } testPair;
 
-  const testPair tests[] = { /*
+  const testPair tests[] = {
       { "test-empty", 0, "" },
       {  "test-sleep", 0, "" },
       {  "test-pthread", 0, "" },
@@ -172,8 +147,8 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-fork", 0, "" },
       {  "test-local-socket", 0, "" },
       {  "test-poll", 320, "" },
-      {  "test-tcp-socket", 320, "" }, */
-      {  "test-exec", 0, "" },
+      {  "test-tcp-socket", 320, "" },
+      {  "test-exec", 1000, "" },
   };
   for (unsigned int i = 0; i < sizeof(tests)/sizeof(testPair);i++)
     {

@@ -139,11 +139,19 @@ DceApplicationHelper::Install (NodeContainer c)
       dce->SetArguments (m_args);
       dce->SetEnvironment (m_envs);
       dce->SetStdinFile (m_stdinFilename);
+      if ( ! m_finishedCallback.IsNull() )
+        {
+          dce->SetFinishedCallback (m_finishedCallback);
+        }
       (*j)->AddApplication (dce);
       apps.Add (dce);
     }
   return apps;
 }
 
-
+void
+DceApplicationHelper::SetFinishedCallback (Callback<void,uint16_t,int> cb)
+{
+  m_finishedCallback = cb;
+}
 } // namespace ns3

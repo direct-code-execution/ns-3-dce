@@ -33,6 +33,7 @@ public:
   void SetArguments (std::vector<std::string> args);
   void SetEnvironment (std::vector<std::pair<std::string,std::string> > envs);
   void SetStdinFile (std::string filename);
+  void SetFinishedCallback (Callback<void,uint16_t,int> cb);
 private:
   // inherited from Application base class.
   virtual void StartApplication (void);
@@ -46,6 +47,7 @@ private:
   uint16_t m_pid;
   TracedCallback<uint16_t> m_dceStarted;
   std::string m_stdinFilename;
+  Callback<void,uint16_t,int> m_finishedCallback;
 };
 
 } // namespace ns3

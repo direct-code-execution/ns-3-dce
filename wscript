@@ -24,7 +24,7 @@ def search_file(files):
 def configure(conf):
     ns3waf.check_modules(conf, ['core', 'network', 'internet'], mandatory = True)
     ns3waf.check_modules(conf, ['point-to-point', 'file-descriptor', 'netanim'], mandatory = False)
-
+    ns3waf.check_modules(conf, ['wifi', 'point-to-point', 'csma', 'mobility' ], mandatory = False)
     conf.check_tool('compiler_cc')
     conf.check(header_name='stdint.h', define_name='HAVE_STDINT_H', mandatory=False)
     conf.check(header_name='inttypes.h', define_name='HAVE_INTTYPES_H', mandatory=False)
@@ -211,8 +211,7 @@ def build_dce_kernel_examples(module):
                        target='bin/dce-linux-ccnd',
                        source=['example/dce-linux-ccnd.cc'])
 
-    module.add_example(needed = ['core', 'network', 'dce', 'wifi', 
-                                 'point-to-point', 'csma', 'mobility'],
+    module.add_example(needed = ['core', 'network', 'dce', 'wifi', 'point-to-point', 'csma', 'mobility' ],
                        target='bin/dce-linux',
                        source=['example/dce-linux.cc'])
 

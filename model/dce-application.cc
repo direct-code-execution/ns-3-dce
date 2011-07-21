@@ -75,6 +75,10 @@ DceApplication::StartApplication (void)
     {
       m_pid = manager->Start (m_filename, m_stdinFilename, m_args, m_envs);
     }
+  if ( ! m_finishedCallback.IsNull() )
+    {
+      manager->SetFinishedCallback (m_pid, m_finishedCallback );
+    }
   m_dceStarted (m_pid);
 }
 void 
@@ -90,5 +94,9 @@ DceApplication::SetStdinFile (std::string filename)
 {
   m_stdinFilename = filename;
 }
-
+void
+DceApplication::SetFinishedCallback (Callback<void,uint16_t,int> cb)
+{
+  m_finishedCallback = cb;
+}
 } // namespace ns3

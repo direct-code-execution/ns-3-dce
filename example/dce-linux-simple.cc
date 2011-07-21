@@ -4,6 +4,11 @@
 
 using namespace ns3;
 
+void finished (int *pstatus, uint16_t pid, int status)
+{
+  *pstatus = status;
+}
+
 int main (int argc, char *argv[])
 {
   CommandLine cmd;
@@ -21,13 +26,16 @@ int main (int argc, char *argv[])
   ApplicationContainer apps;
   dce.SetBinary ("./ip");
   dce.SetStackSize (1<<16);
-
+  int st;
+  dce.SetFinishedCallback (MakeBoundCallback ( &finished, &st ) );
   dce.ResetArguments();
   dce.ParseArguments("-f inet addr add local 127.0.0.1/8 scope host dev lo");
   apps = dce.Install (nodes.Get (0));
+
   apps.Start (Seconds (2.0));
   dce.ResetArguments();
   dce.ParseArguments("link set lo up");
+  dce.SetFinishedCallback ( MakeNullCallback<void,uint16_t,int> ( ) );
   apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds (3.0));
   dce.ResetArguments();

@@ -33,6 +33,7 @@ public:
   void AddEnvironment (std::string name, std::string value);
   void ResetEnvironment (void);
   ApplicationContainer Install (NodeContainer c);
+  void SetFinishedCallback (Callback<void,uint16_t,int> cb);
 
 private:
   bool m_isBinary;
@@ -41,6 +42,7 @@ private:
   std::vector<std::string> m_args;
   std::vector<std::pair<std::string,std::string> > m_envs;
   std::string m_stdinFilename;
+  Callback<void,uint16_t,int> m_finishedCallback;
 };
 
 } // namespace ns3
