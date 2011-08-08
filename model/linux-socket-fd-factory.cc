@@ -258,6 +258,11 @@ LinuxSocketFdFactory::DevXmit (struct SimKernel *kernel, struct SimDevice *dev, 
   nsDev->Send (p, dest, protocol);
 }
 
+void
+LinuxSocketFdFactory::SignalRaised ( struct SimKernel *kernel, struct SimTask *task , int signalNumber)
+{
+    NS_LOG_FUNCTION ("TEMPOFUR NYI sig:"<<signalNumber);
+}
 
 struct SimDevice *
 LinuxSocketFdFactory::DevToDev (Ptr<NetDevice> device)
@@ -469,6 +474,7 @@ LinuxSocketFdFactory::InitializeStack (void)
   imported.task_wakeup = &LinuxSocketFdFactory::TaskWakeup;
   imported.task_yield = &LinuxSocketFdFactory::TaskYield;
   imported.dev_xmit = &LinuxSocketFdFactory::DevXmit;
+  imported.signal_raised = &LinuxSocketFdFactory::SignalRaised;
   init (m_exported, &imported, (struct SimKernel *)this);
 
   // update the linux device list with simulation device list
@@ -739,5 +745,22 @@ LinuxSocketFdFactory::Getsockopt (struct SimSocket *socket, int level, int optna
   return retval;
 }
 
-
+bool
+LinuxSocketFdFactory::CanRecv (struct SimSocket *socket)
+{
+  GET_CURRENT(socket);
+  m_loader->NotifyStartExecute ();
+  int retval = m_exported->sock_canrecv(socket);
+  m_loader->NotifyEndExecute ();
+  return retval != 0;
+}
+bool
+LinuxSocketFdFactory::CanSend (struct SimSocket *socket)
+{
+  GET_CURRENT(socket);
+  m_loader->NotifyStartExecute ();
+  int retval = m_exported->sock_cansend(socket);
+  m_loader->NotifyEndExecute ();
+  return retval != 0;
+}
 } // namespace ns3

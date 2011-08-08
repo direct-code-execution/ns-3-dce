@@ -8,6 +8,7 @@
 #include "ns3/uinteger.h"
 #include "ns3/string.h"
 #include "ns3/config.h"
+//#include "ns3/attribute-list.h"
 
 namespace ns3 {
 
@@ -36,7 +37,7 @@ DceManagerHelper::GetInstanceTypeId (void) const
 
 DceManagerHelper::DceManagerHelper ()
 {
-  ConstructSelf (AttributeList ());
+  ConstructSelf ( AttributeConstructionList() );
   m_taskManagerFactory.SetTypeId ("ns3::TaskManager");
   m_schedulerFactory.SetTypeId ("ns3::RrTaskScheduler");
   m_managerFactory.SetTypeId ("ns3::DceManager");

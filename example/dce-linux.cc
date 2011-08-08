@@ -10,7 +10,7 @@
 using namespace ns3;
 
 #define noCSMA 1
-#define noP2P 1
+#define P2P 1
 #define WIFI 1
 #define TCP 1
 #define UDP 1
@@ -51,8 +51,8 @@ int main (int argc, char *argv[])
   devices = csma.Install (nodes);
 #elif defined(P2P)
   PointToPointHelper p2p;
-  p2p.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
-  p2p.SetChannelAttribute ("Delay", StringValue ("2ms"));
+  p2p.SetDeviceAttribute ("DataRate", StringValue ("5Gbps"));
+  p2p.SetChannelAttribute ("Delay", StringValue ("1ms"));
   devices = p2p.Install (nodes);
 #elif defined(WIFI)
   MobilityHelper mobility;
@@ -74,16 +74,16 @@ int main (int argc, char *argv[])
 #endif
 
   DceManagerHelper processManager;
-  processManager.SetLoader ("ns3::DlmLoaderFactory");
+ // processManager.SetLoader ("ns3::DlmLoaderFactory");
   processManager.SetNetworkStack("ns3::LinuxSocketFdFactory",
 				 "Library", StringValue ("libnet-next-2.6.so"));
   processManager.Install (nodes);
 
   AddAddress (nodes.Get (0), Seconds (0.1), "sim0", "10.0.0.2/8");
-  RunIp (nodes.Get (0), Seconds (0.11), "link set sim0 up");
+  RunIp (nodes.Get (0), Seconds (0.11), "link set sim0 up arp off");
 
   AddAddress (nodes.Get (1), Seconds (0.1), "sim0", "10.0.0.3/8");
-  RunIp (nodes.Get (1), Seconds (0.11), "link set sim0 up");
+  RunIp (nodes.Get (1), Seconds (0.11), "link set sim0 up arp off");
 
   RunIp (nodes.Get (0), Seconds (0.2), "link show");
   RunIp (nodes.Get (0), Seconds (0.3), "route show table all");
@@ -97,13 +97,13 @@ int main (int argc, char *argv[])
     ApplicationContainer apps;
 
 #if defined(TCP)
-    process.SetBinary ("process-tcp-server");
+    process.SetBinary ("tcp-server");
     process.ResetArguments ();
     process.SetStackSize (1<<16);
     apps = process.Install (nodes.Get (0));
     apps.Start (Seconds (1.0));
 
-    process.SetBinary ("process-tcp-client");
+    process.SetBinary ("tcp-client");
     process.ResetArguments ();
     process.ParseArguments ("10.0.0.2");
     apps = process.Install (nodes.Get (1));
@@ -125,7 +125,7 @@ int main (int argc, char *argv[])
 
 #if defined(CSMA)
   csma.EnablePcapAll ("process-linux");
-#elif defined(P2)
+#elif defined(P2P)
   p2p.EnablePcapAll ("process-linux");
 #elif defined(WIFI)
   phy.EnablePcapAll ("process-linux");
@@ -135,7 +135,7 @@ int main (int argc, char *argv[])
   //PointToPointHelper::EnableAsciiAll (ascii);
 
 
-  Simulator::Stop (Seconds (20.0));
+  Simulator::Stop (Seconds (2000000.0));
   Simulator::Run ();
   Simulator::Destroy ();
 

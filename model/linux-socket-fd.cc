@@ -204,14 +204,12 @@ LinuxSocketFd::Gettime (struct itimerspec *cur_value) const
 bool 
 LinuxSocketFd::CanRecv (void) const
 {
-  // XXX: should be killed anyway for a Poll method
-  return false;
+  return m_factory->CanRecv (m_socket);
 }
 bool 
 LinuxSocketFd::CanSend (void) const
 {
-  // XXX: should be killed anyway for a Poll method
-  return false;
+  return m_factory->CanSend (m_socket);
 }
 bool
 LinuxSocketFd::HangupReceived (void) const

@@ -49,11 +49,13 @@ int main (int argc, char *argv[])
   apps.Start (Seconds (3.0));
 
   dce.SetBinary ("udp-server");
+  dce.SetBinary ("tcp-server");
   dce.ResetArguments();
   apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds (4.0));
 
   dce.SetBinary ("udp-client");
+  dce.SetBinary ("tcp-client");
   dce.ResetArguments();
   dce.AddArgument ("127.0.0.1");
   apps = dce.Install (nodes.Get (0));

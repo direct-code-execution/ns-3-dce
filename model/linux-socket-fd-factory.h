@@ -66,6 +66,8 @@ private:
 		  const void *optval, socklen_t optlen);
   int Getsockopt (struct SimSocket *socket, int level, int optname,
 		  void *optval, socklen_t *optlen);
+  bool CanRecv (struct SimSocket *socket);
+  bool CanSend (struct SimSocket *socket);
 
   // called from kernel.
   static int Vprintf (struct SimKernel *kernel, const char *str, va_list args);
@@ -83,6 +85,7 @@ private:
   static int TaskWakeup (struct SimKernel *kernel, struct SimTask *task);
   static void TaskYield (struct SimKernel *kernel);
   static void DevXmit (struct SimKernel *kernel, struct SimDevice *dev, unsigned char *data, int len);
+  static void SignalRaised ( struct SimKernel *kernel, struct SimTask *task , int signalNumber);
 
   // inherited from Object.
   virtual void DoDispose (void);

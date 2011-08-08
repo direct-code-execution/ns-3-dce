@@ -44,7 +44,10 @@ client1 (void *arg)
   TEST_ASSERT( sock >= 0 );
 
   fill_addr(ad, 1234);
+  encore:
   status = connect (sock, (struct sockaddr *) &ad, sizeof(ad));
+  printf ("Client1: connect --> %d errno: %d\n", status, errno );
+ // if ( ( status != 0) &&  ( EINPROGRESS == errno )) goto encore;
   TEST_ASSERT_EQUAL ( status, 0);
 
   char *crsr = sendBuffer;
@@ -68,7 +71,14 @@ client1 (void *arg)
   while (tot < BUFF_LEN)
     {
       status = recv (sock, readBuffer + tot, BUFF_LEN - tot, 0);
-      printf ("Client1: received %d / %ld\n", status, BUFF_LEN - tot);
+      printf ("Client1: received %d / %ld  errno:%d\n", status, BUFF_LEN - tot, errno);
+
+      if ((status < 0) && (errno == EAGAIN))
+        {
+          sleep(1);
+          continue;
+        }
+
       TEST_ASSERT( status > 0 );
       tot += status;
     }
@@ -340,12 +350,12 @@ client4 (void *arg)
   status = recv (sock, readBuffer, TEST4_LEN, 0);
   printf ("Client4: recv status %d and errno %d\n", status, errno);
   TEST_ASSERT_EQUAL (status, -1);
-  TEST_ASSERT_EQUAL (errno, EINVAL );
+  TEST_ASSERT ( (errno == EINVAL ) || (errno == ENOTCONN ) );
 
   status = send (sock, readBuffer, TEST4_LEN, 0);
   printf ("Client4: send status %d and errno %d\n", status, errno);
   TEST_ASSERT_EQUAL (status, -1);
-  TEST_ASSERT_EQUAL (errno, ENOTCONN );
+  TEST_ASSERT ( (errno == EPIPE ) || (errno == ENOTCONN ) );
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
