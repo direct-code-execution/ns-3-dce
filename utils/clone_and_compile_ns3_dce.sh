@@ -27,7 +27,7 @@ make
 make install PREFIX=`pwd`/../build/
 cd ..
 cd ns-3-dce/
-./waf configure --prefix=`pwd`/../build --verbose
+./waf configure --prefix=`pwd`/../build --enable-kernel-stack=`pwd`/../ns-3-linux --verbose
 ./waf
 ./waf install
 export LD_LIBRARY_PATH=$SAVE_LDLP:`pwd`/build/lib:`pwd`/build/bin:`pwd`/../build/lib
