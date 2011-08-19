@@ -20,6 +20,7 @@ export NS_LOG=
 #export NS_LOG=LocalStreamSocketFd:DceManager
 #export NS_LOG=UnixFileFd
 #export NS_LOG=DceMisc:UnixFileFd:DceNodeContext:SimuFd
+#export NS_LOG=LinuxSocketFdFactory
 ################################################################################
 # GDB or not GDB ? 
 GDB=

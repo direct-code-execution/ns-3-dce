@@ -180,7 +180,7 @@ def build_dce_examples(module):
 
     module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
                        target='bin/dce-ccnd-udp-2-nodes',
-                       source=['example/ccnx/dce-ccnd-udp-2-nodes.cc'])
+                       source=['example/ccnx/dce-ccnd-udp-2-nodes.cc', 'example/ccnx/misc-tools.cc'])
 
     module.add_example(needed = ['core', 'internet', 'dce'], 
                        target='bin/dce-ccnd-simple',
@@ -200,7 +200,7 @@ def build_dce_examples(module):
 
     module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
                        target='bin/dce-ccnd-linear-multiple',
-                       source=['example/ccnx/dce-ccnd-linear-multiple.cc'])
+                       source=['example/ccnx/dce-ccnd-linear-multiple.cc', 'example/ccnx/misc-tools.cc'])
                        
 def build_dce_kernel_examples(module):
     module.add_example(needed = ['core', 'network', 'dce'], 

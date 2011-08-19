@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/mman.h> // for MMAP_FAILED
+#include <poll.h>
 
 NS_LOG_COMPONENT_DEFINE("LinuxSocketFd");
 
@@ -14,7 +15,8 @@ namespace ns3 {
 LinuxSocketFd::LinuxSocketFd (Ptr<LinuxSocketFdFactory> factory, struct SimSocket *socket)
   : m_factory (factory),
     m_socket (socket),
-    m_statusFlags (0)
+    m_statusFlags (0),
+    m_kernelPollCtx (0)
 {}
 
 LinuxSocketFd::~LinuxSocketFd ()
@@ -214,7 +216,58 @@ LinuxSocketFd::CanSend (void) const
 bool
 LinuxSocketFd::HangupReceived (void) const
 {
-  // XXX: TEMPOFUR TO BE IMPLEMENTED OR NOT :)
+  // XXX: TO BE IMPLEMENTED OR NOT :)
   return false;
 }
+
+void
+LinuxSocketFd::SetRecvWaiter (Waiter *waiter)
+{
+  NS_LOG_FUNCTION (this << Current ());
+  UnixFd::SetRecvWaiter (waiter);
+
+  if (waiter)
+    {
+      if (m_kernelPollCtx) return;
+      m_kernelPollCtx = m_factory->PollWait (m_socket, this);
+    }
+  else
+    {
+      m_factory->FreePoll (m_socket, m_kernelPollCtx);
+      m_kernelPollCtx = 0;
+    }
+}
+
+void
+LinuxSocketFd::SetSendWaiter (Waiter *waiter)
+{
+  NS_LOG_FUNCTION (this << Current ());
+  UnixFd::SetSendWaiter (waiter);
+  if (waiter) {
+      if (m_kernelPollCtx) return;
+      m_kernelPollCtx = m_factory->PollWait (m_socket, this);
+  }
+  else
+  {
+    m_factory->FreePoll (m_socket, m_kernelPollCtx);
+    m_kernelPollCtx = 0;
+  }
+
+}
+
+void
+LinuxSocketFd::PollEvent (int flag)
+{
+  NS_LOG_FUNCTION (this << Current ());
+
+  if (flag & POLLIN)
+    {
+      WakeupRecv ();
+    }
+  if (flag & POLLOUT)
+    {
+      WakeupSend ();
+    }
+}
+
 } // namespace ns3

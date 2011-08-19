@@ -26,6 +26,7 @@
 #include "ns3/point-to-point-helper.h"
 #include "ns3/netanim-module.h"
 #include "ns3/constant-position-mobility-model.h"
+#include "misc-tools.h"
 
 using namespace ns3;
 //
@@ -40,15 +41,6 @@ using namespace ns3;
 //
 NS_LOG_COMPONENT_DEFINE ("CcndInLine");
 
-static std::string Ipv4AddressToString (Ipv4Address ad)
-{
-  std::ostringstream oss;
-  ad.Print (oss);
-  return oss.str ();
-}
-
-void setPos (Ptr<Node> n, int x, int y, int z);
-
 int main (int argc, char *argv[])
 {
   //
@@ -57,10 +49,12 @@ int main (int argc, char *argv[])
   uint32_t nNodes = 8;
   bool useTcp = 0;
   std::string animFile = "NetAnim.tr";
+  bool useKernel = 0;
 
   CommandLine cmd;
   cmd.AddValue("nNodes", "Number of nodes to place in the line", nNodes);
   cmd.AddValue ("tcp", "Use TCP to link ccnd daemons.", useTcp);
+  cmd.AddValue ("kernel", "Use kernel linux IP stack.", useKernel);
   cmd.Parse (argc, argv);
 
   NS_LOG_INFO( "useTcp: " << useTcp );
@@ -75,27 +69,68 @@ int main (int argc, char *argv[])
   pointToPoint.SetChannelAttribute ("Delay", StringValue ("20ms"));
 
   Ipv4AddressHelper address;
-  address.SetBase ("10.0.0.0", "255.255.0.0");
+  address.SetBase ("10.0.0.0", "255.255.255.0");
 
-  InternetStackHelper stack;
-  stack.Install (nodes);
+  if (!useKernel)
+    {
+      InternetStackHelper stack;
+      stack.Install (nodes);
+    }
 
   NetDeviceContainer devices;
   std::vector<Ipv4InterfaceContainer> vInterfaces;
+  std::vector<std::vector<Ipv4Address> > networks;
 
   for (int n=0; n < (nNodes-1) ; n++)
     {
       devices = pointToPoint.Install (nodes.Get (n), nodes.Get ( 1 + n ) );
-      Ipv4InterfaceContainer interfaces = address.Assign (devices);
-      address.NewNetwork ();
-      vInterfaces.push_back ( interfaces );
+
+      if ( useKernel )
+        {
+          std::vector<Ipv4Address> addrs;
+
+          addrs.push_back ( address.NewAddress ());
+          addrs.push_back ( address.NewAddress ());
+          address.NewNetwork ();
+          networks.push_back (addrs);
+        }
+      else
+        {
+          std::vector<Ipv4Address> addrs;
+
+          Ipv4InterfaceContainer interfaces = address.Assign (devices);
+          address.NewNetwork ();
+          vInterfaces.push_back ( interfaces );
+          addrs.push_back ( vInterfaces[n].GetAddress ( 0 ));
+          addrs.push_back ( vInterfaces[n].GetAddress ( 1 ) );
+          networks.push_back (addrs);
+        }
+
+      if (useKernel)
+        {
+          std::string devName = n?"sim1":"sim0";
+          AddAddress (nodes.Get (n), Seconds ( 0.01 ), devName.c_str (), (Ipv4AddressToString (networks[n][0] ) + "/24").c_str () );
+          RunIp (nodes.Get (n), Seconds ( 0.1 ), ("link set "+devName+" up arp off").c_str ());
+
+          AddAddress (nodes.Get (n+1), Seconds ( 0.02 ), "sim0", (Ipv4AddressToString (networks[n][1]) + "/24").c_str () );
+          RunIp (nodes.Get (n+1), Seconds ( 0.12 ), "link set sim0 up arp off");
+        }
     }
 
-  // setup ip routes
-  Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+  if (!useKernel)
+    {
+      // setup ip routes
+      Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+    }
 
   DceManagerHelper dceManager;
+  if (useKernel)
+    {
+      dceManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("libnet-next-2.6.so"));
+    }
   dceManager.Install (nodes);
+
+
 
   DceApplicationHelper dce;
   ApplicationContainer apps;
@@ -108,6 +143,7 @@ int main (int argc, char *argv[])
   float currentAngle = 360;
   float maxX = 0;
   float maxY = 0;
+
 
   // Calculate maxX and maxY;
 
@@ -161,8 +197,10 @@ int main (int argc, char *argv[])
       dce.AddEnvironment ("CCND_KEYSTORE_DIRECTORY", "");
 
       apps = dce.Install (nodes.Get (n));
-      apps.Start (Seconds (0.1));
+      apps.Start (Seconds (0.2));
     }
+
+
 
   for (int n=0; n < nNodes ; n++)
     {
@@ -176,10 +214,10 @@ int main (int argc, char *argv[])
           dce.AddArgument ("add");
           dce.AddArgument ("/NODE0");
           dce.AddArgument (useTcp?"tcp":"udp");
-          dce.AddArgument ( Ipv4AddressToString(vInterfaces[n-1].GetAddress ( 0 )) );
+          dce.AddArgument ( Ipv4AddressToString( networks[n-1][0] ) );
 
           apps = dce.Install (nodes.Get (n));
-          apps.Start (Seconds ( ( 20.0 + n ) / 100  )); // Every 0.01s from time 2s
+          apps.Start (Seconds ( ( 22.0 + n ) / 100  )); // Every 0.01s from time 2s
         }
     }
 
@@ -194,7 +232,7 @@ int main (int argc, char *argv[])
   dce.AddArgument ("/NODE0/LeReadme");
   dce.AddEnvironment("HOME", "/home/furbani");
 
-  apps = dce.Install (nodes.Get (0));
+ apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds ( (( 20.0 + nNodes ) / 100 ) + 0.5 ) ) ;
 
 
@@ -228,6 +266,7 @@ int main (int argc, char *argv[])
   apps = dce.Install (nodes.Get (nNodes - 1));
   apps.Start (Seconds (3500.0));
 
+
   // Create the animation object and configure for specified output
   AnimationInterface anim;
 
@@ -243,12 +282,3 @@ int main (int argc, char *argv[])
 
   return 0;
 }
-
-void setPos (Ptr<Node> n, int x, int y, int z)
-{
-  Ptr<ConstantPositionMobilityModel> loc = CreateObject<ConstantPositionMobilityModel> ();
-  n->AggregateObject (loc);
-  Vector locVec2 ( x, y, z);
-  loc->SetPosition (locVec2);
-}
-

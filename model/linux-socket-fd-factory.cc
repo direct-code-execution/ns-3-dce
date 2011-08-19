@@ -261,7 +261,7 @@ LinuxSocketFdFactory::DevXmit (struct SimKernel *kernel, struct SimDevice *dev, 
 void
 LinuxSocketFdFactory::SignalRaised ( struct SimKernel *kernel, struct SimTask *task , int signalNumber)
 {
-    NS_LOG_FUNCTION ("TEMPOFUR NYI sig:"<<signalNumber);
+    NS_LOG_FUNCTION ("XXX: Not Yet Implemented "<<signalNumber);
 }
 
 struct SimDevice *
@@ -475,6 +475,7 @@ LinuxSocketFdFactory::InitializeStack (void)
   imported.task_yield = &LinuxSocketFdFactory::TaskYield;
   imported.dev_xmit = &LinuxSocketFdFactory::DevXmit;
   imported.signal_raised = &LinuxSocketFdFactory::SignalRaised;
+  imported.poll_event = &LinuxSocketFdFactory::PollEvent;
   init (m_exported, &imported, (struct SimKernel *)this);
 
   // update the linux device list with simulation device list
@@ -763,4 +764,29 @@ LinuxSocketFdFactory::CanSend (struct SimSocket *socket)
   m_loader->NotifyEndExecute ();
   return retval != 0;
 }
+void*
+LinuxSocketFdFactory::PollWait (struct SimSocket *socket, void *ctxt)
+{
+  void *ret = 0;
+  GET_CURRENT(socket);
+  m_loader->NotifyStartExecute ();
+  ret = m_exported->sock_pollwait(socket, ctxt);
+  m_loader->NotifyEndExecute ();
+  return ret;
+}
+void
+LinuxSocketFdFactory::FreePoll (struct SimSocket *socket, void *ctxt)
+{
+  GET_CURRENT(socket);
+  m_loader->NotifyStartExecute ();
+  m_exported->sock_freepoll(socket, ctxt);
+  m_loader->NotifyEndExecute ();
+}
+void
+LinuxSocketFdFactory::PollEvent ( int flag, void *context)
+{
+  LinuxSocketFd *sock = (LinuxSocketFd*)context;
+  sock->PollEvent(flag);
+}
+
 } // namespace ns3

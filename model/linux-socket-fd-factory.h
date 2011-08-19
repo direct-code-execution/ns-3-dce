@@ -68,6 +68,8 @@ private:
 		  void *optval, socklen_t *optlen);
   bool CanRecv (struct SimSocket *socket);
   bool CanSend (struct SimSocket *socket);
+  void* PollWait (struct SimSocket *socket, void *ctxt);
+  void  FreePoll (struct SimSocket *socket, void *ctxt);
 
   // called from kernel.
   static int Vprintf (struct SimKernel *kernel, const char *str, va_list args);
@@ -86,6 +88,7 @@ private:
   static void TaskYield (struct SimKernel *kernel);
   static void DevXmit (struct SimKernel *kernel, struct SimDevice *dev, unsigned char *data, int len);
   static void SignalRaised ( struct SimKernel *kernel, struct SimTask *task , int signalNumber);
+  static void PollEvent ( int flag, void *context);
 
   // inherited from Object.
   virtual void DoDispose (void);

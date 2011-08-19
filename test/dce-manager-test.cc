@@ -131,32 +131,32 @@ DceManagerTestSuite::DceManagerTestSuite ()
   } testPair;
 
   const testPair tests[] = { /*
-      { "test-empty", 0, "" },
-      {  "test-sleep", 0, "" },
+      { "test-empty", 0, "" , false},
+      {  "test-sleep", 0, "", false },
       {  "test-pthread", 0, "" , false},
-      {  "test-mutex", 0, "" },
-      {  "test-once", 0, "" },
-      {  "test-pthread-key", 0, "" },
-      {  "test-sem", 0, "" },
-      {  "test-malloc", 0, "" },
-      {  "test-malloc-2", 0, "" },
-      {  "test-fd-simple", 0, "" },
-      {  "test-strerror", 0, "" },
-      {  "test-stdio", 0, "/etc/passwd" },
-      {  "test-string", 0, "" },
-      {  "test-netdb", 0, "" },
-      {  "test-env", 0, "" },
-      {  "test-cond", 0, "" },
-      {  "test-timer-fd", 0, "" },
-      {  "test-stdlib", 0, "" },
-      {  "test-select", 3600, "" },
-      {  "test-nanosleep", 0, "" },
-      {  "test-random", 0, "" },
-      {  "test-fork", 0, "" },
-      {  "test-local-socket", 0, "" },
-      {  "test-poll", 320, "" }, */
+      {  "test-mutex", 0, "", false },
+      {  "test-once", 0, "" , false},
+      {  "test-pthread-key", 0, "" , false},
+      {  "test-sem", 0, "" , false},
+      {  "test-malloc", 0, "" , false},
+      {  "test-malloc-2", 0, "" , false},
+      {  "test-fd-simple", 0, "" , false},
+      {  "test-strerror", 0, "" , false},
+      {  "test-stdio", 0, "/etc/passwd" ,false},
+      {  "test-string", 0, "", false },
+      {  "test-netdb", 0, "", true },
+      {  "test-env", 0, "", false },
+      {  "test-cond", 0, "" , false},
+      {  "test-timer-fd", 0, "" , false},
+      {  "test-stdlib", 0, "" , false}, */
+      {  "test-select", 3600, "", true }, /*
+      {  "test-nanosleep", 0, "" , false},
+      {  "test-random", 0, "", false },
+      {  "test-fork", 0, "", false }, * /
+      {  "test-local-socket", 0, "", false }, /*
+      {  "test-poll", 320, "", true }, */
       {  "test-tcp-socket", 320, "", true },
-/*      {  "test-exec", 1000, "" }, */
+/*      {  "test-exec", 1000, "" , false}, */
   };
   for (unsigned int i = 0; i < sizeof(tests)/sizeof(testPair);i++)
     {

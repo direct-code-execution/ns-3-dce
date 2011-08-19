@@ -12,10 +12,12 @@ done
 echo setting test file
 cp README files-0/tmp
 EXE=dce-ccnd-udp-2-nodes
+KERN=--kernel=1
 if [ "" == "$GDB" ]
 then
-    $NS3_BIN/$EXE 2>&1 | tee -a output.txt
+    $NS3_BIN/$EXE $KERN 2>&1 | tee -a output.txt
 else
+	echo $KERN
     $GDB $NS3_BIN/$EXE
 fi
 emacs output.txt  files-*/var/log/*/* &

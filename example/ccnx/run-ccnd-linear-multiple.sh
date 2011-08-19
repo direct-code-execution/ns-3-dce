@@ -13,17 +13,18 @@ done
 echo setting test file
 cp README files-0/tmp
 EXE=dce-ccnd-linear-multiple
-FIBER=--ns3::TaskManager::FiberManagerType=UcontextFiberManager
+#FIBER=--ns3::TaskManager::FiberManagerType=UcontextFiberManager
 MINFILES=--ns3::DceManager::MinimizeOpenFiles=1
 NS_LOG=$NS_LOG:CcndInLine
 # Comment out to use TCP instead of UDP
-#USE_TCP=--tcp=1
+USE_TCP=--tcp=0
+KERN=--kernel=1
 echo Run NS3
 if [ "" == "$GDB" ]
 then
-    $NS3_BIN/$EXE $FIBER --nNodes=$NNODES $USE_TCP $MINFILES 2>&1 | tee -a output.txt
+    $NS3_BIN/$EXE $FIBER --nNodes=$NNODES $USE_TCP $KERN $MINFILES 2>&1 | tee -a output.txt
 else
-    echo  $FIBER --nNodes=$NNODES $USE_TCP $MINFILES
+    echo  $FIBER --nNodes=$NNODES $USE_TCP $KERN $MINFILES
     $GDB $NS3_BIN/$EXE
 fi
 #emacs output.txt  files-*/var/log/*/* &

@@ -51,11 +51,16 @@ public:
   virtual bool CanRecv (void) const;
   virtual bool CanSend (void) const;
   virtual bool HangupReceived (void) const;
+  virtual void SetRecvWaiter (Waiter *waiter);
+  virtual void SetSendWaiter (Waiter *waiter);
+
+  void PollEvent (int flag);
 
 private:
   Ptr<LinuxSocketFdFactory> m_factory;
   struct SimSocket *m_socket;
   int m_statusFlags;
+  void* m_kernelPollCtx;
 };
 
 } // namespace ns3
