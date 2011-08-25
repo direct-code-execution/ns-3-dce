@@ -113,8 +113,8 @@ UnixSocketFd::ErrnoToSimuErrno (void) const
   case Socket::SOCKET_ERRNO_LAST:
   case Socket::ERROR_NOTERROR:
     return EAGAIN;
-    //  case Socket::ERROR_ADDRINUSE:
-    //    return EADDRINUSE;
+  case Socket::ERROR_ADDRINUSE:
+    return EADDRINUSE;
   default:
     NS_LOG_ERROR("Unknown Errno:" <<  m_socket->GetErrno ());
     NS_ASSERT (false);
