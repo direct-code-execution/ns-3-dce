@@ -6,6 +6,8 @@
 #include "ns3/string.h"
 #include "ns3/internet-stack-helper.h"
 #include "ns3/dce-module.h"
+#include <sys/stat.h>
+#include <sys/types.h>
 
 static std::string g_testError;
 
@@ -130,13 +132,13 @@ DceManagerTestSuite::DceManagerTestSuite ()
     bool useNet;
   } testPair;
 
-  const testPair tests[] = { /*
+  const testPair tests[] = {
       { "test-empty", 0, "" , false},
-      {  "test-sleep", 0, "", false }, * /
-      {  "test-pthread", 0, "" , false}, /*
+      {  "test-sleep", 0, "", false },
+      {  "test-pthread", 0, "" , false},
       {  "test-mutex", 0, "", false },
-      {  "test-once", 0, "" , false}, * /
-      {  "test-pthread-key", 0, "" , false}, /*
+      {  "test-once", 0, "" , false},
+      {  "test-pthread-key", 0, "" , false},
       {  "test-sem", 0, "" , false},
       {  "test-malloc", 0, "" , false},
       {  "test-malloc-2", 0, "" , false},
@@ -144,20 +146,36 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-strerror", 0, "" , false},
       {  "test-stdio", 0, "/etc/passwd" ,false},
       {  "test-string", 0, "", false },
-      {  "test-netdb", 0, "", true },
+      {  "test-netdb", 3600, "", true },
       {  "test-env", 0, "", false },
       {  "test-cond", 0, "" , false},
       {  "test-timer-fd", 0, "" , false},
-      {  "test-stdlib", 0, "" , false}, * /
-      {  "test-select", 3600, "", true }, /*
+      {  "test-stdlib", 0, "" , false},
+      {  "test-select", 3600, "", true },
       {  "test-nanosleep", 0, "" , false},
-      {  "test-random", 0, "", false }, * /
-      {  "test-fork", 0, "", false },  /*
-      {  "test-local-socket", 0, "", false }, /*
-      {  "test-poll", 320, "", true }, * /
-      {  "test-tcp-socket", 320, "", true }, */
-      {  "test-exec", 1000, "" , false},
+      {  "test-random", 0, "", false },
+      {  "test-fork", 0, "", false },
+      {  "test-local-socket", 0, "", false },
+      {  "test-poll", 320, "", true },
+      {  "test-tcp-socket", 320, "", true },
+      {  "test-exec", 0, "" , false},
   };
+
+  // Prepare directories and files for test-stdio
+  mkdir ("files-0", S_IRWXU);
+  mkdir ("files-0/tmp", S_IRWXU);
+  mkdir ("files-0/etc", S_IRWXU);
+  FILE *to = fopen ("files-0/etc/passwd" ,"w");
+
+  for (int i=0;i<1024*10;i++)
+    {
+       char c = ( i % ( 126 - 32 ) ) + 32;
+
+       fwrite (&c, 1, 1, to);
+    }
+  fclose (to);
+  //
+
   for (unsigned int i = 0; i < sizeof(tests)/sizeof(testPair);i++)
     {
       AddTestCase (new DceManagerTestCase (tests[i].name ,  Seconds (tests[i].duration) , tests[i].stdinfile, tests[i].useNet ) );

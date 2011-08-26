@@ -110,7 +110,7 @@ DceManager::DoDispose (void)
       {
           std::string statusWord = "Never ended.";
     	  AppendStatusFile (tmp->pid, tmp->nodeId, statusWord );
-          DeleteProcess (tmp);
+          DeleteProcess (tmp, 0);
       }
     }
 
@@ -270,7 +270,7 @@ DceManager::StartProcessDebugHook (void)
 
 struct Process *
 DceManager::CreateProcess (std::string name, std::string stdinfilename, std::vector<std::string> args,
-                           std::vector<std::pair<std::string,std::string> > envs)
+                           std::vector<std::pair<std::string,std::string> > envs, int pid)
 {
   struct Process *process = new Process ();
   process->euid = 0;
@@ -291,7 +291,7 @@ DceManager::CreateProcess (std::string name, std::string stdinfilename, std::vec
   process->exitValue = 0;
   process->name = name;
   process->ppid = 0;
-  process->pid = AllocatePid ();
+  process->pid = pid?pid:AllocatePid ();
   process->manager = this;
   sigemptyset (&process->pendingSignals);
   // setup a signal handler for SIGKILL which calls dce_exit.
@@ -340,7 +340,7 @@ DceManager::CreateProcess (std::string name, std::string stdinfilename, std::vec
 
   process->minimizeFiles = (m_minimizeFiles?1:0);
 
-  m_processes[process->pid] = process;
+  if (!pid) m_processes[process->pid] = process;
 
   return process;
 }
@@ -350,7 +350,7 @@ struct Process *
 DceManager::CopyExecProcess (struct Process *proc, std::string name, std::vector<std::string> args,
                          std::vector<std::pair<std::string,std::string> > envs)
 {
-  struct Process *process = CreateProcess (name, "",  args, envs);
+  struct Process *process = CreateProcess (name, "",  args, envs, proc->pid);
 
   process->euid = proc->euid;
   process->ruid = proc->ruid;
@@ -359,11 +359,13 @@ DceManager::CopyExecProcess (struct Process *proc, std::string name, std::vector
   process->rgid = proc->rgid;
   process->sgid = proc->sgid;
   process->alloc = new KingsleyAlloc ();
+
   process->ppid = proc->pid; // Same as pid, to denote the current execking new stack and memory context...
   process->pid = proc->pid;
   process->cwd = proc->cwd;
   process->rndVarible = proc->rndVarible;
   process->minimizeFiles = proc->minimizeFiles;
+  process->children = proc->children;
 
   return process;
 }
@@ -391,7 +393,7 @@ DceManager::Start (std::string name, std::string stdinfilename, std::vector<std:
                        std::vector<std::pair<std::string,std::string> > envs)
 {
   NS_LOG_FUNCTION (this << name << args.size ());
-  struct Process *process = CreateProcess (name, stdinfilename, args, envs);
+  struct Process *process = CreateProcess (name, stdinfilename, args, envs, 0);
   struct Thread *thread = CreateThread (process);
   Task *task = TaskManager::Current ()->Start (&DceManager::DoStartProcess, thread);
   task->SetContext (thread);
@@ -404,7 +406,7 @@ DceManager::Start (std::string name, std::string stdinfilename, uint32_t stackSi
                    std::vector<std::string> args, std::vector<std::pair<std::string,std::string> > envs)
 {
   NS_LOG_FUNCTION (this << name << stackSize << args.size () << envs.size ());
-  struct Process *process = CreateProcess (name, stdinfilename, args, envs);
+  struct Process *process = CreateProcess (name, stdinfilename, args, envs, 0);
   struct Thread *thread = CreateThread (process);
   Task *task = TaskManager::Current ()->Start (&DceManager::DoStartProcess, thread, stackSize);
   task->SetContext (thread);
@@ -641,7 +643,7 @@ DceManager::Stop (uint16_t pid)
         }
       std::string statusWord = "Stopped by NS3.";
       AppendStatusFile (process->pid, process->nodeId, statusWord);
-      DeleteProcess (process);
+      DeleteProcess (process, 0);
     }
 }
 
@@ -687,7 +689,7 @@ DceManager::DeleteThread (struct Thread *thread)
 }
 
 void
-DceManager::DeleteProcess (struct Process *process)
+DceManager::DeleteProcess (struct Process *process, int type)
 {
   NS_LOG_FUNCTION (this << process << "pid " << process->pid << "ppid" << process->ppid);
 
@@ -762,45 +764,53 @@ DceManager::DeleteProcess (struct Process *process)
       free (buffer);
     }
 
-  // Re-parent children
-  std::set<uint16_t> children = process->children;
-  process->children.clear ();
-  std::set<uint16_t>::iterator it;
-
-  for (it = children.begin () ; it != children.end (); it++ )
-    {
-      Process *child = m_processes [*it];
-
-      if (child)
-        {
-          child->ppid = 1;
-          if ( ( child->pid > 1 ) && !child->loader && !child->alloc )
-            {
-              m_processes.erase ( child->pid );
-              delete child;
-            }
-        }
-    }
-
   int ppid = process->ppid;
 
-  m_processExit (process->pid, process->exitValue);
+  if (!type)
+    {
+      // Re-parent children
+      std::set<uint16_t> children = process->children;
+      process->children.clear ();
+      std::set<uint16_t>::iterator it;
 
+      for (it = children.begin () ; it != children.end (); it++ )
+        {
+          Process *child = m_processes [*it];
+
+          if (child)
+            {
+              child->ppid = 1;
+              if ( ( child->pid > 1 ) && !child->loader && !child->alloc )
+                {
+                  m_processes.erase ( child->pid );
+                  delete child;
+                }
+            }
+        }
+      m_processExit (process->pid, process->exitValue);
+    }
   delete process->loader;
   process->loader = 0;
   delete process->alloc;
   process->alloc = 0;
 
-  if ( ppid > 1 )
+  if (!type)
     {
-      // Warn father
-      ChildFinished (process->pid);
+      if ( ppid > 1 )
+        {
+          // Warn father
+          ChildFinished (process->pid);
+        }
+      else
+        { // ppid == 0 have no father, perhaps DCE, else ppid = 1 init : have lost it's real father.
+          // remove ourselves from list of processes
+          m_processes.erase ( process->pid );
+          // delete process data structure.
+          delete process;
+        }
     }
   else
-    { // ppid == 0 have no father, perhaps DCE, else ppid = 1 init : have lost it's real father.
-      // remove ourselves from list of processes
-      m_processes.erase ( process->pid );
-      // delete process data structure.
+    {
       delete process;
     }
 }
@@ -920,7 +930,9 @@ DceManager::Execve (Thread *threadOld, const char *path, char *const argv[], cha
    con->caller = threadOld;
    con->execResult = -1;
 
-   if (!StartExecProcess (con, path, argv, envp) ) return -1;
+   struct Process *newOne = StartExecProcess (con, path, argv, envp);
+
+   if (! newOne ) return -1;
 
    while ( -1 == con->execResult ) // Wait exec result
      {
@@ -931,6 +943,10 @@ DceManager::Execve (Thread *threadOld, const char *path, char *const argv[], cha
 
    if ( 0 == res )
      { // SUCCESS
+       Current ()->process->ppid = 1;
+       Current ()->process->children.clear ();
+       m_processes.erase ( Current ()->process-> pid );
+       m_processes [newOne->pid] = newOne;
        dce_fflush (0);
        dce_exit_exec (0, 1);
      }
@@ -943,7 +959,7 @@ DceManager::Execve (Thread *threadOld, const char *path, char *const argv[], cha
    return -1;
 }
 
-bool
+struct Process *
 DceManager::StartExecProcess (struct ExecContext *context, const char *path, char *const argv[], char *const envp[])
 {
   NS_LOG_FUNCTION ( this << path );
@@ -988,7 +1004,7 @@ DceManager::StartExecProcess (struct ExecContext *context, const char *path, cha
    task->SetContext (thread);
    task->SetSwitchNotifier (&DceManager::TaskSwitch, process);
    thread->task = task;
-   return 1;
+   return process;
 }
 
 void

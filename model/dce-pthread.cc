@@ -115,13 +115,13 @@ void dce_exit_exec (int status, int type)
       DceManager::AppendStatusFile (current->process->pid, current->process->nodeId, line);
     }
 
-  current->process->manager->DeleteProcess (current->process);
+  current->process->manager->DeleteProcess (current->process, type);
   TaskManager::Current ()->Exit ();
 }
 
 void dce_exit (int status)
 {
-  dce_exit_exec ( status, false);
+  dce_exit_exec ( status, 0);
 }
 
 struct PthreadStartContext

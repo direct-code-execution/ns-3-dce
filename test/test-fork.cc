@@ -53,7 +53,6 @@ static void test_fork (void)
     }
 }
 
-
 static void *
 test_wait_fork_thread (void *arg)
 {
@@ -65,7 +64,6 @@ test_wait_fork_thread (void *arg)
   pid_t w = wait(&status);
 
   printf ("test wait fork thread: after wait >>> %d,  status = %d signal %d \n", w,  WEXITSTATUS( status), WTERMSIG (status) );
-
 
   return 0;
 }
@@ -144,29 +142,72 @@ void big_fork (int prof)
 
           pid_t w =  waitpid( pid, &st, 0);
           printf("Child pid:%d %d\n", pid, w);
+          if (prof>0) exit(0);
           return;
         }
       else
         {
-          prof++;
+          if (prof++ >= 100) exit (0);
+          printf ("pid:%d prof%d\n",getpid(), prof);
+        }
+    }
+}
 
-         // if (prof >= 12500) return;
+void big_fork_exec (int prof)
+{
+  while (true)
+    {
+      pid_t pid = fork ();
 
-          int ret = execv ("build/bin/test-fork", 0);
+      if ( -1 == pid )
+        {
+          printf ("fork failed errno:%d, prof=%d\n", errno, prof);
+          return;
+        }
+      if (pid)
+        {
+          int st = 0;
 
+          pid_t w =  waitpid( pid, &st, 0);
+          printf("Child pid:%d %d\n", pid, w);
+          if (prof>0) exit(0);
+          return;
+        }
+      else
+        {
+          if (prof++ >= 100) exit (0);
+
+          char arg[100];
+
+          sprintf(arg,"%d",prof);
+
+          static char* const args[] = { "build/bin/test-fork", arg };
+
+          int ret = execv ("build/bin/test-fork", args);
+
+          return;
         }
     }
 }
 
 int main (int argc, char *argv[])
 {
-//  test_fork ();
-//
-//  pid_t w = wait(0);
-//
-//  test_wait_fork ();
+  if (argc == 1)
+    {
+      test_fork ();
 
-  big_fork (0);
+      pid_t w = wait(0);
 
+      test_wait_fork ();
+
+      big_fork (0);
+
+      printf ("pid: %d after \n",getpid());
+      big_fork_exec (0);
+    }
+  else
+    {
+      big_fork_exec (argc > 1?(atoi(argv[1])):0 );
+    }
   return 0;
 }

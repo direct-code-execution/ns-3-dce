@@ -86,7 +86,11 @@ public:
 
   // internal methods
   struct Thread *CreateThread (struct Process *process);
-  void DeleteProcess (struct Process *process);
+  // with type:
+  //  0: normal exit
+  //  1: exec success
+  //  2: exec failed.
+  void DeleteProcess (struct Process *process, int type);
   void DeleteThread (struct Thread *thread);
 
   Thread *SearchThread (uint16_t pid, uint16_t tid);
@@ -120,13 +124,13 @@ private:
   virtual void DoDispose (void);
 
   struct Process *CreateProcess (std::string name, std::string stdinfilename, std::vector<std::string> args,
-                                 std::vector<std::pair<std::string,std::string> > envs);
+                                 std::vector<std::pair<std::string,std::string> > envs, int pid);
   static void DoStartProcess (void *context);
 
   // Allocate new process with the same pid that the process trying to execking
   struct Process *CopyExecProcess (struct Process *proc, std::string name, std::vector<std::string> args,
                                    std::vector<std::pair<std::string,std::string> > envs);
-  bool StartExecProcess (struct ExecContext *context, const char *path, char *const argv[], char *const envp[]);
+  struct Process *StartExecProcess (struct ExecContext *context, const char *path, char *const argv[], char *const envp[]);
   static void DoExec (void *context);
 
   bool CheckProcessContext (void) const;
