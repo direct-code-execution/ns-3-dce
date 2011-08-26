@@ -651,6 +651,7 @@ pid_t dce_fork (void)
   DceManager *manager = thread->process->manager;
   return manager->Clone (thread);
 }
+
 int dce_execv (const char *path, char *const argv[])
 {
   Thread *thread = Current ();

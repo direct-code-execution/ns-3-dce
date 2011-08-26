@@ -335,6 +335,10 @@ struct Libc
   int (*execlp_fn) (const char *file, const char *arg, va_list ap);
   int (*execvp_fn) (const char *file, char *const argv[]);
   int (*execle_fn) (const char *path, const char *arg, va_list ap);
+
+  pid_t (*wait_fn) (int *status);
+  pid_t (*waitpid_fn) (pid_t pid, int *status, int options);
+
 };
 
 #ifdef __cplusplus

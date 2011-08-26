@@ -132,11 +132,11 @@ DceManagerTestSuite::DceManagerTestSuite ()
 
   const testPair tests[] = { /*
       { "test-empty", 0, "" , false},
-      {  "test-sleep", 0, "", false },
-      {  "test-pthread", 0, "" , false},
+      {  "test-sleep", 0, "", false }, * /
+      {  "test-pthread", 0, "" , false}, /*
       {  "test-mutex", 0, "", false },
-      {  "test-once", 0, "" , false},
-      {  "test-pthread-key", 0, "" , false},
+      {  "test-once", 0, "" , false}, * /
+      {  "test-pthread-key", 0, "" , false}, /*
       {  "test-sem", 0, "" , false},
       {  "test-malloc", 0, "" , false},
       {  "test-malloc-2", 0, "" , false},
@@ -148,15 +148,15 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-env", 0, "", false },
       {  "test-cond", 0, "" , false},
       {  "test-timer-fd", 0, "" , false},
-      {  "test-stdlib", 0, "" , false}, */
+      {  "test-stdlib", 0, "" , false}, * /
       {  "test-select", 3600, "", true }, /*
       {  "test-nanosleep", 0, "" , false},
-      {  "test-random", 0, "", false },
-      {  "test-fork", 0, "", false }, * /
+      {  "test-random", 0, "", false }, * /
+      {  "test-fork", 0, "", false },  /*
       {  "test-local-socket", 0, "", false }, /*
-      {  "test-poll", 320, "", true }, */
-      {  "test-tcp-socket", 320, "", true },
-/*      {  "test-exec", 1000, "" , false}, */
+      {  "test-poll", 320, "", true }, * /
+      {  "test-tcp-socket", 320, "", true }, */
+      {  "test-exec", 1000, "" , false},
   };
   for (unsigned int i = 0; i < sizeof(tests)/sizeof(testPair);i++)
     {

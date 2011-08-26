@@ -31,6 +31,7 @@
 #include "dce-fcntl.h"
 #include "sys/dce-stat.h"
 #include "loader-factory.h"
+#include "waiter.h"
 #include "ns3/node.h"
 #include "ns3/log.h"
 #include "ns3/simulator.h"
@@ -61,6 +62,8 @@ namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (DceManager);
 
+class Waiter;
+
 TypeId 
 DceManager::GetTypeId (void)
 {
@@ -84,6 +87,8 @@ DceManager::GetTypeId (void)
 DceManager::DceManager ()
 {
   NS_LOG_FUNCTION (this);
+  // Allocate Init Process
+  m_processes [1] = 0;
 }
 DceManager::~DceManager ()
 {
@@ -94,15 +99,19 @@ DceManager::DoDispose (void)
 {
   NS_LOG_FUNCTION (this);
   struct Process *tmp;
-  while (!m_processes.empty ())
+  std::map<uint16_t, Process*> mapCopy = m_processes;
+
+  m_processes.clear ();
+
+  for(std::map<uint16_t, Process*>::iterator it = mapCopy.begin (); it != mapCopy.end (); it++)
     {
-      tmp = m_processes.back ();
+      tmp = it->second;
       if ( 0 != tmp )
       {
           std::string statusWord = "Never ended.";
     	  AppendStatusFile (tmp->pid, tmp->nodeId, statusWord );
+          DeleteProcess (tmp);
       }
-      DeleteProcess (tmp);
     }
 
   Object::DoDispose ();
@@ -331,7 +340,7 @@ DceManager::CreateProcess (std::string name, std::string stdinfilename, std::vec
 
   process->minimizeFiles = (m_minimizeFiles?1:0);
 
-  m_processes.push_back (process);
+  m_processes[process->pid] = process;
 
   return process;
 }
@@ -462,6 +471,7 @@ DceManager::CreateThread (struct Process *process)
   thread->hasExitValue = false;
   thread->joinWaiter = 0;
   thread->lastTime = Time(0);
+  thread->childWaiter = 0;
 
   sigemptyset (&thread->signalMask);
   if (!process->threads.empty ())
@@ -489,19 +499,21 @@ DceManager::Exit (void)
 bool
 DceManager::ThreadExists (Thread *thread)
 {
-  for (std::vector<Process *>::const_iterator i = m_processes.begin (); i != m_processes.end (); ++i)
+  if ( !thread ) return false;
+  if ( !thread->process ) return false;
+
+  Process *process = thread->process;
+
+  for (std::vector<Thread *>::const_iterator j = process->threads.begin ();
+      j != process->threads.end (); ++j)
     {
-      Process *process = *i;
-      for (std::vector<Thread *>::const_iterator j = process->threads.begin (); 
-           j != process->threads.end (); ++j)
+      Thread *cur = *j;
+      if (cur == thread)
         {
-          Thread *cur = *j;
-          if (cur == thread)
-            {
-              return true;
-            }
+          return true;
         }
     }
+
   return false;
 }
 
@@ -524,6 +536,7 @@ DceManager::Clone (Thread *thread)
   clone->name = thread->process->name;
   clone->ppid = thread->process->pid;
   clone->pid = AllocatePid ();
+  thread->process->children.insert (clone->pid);
   // dup each file descriptor.
   for (uint32_t index = 0; index < thread->process->openFiles.size (); index++)
     {
@@ -562,7 +575,7 @@ DceManager::Clone (Thread *thread)
 
   //"seeding" random variable
   clone->rndVarible = UniformVariable (0, RAND_MAX);
-  m_processes.push_back (clone);
+  m_processes[clone->pid] = clone;
   Thread *cloneThread = CreateThread (clone);
 
   clone->loader = thread->process->loader->Clone ();
@@ -664,13 +677,19 @@ DceManager::DeleteThread (struct Thread *thread)
           break;
         }
     }
+  if ( 0 != thread->childWaiter)
+    {
+      Waiter *lb = thread->childWaiter;
+      thread->childWaiter = 0;
+      delete lb;
+    }
   delete thread;
 }
 
 void
 DceManager::DeleteProcess (struct Process *process)
 {
-  NS_LOG_FUNCTION (this << process);
+  NS_LOG_FUNCTION (this << process << "pid " << process->pid << "ppid" << process->ppid);
 
   // Close all streams opened
   for (uint32_t i =  0; i < process->openStreams.size (); i++)
@@ -742,21 +761,48 @@ DceManager::DeleteProcess (struct Process *process)
       process->allocated.pop_back ();
       free (buffer);
     }
-  // delete process data structure.
-  m_processExit (process->pid, process->exitValue);
-  // remove ourselves from list of processes
-  for (std::vector<Process *>::iterator i = m_processes.begin ();
-       i != m_processes.end (); ++i)
+
+  // Re-parent children
+  std::set<uint16_t> children = process->children;
+  process->children.clear ();
+  std::set<uint16_t>::iterator it;
+
+  for (it = children.begin () ; it != children.end (); it++ )
     {
-      if (*i == process)
+      Process *child = m_processes [*it];
+
+      if (child)
         {
-          m_processes.erase (i);
-          break;
+          child->ppid = 1;
+          if ( ( child->pid > 1 ) && !child->loader && !child->alloc )
+            {
+              m_processes.erase ( child->pid );
+              delete child;
+            }
         }
     }
+
+  int ppid = process->ppid;
+
+  m_processExit (process->pid, process->exitValue);
+
   delete process->loader;
+  process->loader = 0;
   delete process->alloc;
-  delete process;
+  process->alloc = 0;
+
+  if ( ppid > 1 )
+    {
+      // Warn father
+      ChildFinished (process->pid);
+    }
+  else
+    { // ppid == 0 have no father, perhaps DCE, else ppid = 1 init : have lost it's real father.
+      // remove ourselves from list of processes
+      m_processes.erase ( process->pid );
+      // delete process data structure.
+      delete process;
+    }
 }
 
 bool
@@ -787,19 +833,11 @@ DceManager::SearchThread (uint16_t pid, uint16_t tid)
   return 0;
 }
 Process *
-DceManager::SearchProcess (uint16_t pid) const
+DceManager::SearchProcess (uint16_t pid)
 {
   NS_LOG_FUNCTION (this << pid);
 
-  for (std::vector<Process *>::const_iterator i = m_processes.begin (); i != m_processes.end (); ++i)
-    {
-      Process *process = *i;
-      if (process->pid == pid)
-        {
-          return process;
-        }
-    }
-  return 0;
+  return m_processes [pid];
 }
 
 void 
@@ -867,7 +905,7 @@ DceManager::AppendStatusFile (uint16_t pid, uint32_t nodeId,  std::string &line)
     }
 }
 
-std::vector<Process *>
+std::map<uint16_t, Process *>
 DceManager::GetProcs ()
 {
   return m_processes;
@@ -1060,6 +1098,62 @@ DceManager::DoExec (void *context)
       dce_exit_exec (0, 2);
     }
 }
+void
+DceManager::ChildFinished (uint16_t pid)
+{
+  // I need to wakeup wait for wait queue threads ....
+  // XXX: TODO
 
+  // Get pid process.
 
+  Process *child = m_processes [pid];
+
+  NS_ASSERT (child);
+
+  Process *p =  m_processes [child->ppid];
+
+  NS_ASSERT (p);
+
+  WakeupChildWaiters ( p );
+
+  if ( ! true ) // IF WAIT DONE !
+    {
+      std::set<uint16_t>::iterator it = p->children.find (pid);
+
+      if ( it != p->children.end () )
+        {
+          p->children.erase(it);
+        }
+      m_processes.erase(pid);
+      delete child;
+    }
+}
+bool
+DceManager::WakeupChildWaiters (struct Process *p)
+{
+  bool ret = false;
+  std::vector<Thread *> tt = p->threads;
+
+  for (std::vector<Thread*>::iterator it = tt.begin() ; it != tt.end(); it++ )
+    {
+  //    ret !=
+      Thread *t = *it;
+
+      if ( t && t->childWaiter ) t->childWaiter->Wakeup();
+    }
+
+  return ret;
+}
+void
+DceManager::FinishChild (uint16_t pid)
+{
+  // A wait success on this proc
+  Process *child = m_processes [pid];
+
+  if (child)
+    {
+      m_processes.erase(pid);
+      delete child;
+    }
+}
 } // namespace ns3

@@ -37,6 +37,7 @@
 #include "net/dce-if.h"
 #include "dce-umask.h"
 #include "dce-misc.h"
+#include "dce-wait.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -315,6 +316,9 @@ void libc_dce (struct Libc *libc)
   libc->execvp_fn = dce_execvp;
   libc->execlp_fn = dce_execlp;
   libc->execle_fn = dce_execle;
+
+  libc->wait_fn = dce_wait;
+  libc->waitpid_fn = dce_waitpid;
 
 }
 

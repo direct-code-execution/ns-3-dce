@@ -22,6 +22,7 @@
 #define DCE_MANAGER_H
 
 #include <string>
+#include <map>
 #include "ns3/object.h"
 #include "ns3/nstime.h"
 #include "ns3/traced-callback.h"
@@ -89,7 +90,8 @@ public:
   void DeleteThread (struct Thread *thread);
 
   Thread *SearchThread (uint16_t pid, uint16_t tid);
-  Process *SearchProcess (uint16_t pid) const;
+  Process *SearchProcess (uint16_t pid);
+  void FinishChild (uint16_t pid); // A wait success on this proc
 
   void Exit (void);
   void Wakeup (Thread *thread);
@@ -97,7 +99,7 @@ public:
   Time Wait (Time timeout);
   void Yield (void);
   uint16_t Clone (Thread *thread);
-  std::vector<Process *> GetProcs ();
+  std::map<uint16_t, Process *> GetProcs ();
   static void AppendStatusFile (uint16_t pid, uint32_t nodeId, std::string &line);
 
   // Prototype for exec
@@ -140,8 +142,12 @@ private:
   static int CreatePidFile (struct Thread *current, std::string prefix);
   static void TaskSwitch (enum Task::SwitchType type, void *context);
   static void StartProcessDebugHook (void);
+  void ChildFinished (uint16_t pid);
+  bool WakeupChildWaiters (struct Process *p);
 
-  std::vector<Process *> m_processes;
+  //std::vector<Process *> m_processes;
+  std::map<uint16_t, Process *> m_processes; // Key is the pid
+
   uint16_t m_nextPid;
   TracedCallback<uint16_t, int> m_processExit;
   bool m_minimizeFiles; // If true close stderr and stdout between writes .

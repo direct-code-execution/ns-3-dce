@@ -272,7 +272,13 @@ PthreadFiberManager::Clone (struct Fiber *fib)
     VALGRIND_MAKE_MEM_DEFINED (src, sz);
     NS_LOG_DEBUG ("save start=" << clone->stack_bounds.GetStart () <<
 		  " size=" << clone->stack_bounds.GetSize ());
+
+//    dst = clone->stack_copy = malloc ( sz );
+
     memcpy (dst, src, sz);
+
+//    NS_ASSERT ( sz >=  fiber->thread->stack_size );
+
   }
   // save the current state in jmp_buf so that the next call to 
   // SwitchTo on the clone comes back here.

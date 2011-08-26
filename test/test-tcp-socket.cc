@@ -1347,7 +1347,6 @@ main (int argc, char *argv[])
       printf ("%d: sorted random result %ld \n \n ", i, tab[i] );
     }
 
-
   fflush(stdout);
 
   readBuffer = (char *)malloc( BUFF_LEN );
@@ -1369,25 +1368,7 @@ main (int argc, char *argv[])
   launch (client12, client12);
   launch (client13, server13);
   launch (client14, server14);
-  launch (client15, server15); // XXX crash will invoking callback :
-  /* TEST 15 : crash
-   * Program received signal SIGSEGV, Segmentation fault.
-0x00007ffff72b72dc in ns3::Callback<void, ns3::Ptr<ns3::Packet>, ns3::Ipv4Header, unsigned short, ns3::Ptr<ns3::Ipv4Interface>, ns3::empty, ns3::empty, ns3::empty, ns3::empty, ns3::empty>::operator() (
-    this=0x7fffe8001c58, a1=..., a2=..., a3=49671, a4=...) at debug/ns3/callback.h:419
-419         return (*(DoPeekImpl ())) (a1,a2,a3,a4);
-(gdb) bt
-#0  0x00007ffff72b72dc in ns3::Callback<void, ns3::Ptr<ns3::Packet>, ns3::Ipv4Header, unsigned short, ns3::Ptr<ns3::Ipv4Interface>, ns3::empty, ns3::empty, ns3::empty, ns3::empty, ns3::empty>::operator() (
-    this=0x7fffe8001c58, a1=..., a2=..., a3=49671, a4=...) at debug/ns3/callback.h:419
-#1  0x00007ffff72b665a in ns3::Ipv4EndPoint::DoForwardUp (this=0x7fffe8001c40, p=..., header=..., sport=49671, incomingInterface=...) at ../src/internet/model/ipv4-end-point.cc:124
-#2  0x00007ffff72b6eaa in ns3::EventMemberImpl4::Notify (this=0x6d5b80) at debug/ns3/make-event.h:223
-#3  0x00007ffff77accf8 in ns3::EventImpl::Invoke (this=0x6d5b80) at ../src/core/model/event-impl.cc:37
-#4  0x00007ffff77b11ac in ns3::DefaultSimulatorImpl::ProcessOneEvent (this=0x62cba0) at ../src/core/model/default-simulator-impl.cc:128
-#5  0x00007ffff77b135c in ns3::DefaultSimulatorImpl::Run (this=0x62cba0) at ../src/core/model/default-simulator-impl.cc:158
-   *
-   *
-   *
-   *
-   */
+  launch (client15, server15);
 
   printf ("That's All Folks ....\n \n " );
   fflush (stdout);

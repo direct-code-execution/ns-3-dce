@@ -79,7 +79,7 @@ void dce_exit_exec (int status, int type)
   CleanupPthreadKeys ();
   if ( 0 == type ) dce__cxa_finalize (0);
   dce_fflush (0);
-  current->process->exitValue = status;
+  current->process->exitValue = __W_EXITCODE( status,  WTERMSIG( current->process->exitValue ) );
   current->task->SetSwitchNotifier (0, 0);
   current->process->loader->UnloadAll ();
 
@@ -121,7 +121,7 @@ void dce_exit_exec (int status, int type)
 
 void dce_exit (int status)
 {
-  dce_exit_exec (status, false);
+  dce_exit_exec ( status, false);
 }
 
 struct PthreadStartContext

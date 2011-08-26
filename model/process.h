@@ -23,6 +23,7 @@
 #include <signal.h>
 #include <vector>
 #include <list>
+#include <set>
 #include <stdio.h>
 #include "ns3/callback.h"
 #include "ns3/event-id.h"
@@ -124,6 +125,7 @@ struct Process
   std::vector<Semaphore *> semaphores;
   std::vector<Condition *> conditions;
   std::vector<struct AtExitHandler> atExitHandlers;
+  std::set<uint16_t> children;
   sigset_t pendingSignals;
   Time itimerInterval;
   EventId itimer;
@@ -189,6 +191,7 @@ struct Thread
   sigset_t signalMask;
   sigset_t pendingSignals;
   Time lastTime; // Last time of a possible infinite loop checkpoint.
+  Waiter *childWaiter; // Not zero if thread waiting for a child in wait or waitall ...
 };
 
 } // namespace ns3

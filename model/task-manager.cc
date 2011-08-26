@@ -126,18 +126,21 @@ void TaskManager::DoDispose (void)
 
   if (0 != dceManager)
     {
-      std::vector<Process *> procs = dceManager->GetProcs();
-      std::vector<Process *>::iterator it;
+      std::map<uint16_t, Process *> procs = dceManager->GetProcs();
+      std::map<uint16_t, Process *>::iterator it;
 
       for ( it = procs.begin(); it != procs.end (); it++)
         {
-          gDisposingThreadContext = (*it)->threads.back ();
-
-          if ( 0 != gDisposingThreadContext)
+          if ( 0 != it->second )
             {
-              dce_fflush(0);
+              gDisposingThreadContext = it->second->threads.back ();
+
+              if ( 0 != gDisposingThreadContext)
+                {
+                  dce_fflush(0);
+                }
+              gDisposingThreadContext = 0;
             }
-          gDisposingThreadContext = 0;
         }
     }
   Object::DoDispose ();

@@ -285,6 +285,7 @@ def build(bld):
         'model/system-path.cc',
         'model/dce-misc.cc',
         'model/dce-node-context.cc',
+        'model/dce-wait.cc',
         # helper.
         'helper/dce-manager-helper.cc',
         'helper/dce-application-helper.cc',

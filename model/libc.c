@@ -1291,6 +1291,15 @@ int execle(const char *path, const char *arg, ...)
   va_end (ap);
   return retval;
 }
+pid_t wait (int *status)
+{
+  return g_libc.wait_fn (status);
+}
+pid_t waitpid(pid_t pid, int *status, int options)
+{
+  return g_libc.waitpid_fn (pid, status, options);
+}
+
 void LIBSETUP (const struct Libc *fn)
 {
   /* The following assignment of fn to g_libc is a bit weird: we perform a copy of the data 
