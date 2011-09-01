@@ -11,12 +11,14 @@
 #include <netinet/in.h>
 #include <list>
 
+struct sockaddr_ll;
 
 namespace ns3 {
 
 class Socket;
 class Thread;
 class Waiter;
+class Packet;
 
 class UnixSocketFd : public UnixFd
 {
@@ -55,8 +57,10 @@ protected:
   UnixSocketFd (Ptr<Socket> sock);
   int ErrnoToSimuErrno (void) const;
   Address PosixAddressToNs3Address (const struct sockaddr *my_addr, socklen_t addrlen) const;
-  int Ns3AddressToPosixAddress(const Address& nsaddr, 
-			       struct sockaddr *addr, socklen_t *addrlen) const;
+  int Ns3AddressToPosixAddress (const Address& nsaddr,
+			        struct sockaddr *addr, socklen_t *addrlen) const;
+  int Ns3AddressToDeviceIndependantPhysicalLayerAddress (const Address& nsaddr, const Packet& pac,
+                                                         struct sockaddr_ll *addr, socklen_t *addrlen) const;
   bool WaitRecvDoSignal (bool blocking);
   Time GetRecvTimeout (void);
   Time GetSendTimeout (void);

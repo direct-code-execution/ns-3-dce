@@ -7,12 +7,17 @@
 #include "ns3/packet.h"
 #include "ns3/simulator.h"
 #include "ns3/inet-socket-address.h"
+#include "ns3/packet-socket-address.h"
+#include "ns3/packet-socket.h"
+#include "ns3/point-to-point-net-device.h"
+#include "ns3/mac48-address.h"
 #include "cmsg.h"
 #include <errno.h>
 #include <netinet/in.h>
 #include <linux/types.h>
 #include <linux/errqueue.h>
 #include <arpa/inet.h>
+#include <linux/if_arp.h>
 
 NS_LOG_COMPONENT_DEFINE ("UnixDatagramSocketFd");
 
@@ -114,21 +119,21 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
     {
       // MSG_ERRQUEUE is valid only for DGRAM sockets.
       if (m_errQueue.empty ())
-	{
-	  current->err = EAGAIN;
-	  return -1;
-	}
-      
+        {
+          current->err = EAGAIN;
+          return -1;
+        }
+
       Cmsg cmsg = Cmsg (msg);
       if (IsRecvErr ())
-	{
-	  cmsg.Add (SOL_IP, IP_RECVERR, sizeof (struct Error), (const uint8_t*)&m_errQueue.front ());
-	}
+        {
+          cmsg.Add (SOL_IP, IP_RECVERR, sizeof (struct Error), (const uint8_t*)&m_errQueue.front ());
+        }
       if (IsRecvTtl ())
-	{
-	  int tmp = m_errQueue.front ().ttl;
-	  cmsg.Add (SOL_IP, IP_TTL, sizeof (int), (const uint8_t*)&tmp);
-	}
+        {
+          int tmp = m_errQueue.front ().ttl;
+          cmsg.Add (SOL_IP, IP_TTL, sizeof (int), (const uint8_t*)&tmp);
+        }
       cmsg.Finish ();
       m_errQueue.pop_front ();
       return 0;
@@ -150,24 +155,67 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
   // because we implement a datagram-only socket for now.
   Address from;
   Ptr<Packet> packet = m_socket->RecvFrom (count, flags, from);
+  uint32_t l = 0;
+
   if (packet == 0)
     {
       current->err = ErrnoToSimuErrno ();
       return -1;
     }
-  Ns3AddressToPosixAddress (from, (struct sockaddr*)msg->msg_name, &msg->msg_namelen);
-  // XXX: we ignore MSG_TRUNC for the return value.
-  NS_ASSERT (packet->GetSize () <= count);
-  memcpy (buf, packet->PeekData (), packet->GetSize ());
-  return packet->GetSize ();
+  if ((PacketSocketAddress::IsMatchingType(from)))
+    {
+      if ( msg->msg_namelen < sizeof (sockaddr_ll) )
+        {
+          current->err = EINVAL;
+          return -1;
+        }
+      Ns3AddressToDeviceIndependantPhysicalLayerAddress (from, *packet, (struct sockaddr_ll*)msg->msg_name, &msg->msg_namelen);
+
+      // XXX: we ignore MSG_TRUNC for the return value.
+      NS_ASSERT (packet->GetSize () + 14 <= count);
+
+      memset (buf, 0, count);
+      l = packet->CopyData (buf+14, count-14) + 14;
+
+      SocketAddressTag sat;
+      PacketSocketTag pst;
+      bool found;
+
+      found = packet->PeekPacketTag (pst);
+      if (found)
+        {
+          CopyMacAddress (pst.GetDestAddress (), buf );
+        }
+      found = packet->PeekPacketTag (sat);
+      if (found)
+        {
+          if (PacketSocketAddress::IsMatchingType ( sat.GetAddress() ) )
+            {
+              PacketSocketAddress psa = PacketSocketAddress::ConvertFrom (sat.GetAddress() );
+              CopyMacAddress (psa.GetPhysicalAddress (), buf );
+            }
+        }
+      memcpy (buf+12, &(((struct sockaddr_ll *)msg->msg_name)->sll_protocol) , 2);
+    }
+  else
+    {
+      Ns3AddressToPosixAddress (from, (struct sockaddr*)msg->msg_name, &msg->msg_namelen);
+
+      // XXX: we ignore MSG_TRUNC for the return value.
+      NS_ASSERT (packet->GetSize ()  <= count);
+
+      l = packet->CopyData (buf, count);
+    }
+
+  return l;
 }
+
 ssize_t 
 UnixDatagramSocketFd::DoSendmsg(const struct msghdr *msg, int flags)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current);
   NS_ASSERT (current != 0);
-
 
   ssize_t retval = 0;
   for (uint32_t i = 0; i < msg->msg_iovlen; ++i)
@@ -177,20 +225,58 @@ UnixDatagramSocketFd::DoSendmsg(const struct msghdr *msg, int flags)
       Ptr<Packet> packet = Create<Packet> (buf, len);
       int result;
       if (msg->msg_name != 0 && msg->msg_namelen != 0)
-	{
-	  Address ad = PosixAddressToNs3Address ((const struct sockaddr *)msg->msg_name, 
-						 (socklen_t)msg->msg_namelen);
-	  result = m_socket->SendTo (packet, flags, ad);
-	}
+        {
+          Address ad;
+
+          if (DynamicCast<PacketSocket> (m_socket))
+            {
+              Ptr<PacketSocket> s = DynamicCast<PacketSocket> (m_socket);
+              struct sockaddr_ll* addr = (struct sockaddr_ll*)msg->msg_name;
+              Mac48Address dest;
+              PacketSocketAddress pad;
+
+              dest.CopyFrom(addr->sll_addr);
+              pad.SetPhysicalAddress (dest);
+
+              // Retrieve binded protocol
+              Address binded = pad;
+              s->GetSockName (binded);
+              if ( PacketSocketAddress::IsMatchingType(binded) )
+                {
+                  PacketSocketAddress pad2 = PacketSocketAddress::ConvertFrom (binded);
+
+                  pad.SetProtocol (pad2.GetProtocol() );
+                }
+
+              // Set Interface index
+              if (addr->sll_ifindex>0)
+                {
+                  pad.SetSingleDevice (addr->sll_ifindex - 1);
+                }
+              else
+                {
+                  pad.SetAllDevices();
+                }
+
+              ad = pad;
+              packet->RemoveAtStart(14);
+            }
+          else
+            {
+              ad = PosixAddressToNs3Address ((const struct sockaddr *)msg->msg_name,
+                  (socklen_t)msg->msg_namelen);
+            }
+          result = m_socket->SendTo (packet, flags, ad);
+        }
       else
-	{
-	  result = m_socket->Send (packet);
-	}
+        {
+          result = m_socket->Send (packet);
+        }
       if (result == -1)
-	{
-	  current->err = ErrnoToSimuErrno ();
-	  return -1;
-	}
+        {
+          current->err = ErrnoToSimuErrno ();
+          return -1;
+        }
       retval += result;
     }
   return retval;
@@ -224,6 +310,19 @@ UnixDatagramSocketFd::Shutdown (int how)
   current->err = EOPNOTSUPP;
   return -1;
 }
+void
+UnixDatagramSocketFd::CopyMacAddress (const Address &a,  uint8_t* const buf)
+{
+  if (Mac48Address::IsMatchingType (  a ) )
+    {
+      uint8_t addr[8];
+      uint32_t l = a.CopyAllTo (addr , sizeof (addr));
 
+      if ( ( sizeof (addr) == l )  && ( addr[1] == 6 ) )
+        {
+          memcpy (buf, addr + 2, 6);
+        }
+    }
+}
 
 } // namespace ns3

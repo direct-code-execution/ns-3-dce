@@ -9,6 +9,8 @@
 #include "ns3/socket.h"
 #include "ns3/packet.h"
 #include "ns3/inet-socket-address.h"
+#include "ns3/packet-socket-address.h"
+#include "ns3/packet-socket.h"
 #include "ns3/uinteger.h"
 #include "ns3/boolean.h"
 #include "ns3/simulator.h"
@@ -18,6 +20,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/mman.h>
+#include <net/ethernet.h>
+#include <linux/if_arp.h>
 
 NS_LOG_COMPONENT_DEFINE ("UnixSocketFd");
 
@@ -502,6 +506,66 @@ UnixSocketFd::Ns3AddressToPosixAddress(const Address& nsaddr,
   return 0;
 }
 int 
+UnixSocketFd::Ns3AddressToDeviceIndependantPhysicalLayerAddress (const Address& nsaddr, const Packet& pac,
+                                                                 struct sockaddr_ll *addr, socklen_t *addrlen) const
+{
+  if (PacketSocketAddress::IsMatchingType(nsaddr))
+      {
+        PacketSocketAddress ll_addr = PacketSocketAddress::ConvertFrom(nsaddr);
+        if (*addrlen < sizeof (struct sockaddr_ll))
+          {
+            return -1;
+          }
+        memset (addr, 0, sizeof (struct sockaddr_ll));
+        addr->sll_family = AF_PACKET;
+        addr->sll_protocol =  htons( ll_addr.GetProtocol() );
+        addr->sll_ifindex = ll_addr.GetSingleDevice() + 1;
+        addr->sll_hatype = 0;
+        ll_addr.GetPhysicalAddress().CopyAllTo(&(addr->sll_pkttype), 8);
+        *addrlen = sizeof(struct sockaddr_ll);
+
+        PacketSocketTag pst;
+        DeviceNameTag dnt;
+        bool found;
+
+        found = pac.PeekPacketTag (dnt);
+        if  (found)
+          {
+            if ( dnt.GetDeviceName () == "NetDevice" )
+              {
+                addr->sll_hatype = ARPHRD_PPP;
+              }
+            else if ( dnt.GetDeviceName () == "LoopbackNetDevice" )
+                {
+                  addr->sll_hatype = ARPHRD_LOOPBACK;
+                }
+            else if ( dnt.GetDeviceName () == "CsmaNetDevice" )
+                {
+                  addr->sll_hatype = ARPHRD_ETHER;
+                }
+            else if ( dnt.GetDeviceName () == "PointToPointNetDevice" )
+                {
+                  addr->sll_hatype = ARPHRD_PPP;
+                }
+            else if ( dnt.GetDeviceName () == "WifiNetDevice" )
+                {
+                  addr->sll_hatype = ARPHRD_IEEE80211;
+                }
+          }
+        found = pac.PeekPacketTag (pst);
+        if (found)
+          {
+            addr->sll_pkttype = pst.GetPacketType();
+          }
+      }
+    else
+      {
+        NS_ASSERT (false);
+      }
+  return 0;
+}
+
+int
 UnixSocketFd::Bind (const struct sockaddr *my_addr, socklen_t addrlen)
 {
   Thread *current = Current ();

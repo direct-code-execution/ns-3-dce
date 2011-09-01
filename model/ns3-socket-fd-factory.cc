@@ -7,6 +7,9 @@
 #include "ns3/socket-factory.h"
 #include "ns3/socket.h"
 #include "ns3/uinteger.h"
+#include "ns3/packet-socket-address.h"
+#include <netpacket/packet.h>
+#include <net/ethernet.h>
 
 namespace ns3 {
 
@@ -69,6 +72,34 @@ Ns3SocketFdFactory::CreateSocket (int domain, int type, int protocol)
       default:
 	NS_FATAL_ERROR ("missing socket type");
 	break;
+      }
+    }
+  else if (domain == AF_PACKET)
+    {
+      switch (type) {
+      case SOCK_RAW: {
+        TypeId tid = TypeId::LookupByName ("ns3::PacketSocketFactory");
+        Ptr<SocketFactory> factory = GetObject<SocketFactory> (tid);
+        sock = factory->CreateSocket ();
+
+        PacketSocketAddress a;
+        a.SetAllDevices();
+        if ( protocol == htons ( ETH_P_ALL) )
+          {
+            a.SetProtocol( 0 ) ;
+          }
+        else
+          {
+            a.SetProtocol( ntohs ( protocol ) );
+          }
+
+        sock->Bind (a);
+
+        socket = new UnixDatagramSocketFd (sock);
+      } break;
+      default:
+        NS_FATAL_ERROR ("missing socket type");
+        break;
       }
     }
   else

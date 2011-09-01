@@ -143,7 +143,8 @@ def build_dce_tests(module):
              ['test-poll', ['PTHREAD']],
              ['test-tcp-socket', ['PTHREAD']],
              ['test-exec', []],
-             ['test-exec-target-1', []]
+             ['test-exec-target-1', []],
+             ['test-raw-socket', []]
              ]
     for name,uselib in tests:
         module.add_test(**dce_kw(target='bin/' + name, source = ['test/' + name + '.cc'],

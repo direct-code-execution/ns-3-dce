@@ -36,7 +36,7 @@ private:
 
 DceManagerTestCase::DceManagerTestCase (std::string filename, Time maxDuration, std::string stdin, bool useNet)
   : TestCase ("Check that process \"" + filename + "\" completes correctly."),
-    m_filename (filename), m_stdinFilename( stdin), m_maxDuration ( maxDuration ), m_useKernel (1), m_useNet (useNet)
+    m_filename (filename), m_stdinFilename( stdin), m_maxDuration ( maxDuration ), m_useKernel (0), m_useNet (useNet)
 {
 
 }
@@ -132,7 +132,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
     bool useNet;
   } testPair;
 
-  const testPair tests[] = {
+  const testPair tests[] = { /*
       { "test-empty", 0, "" , false},
       {  "test-sleep", 0, "", false },
       {  "test-pthread", 0, "" , false},
@@ -156,9 +156,10 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-random", 0, "", false },
       {  "test-fork", 0, "", false },
       {  "test-local-socket", 0, "", false },
-      {  "test-poll", 320, "", true },
-      {  "test-tcp-socket", 320, "", true },
-      {  "test-exec", 0, "" , false},
+      {  "test-poll", 320, "", true }, * /
+      {  "test-tcp-socket", 320, "", true }, /*
+      {  "test-exec", 0, "" , false}, */
+      {  "test-raw-socket", 320, "", true },
   };
 
   // Prepare directories and files for test-stdio
