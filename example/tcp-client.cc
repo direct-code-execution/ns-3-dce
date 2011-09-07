@@ -27,7 +27,7 @@ int main (int argc, char *argv[])
   memset (buf+20, 0x67, 1004);
   ssize_t tot = 0;
 
-  for (uint32_t i = 0; i < 100000; i++)
+  for (uint32_t i = 0; i < 1000; i++)
     {
       ssize_t n = 1024;
       while (n>0)

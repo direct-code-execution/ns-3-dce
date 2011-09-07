@@ -1,7 +1,7 @@
 #!/bin/bash
 . run-ccnx-common.sh
 echo init keystores
-NNODES=100
+NNODES=200
 for (( i=0; i<$NNODES; i++ ))
 do
     install_ccnd_keystore $i
@@ -15,7 +15,7 @@ cp README files-0/tmp
 EXE=dce-ccnd-linear-multiple
 #FIBER=--ns3::TaskManager::FiberManagerType=UcontextFiberManager
 MINFILES=--ns3::DceManager::MinimizeOpenFiles=1
-NS_LOG=$NS_LOG:CcndInLine
+#NS_LOG=$NS_LOG:CcndInLine
 # Comment out to use TCP instead of UDP
 USE_TCP=--tcp=0
 KERN=--kernel=1

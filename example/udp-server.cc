@@ -33,7 +33,7 @@ int main (int argc, char *argv[])
 
   uint8_t buf[1024];
 
-  for (uint32_t i = 0; i < 100000; i++)
+  for (uint32_t i = 0; i < 1000; i++)
     {
       ssize_t n;
       n = read (sock, buf, 1024);

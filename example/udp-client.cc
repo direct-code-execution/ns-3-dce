@@ -28,7 +28,7 @@ int main (int argc, char *argv[])
   memset (buf, 0x66, 20);
   memset (buf+20, 0x67, 1004);
 
-  for (uint32_t i = 0; i < 100000; i++)
+  for (uint32_t i = 0; i < 1000; i++)
     {
       ssize_t n;
       n = write (sock, buf, 1024);

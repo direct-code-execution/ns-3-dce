@@ -1,25 +1,33 @@
 #!/bin/bash
 #
-#  Prior running please change the value of TAPCREATOR env var below, it should point on NS3 tap-creator executable,
-#  ATTENTION: the tap-creator must be owned by root and have stiky bit in order to function well.
+#  Should be run with a root user or with a tap-creator with root owner and sticky bit setted.
 #
-#     tap0
-#  +----------+
-#  | external |
-#  |  Linux   |
-#  |   Host   |
-#  |----------|
-#  | 10.0.0.2 |
-#  +----------+
-#       |
-#     node0
-#  +----------+
-#  |   dev0   |
-#  | 10.0.0.1 | udp-echo-server listening on port 2000
-#  +----------+
-#
+# 
+#   +----------+
+#   | external |
+#   |  Linux   |
+#   |   Host   |
+#   |          |
+#   | "thetap" |
+#   +----------+
+#   | 10.0.0.1 |
+#   +----------+
+#        |           node0         node1
+#        |       +----------+    +----------+
+#        +-------|  tap     |    |          |
+#                | bridge   |    |          |
+#                +----------+    +----------+
+#                |  CSMA    |    |  CSMA    |
+#                +----------+    +----------+
+#                | 10.0.0.1 |    | 10.0.0.2 | udp-echo-server listening on port 2000
+#                +----------+    +----------+
+#                      |               |
+#                      |               |
+#                      |               |
+#                      =================
+#                       CSMA LAN 10.0.0
+# 
 . run-ccnx-common.sh
-export TAPCREATOR=/home/furbani/dev/dce/new-one/ns-3-dev/build/debug/src/tap-bridge/tap-creator
 EXE=dce-tap-udp-echo
 if [ "" == "$GDB" ]
 then
@@ -28,7 +36,7 @@ else
     $GDB $NS3_BIN/$EXE &
 fi
 sleep 1
-$NS3_BIN/udp-echo-client 10.0.0.1 "Hello NS3" >client_out.txt
-sleep 9
+$NS3_BIN/udp-echo-client 10.0.0.2 "Hello NS3" >client_out.txt
+sleep 1
 emacs client_out.txt output.txt  files-*/var/log/*/* &
 

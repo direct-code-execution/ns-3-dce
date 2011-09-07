@@ -37,7 +37,8 @@ int main (int argc, char *argv[])
       exit (-1);
     }
 
-  while (true)
+//  while (true)
+  for (int i=0; i < 1 ; i++)
     {
       struct sockaddr_in remoteAddr;
       socklen_t len = sizeof(remoteAddr);

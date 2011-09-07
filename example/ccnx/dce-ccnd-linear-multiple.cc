@@ -200,8 +200,6 @@ int main (int argc, char *argv[])
       apps.Start (Seconds (0.2));
     }
 
-
-
   for (int n=0; n < nNodes ; n++)
     {
       if ( n > 0 )
@@ -232,7 +230,7 @@ int main (int argc, char *argv[])
   dce.AddArgument ("/NODE0/LeReadme");
   dce.AddEnvironment("HOME", "/home/furbani");
 
- apps = dce.Install (nodes.Get (0));
+  apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds ( (( 20.0 + nNodes ) / 100 ) + 0.5 ) ) ;
 
 

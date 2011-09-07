@@ -34,21 +34,23 @@ int main (int argc, char *argv[])
 
   socklen_t aLen = sizeof(addr);
 
-  ssize_t wLen = sendto (sock, argv[2], bLen, 0, (struct sockaddr *)&addr, aLen);
-
-  std::cout << "len:" << wLen << "errno:"<< errno << std::endl;
-
-  if (wLen > 0)
+//  while (true)
     {
-      memset (buffer, 0 ,sizeof(buffer) );
-      ssize_t n = read (sock, buffer, bLen);
+      ssize_t wLen = sendto (sock, argv[2], bLen, 0, (struct sockaddr *)&addr, aLen);
 
-      if (n > 0)
+      std::cout << "len:" << wLen << "errno:"<< errno << std::endl;
+
+      if (wLen > 0)
         {
-          std::cout << "echo:" << buffer << std::endl;
+          memset (buffer, 0 ,sizeof(buffer) );
+          ssize_t n = read (sock, buffer, bLen);
+
+          if (n > 0)
+            {
+              std::cout << "echo:" << buffer << std::endl;
+            }
         }
     }
-
   close (sock);
 
   return 0;
