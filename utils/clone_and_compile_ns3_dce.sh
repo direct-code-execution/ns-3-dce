@@ -1,5 +1,6 @@
 #!/bin/bash
 # this script checkout NS3 and DCE sources, and build them.
+USE_KERNEL=NO
 cd `dirname $BASH_SOURCE`/../..
 SAVE_PATH=$PATH
 SAVE_LDLP=$LD_LIBRARY_PATH
@@ -8,13 +9,15 @@ SAVE_PKG=$PKG_CONFIG_PATH
 #hg clone http://code.nsnam.org/furbani/ns-3-dce
 echo clone readversiondef
 hg clone http://code.nsnam.org/mathieu/readversiondef
-echo clone ns-3-linux
-hg clone http://code.nsnam.org/mathieu/ns-3-linux
+if [ "YES" == "$USE_KERNEL" ]
+then
+	echo clone ns-3-linux
+ 	hg clone http://code.nsnam.org/furbani/ns-3-linux
+fi	
 echo clone ns-3-dev
 hg clone http://code.nsnam.org/ns-3-dev
 mkdir build
 cd ns-3-dev
-#patch -p1 < ../the_last_test.patch
 ./waf configure --prefix=`pwd`/../build --enable-tests
 ./waf
 ./waf install
@@ -26,17 +29,37 @@ cd readversiondef/
 make 
 make install PREFIX=`pwd`/../build/
 cd ..
+if [ "YES" == "$USE_KERNEL" ]
+then
+	cd ns-3-linux/
+ 	git clone git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next-2.6.git net-next-2.6
+	make unpatch
+	make  setup
+	make defconfig
+	make
+	cd ..
+	wget http://devresources.linuxfoundation.org/dev/iproute2/download/iproute2-2.6.33.tar.bz2
+	tar jxf iproute2-2.6.33.tar.bz2
+	cd iproute2-2.6.33
+	LDFLAGS=-pie make CCOPTS='-fpic -D_GNU_SOURCE -O0 -U_FORTIFY_SOURCE'
+	cd ../ns-3-dce
+	ln -s ../ns-3-linux/libnet-next-2.6.so
+	ln -s ../iproute2-2.6.33/ip/ip
+	cd ..
+fi
 cd ns-3-dce/
-./waf configure --prefix=`pwd`/../build --enable-kernel-stack=`pwd`/../ns-3-linux --verbose
+if [ "YES" == "$USE_KERNEL" ]
+then
+    WAF_KERNEL=--enable-kernel-stack=`pwd`/../ns-3-linux
+fi
+./waf configure --prefix=`pwd`/../build --verbose $WAF_KERNEL
 ./waf
 ./waf install
 export LD_LIBRARY_PATH=$SAVE_LDLP:`pwd`/build/lib:`pwd`/build/bin:`pwd`/../build/lib
-# Configure test simulation files.
-mkdir -p files-0/tmp 
-mkdir -p files-0/etc
-cp /etc/passwd files-0/etc
+. utils/setenv.sh
 echo Launch NS3TEST-DCE
 ./build/bin/ns3test-dce --verbose
+
 
 
 

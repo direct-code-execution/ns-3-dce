@@ -23,7 +23,7 @@ def search_file(files):
 
 def configure(conf):
     ns3waf.check_modules(conf, ['core', 'network', 'internet'], mandatory = True)
-    ns3waf.check_modules(conf, ['point-to-point', 'file-descriptor', 'netanim'], mandatory = False)
+    ns3waf.check_modules(conf, ['point-to-point', 'tap-bridge', 'netanim'], mandatory = False)
     ns3waf.check_modules(conf, ['wifi', 'point-to-point', 'csma', 'mobility' ], mandatory = False)
     conf.check_tool('compiler_cc')
     conf.check(header_name='stdint.h', define_name='HAVE_STDINT_H', mandatory=False)
@@ -111,8 +111,12 @@ def dce_kw(**kw):
     d['linkflags'] = d.get('linkflags', []) + ['-pie'] + debug_dl
     return d
 
-def build_dce_tests(module):
-    module.add_runner_test(needed=['core', 'dce', 'internet'], source=['test/dce-manager-test.cc'])
+def build_dce_tests(module, kern):
+    if kern:
+        module.add_runner_test(needed=['core', 'dce', 'internet'],  source=['test/dce-manager-test.cc', 'test/with-kernel.cc'])
+    else:
+        module.add_runner_test(needed=['core', 'dce', 'internet'], source=['test/dce-manager-test.cc','test/without-kernel.cc'])
+    	    
     module.add_test(features='cxx cxxshlib', source=['test/test-macros.cc'], 
                     target='lib/test', linkflags=['-Wl,-soname=libtest.so'])
 
@@ -191,14 +195,14 @@ def build_dce_examples(module):
                        target='bin/dce-ccnd-short-stuff',
                        source=['example/ccnx/dce-ccnd-short-stuff.cc'])
                        
-    module.add_example(needed = ['core', 'internet', 'dce', 'file-descriptor'],
+    module.add_example(needed = ['core', 'internet', 'dce', 'tap-bridge', 'point-to-point', 'csma'],
                        target='bin/dce-tap-udp-echo',
                        source=['example/ccnx/dce-tap-udp-echo.cc'])                
 
-    module.add_example(needed = ['core', 'internet', 'dce', 'file-descriptor'],
+    module.add_example(needed = ['core', 'internet', 'dce', 'tap-bridge', 'csma' ], 
                        target='bin/dce-tap-ccnd',
-                       source=['example/ccnx/dce-tap-ccnd.cc'])                
-
+                       source=['example/ccnx/dce-tap-ccnd.cc'])       
+                       
     module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
                        target='bin/dce-ccnd-linear-multiple',
                        source=['example/ccnx/dce-ccnd-linear-multiple.cc', 'example/ccnx/misc-tools.cc'])
@@ -207,10 +211,6 @@ def build_dce_kernel_examples(module):
     module.add_example(needed = ['core', 'network', 'dce'], 
                        target='bin/dce-linux-simple',
                        source=['example/dce-linux-simple.cc'])
-
-    module.add_example(needed = ['core', 'network', 'dce'], 
-                       target='bin/dce-linux-ccnd',
-                       source=['example/dce-linux-ccnd.cc'])
 
     module.add_example(needed = ['core', 'network', 'dce', 'wifi', 'point-to-point', 'csma', 'mobility' ],
                        target='bin/dce-linux',
@@ -310,7 +310,7 @@ def build(bld):
                                   use=uselib,
                                   includes=kernel_includes,
                                   lib=['dl'])
-    build_dce_tests(module)
+    build_dce_tests(module, bld.env['KERNEL_STACK'])
     build_dce_examples(module)
 
     if bld.env['KERNEL_STACK']:

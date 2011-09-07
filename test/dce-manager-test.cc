@@ -15,6 +15,7 @@ extern "C" void dce_manager_test_store_test_error (const char *s)
 {
   g_testError = s;
 }
+extern "C" bool useKernel (void);
 
 using namespace ns3;
 namespace ns3 {
@@ -22,7 +23,7 @@ namespace ns3 {
 class DceManagerTestCase : public TestCase
 {
 public:
-  DceManagerTestCase (std::string filename, Time maxDuration, std::string stdinFilename, bool useNet);
+  DceManagerTestCase (std::string filename, Time maxDuration, std::string stdinFilename, bool useNet, bool useK);
 private:
   virtual void DoRun (void);
   static void Finished (int *pstatus, uint16_t pid, int status);
@@ -34,9 +35,9 @@ private:
   bool m_useNet;
 };
 
-DceManagerTestCase::DceManagerTestCase (std::string filename, Time maxDuration, std::string stdin, bool useNet)
+DceManagerTestCase::DceManagerTestCase (std::string filename, Time maxDuration, std::string stdin, bool useNet, bool useK)
   : TestCase ("Check that process \"" + filename + "\" completes correctly."),
-    m_filename (filename), m_stdinFilename( stdin), m_maxDuration ( maxDuration ), m_useKernel (0), m_useNet (useNet)
+    m_filename (filename), m_stdinFilename( stdin), m_maxDuration ( maxDuration ), m_useKernel (useK), m_useNet (useNet)
 {
 
 }
@@ -132,7 +133,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
     bool useNet;
   } testPair;
 
-  const testPair tests[] = { /*
+  const testPair tests[] = { 
       { "test-empty", 0, "" , false},
       {  "test-sleep", 0, "", false },
       {  "test-pthread", 0, "" , false},
@@ -156,10 +157,10 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-random", 0, "", false },
       {  "test-fork", 0, "", false },
       {  "test-local-socket", 0, "", false },
-      {  "test-poll", 320, "", true }, * /
-      {  "test-tcp-socket", 320, "", true }, /*
-      {  "test-exec", 0, "" , false}, */
-      {  "test-raw-socket", 320, "", true },
+      {  "test-poll", 320, "", true }, 
+      {  "test-tcp-socket", 320, "", true }, 
+      {  "test-exec", 0, "" , false}, /*
+      {  "test-raw-socket", 320, "", true }, */
   };
 
   // Prepare directories and files for test-stdio
@@ -179,7 +180,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
 
   for (unsigned int i = 0; i < sizeof(tests)/sizeof(testPair);i++)
     {
-      AddTestCase (new DceManagerTestCase (tests[i].name ,  Seconds (tests[i].duration) , tests[i].stdinfile, tests[i].useNet ) );
+      AddTestCase (new DceManagerTestCase (tests[i].name ,  Seconds (tests[i].duration) , tests[i].stdinfile, tests[i].useNet, useKernel () ) );
     }
 }
 

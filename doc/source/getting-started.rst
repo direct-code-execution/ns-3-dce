@@ -7,6 +7,13 @@ Prerequisite
 DCE has been tested only on few systems see:  `Ns-3-dce portability <http://www.nsnam.org/wiki/index.php/Ns-3-dce_portability>`_.
 Now I am using it well with a Fedora 14 x86-64 and glibc 2.13-1.
 
+Building options
+****************
+
+DCE offers two majors mode of operation:
+ 1. The basic mode, where DCE use the NS3 TCP stacks,
+ 2. The advanced mode, where DCE use a linux network stack instead.
+
 Building ns-3 and DCE
 *********************
 
@@ -18,7 +25,26 @@ First you need to download NS-3 DCE using mercurial:
   $ cd test_build_ns3_dce
   $ hg clone http://code.nsnam.org/furbani/ns-3-dce 
 
+
 DCE brings a script usable to retrieve the others sources and build the whole things:
+
+:: 
+
+  $ ls ns-3-dce/utils/clone_and_compile_ns3_dce.sh
+
+You should edit this file if you want to try the advanced mode and change the following line:
+
+::
+
+  USE_KERNEL=NO
+
+by
+
+::
+
+  USE_KERNEL=YES
+
+then you can launch the build:
 
 ::
 
@@ -26,7 +52,7 @@ DCE brings a script usable to retrieve the others sources and build the whole th
   clone readversiondef
   ...
   2 files updated, 0 files merged, 0 files removed, 0 files unresolved
-  clone ns-3-11
+  clone ns-3-dce
   ...
   2105 files updated, 0 files merged, 0 files removed, 0 files unresolved
   ...
@@ -63,7 +89,7 @@ Now you should see some directories:
 ::
 
   $ ls
-  build  ns-3-dev  ns-3-dce  readversiondef 
+  build  ns-3-dev  ns-3-dce  readversiondef ns-3-linux iproute2-2.6.33
 
 Where:
  1. *build* contains the result of compilation: some binaries some libs and some include files usable to do your simulations scripts.
@@ -72,12 +98,16 @@ Where:
 
  3. *ns-3-dce* contains the DCE sources,
 
- 4. *readversiondef* contains source of a tool used by DCE build system.
+ 4. *readversiondef* contains source of a tool used by DCE build system. 
+
+ 5. *ns-3-linux* (only in advanced mode) contains source of a linux kernel + some glue code for DCE / Kernel communication.
+
+ 6. *iproute2-2.6.33* (only in advanced mode) contains source of *ip* tool needed to be compiled for DCE in order to configure ip routes of the slave kernel used by DCE.
 
 Setting Environnement
 *********************
 
-In order to have the good paths you should call the setenv.sh script in order to setup env variables (PATH LD_LIBRARY_PATH and PKG_CONFIG_PATH):
+In order to have the good paths you should call the setenv.sh script in order to setup env variables (PATH, LD_LIBRARY_PATH and PKG_CONFIG_PATH):
 
 ::
 
@@ -155,37 +185,84 @@ As you have already set the environnement you can launch this simulation from an
   $ ls -lR files-0
     files-0:
     total 4
-    drwxr-x--- 3 furbani planete 4096 Jun 30 17:25 var
+    drwxr-x--- 3 furbani planete 4096 Sep  2 17:02 var
 
     files-0/var:
     total 4
-    drwxr-x--- 4 furbani planete 4096 Jun 30 17:25 log
+    drwxr-x--- 4 furbani planete 4096 Sep  2 17:02 log
 
     files-0/var/log:
     total 8
-    drwxr-x--- 2 furbani planete 4096 Jun 30 17:25 53512
-    drwxr-x--- 2 furbani planete 4096 Jun 30 17:25 53513
- 
+    drwxr-x--- 2 furbani planete 4096 Sep  2 17:02 53512
+    drwxr-x--- 2 furbani planete 4096 Sep  2 17:02 53513
+
     files-0/var/log/53512:
-    total 8
-    -rw------- 1 furbani planete 12 Jun 30 17:25 cmdline
-    -rw------- 1 furbani planete  0 Jun 30 17:25 stderr
-    -rw------- 1 furbani planete 21 Jun 30 17:26 stdout
+    total 12
+    -rw------- 1 furbani planete  12 Sep  2 17:02 cmdline
+    -rw------- 1 furbani planete 185 Sep  2 17:02 status
+    -rw------- 1 furbani planete   0 Sep  2 17:02 stderr
+    -rw------- 1 furbani planete  21 Sep  2 17:02 stdout
 
     files-0/var/log/53513:
-    total 8
-    -rw------- 1 furbani planete 22 Jun 30 17:25 cmdline
-    -rw------- 1 furbani planete  0 Jun 30 17:25 stderr
-    -rw------- 1 furbani planete 22 Jun 30 17:26 stdout
+    total 12
+    -rw------- 1 furbani planete  22 Sep  2 17:02 cmdline
+    -rw------- 1 furbani planete 185 Sep  2 17:02 status
+    -rw------- 1 furbani planete   0 Sep  2 17:02 stderr
+    -rw------- 1 furbani planete  22 Sep  2 17:02 stdout
 
 This simulation produce two directories, the content of elf-cache is not important now for us, but files-0 is.
-files-0 contains the files tree of the first node, it also contains the result files of the dce applications launched on this node. So in the directory /var/log there is some directories named with the virtual pid of corresponding DCE applications. Under these directories there is always 3 files:
+files-0 contains the files tree of the first node, it also contains the result files of the dce applications launched on this node. So in the directory /var/log there is some directories named with the virtual pid of corresponding DCE applications. Under these directories there is always 4 files:
 
-  1. cmdline : which contains the command line of the corresponding DCE application, in order to help you to retrieve wath is it,
+  1. cmdline : which contains the command line of the corresponding DCE application, in order to help you to retrieve what is it,
   2. stdout: contains the stdout produced by the execution of the corresponding application,
   3. stderr: contains the stderr produced by the execution of the corresponding application.
-
+  4. status: contains a status of the corresponding process with the start time of it and if exists the end time with the exit code.
+              
 You may also create files-xx directories before launching your simulation, and you may also provides some files needed by your applications under these directories.
+
+Sample DCE LINUX
+################
+
+This sample show how to use DCE in advanced mode, with a linux kernel IP stack.
+It uses also the binaries *udp-server* and *udp-client* like the above sample, there is also *tcp-server* and *tcp-client* if you choose the reliable transport option.
+Two other binaries are required the linux kernel stack named *libnet-next-2.6.so* and the tool needed to configure this kernel stack named *ip*.
+This example simulates an exchange of data between too nodes, using TCP or UDP, and the nodes are linked by one of three possible links , Wifi, Point 2 point or CSMA.
+The main executable is named *dce-linux*, it cames with too options:
+
+  1. linkType allow to choose the link type between c, w or p for Csma, Wifi or Point 2 point,
+  2. reliable allow to choose transport between TCP (1) or UDP (0).
+
+The following code snippet show how to enable DCE advanced mode (you can see it in the source file dce-linux.cc under example directory):
+
+::
+
+  DceManagerHelper processManager;
+ // processManager.SetLoader ("ns3::DlmLoaderFactory");
+  processManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("libnet-next-2.6.so"));
+  processManager.Install (nodes);
+
+  for (int n=0; n < 2; n++)
+    {
+      AddAddress (nodes.Get (n), Seconds (0.1), "sim0", "10.0.0.", 2 + n, "/8" );
+      RunIp (nodes.Get (n), Seconds (0.11), ( 'p' == linkType )? "link set sim0 up arp off":"link set sim0 up arp on");
+      RunIp (nodes.Get (n), Seconds (0.2), "link show");
+      RunIp (nodes.Get (n), Seconds (0.3), "route show table all");
+      RunIp (nodes.Get (n), Seconds (0.4), "addr list");
+    }
+
+The first important call is *SetNetworkStack* used to indicate which file contains the linux kernel stack.
+Then in the for loop we setup on each nodes the networks interfaces using the ip executable to configure the kernel stack.
+Because this source code factorizes some call, it is not very readeable so below there is the corresponding calls to ip executable with the arguments:
+
+::
+
+   ip -f inet addr add 10.0.0.2 dev sim0        // set the ip adresse of the first (sim0) net device of the corresponding node
+   ip link set sim0 up arp on                   // enable the use of the device use arp off instead for P2P link
+   ip link show
+   ip route show table all
+   ip addr list
+
+
 
 CCNx samples
 ############
@@ -196,8 +273,8 @@ CCNx setup
 ==========
 
 In order to run ccnx binaries you must compile them with some required compilator and linker parameters.
-The principe here is to obtain Position Independent Executable. To obtain this type of exe you should use the gcc -fPIC when comiling sources, and the option -pie when linking your exe.
-For CNNx we notice that (under linux) its configure script sets by default the -fPIC option, you can check it in the generated file named conf.mk under dir ccnx.0.4.0/csrc:
+The principe here is to obtain Position Independent Executable. To obtain this type of exe you should use the gcc -fPIC when compiling sources, and the option -pie when linking your exe.
+For CNNx we notice that (under linux) its configure script sets by default the -fPIC option, you can check it in the generated file named conf.mk under directory ccnx.0.4.0/csrc:
 ::
 
   $ cat cscr/conf.mk
@@ -205,7 +282,7 @@ For CNNx we notice that (under linux) its configure script sets by default the -
   PLATCFLAGS=-fPIC
   ...
 
-Then you should send the make like this:
+Then you should start the make like this:
 
 ::
 
@@ -252,42 +329,33 @@ This simulation use multiple nodes placed in a line, each node are linked 2 by 2
 
   .. image:: images/ccnd-linear-multiple-1.png
 
-The launch script run-ccnd-linear-multiple.sh offer two option:
+The launch script run-ccnd-linear-multiple.sh offer 3 options:
 
  1. NNODES allows to choose the Number of Nodes,
  2. USE-TCP allows to use TCP or if not UDP to connect the ccnd deamons (via forwarding interrest).
-
-To see how long take the ccnget and how it change when changing node number and transport mode (upd or tcp), you may modify ccnget.c src like this :
-
-::
-
-  printf("%s: Before get time %ld\n",argv[0], time(NULL) );
-  res = ccn_get(h, name, templ, timeout_ms, resultbuf, &pcobuf, NULL, 0);
-  printf("%s: After get time %ld\n",argv[0], time(NULL) ); 
+ 3. KERN allows to use Linux IP Stack (only working in advanced mode) instead of NS3 one.
 
 for example with 200 nodes and TCP transport you should see this in the first ccnget output command:
 
 ::
 
-  $ cat files-199/var/log/30916/stdout
-  ccnget: Before get time 1207284336
-  ccnget: After get time 1207284378
+  $ cat files-199/var/log/30918/stdout
   Si tu peux lire ca ca marche !
   ...
   Si tu peux lire ca ca marche !
+
+  $ cat files-199/var/log/30918/status
+  Start Time: NS3 Time:          2s (          +2700000000.0ns) , REAL Time: 1314977630
+        Time: NS3 Time:         11s (         +11890668601.0ns) , REAL Time: 1314977632 --> Exit (0)
  
-You can see that the first get take about 42 seconds,
+You can see that the first get take about 9 seconds,
 
 now if we use UDP :
 
 ::
 
-  $ cat files-199/var/log/30916/stdout
-  ccnget: Before get time 1207284336
-  ccnget: After get time 1207284337
-  Si tu peux lire ca ca marche !
-  ...
-  Si tu peux lire ca ca marche !
+  $ cat files-199/var/log/30918/status
+
 
 In this case the first get take about 1 second. The difference between UDP and TCP is due to fact that in TCP mode it occurs 199 TCP connections. Notice also that in this configuration there is no UDP packet lost, but it is possible to ask NS3 to simulate some sort of packet lost behavior.
 

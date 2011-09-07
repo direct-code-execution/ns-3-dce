@@ -178,5 +178,5 @@ int dce_getnameinfo (const struct sockaddr *sa, socklen_t salen, char *host,
       return EAI_FAMILY;
   }
 
-  return 0; // XXX : tricheur
+  return 0; // XXX : cheater
 }
