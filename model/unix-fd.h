@@ -53,10 +53,21 @@ public:
   virtual bool HangupReceived (void) const = 0;
 
   // File Descriptor Reference count
-  void IncRef (void);
-  void DecRef (void);
-  int32_t GetRef (void) const;
-
+  // Increment Fd Usage
+  inline void FdUsageInc ()
+  {
+    m_useCount++;
+  }
+  // Decrement Fd Usage
+  inline void FdUsageDec (void)
+  {
+    m_useCount--;
+  }
+  // Get Usage count of FD.
+  inline int32_t GetFdUsageCount (void) const
+  {
+    return m_useCount;
+  }
 
 protected:
   UnixFd ();
@@ -65,7 +76,7 @@ protected:
 private:
   Waiter *m_recvWaiter;
   Waiter *m_sendWaiter;
-  int32_t m_refCount;
+  int32_t m_useCount;
 };
 
 } // namespace ns3

@@ -161,8 +161,8 @@ int dce_close (int fd)
   current->process->openFiles[index].second = 0;
   current->process->openFiles[index].first = -1;
   int retval = 0;
-  unixFd->DecRef ();
-  if (unixFd->GetRef () <= 0)
+  unixFd->FdUsageDec ();
+  if (unixFd->GetFdUsageCount () <= 0)
     {
       // Note to the attentive reader: the logical and clean way to handle this call
       // to Close would be to move it to the UnixFd destructor and make the Close method
@@ -933,7 +933,7 @@ int dce_dup(int oldfd)
     }
   UnixFd *unixFd = current->process->openFiles[index].second;
   unixFd->Ref ();
-  unixFd->IncRef ();
+  unixFd->FdUsageInc ();
   current->process->openFiles.push_back (std::make_pair (fd, unixFd));
   return fd;
 }
@@ -955,7 +955,7 @@ int dce_dup2(int oldfd, int newfd)
     }
   UnixFd *unixFd = current->process->openFiles[index].second;
   unixFd->Ref ();
-  unixFd->IncRef ();
+  unixFd->FdUsageInc ();
   current->process->openFiles.push_back (std::make_pair (newfd, unixFd));
   return newfd;
 }

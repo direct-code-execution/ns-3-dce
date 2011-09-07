@@ -544,7 +544,7 @@ DceManager::Clone (Thread *thread)
     {
       std::pair<int,UnixFd*> i = thread->process->openFiles[index];
       i.second->Ref ();
-      i.second->IncRef ();
+      i.second->FdUsageInc ();
       clone->openFiles.push_back (i);
     }
   // don't copy threads, semaphores, mutexes, condition vars
@@ -722,8 +722,8 @@ DceManager::DeleteProcess (struct Process *process, int type)
 
       if ( 0 != freeOne )
         {
-          freeOne->DecRef();
-          if ( freeOne->GetRef() == 0 )
+          freeOne->FdUsageDec();
+          if ( freeOne->GetFdUsageCount() == 0 )
             {
               freeOne->Dispose();
             }
@@ -1024,7 +1024,7 @@ DceManager::DoExec (void *context)
       if ( ( (i->first) >= 0 ) && (  (i->first) < 3 ) )
       {
           cpt++;
-          i->second->IncRef ();
+          i->second->FdUsageInc ();
           i->second->Ref ();
           current->process->openFiles.push_back (std::make_pair( i->first, i->second ) );
           if ( cpt >= 3 ) { break; }
