@@ -33,8 +33,8 @@ UnixSocketFd::UnixSocketFd (Ptr<Socket> socket)
     m_recvTimeout (Seconds (0.0)),
     m_statusFlags (0)
 {
-  m_socket->SetAttributeFailSafe ("SndBufSize", UintegerValue (4096));
-  m_socket->SetAttributeFailSafe ("RcvBufSize", UintegerValue (4096));
+  m_socket->SetAttributeFailSafe ("SndBufSize", UintegerValue (126976));
+  m_socket->SetAttributeFailSafe ("RcvBufSize", UintegerValue (126976));
   m_socket->SetRecvCallback (MakeCallback (&UnixSocketFd::RecvSocketData, this));
   m_socket->SetSendCallback (MakeCallback (&UnixSocketFd::SendSocketData, this));
 }
@@ -505,6 +505,7 @@ UnixSocketFd::Ns3AddressToPosixAddress(const Address& nsaddr,
     }
   return 0;
 }
+#ifdef NEW_PACKET_SOCKET
 int 
 UnixSocketFd::Ns3AddressToDeviceIndependantPhysicalLayerAddress (const Address& nsaddr, const Packet& pac,
                                                                  struct sockaddr_ll *addr, socklen_t *addrlen) const
@@ -564,6 +565,7 @@ UnixSocketFd::Ns3AddressToDeviceIndependantPhysicalLayerAddress (const Address& 
       }
   return 0;
 }
+#endif
 
 int
 UnixSocketFd::Bind (const struct sockaddr *my_addr, socklen_t addrlen)
