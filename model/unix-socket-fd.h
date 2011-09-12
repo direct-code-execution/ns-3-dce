@@ -59,8 +59,10 @@ protected:
   Address PosixAddressToNs3Address (const struct sockaddr *my_addr, socklen_t addrlen) const;
   int Ns3AddressToPosixAddress (const Address& nsaddr,
 			        struct sockaddr *addr, socklen_t *addrlen) const;
+#ifdef NEW_PACKET_SOCKET
   int Ns3AddressToDeviceIndependantPhysicalLayerAddress (const Address& nsaddr, const Packet& pac,
                                                          struct sockaddr_ll *addr, socklen_t *addrlen) const;
+#endif
   bool WaitRecvDoSignal (bool blocking);
   Time GetRecvTimeout (void);
   Time GetSendTimeout (void);

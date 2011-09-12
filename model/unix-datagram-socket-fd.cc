@@ -164,6 +164,7 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
     }
   if ((PacketSocketAddress::IsMatchingType(from)))
     {
+#ifdef NEW_PACKET_SOCKET
       if ( msg->msg_namelen < sizeof (sockaddr_ll) )
         {
           current->err = EINVAL;
@@ -196,15 +197,15 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
             }
         }
       memcpy (buf+12, &(((struct sockaddr_ll *)msg->msg_name)->sll_protocol) , 2);
+#endif
     }
   else
     {
       Ns3AddressToPosixAddress (from, (struct sockaddr*)msg->msg_name, &msg->msg_namelen);
-
       // XXX: we ignore MSG_TRUNC for the return value.
       NS_ASSERT (packet->GetSize ()  <= count);
-
       l = packet->CopyData (buf, count);
+      NS_ASSERT ( l == count );
     }
 
   return l;

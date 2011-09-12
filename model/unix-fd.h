@@ -11,6 +11,7 @@ namespace ns3 {
 
 class Waiter;
 
+// This class heritate from Object for Dispose and Reference Counting features.
 class UnixFd: public Object
 {
 public:
