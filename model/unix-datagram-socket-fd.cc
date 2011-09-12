@@ -205,7 +205,7 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
       // XXX: we ignore MSG_TRUNC for the return value.
       NS_ASSERT (packet->GetSize ()  <= count);
       l = packet->CopyData (buf, count);
-      NS_ASSERT ( l == count );
+      NS_ASSERT ( l == packet->GetSize () );
     }
 
   return l;

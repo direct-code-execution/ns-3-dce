@@ -207,6 +207,10 @@ def build_dce_examples(module):
                        target='bin/dce-ccnd-linear-multiple',
                        source=['example/ccnx/dce-ccnd-linear-multiple.cc', 'example/ccnx/misc-tools.cc'])
                        
+    module.add_example(needed = ['core', 'internet', 'dce', 'tap-bridge', 'csma' ], 
+                       target='bin/dce-tap-vlc',
+                       source=['example/ccnx/dce-tap-vlc.cc'])       
+
 def build_dce_kernel_examples(module):
     module.add_example(needed = ['core', 'network', 'dce'], 
                        target='bin/dce-linux-simple',
