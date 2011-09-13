@@ -27,6 +27,33 @@ NS_LOG_COMPONENT_DEFINE("LinuxSocketFdFactory");
 
 namespace ns3 {
 
+// Sadly NetDevice Callback add by method AddLinkChangeCallback take no parameters ..
+// .. so we need to create the following class to link NetDevice and LinuxSocketFdFactory together
+// in order to do Warn the factory about which NetDevice is changing .
+class LinuxDeviceStateListener : public SimpleRefCount<LinuxDeviceStateListener>
+{
+public:
+  LinuxDeviceStateListener(Ptr<NetDevice>, Ptr<LinuxSocketFdFactory>);
+
+  void NotifyDeviceStateChange ();
+
+private:
+  Ptr<NetDevice> m_netDevice;
+  Ptr<LinuxSocketFdFactory> m_factory;
+};
+
+LinuxDeviceStateListener::LinuxDeviceStateListener(Ptr<NetDevice> d,
+    Ptr<LinuxSocketFdFactory> f):
+    m_netDevice(d), m_factory(f)
+{
+}
+
+void
+LinuxDeviceStateListener::NotifyDeviceStateChange ()
+{
+  m_factory->NotifyDeviceStateChange (m_netDevice);
+}
+
 NS_OBJECT_ENSURE_REGISTERED(LinuxSocketFdFactory);
 
 TypeId 
@@ -79,6 +106,7 @@ LinuxSocketFdFactory::DoDispose (void)
     }
   m_kernelTasks.clear ();
   m_manager = 0;
+  m_listeners.clear ();
 }
 
 int 
@@ -315,6 +343,7 @@ LinuxSocketFdFactory::NotifyDeviceStateChange (Ptr<NetDevice> device)
 void
 LinuxSocketFdFactory::NotifyDeviceStateChangeTask (Ptr<NetDevice> device)
 {
+  NS_LOG_FUNCTION (device);
   struct SimDevice *dev = DevToDev (device);
   if (dev == 0)
     {
@@ -358,6 +387,7 @@ LinuxSocketFdFactory::NotifyAddDevice (Ptr<NetDevice> device)
 void
 LinuxSocketFdFactory::NotifyAddDeviceTask (Ptr<NetDevice> device)
 {
+  NS_LOG_FUNCTION (device);
   int flags = 0;
   //NS_ASSERT (!device->IsPointToPoint ());
   //NS_ASSERT (device->NeedsArp ());
@@ -372,7 +402,11 @@ LinuxSocketFdFactory::NotifyAddDeviceTask (Ptr<NetDevice> device)
       flags |= SIM_DEV_BROADCAST;
     }
   struct SimDevice *dev = m_exported->dev_create(PeekPointer(device), (enum SimDevFlags)flags);
-// WAIT FOR NS3 NetDevice API XXX  device->AddStateChangeListener (MakeCallback (&LinuxSocketFdFactory::NotifyDeviceStateChange, this));
+
+  Ptr<LinuxDeviceStateListener> listener = Create <LinuxDeviceStateListener> (device, this);
+  m_listeners.push_back (listener);
+  device->AddLinkChangeCallback (MakeCallback (&LinuxDeviceStateListener::NotifyDeviceStateChange, listener));
+
   m_devices.push_back (std::make_pair(device,dev));
   Ptr<Node> node = GetObject<Node> ();
   node->RegisterProtocolHandler (MakeCallback (&LinuxSocketFdFactory::RxFromDevice, this), 
@@ -480,7 +514,7 @@ LinuxSocketFdFactory::InitializeStack (void)
 
   // update the linux device list with simulation device list
   Ptr<Node> node = GetObject<Node> ();
-  node->RegisterDeviceAdditionListener (MakeCallback (&LinuxSocketFdFactory::NotifyAddDevice, 
+  node->RegisterDeviceAdditionListener (MakeCallback (&LinuxSocketFdFactory::NotifyAddDevice,
 						      this));
   Set (".net.ipv4.conf.all.forwarding", "1");
   Set (".net.ipv4.conf.all.log_martians", "1");

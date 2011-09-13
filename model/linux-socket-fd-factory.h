@@ -30,6 +30,7 @@ class NetDevice;
 class Task;
 class TaskManager;
 class Packet;
+class LinuxDeviceStateListener;
 
 class LinuxSocketFdFactory : public SocketFdFactory
 {
@@ -45,6 +46,7 @@ public:
 
 private:
   friend class LinuxSocketFd;
+  friend class LinuxDeviceStateListener;
   struct EventIdHolder : public SimpleRefCount<EventIdHolder>
   {
     EventId id;
@@ -127,6 +129,7 @@ private:
   KingsleyAlloc *m_alloc;
   FILE *m_logFile;
   std::list<std::pair<std::string,std::string> > m_earlySysfs;
+  std::vector<Ptr<LinuxDeviceStateListener > > m_listeners;
 };
 
 } // namespace ns3
