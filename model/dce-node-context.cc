@@ -83,7 +83,7 @@ DceNodeContext::UName (struct utsname *buf)
       m_sysName = nn +"'s OS";
       m_nodeName = nn;
       m_release = "3"; // XXX
-      m_version = "11"; // XXX
+      m_version = "12"; // XXX
       oss << nodeId;
       m_hardId = oss.str ();
     }
@@ -107,14 +107,7 @@ DceNodeContext::GetNodeContext ()
   DceManager *manager = current->process->manager;
   NS_ASSERT (manager != 0);
 
-  Ptr<DceNodeContext> nodeContext = manager->GetObject<DceNodeContext> ();
-
-  if ( 0 == nodeContext )
-    {
-      nodeContext = CreateObject<DceNodeContext> ();
-      manager->AggregateObject( nodeContext );
-    }
-  return nodeContext;
+  return manager->GetObject<DceNodeContext> ();
 }
 
 int

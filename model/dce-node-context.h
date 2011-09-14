@@ -54,8 +54,6 @@ public:
 
   int RandomRead (void *buf, size_t count);
 
-
-
 private:
   inline uint8_t GetNextRnd ();
 

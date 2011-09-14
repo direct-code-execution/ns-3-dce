@@ -1,6 +1,7 @@
 #include "dce-manager-helper.h"
 #include "dce-manager.h"
 #include "socket-fd-factory.h"
+#include "local-socket-fd-factory.h"
 #include "task-scheduler.h"
 #include "task-manager.h"
 #include "loader-factory.h"
@@ -8,6 +9,7 @@
 #include "ns3/uinteger.h"
 #include "ns3/string.h"
 #include "ns3/config.h"
+#include "dce-node-context.h"
 //#include "ns3/attribute-list.h"
 
 namespace ns3 {
@@ -84,6 +86,7 @@ DceManagerHelper::Install (NodeContainer nodes)
       Ptr<TaskScheduler> scheduler = m_schedulerFactory.Create<TaskScheduler> ();
       Ptr<LoaderFactory> loader = m_loaderFactory.Create<LoaderFactory> ();
       Ptr<SocketFdFactory> networkStack = m_networkStackFactory.Create<SocketFdFactory> ();
+
       taskManager->SetScheduler (scheduler);
       manager->SetAttribute ("FirstPid", UintegerValue (g_firstPid.GetInteger (0, 0xffff)));
       Ptr<Node> node = *i;
@@ -91,6 +94,8 @@ DceManagerHelper::Install (NodeContainer nodes)
       node->AggregateObject (loader);
       node->AggregateObject (manager);
       node->AggregateObject (networkStack);
+      node->AggregateObject (CreateObject<LocalSocketFdFactory> ());
+      manager->AggregateObject( CreateObject<DceNodeContext> () );
     }
 }
 

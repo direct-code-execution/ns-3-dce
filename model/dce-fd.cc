@@ -699,17 +699,12 @@ int dce_socket (int domain, int type, int protocol)
     }
   else
     {
-      factory = manager->GetObject<LocalSocketFdFactory> ();
-      if (0 == factory)
-        {
-          factory = CreateObject<LocalSocketFdFactory> ();
-          manager->AggregateObject(factory);
-        }
       if ( type != SOCK_DGRAM && type != SOCK_STREAM )
         {
           current->err = EINVAL;
           return -1;
         }
+      factory = manager->GetObject<LocalSocketFdFactory> ();
     }
 
   int fd = UtilsAllocateFd ();
