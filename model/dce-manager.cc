@@ -76,7 +76,9 @@ DceManager::GetTypeId (void)
                    UintegerValue (1),
                    MakeUintegerAccessor (&DceManager::m_nextPid),
                    MakeUintegerChecker<uint16_t> ())
-    .AddAttribute ("MinimizeOpenFiles", "Indicates whether stdout and stderr should be opened only while writting in.",
+    .AddAttribute ("MinimizeOpenFiles", "For each DCE virtual process running it exists 3 files opened (stdin,stdout and stderr),"
+        " if you enable this flag, the 2 files stderr and stdout will be closed between each write in order to "
+        " minimize the number of opened files and then maximize the number of DCE virtual process running at the same time.",
                    BooleanValue (false),
                    MakeBooleanAccessor (&DceManager::m_minimizeFiles),
                    MakeBooleanChecker ())
