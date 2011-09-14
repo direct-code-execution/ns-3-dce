@@ -17,8 +17,8 @@ mode_t dce_umask(mode_t mask)
 
   mode_t omask;
   mask &= 0777;
-  omask = current->process->hurd_mask;
-  current->process->hurd_mask = mask;
+  omask = current->process->uMask;
+  current->process->uMask = mask;
 
   return omask;
 }

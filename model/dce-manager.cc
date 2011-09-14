@@ -331,7 +331,7 @@ DceManager::CreateProcess (std::string name, std::string stdinfilename, std::vec
   process->pstderr = 0;
   process->penvp = 0;
 
-  process->hurd_mask = 022;
+  process->uMask = 022;
 
   process->stdinFilename = stdinfilename;
 

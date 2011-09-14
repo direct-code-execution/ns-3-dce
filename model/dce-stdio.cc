@@ -213,7 +213,7 @@ FILE *dce_fopen(const char *path, const char *mode)
       current->err = EINVAL;
       return 0;
     }
-  int fd = dce_open (path, mode_posix_flags (mode), 0666 & ~ (current->process->hurd_mask) );
+  int fd = dce_open (path, mode_posix_flags (mode), 0666 & ~ (current->process->uMask) );
   if (fd == -1)
     {
       current->err = errno;

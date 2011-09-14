@@ -162,7 +162,7 @@ struct Process
   // srand48 seed
   struct drand48_data seed48Current;
   // Current umask
-  mode_t hurd_mask;
+  mode_t uMask;
 };
 
 struct ThreadKeyValue

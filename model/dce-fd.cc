@@ -139,7 +139,7 @@ int dce_unlink (const char *pathname)
 }
 int dce_mkdir(const char *pathname, mode_t mode)
 {
-  mode_t m =  (mode & ~(Current ()->process->hurd_mask ));
+  mode_t m =  (mode & ~(Current ()->process->uMask ));
   DEFINE_FORWARDER_PATH (mkdir, pathname, m ) ;
 }
 int dce_rmdir(const char *pathname)
