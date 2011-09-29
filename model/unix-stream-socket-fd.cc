@@ -2,13 +2,14 @@
 #include "utils.h"
 #include "process.h"
 #include "dce-manager.h"
-#include "waiter.h"
 #include "ns3/log.h"
 #include "ns3/socket.h"
 #include "ns3/packet.h"
 #include <errno.h>
 #include <algorithm>
 #include "ns3/socket-factory.h"
+#include <poll.h>
+#include "file-usage.h"
 
 NS_LOG_COMPONENT_DEFINE ("UnixStreamSocketFd");
 
@@ -31,12 +32,7 @@ UnixStreamSocketFd::UnixStreamSocketFd (Ptr<Socket> sock, bool connected)
 
 UnixStreamSocketFd::~UnixStreamSocketFd (void)
 {
-  NS_LOG_FUNCTION (this << m_socket);
-  if ( 0 != m_peerAddress )
-    {
-      delete (m_peerAddress);
-      m_peerAddress = 0;
-    }
+  SetPeerAddress (0);
   ClearSocket();
 }
 
@@ -62,6 +58,9 @@ UnixStreamSocketFd::DoRecvmsg(struct msghdr *msg, int flags)
       }
 
     case CONNECTED: break;
+
+    case CLOSING:
+      return 0;
 
     case REMOTECLOSED:
     case CLOSED:
@@ -112,103 +111,107 @@ UnixStreamSocketFd::DoSendmsg(const struct msghdr *msg, int flags)
       current->err = EISCONN;
       return -1;
     }
+  WaitQueueEntryTimeout *wq = 0;
 
-  Waiter waiter;
-  waiter.SetTimeout (GetSendTimeout ());
   ssize_t retval = 0;
   for (uint32_t i = 0; i < msg->msg_iovlen; ++i)
     {
       uint8_t *buf = (uint8_t *)msg->msg_iov[i].iov_base;
       ssize_t len = msg->msg_iov[i].iov_len;
       while (len > 0)
-	{
-	  while ( m_socket->GetTxAvailable () == 0)
-	    {
-	      if ( flags & MSG_DONTWAIT )
-	        {
+        {
+          while ( m_socket->GetTxAvailable () == 0)
+            {
+              if ( flags & MSG_DONTWAIT )
+                {
                   if (retval != 0)
-                  {
-                    // this is a short write
-                    return retval;
-                  }
-                else
-                  {
-                    current->err =  EAGAIN;
-                    return -1;
-                  }
-	        }
+                    {
+                      // this is a short write
+                      RETURNFREE (retval);
+                    }
+                  else
+                    {
+                      current->err =  EAGAIN;
+                      RETURNFREE (-1);
+                    }
+                }
 
-	      if ( CONNECTED != m_state )
-	        {
+              if ( CONNECTED != m_state )
+                {
                   if (retval != 0)
-                  {
-                    // this is a short write
-                    return retval;
-                  }
-                else
-                  {
-                    current->err = ENOTCONN;
-                    return -1;
-                  }
-	        }
+                    {
+                      // this is a short write
+                      RETURNFREE (retval);
+                    }
+                  else
+                    {
+                      current->err = ENOTCONN;
+                      RETURNFREE (-1);
+                    }
+                }
 
-	      SetSendWaiter (&waiter);
-	      Waiter::Result result = waiter.Wait ();
-	      SetSendWaiter (0);
-	      switch (result) {
-	      case Waiter::OK:
-		break;
-	      case Waiter::INTERRUPTED:
-		if (retval != 0)
-		  {
-		    // this is a short write
-		    return retval;
-		  }
-		else
-		  {
-		    UtilsDoSignal ();
-		    current->err = EINTR;
-		    return -1;
-		  }
-		break;
-	      case Waiter::TIMEOUT:
-		if (retval != 0)
-		  {
-		    // this is a short write
-		    return retval;
-		  }
-		else
-		  {
-                    current->err = EAGAIN;
-                    return -1;
-		  }
-		break;
-	      }
-	    }
-	  ssize_t availLen = std::min (len, (ssize_t)m_socket->GetTxAvailable ());
-	  Ptr<Packet> packet = Create<Packet> (buf, availLen);
-	  int result;
-	  result = m_socket->Send (packet, 0);
-	  if (result == -1)
-	    {
-	      if (retval != 0)
-		{
-		  // this is a short write
-		  return retval;
-		}
-	      else
-		{
-		  current->err = ErrnoToSimuErrno ();
-		  return -1;
-		}
-	    }
-	  NS_ASSERT (result == availLen);
-	  len -= result;
-	  buf += result;
-	  retval += result;
-	}
+              if (!wq)
+                {
+                  wq = new WaitQueueEntryTimeout (POLLOUT | POLLHUP, GetSendTimeout ());
+                }
+              AddWaitQueue (wq, true);
+              PollTable::Result res = wq->Wait ();
+              RemoveWaitQueue ( wq ,true );
+
+              switch (res) {
+                case PollTable::OK:
+                  break;
+                case PollTable::INTERRUPTED:
+                  if (retval != 0)
+                    {
+                      // this is a short write
+                      RETURNFREE (retval);
+                    }
+                  else
+                    {
+                      UtilsDoSignal ();
+                      current->err = EINTR;
+                      RETURNFREE (-1);
+                    }
+                  break;
+                case PollTable::TIMEOUT:
+                  if (retval != 0)
+                    {
+                      // this is a short write
+                      RETURNFREE (retval);
+                    }
+                  else
+                    {
+                      current->err = EAGAIN;
+                      RETURNFREE (-1);
+                    }
+                  break;
+              }
+            }
+          ssize_t availLen = std::min (len, (ssize_t)m_socket->GetTxAvailable ());
+          Ptr<Packet> packet = Create<Packet> (buf, availLen);
+          int result;
+          result = m_socket->Send (packet, 0);
+          if (result == -1)
+            {
+              if (retval != 0)
+                {
+                  // this is a short write
+                  RETURNFREE (retval);
+                }
+              else
+                {
+                  current->err = ErrnoToSimuErrno ();
+                  RETURNFREE (-1);
+                }
+            }
+          NS_ASSERT (result == availLen);
+          len -= result;
+          buf += result;
+          retval += result;
+        }
     }
-  return retval;
+  RETURNFREE (retval);
 }
 int 
 UnixStreamSocketFd::Listen (int backlog)
@@ -234,30 +237,34 @@ UnixStreamSocketFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
   NS_LOG_FUNCTION (this << current << my_addr << addrlen << GetRecvTimeout () );
   NS_ASSERT (current != 0);
 
+  WaitQueueEntryTimeout *wq = 0;
+
   while (m_connectionQueue.empty ())
     {
-      Waiter waiter;
-      SetRecvWaiter (&waiter);
-      waiter.SetTimeout (GetRecvTimeout ());
+      if (!wq)
+        {
+          wq = new WaitQueueEntryTimeout (POLLIN | POLLHUP, GetRecvTimeout ());
+        }
+      AddWaitQueue (wq, true);
       NS_LOG_DEBUG("Accept: waiting ...");
-      Waiter::Result result = waiter.Wait ();
-      NS_LOG_DEBUG("Accept: wait result:" << result);
-      SetRecvWaiter (0);
+      PollTable::Result res = wq->Wait ();
+      NS_LOG_DEBUG("Accept: wait result:" << res);
+      RemoveWaitQueue ( wq , true);
 
-      switch (result)
+      switch (res)
       {
-        case Waiter::OK:
+        case PollTable::OK:
           break;
-        case Waiter::INTERRUPTED:
+        case PollTable::INTERRUPTED:
           {
             UtilsDoSignal ();
             current->err = EINTR;
-            return -1;
+            RETURNFREE (-1);
           }
-        case Waiter::TIMEOUT:
+        case PollTable::TIMEOUT:
           {
             current->err = EAGAIN;
-            return -1;
+            RETURNFREE (-1);
           }
       }
     }
@@ -267,7 +274,7 @@ UnixStreamSocketFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
   if (fd == -1)
     {
       current->err = EMFILE;
-      return -1;
+      RETURNFREE (-1);
     }
 
   Ptr<Socket> sock = m_connectionQueue.front ().first;
@@ -275,15 +282,17 @@ UnixStreamSocketFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
   m_connectionQueue.pop_front ();
   UnixStreamSocketFd *socket = new UnixStreamSocketFd (sock, true);
   Ns3AddressToPosixAddress (ad, my_addr, addrlen);
-  socket->m_peerAddress = new Address (ad);
+  socket->SetPeerAddress (new Address (ad));
+  socket->IncFdCount ();
+  current->process->openFiles[fd] = new FileUsage (fd, socket);
 
-  current->process->openFiles.push_back (std::make_pair (fd, socket));
-  return fd;
+  RETURNFREE (fd);
 }
 bool 
 UnixStreamSocketFd::CanRecv (void) const
 {
   bool ret = 0;
+  uint32_t rx = 0;
 
   if ( 0 == m_socket ) ret = 0;
   else
@@ -295,15 +304,16 @@ UnixStreamSocketFd::CanRecv (void) const
         case CONNECTING : ret = 0; break;
         case CONNECTED : ret = ( m_socket->GetRxAvailable () > 0 ); break;
 
+        case CLOSING:
         case REMOTECLOSED :
         case CLOSED : ret = 1; break;
 
         default: ret = 0;
         break;
       }
+      rx = m_socket->GetRxAvailable ();
     }
-
-  NS_LOG_FUNCTION ( m_socket << m_state <<  m_socket->GetRxAvailable () << m_connectionQueue.empty () << " ret " << ret );
+  NS_LOG_FUNCTION ( m_socket << m_state << rx << m_connectionQueue.empty () << " ret " << ret );
 
   return ret;
 }
@@ -324,13 +334,15 @@ UnixStreamSocketFd::ConnectionRequest (Ptr<Socket> sock, const Address & from)
 
   return ((int)m_connectionQueue.size ()) < m_backlog;
 }
-void 
+void
 UnixStreamSocketFd::ConnectionCreated (Ptr<Socket> sock, const Address & from)
 {
   NS_LOG_FUNCTION (sock << from);
   NS_ASSERT (((int)m_connectionQueue.size ()) < m_backlog);
   m_connectionQueue.push_back (std::make_pair (sock, from));
-  WakeupRecv ();
+
+  int pi = POLLIN;
+  WakeWaiters (&pi);
 }
 int 
 UnixStreamSocketFd::Shutdown (int how)
@@ -376,10 +388,11 @@ UnixStreamSocketFd::ConnectionSuccess (Ptr<Socket> sock)
       Address ad;
       if ( 0 == sock->GetSockName (ad))
         {
-          m_peerAddress = new Address (ad);
+          SetPeerAddress ( new Address (ad) );
         }
     }
-  WakeupRecv ();
+  int pi = POLLIN;
+  WakeWaiters (&pi);
 }
 void
 UnixStreamSocketFd::ConnectionError(Ptr<Socket> sock)
@@ -389,20 +402,24 @@ UnixStreamSocketFd::ConnectionError(Ptr<Socket> sock)
     {
       m_state = CREATED;
     }
-  WakeupRecv ();
+  int pi = POLLHUP;
+  WakeWaiters (&pi);
 }
 void
 UnixStreamSocketFd::CloseSuccess (Ptr<Socket> sock)
 {
   NS_LOG_FUNCTION (this << m_state);
-  m_state = CLOSED;
-  if ( 0 != m_peerAddress )
+  if (CLOSING == m_state)
     {
-      delete ( m_peerAddress );
-      m_peerAddress = 0;
+      m_state = CLOSED;
     }
-  WakeupRecv ();
-  WakeupSend ();
+  else
+    {
+      m_state = REMOTECLOSED;
+      int pi = POLLHUP;
+      WakeWaiters (&pi);
+    }
+  SetPeerAddress (0);
 }
 void
 UnixStreamSocketFd::CloseError(Ptr<Socket> sock)
@@ -449,46 +466,48 @@ UnixStreamSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
 
   if (0 == sup) {
       sup = -1;
-      Waiter waiter;
+      WaitQueueEntryTimeout *wq = new WaitQueueEntryTimeout (POLLIN | POLLHUP, GetRecvTimeout ());
 
       while ( CONNECTING == m_state )
         {
-          SetRecvWaiter (&waiter);
-          waiter.SetTimeout (GetRecvTimeout ());
-          Waiter::Result result = waiter.Wait ();
-          NS_LOG_DEBUG("Connect: wait result:" << result);
-          SetRecvWaiter (0);
+          AddWaitQueue (wq, true);
+          NS_LOG_DEBUG("Connect: waiting ...");
+          PollTable::Result res = wq->Wait ();
+          NS_LOG_DEBUG("Connect: wait result:" << res);
+          RemoveWaitQueue ( wq , true);
 
-          switch (result)
+          switch (res)
           {
-            case Waiter::OK:
+            case PollTable::OK:
               break;
-            case Waiter::INTERRUPTED:
+            case PollTable::INTERRUPTED:
               {
                 UtilsDoSignal ();
                 current->err = EINTR;
-                return -1;
+                RETURNFREE (-1);
               }
-            case Waiter::TIMEOUT:
+            case PollTable::TIMEOUT:
               {
                 current->err = EAGAIN;
-                return -1;
+                RETURNFREE (-1);
               }
           }
         }
+      delete wq;
+      wq = 0;
   }
   if (CONNECTED == m_state)
     {
       sup = 0;
       Address ad = PosixAddressToNs3Address( my_addr, addrlen);
 
-      m_peerAddress = new Address (ad);
+      SetPeerAddress( new Address (ad) );
     }
   else
     {
       sup = -1;
 
-      if (m_state == CLOSED)
+      if ((m_state == CLOSED)||(REMOTECLOSED==m_state))
         {
           Current () -> err = ECONNREFUSED;
         }
@@ -513,5 +532,57 @@ UnixStreamSocketFd::Getpeername(struct sockaddr *name, socklen_t *namelen)
   current->err = ENOTCONN;
   return -1;
 }
+int
+UnixStreamSocketFd::Poll (PollTable* ptable)
+{
+  int ret = 0;
 
+  if (CanRecv ())
+    {
+      ret |= POLLIN;
+    }
+  if (CanSend ())
+    {
+      ret |= POLLOUT;
+    }
+  if (HangupReceived() )
+    {
+      ret |= POLLHUP;
+    }
+
+  if (ptable)
+    {
+      ptable->PollWait (this);
+    }
+
+  return ret;
+}
+void
+UnixStreamSocketFd::SetPeerAddress (Address *a)
+{
+  if ( 0 != m_peerAddress )
+    {
+      delete (m_peerAddress);
+      m_peerAddress = 0;
+    }
+  m_peerAddress = a;
+}
+int
+UnixStreamSocketFd::Close (void)
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (this << current);
+  NS_ASSERT (current != 0);
+
+  if (CLOSING != m_state)
+    {
+      m_state = CLOSING;
+
+      UnixSocketFd::Close ();
+
+      return 0;
+    }
+  Current ()->err = EBADF;
+  return -1;
+}
 } // namespace ns3

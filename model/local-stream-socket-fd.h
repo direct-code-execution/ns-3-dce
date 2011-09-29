@@ -27,6 +27,7 @@
 #include "ns3/nstime.h"
 #include "ns3/object.h"
 #include "local-socket-fd.h"
+#include "wait-queue.h"
 
 namespace ns3 {
 
@@ -41,6 +42,7 @@ class Waiter;
 */
 
 class LocalSocketFdFactory;
+class WaitQueueEntryTimeout;
 
 #define LOCAL_SOCKET_MAX_BUFFER 1024 * 128
 
@@ -51,7 +53,7 @@ public:
   virtual TypeId GetInstanceTypeId (void) const;
 
   LocalStreamSocketFd (Ptr<LocalSocketFdFactory> f);
-  LocalStreamSocketFd (Ptr<LocalStreamSocketFd> peer, std::string connectPath);
+  LocalStreamSocketFd (LocalStreamSocketFd *peer, std::string connectPath);
 
   virtual ~LocalStreamSocketFd ();
 
@@ -79,6 +81,9 @@ public:
   virtual bool CanSend (void) const;
   virtual bool HangupReceived (void) const;
 
+  // ProtoPoll
+  virtual int Poll (PollTable* ptable);
+
 protected:
   virtual void ClearAll (bool andWakeUp);
   virtual bool IsClosed (void) const ;
@@ -87,9 +92,9 @@ private:
   bool InternalConnect (void);
   bool IsAccepting (void);
   bool IsListening (void);
-  void ConnectionCreated (Ptr<LocalStreamSocketFd> sock);
-  void RemoveFromQueue (Ptr<LocalStreamSocketFd> sock);
-  void SetPeer (Ptr<LocalStreamSocketFd> sock);
+  void ConnectionCreated (LocalStreamSocketFd* sock, WaitQueueEntryTimeout *wq);
+  void RemoveFromQueue (LocalStreamSocketFd* sock);
+  void SetPeer (LocalStreamSocketFd *sock);
   void PeerClosed(void);
   bool IsShutWrite (void) const;
 
@@ -104,12 +109,12 @@ private:
     REMOTECLOSED,
     CLOSED
   };
-  typedef std::list<Ptr<LocalStreamSocketFd> > FifoCnx;
+  typedef std::list<LocalStreamSocketFd* > FifoCnx;
 
   enum State m_state;
   FifoCnx m_cnxQueue;
   int m_backLog;
-  Ptr<LocalStreamSocketFd> m_peer;
+  LocalStreamSocketFd *m_peer;
 
  };
 

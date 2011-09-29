@@ -71,7 +71,7 @@ CleanupPthreadKeys (void)
 //  0: normal exit
 //  1: exec success
 //  2: exec failed.
-void dce_exit_exec (int status, int type)
+void dce_exit_exec (int status, DceManager::ProcessEndCause type)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << status);
@@ -111,7 +111,6 @@ void dce_exit_exec (int status, int type)
 
         default: break;
       }
-
       DceManager::AppendStatusFile (current->process->pid, current->process->nodeId, line);
     }
 
@@ -121,7 +120,7 @@ void dce_exit_exec (int status, int type)
 
 void dce_exit (int status)
 {
-  dce_exit_exec ( status, 0);
+  dce_exit_exec ( status, DceManager::PEC_EXIT);
 }
 
 struct PthreadStartContext

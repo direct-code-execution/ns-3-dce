@@ -27,6 +27,8 @@
 #include <sys/types.h>
 #include "ns3/node.h"
 #include "local-socket-fd-factory.h"
+#include "file-usage.h"
+#include "dce-stdlib.h"
 
 NS_LOG_COMPONENT_DEFINE ("SimuFd");
 
@@ -107,8 +109,8 @@ int dce_open (const char *path, int flags, mode_t mode)
           unixFd = new UnixFileFd (realFd);
         }
     }
-
-  current->process->openFiles.push_back (std::make_pair(fd,unixFd));
+  unixFd->IncFdCount ();
+  current->process->openFiles[fd] = new FileUsage (fd, unixFd);
   return fd;
 }
 
@@ -124,6 +126,7 @@ int dce_unlink_real (const char *pathname)
 
 int dce_unlink (const char *pathname)
 {
+  NS_LOG_FUNCTION ( pathname );
   int ret = dce_unlink_real (pathname);
 
   if (0 == ret)
@@ -148,46 +151,51 @@ int dce_rmdir(const char *pathname)
 }
 int dce_close (int fd)
 {
+  int retval = 0;
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << fd);
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
-  int index = UtilsSearchOpenFd (fd);
-  if (index == -1)
+
+  FileUsage *fu = current->process->openFiles[fd];
+
+  if (!fu)
     {
       current->err = EBADF;
       return -1;
     }
-  UnixFd *unixFd = current->process->openFiles[index].second;
-  current->process->openFiles[index].second = 0;
-  current->process->openFiles[index].first = -1;
-  int retval = 0;
-  unixFd->FdUsageDec ();
-  if (unixFd->GetFdUsageCount () <= 0)
+  if ( fu->GetFile () && (1 == fu->GetFile ()->GetFdCount () )  )
     {
-      // Note to the attentive reader: the logical and clean way to handle this call
-      // to Close would be to move it to the UnixFd destructor and make the Close method
-      // private so that it is invoked automatically upon the last call to Unref below.
-      // However, we do not do this and for good reasons: one must never invoke virtual
-      // methods from a destructor unless one is prepared to suffer considerably.
-      retval = unixFd->Close ();
+      // If only one process point to file we can really close it
+      // else we be closed while the last process close it
+      retval = fu->GetFile ()->Close ();
     }
-  unixFd->Unref ();
-  current->process->openFiles.erase(current->process->openFiles.begin() + index);
+  if ( fu->CanForget () )
+    {
+      // If no thread of this process is using it we can free the corresponding fd entry
+      // else we be freed by last thread renoncing of using it
+      current->process->openFiles[fd] = 0;
+      delete fu;
+      fu = 0;
+    }
+
   return retval;
 }
+
 int dce_isatty(int fd)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd);
   NS_ASSERT (current != 0);
-  int index = UtilsSearchOpenFd (fd);
-  if (index == -1)
+
+  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
     {
       current->err = EBADF;
       return -1;
     }
-  UnixFd *unixFd = current->process->openFiles[index].second;
-  int retval = unixFd->Isatty ();
+  UnixFd *unixFd = current->process->openFiles[fd]->GetFileInc ();
+  int retval =  unixFd->Isatty ();
+  FdDecUsage (fd);
+
   return retval;
 }
 ssize_t dce_send(int fd, const void *buf, size_t len, int flags)
@@ -218,14 +226,16 @@ ssize_t dce_sendmsg(int fd, const struct msghdr *msg, int flags)
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << msg << flags);
   NS_ASSERT (current != 0);
-  int index = UtilsSearchOpenFd (fd);
-  if (index == -1)
+
+  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
     {
       current->err = EBADF;
       return -1;
     }
-  UnixFd *unixFd = current->process->openFiles[index].second;
+  UnixFd *unixFd =  current->process->openFiles[fd]->GetFileInc ();
   ssize_t retval = unixFd->Sendmsg (msg, flags);
+  FdDecUsage (fd);
+
   return retval;
 }
 int dce_ioctl (int fd, int request, char *argp)
@@ -233,408 +243,46 @@ int dce_ioctl (int fd, int request, char *argp)
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << request << argp);
   NS_ASSERT (current != 0);
-  int index = UtilsSearchOpenFd (fd);
-  if (index == -1)
+
+  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
     {
       current->err = EBADF;
       return -1;
     }
-  UnixFd *unixFd = current->process->openFiles[index].second;
+  UnixFd *unixFd =  current->process->openFiles[fd]->GetFileInc ();
   int retval = unixFd->Ioctl (request, argp);
+  FdDecUsage (fd);
+
   return retval;
 }
-int dce_poll(struct pollfd *fds, nfds_t nfds, int timeout)
-{
-  Thread *current = Current ();
-  NS_LOG_FUNCTION (current << UtilsGetNodeId () << fds << nfds << timeout);
-  NS_ASSERT (current != 0);
-  int validFdCount = 0;
-
-  for (uint32_t i = 0; i < nfds; ++i)
-    {
-      // initialize all outgoing events.
-      fds[i].revents = 0;
-    }
-  for (uint32_t i = 0; i < nfds; ++i)
-    {
-      int index = UtilsSearchOpenFd (fds[i].fd);
-      if (index >= 0) validFdCount++;
-    }
-
-  if (validFdCount > 0)
-    {
-      bool mustWait = true;
-
-      if (timeout == 0)
-        {
-          mustWait = false;
-        }
-
-      if (mustWait)
-        {
-          // First Pass: seek if there is at least one fd ready
-          bool someAreReady = false;
-          Waiter waiter;
-
-          for (int i = 0; i < nfds; i++)
-            {
-              if ( fds[i].events & POLLIN )
-                {
-                  int index = UtilsSearchOpenFd (fds[i].fd);
-                  if (index >= 0)
-                    {
-                      UnixFd *unixFd = current->process->openFiles[index].second;
-                      if ( unixFd->CanRecv ())
-                        {
-                          someAreReady = true;
-                          break;
-                        }
-                    }
-                }
-              if ( fds[i].events & POLLOUT )
-                {
-                  int index = UtilsSearchOpenFd (fds[i].fd);
-                  if (index >= 0)
-                    {
-                      UnixFd *unixFd = current->process->openFiles[index].second;
-                      if (unixFd->CanSend ())
-                        {
-                          someAreReady = true;
-                          break;
-                        }
-                    }
-                }
-            }
-
-          if ( !someAreReady )
-            { // We should wait, set the waiters ...
-              for (int i = 0; i < nfds; i++)
-                {
-                  if (fds[i].events & POLLIN )
-                    {
-                      int index = UtilsSearchOpenFd (fds[i].fd);
-                      if (index >= 0)
-                        {
-                          UnixFd *unixFd = current->process->openFiles[index].second;
-                          if (!unixFd->CanRecv ())
-                            {
-                              unixFd->SetRecvWaiter (&waiter);
-                            }
-                        }
-                    }
-                  // not else because an fd can be in read and write at same time
-                  if ( fds[i].events & POLLOUT )
-                    {
-                      int index = UtilsSearchOpenFd (fds[i].fd);
-                      if (index >= 0)
-                        {
-                          UnixFd *unixFd = current->process->openFiles[index].second;
-                          if (!unixFd->CanSend ())
-                            {
-                              unixFd->SetSendWaiter (&waiter);
-                            }
-                        }
-                    }
-                }
-              if ( timeout > 0 ) {
-                  waiter.SetTimeout (  MilliSeconds (timeout));
-              }
-              Waiter::Result result = waiter.Wait ();
-
-              for (int i = 0; i < nfds; i++)
-                {
-                  // cleanup all waiters setup previously
-                  if (fds[i].events & POLLIN )
-                    {
-                      int index = UtilsSearchOpenFd (fds[i].fd);
-                      if (index != -1) // no ASSERT because Meanwhile the fd should disappear
-                        {
-                          UnixFd *unixFd = current->process->openFiles[index].second;
-                          unixFd->SetRecvWaiter (0);
-                        }
-                      else
-                        {
-                          continue;
-                        }
-                    }
-                  if ( fds[i].events & POLLOUT )
-                    {
-                      int index = UtilsSearchOpenFd (fds[i].fd);
-                      if (index != -1) // no ASSERT because Meanwhile the fd should disappear
-                        {
-                          UnixFd *unixFd = current->process->openFiles[index].second;
-                          unixFd->SetSendWaiter (0);
-                        }
-                    }
-                }
-              if (Waiter::INTERRUPTED == result)
-                {
-                  UtilsDoSignal ();
-                  current->err = EINTR;
-                  return -1;
-                }
-            }
-        }
-    }
-  int retval = 0;
-
-  for (int i = 0; i < nfds; i++)
-    {
-      int index = UtilsSearchOpenFd (fds[i].fd);
-      if (index == -1)
-        {
-          fds[i].revents = POLLNVAL;
-        }
-      else
-        {
-          UnixFd *unixFd = current->process->openFiles[index].second;
-          if (fds[i].events & POLLIN )
-            {
-              if (unixFd->CanRecv ())
-                {
-                  fds[i].revents |= POLLIN;
-                }
-            }
-          if (fds[i].events & POLLOUT )
-            {
-              if (unixFd->CanSend ())
-                {
-                  fds[i].revents |= POLLOUT;
-                }
-            }
-          if (unixFd->HangupReceived()) fds[i].revents |= POLLHUP;
-        }
-      if ( 0 !=  fds[i].revents) retval++;
-    }
-
-  // Try to break infinite loop in poll with a 0 timeout !
-  if ( ( 0 == retval ) && ( 0 == timeout ) )
-    {
-      UtilsAdvanceTime (current);
-    }
-  return retval;
-}
-int dce_select(int nfds, fd_set *readfds, fd_set *writefds,
-                  fd_set *exceptfds, struct timeval *timeout)
-{
-  Thread *current = Current ();
-  NS_LOG_FUNCTION (current << UtilsGetNodeId () << nfds << timeout);
-  NS_ASSERT (current != 0);
-
-  if (nfds == -1)
-    {
-      current->err = EINVAL;
-      return -1;
-    }
-  if (readfds == 0 && writefds == 0 && exceptfds == 0)
-    {
-      current->err = EINVAL;
-      return -1;
-    }
-  if (timeout)
-    {
-      if(timeout->tv_sec < 0 || timeout->tv_usec < 0)
-        {
-          current->err = EINVAL;
-          return -1;
-        }
-    }
-  for (int fd = 0; fd < nfds; fd++)
-    {
-      if ((readfds != 0 && FD_ISSET(fd, readfds))
-          ||(writefds != 0 &&  FD_ISSET (fd, writefds))
-          ||(exceptfds != 0 && FD_ISSET (fd, exceptfds)))
-        {
-          int index = UtilsSearchOpenFd (fd);
-          if (index == -1)
-            {
-              current->err = EBADF;
-              return -1;
-            }
-        }
-    }
-
-  bool mustWait = true;
-  Waiter waiter;
-  Time timeoutLeft = Seconds (0.0);
-
-  if (timeout && (timeout->tv_sec == 0) && (timeout->tv_usec == 0))
-    {
-      mustWait = false;
-    }
-
-  if (mustWait)
-    {
-      // First Pass: seek if there is at least one fd ready
-      bool someAreReady = false;
-
-      for (int fd = 0; fd < nfds; fd++)
-        {
-          if (readfds != 0 && FD_ISSET(fd, readfds))
-            {
-              int index = UtilsSearchOpenFd (fd);
-              NS_ASSERT (index != -1);
-              UnixFd *unixFd = current->process->openFiles[index].second;
-              if (unixFd->CanRecv ())
-                {
-                  someAreReady = true;
-                  break;
-                }
-            }
-          if (writefds != 0 && FD_ISSET (fd, writefds))
-            {
-              int index = UtilsSearchOpenFd (fd);
-              NS_ASSERT (index != -1);
-              UnixFd *unixFd = current->process->openFiles[index].second;
-              if (unixFd->CanSend ())
-                {
-                  someAreReady = true;
-                  break;
-                }
-            }
-        }
-
-      if ( !someAreReady )
-        { // We should wait so set the waiters ...
-          for (int fd = 0; fd < nfds; fd++)
-            {
-              if (readfds != 0 && FD_ISSET(fd, readfds))
-                {
-                  int index = UtilsSearchOpenFd (fd);
-                  NS_ASSERT (index != -1);
-                  UnixFd *unixFd = current->process->openFiles[index].second;
-                  if (!unixFd->CanRecv ())
-                    {
-                      unixFd->SetRecvWaiter (&waiter);
-                    }
-                }
-              // not else because an fd can be in read and write at same time
-              if (writefds != 0 && FD_ISSET (fd, writefds))
-                {
-                  int index = UtilsSearchOpenFd (fd);
-                  NS_ASSERT (index != -1);
-                  UnixFd *unixFd = current->process->openFiles[index].second;
-                  if (!unixFd->CanSend ())
-                    {
-                      unixFd->SetSendWaiter (&waiter);
-                    }
-                }
-            }
-
-          waiter.SetTimeout (UtilsTimevalToTime (timeout));
-          Waiter::Result result = waiter.Wait ();
-
-          for (int fd = 0; fd < nfds; fd++)
-            {
-              // cleanup all waiters setup previously
-              if (readfds != 0 && FD_ISSET(fd, readfds))
-                {
-                  int index = UtilsSearchOpenFd (fd);
-                  if (index != -1) // no ASSERT because Meanwhile the fd should disappear
-                    {
-                      UnixFd *unixFd = current->process->openFiles[index].second;
-                      unixFd->SetRecvWaiter (0);
-                    }
-                  else
-                    {
-                      continue;
-                    }
-                }
-              if (writefds != 0 && FD_ISSET (fd, writefds))
-                {
-                  int index = UtilsSearchOpenFd (fd);
-                  if (index != -1) // no ASSERT because Meanwhile the fd should disappear
-                    {
-                      UnixFd *unixFd = current->process->openFiles[index].second;
-                      unixFd->SetSendWaiter (0);
-                    }
-                }
-            }
-          if (Waiter::INTERRUPTED == result)
-            {
-              UtilsDoSignal ();
-              current->err = EINTR;
-              return -1;
-            }
-          timeoutLeft = waiter.GetTimeoutLeft ();
-        }
-    }
-
-  int retval = 0;
-  fd_set rd, wt;
-  FD_ZERO(&rd);
-  FD_ZERO(&wt);
-
-   for (int fd = 0; fd < nfds; fd++)
-    {    
-      int index = UtilsSearchOpenFd (fd);
-      if (index == -1)
-        continue;
-      UnixFd *unixFd = current->process->openFiles[index].second;
-      if (readfds != 0 && FD_ISSET(fd, readfds))
-        {
-          if (unixFd->CanRecv ())
-            {
-              FD_SET(fd, &rd);
-              retval++;
-            }
-        }
-      if (writefds != 0 && FD_ISSET(fd, writefds))
-        {
-          if (unixFd->CanSend ())
-            {
-              FD_SET(fd, &wt);
-              retval ++;
-            }
-        }
-    }
-
-  if (readfds != 0)
-    {
-      memcpy(readfds, &rd, sizeof(rd));
-    }
-  if (writefds != 0)
-    {
-      memcpy(writefds, &wt, sizeof(wt));
-    }
-  if (exceptfds != 0)
-    {
-      FD_ZERO(exceptfds);
-    }
-  if (timeout != 0)
-    {
-      *timeout = UtilsTimeToTimeval (timeoutLeft);
-    }
-  return retval;
-}
-
-
 ssize_t dce_write (int fd, const void *buf, size_t count)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << fd << buf << count);
   Thread *current = Current ();
   NS_ASSERT (current != 0);
-  int index = UtilsSearchOpenFd (fd);
-  if (index == -1)
+
+  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
     {
       NS_LOG_DEBUG ("write error");
       current->err = EBADF;
       return -1;
     }
-  UnixFd *unixFd = current->process->openFiles[index].second;
+  UnixFd *unixFd = current->process->openFiles[fd]->GetFileInc ();
   int retval = unixFd->Write (buf, count);
   NS_LOG_DEBUG ("write " << retval << "bytes");
+  FdDecUsage (fd);
+
   return retval;
 }
-
 ssize_t dce_writev (int fd, const struct iovec *iov, int iovcnt)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << iov << iovcnt);
   NS_ASSERT (current != 0);
-  int index = UtilsSearchOpenFd (fd);
-  if (index == -1)
+
+  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
     {
+      NS_LOG_DEBUG ("write error");
       current->err = EBADF;
       return -1;
     }
@@ -656,8 +304,9 @@ ssize_t dce_writev (int fd, const struct iovec *iov, int iovcnt)
       bufp += iov[i].iov_len;
     }
 
-  UnixFd *unixFd = current->process->openFiles[index].second;
+  UnixFd *unixFd = current->process->openFiles[fd]->GetFileInc ();
   int retval = unixFd->Write (buf, count);
+  FdDecUsage (fd);
 
   return retval;
 }
@@ -667,14 +316,16 @@ ssize_t dce_read (int fd, void *buf, size_t count)
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << buf << count);
   NS_ASSERT (current != 0);
-  int index = UtilsSearchOpenFd (fd);
-  if (index == -1)
+
+  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
     {
       current->err = EBADF;
       return -1;
     }
-  UnixFd *unixFd = current->process->openFiles[index].second;
+  UnixFd *unixFd =  current->process->openFiles[fd]->GetFileInc ();
   int retval = unixFd->Read (buf, count);
+  FdDecUsage (fd);
+
   return retval;
 }
 int dce_socket (int domain, int type, int protocol)
@@ -715,8 +366,8 @@ int dce_socket (int domain, int type, int protocol)
     }
 
   UnixFd *socket = factory->CreateSocket (domain, type, protocol);
-
-  current->process->openFiles.push_back (std::make_pair (fd, socket));
+  socket->IncFdCount ();
+  current->process->openFiles[fd] = new FileUsage (fd, socket); //.push_back (std::make_pair (fd, socket));
 
   return fd;
 }
@@ -725,14 +376,16 @@ int dce_bind (int fd, const struct sockaddr *my_addr, socklen_t addrlen)
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << my_addr << addrlen);
   NS_ASSERT (current != 0);
-  int index = UtilsSearchOpenFd (fd);
-  if (index == -1)
+
+  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
     {
       current->err = EBADF;
       return -1;
     }
-  UnixFd *unixFd = current->process->openFiles[index].second;
+  UnixFd *unixFd =  current->process->openFiles[fd]->GetFileInc ();
   int retval = unixFd->Bind (my_addr, addrlen);
+  FdDecUsage (fd);
+
   return retval;
 }
 int dce_connect (int fd, const struct sockaddr *my_addr, socklen_t addrlen)
@@ -740,59 +393,67 @@ int dce_connect (int fd, const struct sockaddr *my_addr, socklen_t addrlen)
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << my_addr << addrlen);
   NS_ASSERT (current != 0);
-  int index = UtilsSearchOpenFd (fd);
-  if (index == -1)
+
+  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
     {
       current->err = EBADF;
       return -1;
     }
-  UnixFd *unixFd = current->process->openFiles[index].second;
+  UnixFd *unixFd =  current->process->openFiles[fd]->GetFileInc ();
   int retval = unixFd->Connect (my_addr, addrlen);
+  FdDecUsage (fd);
+
   return retval;
 }
-int dce_listen (int sockfd, int backlog)
+int dce_listen (int fd, int backlog)
 {
   Thread *current = Current ();
-  NS_LOG_FUNCTION (current << UtilsGetNodeId () << sockfd << backlog);
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << backlog);
   NS_ASSERT (current != 0);
-  int index = UtilsSearchOpenFd (sockfd);
-  if (index == -1)
+
+  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
     {
       current->err = EBADF;
       return -1;
     }
-  UnixFd *unixFd = current->process->openFiles[index].second;
+  UnixFd *unixFd =  current->process->openFiles[fd]->GetFileInc ();
   int retval = unixFd->Listen (backlog);
+  FdDecUsage (fd);
+
   return retval;
 }
-int dce_accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
+int dce_accept(int fd, struct sockaddr *addr, socklen_t *addrlen)
 {
   Thread *current = Current ();
-  NS_LOG_FUNCTION (current << UtilsGetNodeId () << sockfd << addr << addrlen);
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << addr << addrlen);
   NS_ASSERT (current != 0);
-  int index = UtilsSearchOpenFd (sockfd);
-  if (index == -1)
+
+  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
     {
       current->err = EBADF;
       return -1;
     }
-  UnixFd *unixFd = current->process->openFiles[index].second;
+  UnixFd *unixFd =  current->process->openFiles[fd]->GetFileInc ();
   int retval = unixFd->Accept (addr, addrlen);
+  FdDecUsage (fd);
+
   return retval;  
 }
-int dce_shutdown(int s, int how)
+int dce_shutdown(int fd, int how)
 {
   Thread *current = Current ();
-  NS_LOG_FUNCTION (current << UtilsGetNodeId () << s << how);
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << how);
   NS_ASSERT (current != 0);
-  int index = UtilsSearchOpenFd (s);
-  if (index == -1)
+
+  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
     {
       current->err = EBADF;
       return -1;
     }
-  UnixFd *unixFd = current->process->openFiles[index].second;
+  UnixFd *unixFd =  current->process->openFiles[fd]->GetFileInc ();
   int retval = unixFd->Shutdown (how);
+  FdDecUsage (fd);
+
   return retval;
 }
 ssize_t dce_recv (int fd, void *buf, size_t count, int flags)
@@ -837,14 +498,16 @@ ssize_t dce_recvmsg(int fd, struct msghdr *msg, int flags)
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << msg << flags);
   NS_ASSERT (current != 0);
-  int index = UtilsSearchOpenFd (fd);
-  if (index == -1)
+
+  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
     {
       current->err = EBADF;
       return -1;
     }
-  UnixFd *unixFd = current->process->openFiles[index].second;
+  UnixFd *unixFd =  current->process->openFiles[fd]->GetFileInc ();
   ssize_t retval = unixFd->Recvmsg (msg, flags);
+  FdDecUsage (fd);
+
   return retval;
 }
 int dce_setsockopt(int fd, int level, int optname,
@@ -853,14 +516,16 @@ int dce_setsockopt(int fd, int level, int optname,
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << level << optname << optval << optlen);
   NS_ASSERT (current != 0);
-  int index = UtilsSearchOpenFd (fd);
-  if (index == -1)
+
+  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
     {
       current->err = EBADF;
       return -1;
     }
-  UnixFd *unixFd = current->process->openFiles[index].second;
+  UnixFd *unixFd =  current->process->openFiles[fd]->GetFileInc ();
   int retval = unixFd->Setsockopt (level, optname, optval, optlen);
+  FdDecUsage (fd);
+
   return retval;
 }
 int dce_getsockopt(int fd, int level, int optname,
@@ -869,14 +534,16 @@ int dce_getsockopt(int fd, int level, int optname,
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << level << optname << optval << optlen);
   NS_ASSERT (current != 0);
-  int index = UtilsSearchOpenFd (fd);
-  if (index == -1)
+
+  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
     {
       current->err = EBADF;
       return -1;
     }
-  UnixFd *unixFd = current->process->openFiles[index].second;
+  UnixFd *unixFd =  current->process->openFiles[fd]->GetFileInc ();
   int retval = unixFd->Getsockopt (level, optname, optval, optlen);
+  FdDecUsage (fd);
+
   return retval;
 }
 int dce_getsockname(int fd, struct sockaddr *name, socklen_t *namelen)
@@ -884,14 +551,16 @@ int dce_getsockname(int fd, struct sockaddr *name, socklen_t *namelen)
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << name << namelen);
   NS_ASSERT (current != 0);
-  int index = UtilsSearchOpenFd (fd);
-  if (index == -1)
+
+  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
     {
       current->err = EBADF;
       return -1;
     }
-  UnixFd *unixFd = current->process->openFiles[index].second;
+  UnixFd *unixFd =  current->process->openFiles[fd]->GetFileInc ();
   int retval = unixFd->Getsockname (name, namelen);
+  FdDecUsage (fd);
+
   return retval;
 }
 int dce_getpeername(int fd, struct sockaddr *name, socklen_t *namelen)
@@ -899,14 +568,16 @@ int dce_getpeername(int fd, struct sockaddr *name, socklen_t *namelen)
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << name << namelen);
   NS_ASSERT (current != 0);
-  int index = UtilsSearchOpenFd (fd);
-  if (index == -1)
+
+  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
     {
       current->err = EBADF;
       return -1;
     }
-  UnixFd *unixFd = current->process->openFiles[index].second;
+  UnixFd *unixFd =  current->process->openFiles[fd]->GetFileInc ();
   int retval = unixFd->Getpeername (name, namelen);
+  FdDecUsage (fd);
+
   return retval;
 }
 int dce_dup(int oldfd)
@@ -914,8 +585,8 @@ int dce_dup(int oldfd)
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << oldfd);
   NS_ASSERT (current != 0);
-  int index = UtilsSearchOpenFd (oldfd);
-  if (index == -1)
+
+  if ((0 == current->process->openFiles[oldfd])||(current->process->openFiles[oldfd]->IsClosed()))
     {
       current->err = EBADF;
       return -1;
@@ -926,10 +597,11 @@ int dce_dup(int oldfd)
       current->err = EMFILE;
       return -1;
     }
-  UnixFd *unixFd = current->process->openFiles[index].second;
-  unixFd->Ref ();
-  unixFd->FdUsageInc ();
-  current->process->openFiles.push_back (std::make_pair (fd, unixFd));
+
+  UnixFd *unixFd = current->process->openFiles[fd]->GetFile();
+  unixFd->IncFdCount ();
+  current->process->openFiles[fd] = new FileUsage (fd, unixFd);
+
   return fd;
 }
 int dce_dup2(int oldfd, int newfd)
@@ -937,21 +609,29 @@ int dce_dup2(int oldfd, int newfd)
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << oldfd << newfd);
   NS_ASSERT (current != 0);
-  int index = UtilsSearchOpenFd (oldfd);
-  if (index == -1 || 
-      newfd > MAX_FDS)
+
+  if ((0 == current->process->openFiles[oldfd])
+      ||
+      (current->process->openFiles[oldfd]->IsClosed())
+      ||
+      (newfd > MAX_FDS))
     {
       current->err = EBADF;
       return -1;
     }
-  if (UtilsSearchOpenFd (newfd) != -1)
+  if (current->process->openFiles[newfd] )
     {
       dce_close (newfd);
     }
-  UnixFd *unixFd = current->process->openFiles[index].second;
-  unixFd->Ref ();
-  unixFd->FdUsageInc ();
-  current->process->openFiles.push_back (std::make_pair (newfd, unixFd));
+  if (current->process->openFiles[newfd] )
+    {
+      current->err = EBADF;
+      return -1;
+    }
+  UnixFd *unixFd = current->process->openFiles[oldfd]->GetFile();
+  unixFd->IncFdCount ();
+  current->process->openFiles[oldfd] = new FileUsage (newfd, unixFd);
+
   return newfd;
 }
 void *dce_mmap64 (void *start, size_t length, int prot, int flags,
@@ -960,14 +640,16 @@ void *dce_mmap64 (void *start, size_t length, int prot, int flags,
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << start << length << prot << flags << fd << offset);
   NS_ASSERT (current != 0);
-  int index = UtilsSearchOpenFd (fd);
-  if (index == -1)
+
+  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
     {
       current->err = EBADF;
       return MAP_FAILED;
     }
-  UnixFd *unixFd = current->process->openFiles[index].second;
+  UnixFd *unixFd =  current->process->openFiles[fd]->GetFileInc ();
   void * retval = unixFd->Mmap (start, length, prot, flags, offset);
+  FdDecUsage (fd);
+
   return retval;  
 }
 int dce_munmap(void *start, size_t length)
@@ -988,20 +670,22 @@ off_t dce_lseek(int fildes, off_t offset, int whence)
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << fildes << offset << whence);
   return dce_lseek64 (fildes, offset, whence);
 }
-off64_t dce_lseek64(int fildes, off64_t offset, int whence)
+off64_t dce_lseek64(int fd, off64_t offset, int whence)
 {
   Thread *current = Current ();
-  NS_LOG_FUNCTION (current << UtilsGetNodeId () << fildes << offset << whence);
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << offset << whence);
   NS_ASSERT (current != 0);
-  int index = UtilsSearchOpenFd (fildes);
-  if (index == -1)
+
+  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
     {
       current->err = EBADF;
       return -1;
     }
-  UnixFd *unixFd = current->process->openFiles[index].second;
+  UnixFd *unixFd =  current->process->openFiles[fd]->GetFileInc ();
   off64_t retval = unixFd->Lseek (offset, whence);
   NS_LOG_DEBUG (retval);
+  FdDecUsage (fd);
+
   return retval;    
 }
 int dce_fcntl(int fd, int cmd, unsigned long arg)
@@ -1010,15 +694,18 @@ int dce_fcntl(int fd, int cmd, unsigned long arg)
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
 
-  int index = UtilsSearchOpenFd (fd);
-  if (index == -1)
+  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
     {
       current->err = EBADF;
       return -1;
     }
+  UnixFd *unixFd =  current->process->openFiles[fd]->GetFileInc ();
   // XXX: we should handle specially some fcntl commands.
   // For example, FD_DUP, etc.
-  UnixFd *unixFd = current->process->openFiles[index].second;
   int retval = unixFd->Fcntl (cmd, arg);
+  FdDecUsage (fd);
+
   return retval;    
 }
+
+

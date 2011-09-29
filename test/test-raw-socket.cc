@@ -143,6 +143,7 @@ test1 ()
 
   rawFd = socket (AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
 //  rawFd = socket (AF_PACKET, SOCK_RAW, htons(ETH_P_IP));
+  printf ("rawFd %d, errno %d\n", rawFd, errno);
   TEST_ASSERT (rawFd >= 0);
   st = pthread_create (&t1r, 0, test1_reader, &rawFd);
   TEST_ASSERT_EQUAL (st, 0);
@@ -168,8 +169,8 @@ test2_client (void *arg)
   struct sockaddr_ll dest = { 0 };
   char buffer [1024*1];
 
-  rawFd = socket (AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
- // rawFd = socket (AF_PACKET, SOCK_RAW, htons(ETH_P_IP));
+ // rawFd = socket (AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+  rawFd = socket (AF_PACKET, SOCK_RAW, htons(ETH_P_IP));
   TEST_ASSERT (rawFd >= 0);
 
   dest.sll_family = AF_PACKET;
@@ -197,8 +198,8 @@ test2_server (void *arg)
   struct sockaddr_ll from;
   socklen_t l =  sizeof(from);
 
-  rawFd = socket (AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
-//  rawFd = socket (AF_PACKET, SOCK_RAW, htons(ETH_P_IP));
+//  rawFd = socket (AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+  rawFd = socket (AF_PACKET, SOCK_RAW, htons(ETH_P_IP));
   TEST_ASSERT (rawFd >= 0);
 
   st = recvfrom (rawFd, buffer, sizeof (buffer), 0, (sockaddr*) &from, &l);

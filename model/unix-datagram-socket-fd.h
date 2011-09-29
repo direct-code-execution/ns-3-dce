@@ -24,6 +24,7 @@ private:
   virtual bool CanRecv (void) const;
   virtual bool CanSend (void) const;
   virtual bool HangupReceived (void) const;
+  virtual int Poll (PollTable* ptable);
   void IcmpCallback (Ipv4Address icmpSource, uint8_t icmpTtl, 
                     uint8_t icmpType, uint8_t icmpCode,
                     uint32_t icmpInfo);

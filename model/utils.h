@@ -37,7 +37,6 @@ std::string UtilsGetRealFilePath (std::string path);
 std::string UtilsGetAbsRealFilePath (uint32_t node, std::string path);
 std::string UtilsGetVirtualFilePath (std::string path);
 uint32_t UtilsGetNodeId (void);
-int UtilsSearchOpenFd (int fd);
 Thread *Current (void);
 bool HasPendingSignal (void);
 Time UtilsTimeToSimulationTime (Time time);
@@ -56,6 +55,7 @@ std::string GetTimeStamp ();
 bool CheckExeMode (struct stat *st, uid_t uid, gid_t gid);
 std::string FindExecFile (std::string root, std::string envPath, std::string fileName, uid_t uid, gid_t gid, int *errNo);
 std::list<std::string> Split (std::string input, std::string sep);
+void FdDecUsage (int fd);
 
 #define MAX_FDS 1024
 } // namespace ns3

@@ -6,6 +6,7 @@
 #include "ns3/simulator.h"
 #include <errno.h>
 #include <sys/mman.h>
+#include <poll.h>
 
 NS_LOG_COMPONENT_DEFINE ("UnixTimerFd");
 
@@ -269,5 +270,30 @@ bool
 UnixTimerFd::HangupReceived (void) const
 {
   return false;
+}
+int
+UnixTimerFd::Poll (PollTable* ptable)
+{
+  int ret = 0;
+
+  if (CanRecv ())
+    {
+      ret |= POLLIN;
+    }
+  if (CanSend ())
+    {
+      ret |= POLLOUT;
+    }
+  if (HangupReceived() )
+    {
+      ret |= POLLHUP;
+    }
+
+  if (ptable)
+    {
+      ptable->PollWait (this);
+    }
+
+  return ret;
 }
 } // namespace ns3

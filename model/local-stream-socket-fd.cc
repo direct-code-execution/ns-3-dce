@@ -26,11 +26,13 @@
 #include "ns3/log.h"
 #include <errno.h>
 #include <fcntl.h>
-#include <sys/mman.h> // for MMAP_FAILED
 #include <sys/un.h>
-#include "waiter.h"
 #include "unix-fd.h"
 #include <exception>
+#include <poll.h>
+#include "wait-queue.h"
+#include "ns3/simulator.h"
+#include "file-usage.h"
 
 NS_LOG_COMPONENT_DEFINE("LocalStreamSocketFd");
 
@@ -55,7 +57,7 @@ LocalStreamSocketFd::LocalStreamSocketFd (Ptr<LocalSocketFdFactory> f) :
   m_factory = f;
 }
 
-LocalStreamSocketFd::LocalStreamSocketFd (Ptr<LocalStreamSocketFd> peer, std::string bindPath) :
+LocalStreamSocketFd::LocalStreamSocketFd (LocalStreamSocketFd *peer, std::string bindPath) :
   m_state (CONNECTED), m_backLog (0),
   m_peer (peer)
 {
@@ -101,7 +103,7 @@ LocalStreamSocketFd::Close (void)
       {
         NS_ASSERT( 0 != m_factory);
         m_factory->UnRegisterBinder (m_bindPath);
-
+        m_bindPath = "";
         ClearAll (ACCEPTING == m_state);
 
         return 0;
@@ -142,6 +144,7 @@ LocalStreamSocketFd::Close (void)
   return -1;
 }
 
+
 ssize_t
 LocalStreamSocketFd::Write (const void *buf, size_t count)
 {
@@ -169,9 +172,8 @@ LocalStreamSocketFd::Write (const void *buf, size_t count)
   NS_ASSERT(m_peer != 0);
 
   size_t tot = 0;
-  Waiter waiter;
-  waiter.SetTimeout (GetSendTimeout ());
 
+  WaitQueueEntryTimeout *wq = 0;
   do
     {
       ssize_t lg = m_peer->DoRecvPacket ((uint8_t*) buf + tot, count - tot);
@@ -182,38 +184,43 @@ LocalStreamSocketFd::Write (const void *buf, size_t count)
             {
               // Socket do not want to wait
               Current ()->err = EAGAIN;
-              return -1;
+              RETURNFREE (-1);
             }
-          SetSendWaiter (&waiter);
-          Waiter::Result result = waiter.Wait ();
-          SetSendWaiter (0);
-          switch (result)
+          if (!wq)
             {
-            case Waiter::OK:
+              wq = new WaitQueueEntryTimeout (POLLOUT | POLLHUP, GetSendTimeout ());
+            }
+          AddWaitQueue (wq, true);
+          PollTable::Result res = wq->Wait ();
+          RemoveWaitQueue (wq, true);
+
+          switch (res)
+            {
+            case PollTable::OK:
               break;
-            case Waiter::INTERRUPTED:
+            case PollTable::INTERRUPTED:
               UtilsDoSignal ();
               if (tot != 0)
                 {
                   // this is a short write
-                  return tot;
+                  RETURNFREE (tot);
                 }
               else
                 {
                   current->err = EINTR;
-                  return -1;
+                  RETURNFREE (-1);
                 }
               break;
-            case Waiter::TIMEOUT:
+            case PollTable::TIMEOUT:
               if (tot != 0)
                 {
                   // this is a short write
-                  return tot;
+                  RETURNFREE (tot);
                 }
               else
                 {
                   current->err = EAGAIN;
-                  return -1;
+                  RETURNFREE (-1);
                 }
               break;
             }
@@ -229,12 +236,12 @@ LocalStreamSocketFd::Write (const void *buf, size_t count)
               if ( 0 == tot )
                 {
                   current->err = EPIPE;
-                  return -1;
+                  RETURNFREE (-1);
                 }
               break;
             }
           current->err = ENOMEM;
-          return -1;
+          RETURNFREE (-1);
         }
     }
   while ((tot < count) && (m_state == CONNECTED));
@@ -242,10 +249,10 @@ LocalStreamSocketFd::Write (const void *buf, size_t count)
   if ((0 == tot) && (m_state != CONNECTED) )
     {
       current->err = EPIPE;
-      return -1;
+      RETURNFREE (-1);
     }
 
-  return tot;
+  RETURNFREE (tot);
 }
 ssize_t
 LocalStreamSocketFd::Read (void *buf, size_t count)
@@ -263,8 +270,7 @@ LocalStreamSocketFd::Read (void *buf, size_t count)
     }
 
   size_t filled = 0;
-  Waiter waiter;
-  waiter.SetTimeout (GetRecvTimeout ());
+  WaitQueueEntryTimeout *wq = 0;
 
   while ((filled < count) && ((m_state == CONNECTED) || ((REMOTECLOSED == m_state) && (m_readBufferSize > 0))))
     {
@@ -277,42 +283,51 @@ LocalStreamSocketFd::Read (void *buf, size_t count)
                 {
                   // Socket do not want to wait
                   Current ()->err = EAGAIN;
-                  return -1;
+                  RETURNFREE (-1);
                 }
               return filled;
             }
-          if ( ( 0 != m_peer) && ( m_peer->IsShutWrite()) ) return 0;
-          // Nothing should wait
-          SetRecvWaiter (&waiter);
-          Waiter::Result result = waiter.Wait ();
-          SetRecvWaiter (0);
-          switch (result)
+          if ( ( 0 != m_peer) && ( m_peer->IsShutWrite()) )
             {
-            case Waiter::OK:
+              RETURNFREE (0);
+            }
+          // Nothing should wait
+
+          if (!wq)
+            {
+              wq = new WaitQueueEntryTimeout (POLLIN | POLLHUP, GetRecvTimeout ());
+            }
+          AddWaitQueue (wq, true);
+          WaitPoint::Result res = wq->Wait ();
+          RemoveWaitQueue (wq, true);
+
+          switch (res)
+            {
+            case WaitPoint::OK:
               break;
-            case Waiter::INTERRUPTED:
+            case WaitPoint::INTERRUPTED:
               UtilsDoSignal ();
               if (filled != 0)
                 {
                   // this is a short read
-                  return filled;
+                  RETURNFREE (filled);
                 }
               else
                 {
                   current->err = EINTR;
-                  return -1;
+                  RETURNFREE (-1);
                 }
               break;
-            case Waiter::TIMEOUT:
+            case WaitPoint::TIMEOUT:
               if (filled != 0)
                 {
                   // this is a short read
-                  return filled;
+                  RETURNFREE (filled);
                 }
               else
                 {
                   current->err = EAGAIN;
-                  return -1;
+                  RETURNFREE (-1);
                 }
               break;
             }
@@ -322,17 +337,18 @@ LocalStreamSocketFd::Read (void *buf, size_t count)
           filled += lg;
           if  (0 != m_peer)
             {
-              m_peer->WakeupSend ();
+              short po = POLLOUT;
+              m_peer->WakeWaiters (&po);
             }
         }
       else
         {
           current->err = ENOMEM;
-          return -1;
+          RETURNFREE (-1);
         }
     }
 
-  return filled;
+  RETURNFREE (filled);
 }
 ssize_t
 LocalStreamSocketFd::Recvmsg (struct msghdr *msg, int flags)
@@ -769,8 +785,8 @@ LocalStreamSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
       return -1;
     }
   std::string realPath = UtilsGetRealFilePath (std::string (((struct sockaddr_un*) my_addr)->sun_path));
-  Ptr<LocalSocketFd> l1 =   m_factory->FindBinder (realPath , this->GetTypeId () ) ;
-  LocalStreamSocketFd *listener =  ( 0 == l1)?0:dynamic_cast<LocalStreamSocketFd*>( PeekPointer (l1) );
+  LocalSocketFd* l1 = m_factory->FindBinder (realPath , this->GetTypeId () ) ;
+  LocalStreamSocketFd *listener =  ( 0 == l1)?0:dynamic_cast<LocalStreamSocketFd*>( l1 );
 
   if (0 != listener)
     {
@@ -785,14 +801,19 @@ LocalStreamSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
             }
           m_state = CONNECTING;
 
-          Waiter waiter;
-          SetRecvWaiter (&waiter);
-          waiter.SetTimeout (GetRecvTimeout ());
-          listener->ConnectionCreated (this);
-          Waiter::Result result = waiter.Wait ();
-          SetRecvWaiter (0);
+          WaitQueueEntryTimeout *wq = new WaitQueueEntryTimeout (POLLIN | POLLHUP, GetRecvTimeout ());
+          AddWaitQueue (wq, true);
+          listener->ConnectionCreated (this, wq);
+          WaitPoint::Result res = WaitPoint::OK;
+          if ( m_state == CONNECTING )
+            {
+              res = wq->Wait ();
+            }
+          RemoveWaitQueue ( wq, true );
+          delete (wq);
+          wq = 0;
 
-          if (Waiter::INTERRUPTED == result)
+          if (WaitPoint::INTERRUPTED == res)
             {
               UtilsDoSignal ();
             }
@@ -877,8 +898,7 @@ LocalStreamSocketFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
       return -1;
     }
 
-  Waiter waiter;
-  waiter.SetTimeout (GetRecvTimeout ());
+  WaitQueueEntryTimeout *wq = 0;
 
   NS_LOG_DEBUG("Accept: incoming queue len:" << m_cnxQueue.size());
 
@@ -888,30 +908,31 @@ LocalStreamSocketFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
         {
           // Socket do not want to wait
           Current ()->err = EAGAIN;
-          return -1;
+          RETURNFREE (-1);
         }
       m_state = ACCEPTING;
+      if (!wq)
+        {
+          wq = new WaitQueueEntryTimeout (POLLIN | POLLHUP, GetRecvTimeout ());
+        }
+      AddWaitQueue (wq, true);
+      WaitPoint::Result res = wq->Wait ();
+      RemoveWaitQueue (wq, true);
 
-      SetRecvWaiter (&waiter);
-      NS_LOG_DEBUG("Accept: waiting ...");
-      Waiter::Result result = waiter.Wait ();
-      NS_LOG_DEBUG("Accept: wait result:" << result);
-      SetRecvWaiter (0);
-
-      switch (result)
+      switch (res)
       {
-        case Waiter::OK:
+        case WaitPoint::OK:
           break;
-        case Waiter::INTERRUPTED:
+        case WaitPoint::INTERRUPTED:
           {
             UtilsDoSignal ();
             current->err = EINTR;
-            return -1;
+            RETURNFREE (-1);
           }
-        case Waiter::TIMEOUT:
+        case WaitPoint::TIMEOUT:
           {
             current->err = EAGAIN;
-            return -1;
+            RETURNFREE (-1);
           }
       }
     }
@@ -920,20 +941,22 @@ LocalStreamSocketFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
 
   while (!m_cnxQueue.empty ())
     {
-      Ptr<LocalStreamSocketFd> first = m_cnxQueue.front ();
+      LocalStreamSocketFd* first = m_cnxQueue.front ();
       m_cnxQueue.pop_front ();
+      // create an fd for the socket.
+      int fd = UtilsAllocateFd ();
+      if (fd == -1)
+        {
+          first->Close ();
+          current->err = EMFILE;
+          RETURNFREE (-1);
+        }
+
       if (first->InternalConnect ())
         {
-          // create an fd for the socket.
-          int fd = UtilsAllocateFd ();
-          if (fd == -1)
-            {
-              current->err = EMFILE;
-              return -1;
-            }
-          LocalStreamSocketFd *socket = new LocalStreamSocketFd (PeekPointer(first), m_bindPath);
-
-          current->process->openFiles.push_back (std::make_pair (fd, socket));
+          LocalStreamSocketFd *socket = new LocalStreamSocketFd (first, m_bindPath);
+          socket->IncFdCount ();
+          current->process->openFiles[fd] = new FileUsage (fd, socket);
 
           first->SetPeer (socket);
 
@@ -943,11 +966,12 @@ LocalStreamSocketFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
               *addrlen = sizeof (sa_family_t);
             }
 
-          return fd;
+          RETURNFREE (fd);
         }
+
     }
 
-  return -1;
+  RETURNFREE (-1);
 }
 
 bool
@@ -985,12 +1009,14 @@ LocalStreamSocketFd::HangupReceived (void) const
 bool
 LocalStreamSocketFd::InternalConnect (void)
 {
+  NS_LOG_FUNCTION( this << " state:" << m_state);
   if (CONNECTING != m_state)
     return false;
 
   m_state = CONNECTED;
 
-  WakeupRecv ();
+  short pi = POLLIN|POLLOUT;
+  WakeWaiters (&pi);
 
   return true;
 }
@@ -1008,22 +1034,24 @@ LocalStreamSocketFd::IsListening (void)
 }
 
 void
-LocalStreamSocketFd::ConnectionCreated (Ptr<LocalStreamSocketFd> sock)
+LocalStreamSocketFd::ConnectionCreated (LocalStreamSocketFd* sock, WaitQueueEntryTimeout *wq)
 {
   NS_LOG_FUNCTION (sock);
   m_cnxQueue.push_back (sock);
-  WakeupRecv ();
+
+  short pi = POLLIN;
+  WakeWaiters (&pi);
 }
 
 void
-LocalStreamSocketFd::RemoveFromQueue (Ptr<LocalStreamSocketFd> sock)
+LocalStreamSocketFd::RemoveFromQueue (LocalStreamSocketFd* sock)
 {
   NS_LOG_FUNCTION (sock);
   m_cnxQueue.remove (sock);
 }
 
 void
-LocalStreamSocketFd::SetPeer (Ptr<LocalStreamSocketFd> sock)
+LocalStreamSocketFd::SetPeer (LocalStreamSocketFd *sock)
 {
   m_peer = sock;
 }
@@ -1036,8 +1064,9 @@ LocalStreamSocketFd::PeerClosed ()
   if (m_state == CONNECTED)
     {
       m_state = REMOTECLOSED;
-      WakeupRecv ();
-      WakeupSend ();
+
+      short ph = POLLHUP;
+      WakeWaiters (&ph);
     }
 }
 
@@ -1054,8 +1083,8 @@ LocalStreamSocketFd::ClearAll (bool andWakeUp)
 
   if (andWakeUp)
     {
-      WakeupRecv ();
-      WakeupSend ();
+      short ph = POLLHUP;
+      WakeWaiters (&ph);
     }
 }
 
@@ -1065,11 +1094,36 @@ LocalStreamSocketFd::IsShutWrite(void) const
   return m_shutWrite;
 }
 
-
 bool
 LocalStreamSocketFd::IsClosed (void) const
 {
   return CLOSED == m_state;
+}
+
+int
+LocalStreamSocketFd::Poll (PollTable* ptable)
+{
+  int ret = 0;
+
+  if (CanRecv ())
+    {
+      ret |= POLLIN;
+    }
+  if (CanSend ())
+    {
+      ret |= POLLOUT;
+    }
+  if (IsClosed() || HangupReceived() )
+    {
+      ret |= POLLHUP;
+    }
+
+  if (ptable)
+    {
+      ptable->PollWait (this);
+    }
+
+  return ret;
 }
 
 } // namespace ns3

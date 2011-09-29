@@ -30,6 +30,7 @@
 #include "ns3/nstime.h"
 #include "unix-fd.h"
 #include "ns3/random-variable.h"
+#include <map>
 
 class KingsleyAlloc;
 
@@ -46,6 +47,8 @@ class DceManager;
 class UnixFd;
 class Loader;
 class Task;
+class FileUsage;
+class PollTable;
 
 struct Mutex
 {
@@ -117,7 +120,8 @@ struct Process
   uint16_t pid;
   std::string name;
   std::string stdinFilename;
-  std::vector<std::pair<int,UnixFd *> > openFiles;
+  // Key is the fd
+  std::map<int,FileUsage *> openFiles;
   std::vector<FILE *> openStreams;
   std::vector<SignalHandler> signalHandlers;
   std::vector<Thread *> threads;
@@ -192,6 +196,8 @@ struct Thread
   sigset_t pendingSignals;
   Time lastTime; // Last time of a possible infinite loop checkpoint.
   Waiter *childWaiter; // Not zero if thread waiting for a child in wait or waitall ...
+  PollTable *pollTable; // No 0 if a poll is running on this thread
+  std::pair < UnixFd*, WaitQueueEntry* > ioWait; // Filled if the current thread is currently waiting for IO
 };
 
 } // namespace ns3

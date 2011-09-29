@@ -44,6 +44,7 @@ public:
   virtual bool CanRecv (void) const;
   virtual bool CanSend (void) const;
   virtual bool HangupReceived (void) const;
+  virtual int Poll (PollTable* ptable);
 
 private:
   void TimerExpired (void);

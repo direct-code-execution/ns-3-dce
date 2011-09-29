@@ -2,7 +2,6 @@
 #include "process.h"
 #include "dce-manager.h"
 #include "utils.h"
-#include "waiter.h"
 #include "cmsg.h"
 #include "sys/dce-socket.h"
 #include "ns3/log.h"
@@ -22,6 +21,7 @@
 #include <sys/mman.h>
 #include <net/ethernet.h>
 #include <linux/if_arp.h>
+#include <poll.h>
 
 NS_LOG_COMPONENT_DEFINE ("UnixSocketFd");
 
@@ -130,13 +130,17 @@ void
 UnixSocketFd::RecvSocketData (Ptr<Socket> socket)
 {
   NS_LOG_FUNCTION (this << m_socket << socket);
-  WakeupRecv ();
+
+  int pi = POLLIN;
+  WakeWaiters (&pi);
 }
 void 
 UnixSocketFd::SendSocketData (Ptr<Socket> socket, uint32_t available)
 {
   NS_LOG_FUNCTION (this << m_socket << socket);
-  WakeupSend ();  
+
+  int pi = POLLOUT;
+  WakeWaiters (&pi);
 }
 
 int 
@@ -159,7 +163,8 @@ UnixSocketFd::Close (void)
    * So, m_readWaiter might well be != 0 here but we don't care.
    * Instead, we check wakeup writers
    */
-  WakeupSend ();
+  int pi = POLLHUP;
+  WakeWaiters (&pi);
   return result;
 }
 ssize_t 
@@ -505,68 +510,6 @@ UnixSocketFd::Ns3AddressToPosixAddress(const Address& nsaddr,
     }
   return 0;
 }
-#ifdef NEW_PACKET_SOCKET
-int 
-UnixSocketFd::Ns3AddressToDeviceIndependantPhysicalLayerAddress (const Address& nsaddr, const Packet& pac,
-                                                                 struct sockaddr_ll *addr, socklen_t *addrlen) const
-{
-  if (PacketSocketAddress::IsMatchingType(nsaddr))
-      {
-        PacketSocketAddress ll_addr = PacketSocketAddress::ConvertFrom(nsaddr);
-        if (*addrlen < sizeof (struct sockaddr_ll))
-          {
-            return -1;
-          }
-        memset (addr, 0, sizeof (struct sockaddr_ll));
-        addr->sll_family = AF_PACKET;
-        addr->sll_protocol =  htons( ll_addr.GetProtocol() );
-        addr->sll_ifindex = ll_addr.GetSingleDevice() + 1;
-        addr->sll_hatype = 0;
-        ll_addr.GetPhysicalAddress().CopyAllTo(&(addr->sll_pkttype), 8);
-        *addrlen = sizeof(struct sockaddr_ll);
-
-        PacketSocketTag pst;
-        DeviceNameTag dnt;
-        bool found;
-
-        found = pac.PeekPacketTag (dnt);
-        if  (found)
-          {
-            if ( dnt.GetDeviceName () == "NetDevice" )
-              {
-                addr->sll_hatype = ARPHRD_PPP;
-              }
-            else if ( dnt.GetDeviceName () == "LoopbackNetDevice" )
-                {
-                  addr->sll_hatype = ARPHRD_LOOPBACK;
-                }
-            else if ( dnt.GetDeviceName () == "CsmaNetDevice" )
-                {
-                  addr->sll_hatype = ARPHRD_ETHER;
-                }
-            else if ( dnt.GetDeviceName () == "PointToPointNetDevice" )
-                {
-                  addr->sll_hatype = ARPHRD_PPP;
-                }
-            else if ( dnt.GetDeviceName () == "WifiNetDevice" )
-                {
-                  addr->sll_hatype = ARPHRD_IEEE80211;
-                }
-          }
-        found = pac.PeekPacketTag (pst);
-        if (found)
-          {
-            addr->sll_pkttype = pst.GetPacketType();
-          }
-      }
-    else
-      {
-        NS_ASSERT (false);
-      }
-  return 0;
-}
-#endif
-
 int
 UnixSocketFd::Bind (const struct sockaddr *my_addr, socklen_t addrlen)
 {
@@ -628,12 +571,32 @@ UnixSocketFd::WaitRecvDoSignal (bool dontwait)
     }
   if (!CanRecv ())
     {
-      Waiter waiter;
-      SetRecvWaiter (&waiter);
-      waiter.SetTimeout (m_recvTimeout);
-      bool ok = waiter.WaitDoSignal ();
-      SetRecvWaiter (0);
-      NS_ASSERT_MSG (ok?CanRecv ():true, this << " " << current);
+      bool ok = false;
+      WaitQueueEntryTimeout *wq = new WaitQueueEntryTimeout (POLLIN | POLLHUP, m_recvTimeout);
+      AddWaitQueue (wq, true);
+      NS_LOG_DEBUG("WaitRecvDoSignal: waiting ...");
+      PollTable::Result res = wq->Wait ();
+      NS_LOG_DEBUG("WaitRecvDoSignal: wait result:" << res);
+      RemoveWaitQueue ( wq , true);
+      NS_LOG_FUNCTION(this << "DELETING: " << wq);
+      delete wq;
+      wq = 0;
+
+      if ( res == PollTable::INTERRUPTED)
+        {
+          UtilsDoSignal ();
+          current->err = EINTR;
+          return false;
+        }
+      else
+        {
+          ok = (res == PollTable::OK);
+          if (!ok)
+            {
+              current->err = EAGAIN;
+            }
+        }
+
       return ok;
     }
   NS_ASSERT (CanRecv ());
@@ -674,6 +637,8 @@ UnixSocketFd::Gettime (struct itimerspec *cur_value) const
 void
 UnixSocketFd::ClearSocket (void)
 {
+  NS_LOG_FUNCTION (this << Current () );
+
   if ( m_socket )
     {
       Callback<void, Ptr< Socket > > nil = MakeNullCallback<void, Ptr<Socket> > ();
@@ -686,10 +651,11 @@ UnixSocketFd::ClearSocket (void)
       m_socket->SetConnectCallback (nil, nil);
       m_socket->SetCloseCallbacks  ( nil, nil);
 
-      m_socket->SetRecvCallback ( nil);
+      m_socket->SetRecvCallback ( MakeNullCallback<void, Ptr<Socket> > () );
       m_socket->SetSendCallback ( MakeNullCallback<void,Ptr<Socket>,uint32_t > ());
     }
-  m_socket = 0;
+
+ m_socket = 0;
 }
 void
 UnixSocketFd::ChangeSocket (Ptr<Socket> socket)

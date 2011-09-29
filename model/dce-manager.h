@@ -36,6 +36,8 @@ namespace ns3 {
 struct Process;
 struct Thread;
 
+
+
 /**
  * \brief Manages a set of virtual POSIX processes within the same
  *        address space.
@@ -71,6 +73,15 @@ class DceManager : public Object
 {
 public:	
   typedef Callback<void> Runnable;
+  typedef enum
+  {
+    PEC_EXIT,
+    PEC_EXEC_SUCCESS,
+    PEC_EXEC_FAILED,
+    PEC_NS3_END, // NO MORE EVENTS
+    PEC_NS3_STOP, // STOP AT PREDEFINED TIME
+  } ProcessEndCause;
+
   static TypeId GetTypeId (void);
 
   DceManager ();
@@ -86,11 +97,7 @@ public:
 
   // internal methods
   struct Thread *CreateThread (struct Process *process);
-  // with type:
-  //  0: normal exit
-  //  1: exec success
-  //  2: exec failed.
-  void DeleteProcess (struct Process *process, int type);
+  void DeleteProcess (struct Process *process, ProcessEndCause type);
   void DeleteThread (struct Thread *thread);
 
   Thread *SearchThread (uint16_t pid, uint16_t tid);
@@ -148,6 +155,8 @@ private:
   static void StartProcessDebugHook (void);
   void ChildFinished (uint16_t pid);
   bool WakeupChildWaiters (struct Process *p);
+  // Remove memory used by thread poll table and iowait, remove from wait queues
+  void CleanupThread (struct Thread *thread);
 
   //std::vector<Process *> m_processes;
   std::map<uint16_t, Process *> m_processes; // Key is the pid

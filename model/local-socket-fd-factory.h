@@ -42,12 +42,12 @@ public:
   virtual void DoDispose();
   virtual ~LocalSocketFdFactory ();
   virtual UnixFd *CreateSocket (int domain, int type, int protocol);
-  Ptr<LocalSocketFd> FindBinder (std::string path, TypeId type) const;
-  void RegisterBinder (std::string path, Ptr<LocalSocketFd> socket);
+  LocalSocketFd* FindBinder (std::string path, TypeId type) const;
+  void RegisterBinder (std::string path, LocalSocketFd* socket);
   void UnRegisterBinder (std::string path);
 
  private:
-  typedef std::map<std::string, Ptr<LocalSocketFd> > BindMap;
+  typedef std::map<std::string, LocalSocketFd* > BindMap;
   BindMap m_bindByPath;
   size_t m_totalBuffersSize;
 };

@@ -75,6 +75,7 @@ public:
   virtual bool CanRecv (void) const ;
   virtual bool CanSend (void) const ;
   virtual bool HangupReceived (void) const ;
+  virtual int Poll (PollTable* ptable);
 
 protected:
   virtual void ClearAll (bool andWakeUp) ;
@@ -84,11 +85,10 @@ private:
   bool IsBinded (void);
   void UnBind (void);
   ssize_t Read(void *buf, size_t count, bool noWait, bool peek);
-  bool WaitRoom (Time timeout);
   void AddConnected (LocalDatagramSocketFd *newone);
   void RemoveConnected (LocalDatagramSocketFd *freeOne, bool andWakeUp);
 
-  ssize_t Write2Peer (const void *buf, size_t count, Ptr<LocalDatagramSocketFd> peer);
+  ssize_t Write2Peer (const void *buf, size_t count, LocalDatagramSocketFd* peer);
 
   enum State
   {
@@ -102,9 +102,9 @@ private:
 
   // Because of the implementation of
   // Filled when CONNECTED
-  Ptr<LocalDatagramSocketFd> m_peer;
+  LocalDatagramSocketFd* m_peer;
   // When I am BINDED I could have much peers.
-  std::set< Ptr<LocalDatagramSocketFd> > m_myPeers;
+  std::set< LocalDatagramSocketFd* > m_myPeers;
  };
 
 } // namespace ns3

@@ -129,5 +129,5 @@ doctest:
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in $(BUILDDIR)/doctest/output.txt."
 install: html
-	rm -rf $(HOME)/Frederic.Urbani/ns3dceccnx
-	cp -r  $(BUILDDIR)/html $(HOME)/Frederic.Urbani/ns3dceccnx
+	rm -rf $(HOME)/Frederic.Urbani/ns3dceccnx_new
+	cp -r  $(BUILDDIR)/html $(HOME)/Frederic.Urbani/ns3dceccnx_new

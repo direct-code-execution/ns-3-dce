@@ -18,7 +18,7 @@
 #include <linux/errqueue.h>
 #include <arpa/inet.h>
 #include <linux/if_arp.h>
-
+#include <poll.h>
 NS_LOG_COMPONENT_DEFINE ("UnixDatagramSocketFd");
 
 namespace ns3 {
@@ -325,5 +325,29 @@ UnixDatagramSocketFd::CopyMacAddress (const Address &a,  uint8_t* const buf)
         }
     }
 }
+int
+UnixDatagramSocketFd::Poll (PollTable* ptable)
+{
+  int ret = 0;
 
+  if (CanRecv ())
+    {
+      ret |= POLLIN;
+    }
+  if (CanSend ())
+    {
+      ret |= POLLOUT;
+    }
+  if (HangupReceived() )
+    {
+      ret |= POLLHUP;
+    }
+
+  if (ptable)
+    {
+      ptable->PollWait (this);
+    }
+
+  return ret;
+}
 } // namespace ns3

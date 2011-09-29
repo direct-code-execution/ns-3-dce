@@ -4,12 +4,14 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <time.h>
-//#include "ns3/ref-count-base.h"
 #include "ns3/object.h"
+#include "wait-queue.h"
+#include <list>
 
 namespace ns3 {
 
 class Waiter;
+class DceManager;
 
 // This class heritate from Object for Dispose and Reference Counting features.
 class UnixFd: public Object
@@ -44,8 +46,6 @@ public:
 		       struct itimerspec *old_value) = 0;
   virtual int Gettime (struct itimerspec *cur_value) const = 0;
 
-  virtual void SetRecvWaiter (Waiter *waiter);
-  virtual void SetSendWaiter (Waiter *waiter);
   // CanRecv and CanSend return true only if a following Read or Write will not block,
   // so a remote closed socket should return true because read or write will not block but will fail.
   virtual bool CanRecv (void) const = 0;
@@ -53,31 +53,25 @@ public:
   // Return true if a select on this fd should return POLLHUP
   virtual bool HangupReceived (void) const = 0;
 
-  // File Descriptor Reference count
-  // Increment Fd Usage
-  inline void FdUsageInc ()
-  {
-    m_useCount++;
-  }
-  // Decrement Fd Usage
-  inline void FdUsageDec (void)
-  {
-    m_useCount--;
-  }
-  // Get Usage count of FD.
-  inline int32_t GetFdUsageCount (void) const
-  {
-    return m_useCount;
-  }
+  virtual int Poll (PollTable* ptable) = 0;
 
+  void IncFdCount (void);
+  void DecFdCount (void);
+  int GetFdCount (void) const;
+
+  friend class PollTableEntry;
+  friend class PollTable;
+  friend class DceManager;
 protected:
   UnixFd ();
-  void WakeupSend (void);
-  void WakeupRecv (void);
+  void RemoveWaitQueue (WaitQueueEntry*, bool andUnregister);
+  void AddWaitQueue (WaitQueueEntry*, bool andRegister);
+  void WakeWaiters (void *key);
+
 private:
-  Waiter *m_recvWaiter;
-  Waiter *m_sendWaiter;
-  int32_t m_useCount;
+  std::list <WaitQueueEntry*> m_waitQueueList;
+  // Number of FD referencing me
+  int m_fdCount;
 };
 
 } // namespace ns3

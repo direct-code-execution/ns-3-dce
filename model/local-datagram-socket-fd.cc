@@ -28,9 +28,10 @@
 #include <fcntl.h>
 #include <sys/mman.h> // for MMAP_FAILED
 #include <sys/un.h>
-#include "waiter.h"
 #include "unix-fd.h"
 #include <exception>
+#include <poll.h>
+#include "wait-queue.h"
 
 NS_LOG_COMPONENT_DEFINE("LocalDatagramSocketFd");
 
@@ -99,65 +100,80 @@ LocalDatagramSocketFd::Write (const void *buf, size_t count)
 
   return Write2Peer ( buf, count, m_peer );
 }
+
 ssize_t
 LocalDatagramSocketFd::Read (void *buf, size_t count, bool noWait, bool peek)
 {
   NS_LOG_FUNCTION (this << "state:" << m_state );
+  WaitQueueEntryTimeout *wq = 0;
 
   while ( BINDED == m_state )
     {
       // Is There some already received data ?
       if (m_readBuffer.size () > 0)
         {
-          return ReadData ((uint8_t*) buf, count, peek);
+          ssize_t ret = ReadData ((uint8_t*) buf, count, peek);
+
+          if ((ret > 0)&&(0!=m_peer))
+            {
+              // WakeUP peer because we made room
+              short po = POLLOUT;
+              m_peer->WakeWaiters (&po);
+            }
+          RETURNFREE (ret);
         }
 
       // Should Wait data ?
-      if (noWait || m_shutRead) return 0;
+      if (noWait || m_shutRead)
+        {
+          RETURNFREE (0);
+        }
       if (  m_statusFlags & O_NONBLOCK  )
         {
           // Socket do not want to wait
           Current ()->err = EAGAIN;
-          return -1;
+          RETURNFREE (-1);
         }
       // Before wait verify not closed by another thread !
       if ( BINDED != m_state )
         {
           Current ()->err = ENOTCONN;
-          return -1;
+          RETURNFREE (-1);
         }
-
-      Waiter waiter;
-      waiter.SetTimeout (GetRecvTimeout ());
-      SetRecvWaiter (&waiter);
-      Waiter::Result result = waiter.Wait ();
-      SetRecvWaiter (0);
-      switch (result)
+      if (!wq)
         {
-        case Waiter::OK:
+          wq = new WaitQueueEntryTimeout (POLLIN | POLLHUP, GetRecvTimeout ());
+        }
+      AddWaitQueue (wq,true);
+      WaitPoint::Result res = wq->Wait ();
+      RemoveWaitQueue ( wq ,true);
+
+      switch (res)
+        {
+        case WaitPoint::OK:
           break;
 
-        case Waiter::INTERRUPTED:
+        case WaitPoint::INTERRUPTED:
           UtilsDoSignal ();
           if ( 0 == m_readBuffer.size() )
             {
               Current ()->err = EINTR;
-              return -1;
+              RETURNFREE (-1);
             }
           break;
 
-        case Waiter::TIMEOUT:
+        case WaitPoint::TIMEOUT:
           if ( 0 == m_readBuffer.size() )
             {
               Current ()->err = EAGAIN;
-              return -1;
+              RETURNFREE (-1);
             }
           break;
         }
     }
 
   Current ()->err = ENOTCONN;
-  return -1;
+  RETURNFREE (-1);
 }
 
 int
@@ -488,8 +504,8 @@ LocalDatagramSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrle
 
   std::string realPath = UtilsGetRealFilePath (std::string (((struct sockaddr_un*) my_addr)->sun_path));
 
-  Ptr<LocalSocketFd> l1 = m_factory->FindBinder (realPath , this->GetTypeId () ) ;
-  LocalDatagramSocketFd *listener =  dynamic_cast<LocalDatagramSocketFd*>( PeekPointer (l1) );
+  LocalSocketFd* l1 = m_factory->FindBinder (realPath , this->GetTypeId () ) ;
+  LocalDatagramSocketFd *listener =  dynamic_cast<LocalDatagramSocketFd*>( l1 );
 
   if (0 != listener)
     {
@@ -654,9 +670,9 @@ LocalDatagramSocketFd::Recvmsg(struct msghdr *msg, int flags)
 ssize_t
 LocalDatagramSocketFd::Sendmsg(const struct msghdr *msg, int flags)
 {
-  NS_LOG_FUNCTION (this);
-  Ptr<LocalDatagramSocketFd> listener = 0;
-  Ptr<LocalSocketFd> l1 = 0;
+  NS_LOG_FUNCTION (this << m_state);
+  LocalDatagramSocketFd* listener = 0;
+  LocalSocketFd* l1 = 0;
   if ( 0 == msg )
     {
       Current ()->err = EINVAL;
@@ -681,7 +697,12 @@ LocalDatagramSocketFd::Sendmsg(const struct msghdr *msg, int flags)
 
       // Do a write
       l1 = m_factory->FindBinder (realPath , this->GetTypeId () ) ;
-      listener = dynamic_cast<LocalDatagramSocketFd*>( PeekPointer (l1) );
+      listener = dynamic_cast<LocalDatagramSocketFd*>( l1 );
+    }
+  else if ( REMOTECLOSED == m_state )
+    {
+      Current ()->err = ECONNREFUSED;
+      return -1;
     }
   else
     {
@@ -696,6 +717,8 @@ LocalDatagramSocketFd::Sendmsg(const struct msghdr *msg, int flags)
     }
 
   ssize_t retval = 0;
+  WaitQueueEntryTimeout *wq = 0;
+
   for (uint32_t i = 0; i < msg->msg_iovlen; ++i)
     {
       uint8_t *buf = (uint8_t *) msg->msg_iov[i].iov_base;
@@ -713,31 +736,50 @@ LocalDatagramSocketFd::Sendmsg(const struct msghdr *msg, int flags)
                 if ( flags & MSG_DONTWAIT )
                   {
                     Current ()->err = EAGAIN;
-                    return -1;
+                    RETURNFREE (-1);
                   }
-                if ( !listener->WaitRoom ( GetSendTimeout() ) )
+                if (!wq)
                   {
-                    Current ()->err = EAGAIN;
-                    return -1;
+                    wq = new WaitQueueEntryTimeout (POLLOUT | POLLHUP, GetSendTimeout ());
                   }
-                else
+                AddWaitQueue (wq, true);
+                WaitPoint::Result res = wq->Wait ();
+                RemoveWaitQueue (wq, true);
+
+                switch (res)
                   {
-                    if ( m_state >= REMOTECLOSED )
+                  case WaitPoint::OK:
+                    break;
+                  case WaitPoint::INTERRUPTED:
+                    {
+                      UtilsDoSignal ();
+                      Current ()->err = EINTR;
+                      RETURNFREE (-1);
+                        }
+                    break;
+                  case WaitPoint::TIMEOUT:
                       {
-                        Current ()->err = ECONNREFUSED;
-                        return -1;
+                        Current ()->err = EAGAIN;
+                        RETURNFREE (-1);
                       }
-                    continue;
+                    break;
                   }
+
+                if ( m_state >= REMOTECLOSED )
+                  {
+                    Current ()->err = ECONNREFUSED;
+                    RETURNFREE (-1);
+                  }
+                continue;
               }
 
             case -1: // NOMEM !
-              return -1;
+              RETURNFREE (-1);
 
             case -2: // CLOSED !
               {
                 Current ()->err = ECONNREFUSED;
-                return -1;
+                RETURNFREE (-1);
               }
           }
 
@@ -748,7 +790,7 @@ LocalDatagramSocketFd::Sendmsg(const struct msghdr *msg, int flags)
             }
         }
     }
-  return retval;
+  RETURNFREE( retval) ;
 }
 
 bool
@@ -758,7 +800,7 @@ LocalDatagramSocketFd::IsBinded (void)
 }
 
 ssize_t
-LocalDatagramSocketFd::Write2Peer (const void *buf, size_t count, Ptr<LocalDatagramSocketFd> peer)
+LocalDatagramSocketFd::Write2Peer (const void *buf, size_t count, LocalDatagramSocketFd* peer)
 {
   NS_LOG_FUNCTION (this);
 
@@ -796,31 +838,6 @@ LocalDatagramSocketFd::Read(void *buf, size_t count)
 {
   return Read ( buf, count, false, false);
 }
-
-bool
-LocalDatagramSocketFd::WaitRoom (Time timeout)
-{
-  NS_LOG_FUNCTION (this);
-  Waiter waiter;
-  waiter.SetTimeout ( timeout );
-  SetRecvWaiter (&waiter);
-  Waiter::Result result = waiter.Wait ();
-  SetRecvWaiter (0);
-
-  switch (result)
-    {
-    case Waiter::OK:
-      return true;
-
-    case Waiter::INTERRUPTED:
-      UtilsDoSignal ();
-      return false;
-
-    case Waiter::TIMEOUT:
-      return false;
-    }
-}
-
 bool
 LocalDatagramSocketFd::IsClosed (void) const
 {
@@ -844,7 +861,11 @@ LocalDatagramSocketFd::RemoveConnected (LocalDatagramSocketFd *freeOne , bool an
     case BINDED:
       {
         m_myPeers.erase (freeOne);
-        if (andWakeUp) WakeupRecv ();
+        if (andWakeUp)
+          {
+            int pi = POLLHUP;
+            WakeWaiters (&pi);
+          }
       }
       break;
 
@@ -852,7 +873,11 @@ LocalDatagramSocketFd::RemoveConnected (LocalDatagramSocketFd *freeOne , bool an
       {
         m_peer = 0;
         m_state = REMOTECLOSED;
-        if (andWakeUp) WakeupRecv ();
+        if (andWakeUp)
+          {
+            int pi = POLLHUP;
+            WakeWaiters (&pi);
+          }
       }
       break;
   }
@@ -864,16 +889,16 @@ LocalDatagramSocketFd::ClearAll (bool andWakeUp)
   m_state = CLOSED;
   if ( 0 != m_peer )
     {
-      Ptr<LocalDatagramSocketFd> freeOne = m_peer;
+      LocalDatagramSocketFd* freeOne = m_peer;
 
       m_peer = 0;
       freeOne->RemoveConnected (this, andWakeUp);
     }
-  std::set< Ptr<LocalDatagramSocketFd> > toFree = m_myPeers;
+  std::set< LocalDatagramSocketFd* > toFree = m_myPeers;
 
   m_myPeers.clear();
 
-  std::set< Ptr<LocalDatagramSocketFd> >::iterator i;
+  std::set< LocalDatagramSocketFd* >::iterator i;
 
   for (i = toFree.begin(); i != toFree.end (); ++i)
     {
@@ -891,7 +916,34 @@ LocalDatagramSocketFd::ClearAll (bool andWakeUp)
 
   if (andWakeUp)
     {
-      WakeupRecv ();
+  //    WakeupRecv ();
+      int pi = POLLHUP;
+      WakeWaiters (&pi);
     }
+}
+int
+LocalDatagramSocketFd::Poll (PollTable* ptable)
+{
+  int ret = 0;
+
+  if (CanRecv ())
+    {
+      ret |= POLLIN;
+    }
+  if (CanSend ())
+    {
+      ret |= POLLOUT;
+    }
+  if (HangupReceived() )
+    {
+      ret |= POLLHUP;
+    }
+
+  if (ptable)
+    {
+      ptable->PollWait (this);
+    }
+
+  return ret;
 }
 } // namespace ns3

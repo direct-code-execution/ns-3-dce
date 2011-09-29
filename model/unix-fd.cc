@@ -1,5 +1,10 @@
 #include "unix-fd.h"
 #include "waiter.h"
+#include "ns3/log.h"
+#include "process.h"
+#include "utils.h"
+
+NS_LOG_COMPONENT_DEFINE ("UnixFd");
 
 namespace ns3 {
 
@@ -12,38 +17,49 @@ UnixFd::GetTypeId (void)
   return tid;
 }
 
-UnixFd::UnixFd ()
-  : m_recvWaiter (0),
-    m_sendWaiter (0),
-    m_useCount (1)
+UnixFd::UnixFd () : m_fdCount (0)
 {}
-
-void 
-UnixFd::SetRecvWaiter (Waiter *waiter)
+void
+UnixFd::RemoveWaitQueue (WaitQueueEntry* old, bool andUnregister)
 {
-  m_recvWaiter = waiter;
-}
-void 
-UnixFd::SetSendWaiter (Waiter *waiter)
-{
-  m_sendWaiter = waiter;
-}
-
-void 
-UnixFd::WakeupSend (void)
-{
-  if (m_sendWaiter != 0)
+  m_waitQueueList.remove (old);
+  if (andUnregister)
     {
-      m_sendWaiter->Wakeup ();
+      Current ()->ioWait = std::make_pair ((UnixFd*)0,(WaitQueueEntry*)0);
     }
 }
-void 
-UnixFd::WakeupRecv (void)
+void
+UnixFd::AddWaitQueue (WaitQueueEntry* newOne, bool andRegister)
 {
-  if (m_recvWaiter != 0)
+  m_waitQueueList.push_back (newOne);
+  if (andRegister)
     {
-      m_recvWaiter->Wakeup ();
+      Current ()->ioWait = std::make_pair (this, newOne);
     }
+}
+void
+UnixFd::WakeWaiters (void* key)
+{
+  for (std::list<WaitQueueEntry*>::iterator i = m_waitQueueList.begin ();
+      i != m_waitQueueList.end (); ++i)
+    {
+      (*i)->WakeUp (key);
+    }
+}
+void
+UnixFd::IncFdCount (void)
+{
+  m_fdCount++;
+}
+void
+UnixFd::DecFdCount (void)
+{
+  m_fdCount--;
+}
+int
+UnixFd::GetFdCount (void) const
+{
+  return m_fdCount;
 }
 
 } // namespace ns3

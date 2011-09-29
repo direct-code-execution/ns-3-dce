@@ -2586,6 +2586,72 @@ server28 (void *arg)
   return arg;
 }
 
+#define BUF_LEN29 ((size_t) 1024)
+static char sendBuf29[BUF_LEN29];
+
+// Test if memory leak when NS3 stop simulation with existing processes and threads
+static void *
+client29 (void *arg)
+{
+  sleep( 1 );
+  int sock = CreateDgramConnect ();
+  int status = 0;
+  struct msghdr mes;
+  struct iovec msg1;
+
+  TEST_ASSERT ( sock > 0 );
+
+  while (true)
+    {
+      memset (sendBuf29, 29, sizeof(sendBuf29));
+      msg1.iov_base = &sendBuf29;
+      msg1.iov_len = sizeof(sendBuf29);
+
+      mes.msg_name = 0;
+      mes.msg_namelen = 0;
+      mes.msg_iov = &msg1;
+      mes.msg_iovlen = 1;
+      mes.msg_control = 0;
+      mes.msg_controllen = 0;
+      mes.msg_flags = 0;
+
+      ssize_t res = sendmsg( sock, &mes, 0);
+      if (res < 0)
+        {
+          sleep (1);
+          close (sock);
+          break;
+        }
+    }
+
+  return arg;
+}
+static void *
+server29 (void *arg)
+{
+  printf ("Server29: start \n\n ");
+  unlink (SOCK_PATH);
+  int sock = CreateDgramBind ();
+  int buf = -1;
+  int status = 0;
+  struct msghdr mes;
+  struct iovec msgs[2];
+  int sec = 1;
+
+  TEST_ASSERT( sock >= 0 );
+
+  sleep (30000);
+
+//  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+ // unlink (SOCK_PATH);
+
+  printf ("Server29: end \n\n ");
+
+  return arg;
+}
+
 static void
 launch (void * (*clientStart) (void *), void *(*serverStart) (void *))
 {
@@ -2645,12 +2711,13 @@ main (int argc, char *argv[])
       launch (client21, server21);
       launch (client22, server22);
       launch (client23, server23);
+
       launch (client24, server24);
       launch (client25, server25);
       launch (client27, server27);
       launch (client28, server28);
-
       launch (client26, server26);
+      launch (client29, server29);
     }
   else
     {

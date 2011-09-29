@@ -502,6 +502,7 @@ client5 (void *arg)
   TEST_ASSERT_EQUAL( status, 0 );
 
   sleep (2);
+  printf ("Client5: fd: %d\n", sock);
 
   struct pollfd fd;
 
@@ -515,7 +516,7 @@ client5 (void *arg)
   TEST_ASSERT ( status == 1);
   TEST_ASSERT( fd.revents & POLLIN );
   TEST_ASSERT( fd.revents & POLLOUT );
-  TEST_ASSERT( fd.revents & POLLHUP );
+//  TEST_ASSERT( fd.revents & POLLHUP );
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -550,6 +551,7 @@ server5 (void *arg)
 
   sockin = accept (sock, NULL, NULL);
   TEST_ASSERT( sockin >= 0 );
+  printf ("Server5: fd: %d\n", sockin);
 
   status = send (sockin, writeBuf, BUF_LEN, 0);
   TEST_ASSERT( status >= 0 );
@@ -751,6 +753,36 @@ server6 (void *arg)
   return arg;
 }
 
+// Test, exit while polling.
+static void *
+client_last (void *arg)
+{
+  struct pollfd theInput;
+
+  theInput.fd = 0;
+  theInput.events = POLLIN;
+  theInput.revents = 0;
+
+  int fd2 = socket (AF_UNIX, SOCK_STREAM, 0);
+  int fd = open ("F", O_CREAT | O_TRUNC | O_RDWR, S_IRWXU);
+
+  int status = poll (&theInput, 1, -1);
+
+  TEST_ASSERT (false);
+
+  return arg;
+}
+
+static void *
+server_last (void *arg)
+{
+  sleep (2);
+  exit (0);
+  TEST_ASSERT (false);
+
+  return arg;
+}
+
 static void
 launch (void *(*clientStart) (void *), void *(*serverStart) (void *))
 {
@@ -778,7 +810,7 @@ launch (void *(*clientStart) (void *), void *(*serverStart) (void *))
   fflush (stderr);
 }
 
-// XXX : Rajouter test POLLERR, POLLHUP, POLLVAL !
+// XXX : add test POLLERR, POLLHUP, POLLVAL !
 int
 main (int argc, char *argv[])
 {
@@ -790,10 +822,13 @@ main (int argc, char *argv[])
   launch (client1, server1);
   launch (client2, server2);
   launch (client3, server3);
-  test_nval ();
+ // test_nval ();
+
   launch (client5, server5);
   launch (client4, server4);
   launch (client6, server6);
+
+  launch (client_last, server_last);
 
   printf("test-poll end.\n ");
   fflush (stdout);

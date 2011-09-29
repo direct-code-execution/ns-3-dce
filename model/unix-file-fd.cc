@@ -9,6 +9,7 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include "dce-node-context.h"
+#include "poll.h"
 
 NS_LOG_COMPONENT_DEFINE ("UnixFileFd");
 
@@ -324,6 +325,32 @@ UnixFileFd::Close (void)
   // caller is responsible for removing this fd from process
   // list of fds and deleting this class instance.
   return result;
+}
+
+int
+UnixFileFdBase::Poll (PollTable* ptable)
+{
+  int ret = 0;
+
+  if (CanRecv ())
+    {
+      ret |= POLLIN;
+    }
+  if (CanSend ())
+    {
+      ret |= POLLOUT;
+    }
+  if (HangupReceived() )
+    {
+      ret |= POLLHUP;
+    }
+
+  if (ptable)
+    {
+      ptable->PollWait (this);
+    }
+
+  return ret;
 }
 
 UnixFileFdLight::UnixFileFdLight (std::string path) : m_path(path), UnixFileFdBase ( -1 )

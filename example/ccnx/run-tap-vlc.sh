@@ -77,7 +77,7 @@
 ## File to look
 VIDEOFILE=big_buck_bunny_240p_mpeg4.ts
 # TRANSPORT : Use tcp or udp
-TRANSPORT=udp
+TRANSPORT=tcp
 echo init keystores
 for i in 1
 do
@@ -102,7 +102,7 @@ then
     sleep 1
     $CCNX_PATH/bin/ccndc add / $TRANSPORT 10.0.0.2 2000
     sleep 1
-   	CCN_LOCAL_PORT=3000 $CCNX_PATH/bin/ccnputfile ccnx:///VIDEO/bunny.ts $VIDEOFILE
+    CCN_LOCAL_PORT=3000 $CCNX_PATH/bin/ccnputfile ccnx:///VIDEO/bunny.ts $VIDEOFILE
     sleep 1
     vlc ccnx:///VIDEO/bunny.ts >vlc_output.txt 2>&1 &
     sleep 600 

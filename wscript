@@ -148,7 +148,8 @@ def build_dce_tests(module, kern):
              ['test-tcp-socket', ['PTHREAD']],
              ['test-exec', []],
              ['test-exec-target-1', []],
-             ['test-raw-socket', []]
+             ['test-raw-socket', []],
+             ['test-fork-fd', []]
              ]
     for name,uselib in tests:
         module.add_test(**dce_kw(target='bin/' + name, source = ['test/' + name + '.cc'],
@@ -238,7 +239,7 @@ def build(bld):
 
     module_source = [
         'model/dce-manager.cc',
-	'model/dce-application.cc',
+	    'model/dce-application.cc',
         'model/dce.cc',
         'model/dce-signal.cc',
         'model/libc-dce.c',
@@ -287,10 +288,12 @@ def build(bld):
         'model/local-datagram-socket-fd.cc',
         'model/local-socket-fd-factory.cc',
         'model/dce-umask.cc',
-        'model/system-path.cc',
         'model/dce-misc.cc',
         'model/dce-node-context.cc',
         'model/dce-wait.cc',
+        'model/wait-queue.cc',
+        'model/file-usage.cc',
+        'model/dce-poll.cc',
         # helper.
         'helper/dce-manager-helper.cc',
         'helper/dce-application-helper.cc',

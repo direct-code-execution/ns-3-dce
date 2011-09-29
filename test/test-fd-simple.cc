@@ -346,8 +346,17 @@ static void test_chdir (void)
   TEST_ASSERT_EQUAL (status, 0);
 }
 
+void test_file_usage ()
+{
+  int fd = open ("F", O_CREAT | O_TRUNC | O_RDWR, S_IRWXU);
+  TEST_ASSERT_UNEQUAL (fd, -1);
+  int status = close (fd);
+  TEST_ASSERT_EQUAL (status, 0);
+}
+
 int main (int argc, char *argv[])
 {
+  test_file_usage ();
   test_open_exclusive ();
   test_stat ();
   test_exists ();

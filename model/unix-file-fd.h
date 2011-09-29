@@ -41,6 +41,7 @@ public:
   virtual bool CanRecv (void) const;
   virtual bool CanSend (void) const;
   virtual bool HangupReceived (void) const;
+  virtual int Poll (PollTable* ptable);
 
 protected:
   int PeekRealFd (void) const;

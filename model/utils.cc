@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <string.h>
 #include <list>
+#include "file-usage.h"
 
 NS_LOG_COMPONENT_DEFINE ("ProcessUtils");
 
@@ -99,26 +100,6 @@ std::string UtilsGetVirtualFilePath (std::string path)
       return current->process->cwd + "/" + path;
     }
 }
-
-int
-UtilsSearchOpenFd (int fd)
-{
-  Thread *current = Current ();
-  NS_LOG_FUNCTION (current << fd);
-  NS_ASSERT (current != 0);
-  int index = 0;
-  for (std::vector<std::pair<int,UnixFd *> >::iterator i = current->process->openFiles.begin (); 
-       i != current->process->openFiles.end (); ++i)
-    {
-      if (i->first == fd)
-	{
-          return index;
-        }
-      index++;
-    }
-  return -1;
-}
-
 Thread *gDisposingThreadContext = 0;
 
 Thread *Current (void)
@@ -258,9 +239,13 @@ void UtilsDoSignal (void)
 }
 int UtilsAllocateFd (void)
 {
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (current);
+  NS_ASSERT (current != 0);
+
   for (int fd = 0; fd < MAX_FDS; fd++)
     {
-      if (UtilsSearchOpenFd (fd) == -1)
+      if (current->process->openFiles[fd] == 0)
 	{
 	  NS_LOG_DEBUG ("Allocated fd=" << fd);
 	  return fd;
@@ -390,5 +375,19 @@ CheckExeMode (struct stat *st, uid_t uid, gid_t gid)
   return ( ( gid != st->st_gid) && ( uid != st->st_uid ) && ( ( st->st_mode & (S_IROTH|S_IXOTH) ) ==  (S_IROTH|S_IXOTH) ) )  ||
       ( ( gid == st->st_gid ) && ( uid != st->st_uid ) && ( ( st->st_mode & (S_IRGRP|S_IXGRP)) ==  (S_IRGRP|S_IXGRP) ) ) ||
       ( ( uid == st->st_uid ) && ( ( st->st_mode & (S_IRUSR|S_IXUSR)) == (S_IRUSR|S_IXUSR) ) );
+}
+void
+FdDecUsage (int fd)
+{
+  Thread *current = Current ();
+
+  FileUsage *fu = current->process->openFiles[fd];
+
+  if ( fu && fu->DecUsage ())
+    {
+      current->process->openFiles[fd] = 0;
+      delete fu;
+      fu = 0;
+    }
 }
 } // namespace ns3

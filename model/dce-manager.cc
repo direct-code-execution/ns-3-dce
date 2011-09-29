@@ -31,7 +31,6 @@
 #include "dce-fcntl.h"
 #include "sys/dce-stat.h"
 #include "loader-factory.h"
-#include "waiter.h"
 #include "ns3/node.h"
 #include "ns3/log.h"
 #include "ns3/simulator.h"
@@ -42,7 +41,9 @@
 #include "ns3/boolean.h"
 #include "ns3/trace-source-accessor.h"
 #include "ns3/enum.h"
-
+#include "file-usage.h"
+#include "wait-queue.h"
+#include "waiter.h"
 #include <errno.h>
 #include <dlfcn.h>
 #include <arpa/inet.h>
@@ -54,9 +55,10 @@
 #include <fcntl.h>
 #include <stdlib.h>
 
-
-
 NS_LOG_COMPONENT_DEFINE ("DceManager");
+
+
+void dce_exit_exec (int status, ns3::DceManager::ProcessEndCause type);
 
 namespace ns3 {
 
@@ -112,7 +114,7 @@ DceManager::DoDispose (void)
       {
           std::string statusWord = "Never ended.";
     	  AppendStatusFile (tmp->pid, tmp->nodeId, statusWord );
-          DeleteProcess (tmp, 0);
+          DeleteProcess (tmp, PEC_NS3_END);
       }
     }
 
@@ -195,7 +197,8 @@ DceManager::DoStartProcess (void *context)
       unixFd = new TermUnixFileFd (0);
     }
   // create fd 0
-  current->process->openFiles.push_back (std::make_pair(0,unixFd));
+  unixFd->IncFdCount ();
+  current->process->openFiles[0] = new FileUsage (0, unixFd);
 
   // create fd 1
   int fd = CreatePidFile (current, "stdout");
@@ -476,7 +479,8 @@ DceManager::CreateThread (struct Process *process)
   thread->joinWaiter = 0;
   thread->lastTime = Time(0);
   thread->childWaiter = 0;
-
+  thread->pollTable = 0;
+  thread->ioWait = std::make_pair ((UnixFd*)0,(WaitQueueEntry*)0);
   sigemptyset (&thread->signalMask);
   if (!process->threads.empty ())
     {
@@ -542,12 +546,19 @@ DceManager::Clone (Thread *thread)
   clone->pid = AllocatePid ();
   thread->process->children.insert (clone->pid);
   // dup each file descriptor.
-  for (uint32_t index = 0; index < thread->process->openFiles.size (); index++)
+  std::map<int,FileUsage *> openFiles = thread->process->openFiles;
+  for (std::map <int, FileUsage* >::iterator i = openFiles.begin () ;
+      i != openFiles.end (); ++i)
     {
-      std::pair<int,UnixFd*> i = thread->process->openFiles[index];
-      i.second->Ref ();
-      i.second->FdUsageInc ();
-      clone->openFiles.push_back (i);
+      int fd = i->first;
+      FileUsage* fu = i->second;
+
+      if (fu && fu->GetFile ())
+        {
+          fu->GetFile ()->IncFdCount ();
+          fu->GetFile ()->Ref ();
+          clone->openFiles[fd] = new FileUsage (fd, fu->GetFile ());
+        }
     }
   // don't copy threads, semaphores, mutexes, condition vars
   // XXX: what about file streams ?
@@ -645,7 +656,7 @@ DceManager::Stop (uint16_t pid)
         }
       std::string statusWord = "Stopped by NS3.";
       AppendStatusFile (process->pid, process->nodeId, statusWord);
-      DeleteProcess (process, 0);
+      DeleteProcess (process, PEC_NS3_STOP);
     }
 }
 
@@ -661,6 +672,28 @@ DceManager::SigabrtHandler (int signal)
   NS_ASSERT (signal == SIGABRT);
   dce_exit (-2);
 }
+void
+DceManager::CleanupThread (struct Thread *thread)
+{
+  if (thread->ioWait.first != 0 && thread->ioWait.second != 0)
+    {
+      thread->ioWait.first->RemoveWaitQueue(thread->ioWait.second, false);
+      if (thread->ioWait.second)
+        {
+          delete thread->ioWait.second;
+        }
+      thread->ioWait = std::make_pair ((UnixFd*)0,(WaitQueueEntry*)0);
+    }
+  if (thread->pollTable != 0)
+    {
+      PollTable *lb = thread->pollTable;
+      thread->pollTable = 0;
+      lb->FreeWait ();
+      delete lb;
+      lb = 0;
+    }
+}
+
 void
 DceManager::DeleteThread (struct Thread *thread)
 {
@@ -691,9 +724,43 @@ DceManager::DeleteThread (struct Thread *thread)
 }
 
 void
-DceManager::DeleteProcess (struct Process *process, int type)
+DceManager::DeleteProcess (struct Process *process, ProcessEndCause type)
 {
   NS_LOG_FUNCTION (this << process << "pid " << process->pid << "ppid" << process->ppid);
+
+  // Remove Threads Waiters
+  struct Thread *tmp;
+  std::vector<Thread *> threads = process->threads;
+
+  // First remove from wait queues: I am not more interressed of IO on Files
+  while (!threads.empty ())
+    {
+      tmp = threads.back ();
+      threads.pop_back ();
+      CleanupThread (tmp);
+      tmp = 0;
+    }
+
+  if (type == PEC_EXIT)
+    {
+      // We have a Current so we can call dce_close !
+      std::map<int,FileUsage *> openFiles = process->openFiles;
+
+        for (std::map <int, FileUsage* >::iterator i = openFiles.begin () ;
+            i != openFiles.end (); ++i)
+          {
+            int fd = i->first;
+            FileUsage* fu = i->second;
+
+            if (fu)
+              {
+                // Nullify count of thread using this file.
+                fu->NullifyUsage ();
+                // Close my files and eventually wake up others processes.
+                dce_close(fd);
+              }
+          }
+    }
 
   // Close all streams opened
   for (uint32_t i =  0; i < process->openStreams.size (); i++)
@@ -714,27 +781,22 @@ DceManager::DeleteProcess (struct Process *process, int type)
     }
   // stop itimer timers if there are any.
   process->itimer.Cancel ();
-  // close all its fds.
-  for (uint32_t index = 0; index < process->openFiles.size (); index++)
-    {
-      UnixFd *freeOne = process->openFiles[index].second;
-
-      process->openFiles[index].first = -1;
-      process->openFiles[index].second = 0;
-
-      if ( 0 != freeOne )
-        {
-          freeOne->FdUsageDec();
-          if ( freeOne->GetFdUsageCount() == 0 )
-            {
-              freeOne->Dispose();
-            }
-          freeOne->Unref ();
-        }
-    }
+  // Delete File References Memory : TEMPOFUR test to put in the up one loop
+  std::map<int,FileUsage *> openFiles = process->openFiles;
   process->openFiles.clear ();
+  for (std::map <int, FileUsage* >::iterator i = openFiles.begin () ;
+      i != openFiles.end (); ++i)
+      {
+        FileUsage* fu = i->second;
+
+        if (fu)
+          {
+            delete fu;
+          }
+      }
+  openFiles.clear ();
+
   // finally, delete remaining threads
-  struct Thread *tmp;
   while (!process->threads.empty ())
     {
       tmp = process->threads.back ();
@@ -950,7 +1012,7 @@ DceManager::Execve (Thread *threadOld, const char *path, char *const argv[], cha
        m_processes.erase ( Current ()->process-> pid );
        m_processes [newOne->pid] = newOne;
        dce_fflush (0);
-       dce_exit_exec (0, 1);
+       dce_exit_exec (0, PEC_EXEC_SUCCESS);
      }
    else
      { // ERROR
@@ -1020,17 +1082,20 @@ DceManager::DoExec (void *context)
   int ppid = oldProc->ppid;
   int cpt = 0;
 
-  for (std::vector<std::pair<int,UnixFd *> >::iterator i = oldProc->openFiles.begin ();
-       i != oldProc->openFiles.end (); ++i)
+  for (std::map <int, FileUsage* >::iterator i = oldProc->openFiles.begin () ;
+      i != oldProc->openFiles.end (); ++i)
     {
-      if ( ( (i->first) >= 0 ) && (  (i->first) < 3 ) )
-      {
+      int fd = i->first;
+      FileUsage* fu = i->second;
+
+      if ( ( fd >= 0 ) && ( fd < 3 ) && fu && fu->GetFile ())
+        {
           cpt++;
-          i->second->FdUsageInc ();
-          i->second->Ref ();
-          current->process->openFiles.push_back (std::make_pair( i->first, i->second ) );
+          fu->GetFile ()->IncFdCount ();
+          fu->GetFile ()->Ref ();
+          current->process->openFiles[fd] = new FileUsage (fd, fu->GetFile ());
           if ( cpt >= 3 ) { break; }
-      }
+        }
     }
 
   std::ostringstream oss;
@@ -1113,7 +1178,7 @@ DceManager::DoExec (void *context)
   else
     {
       // Destroy me ....
-      dce_exit_exec (0, 2);
+      dce_exit_exec (0, PEC_EXEC_FAILED);
     }
 }
 void

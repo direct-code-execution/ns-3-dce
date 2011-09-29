@@ -25,11 +25,11 @@
 #include "ns3/log.h"
 #include <errno.h>
 #include <fcntl.h>
-#include <sys/mman.h> // for MMAP_FAILED
+#include <sys/mman.h> // for MAP_FAILED
 #include <sys/un.h>
-#include "waiter.h"
 #include "unix-fd.h"
 #include <exception>
+#include "poll.h"
 
 NS_LOG_COMPONENT_DEFINE("LocalSocketFd");
 
@@ -246,7 +246,6 @@ LocalSocketFd::DoRecvPacket (uint8_t* buf, size_t len)
 
   if ((m_shutRead)|| IsClosed () )
     {
-
       return -2;
     }
   if (m_readBufferSize >= LOCAL_SOCKET_MAX_BUFFER)
@@ -279,7 +278,8 @@ LocalSocketFd::DoRecvPacket (uint8_t* buf, size_t len)
 
   NS_LOG_DEBUG("DoRecvPacket before WakeUpRecv");
 
-  WakeupRecv ();
+  short pi = POLLIN;
+  WakeWaiters (&pi); // WakeUp reader or poller for read or select for read
 
   return l;
 }
@@ -347,6 +347,7 @@ LocalSocketFd::ReadData (uint8_t* buf, size_t len, bool peek)
 void
 LocalSocketFd::ClearReadBuffer (void)
 {
+  NS_LOG_FUNCTION (this);
   for (std::list<struct Buffer *>::iterator i = m_readBuffer.begin (); i != m_readBuffer.end (); ++i)
     {
       struct Buffer *b = *i;
