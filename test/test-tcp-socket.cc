@@ -1316,7 +1316,7 @@ int
 main (int argc, char *argv[])
 {
   signal (SIGPIPE, SIG_IGN);
-
+/*
   unsigned short int rac[3] = { 3 , 2, 1 };
 
   seed48(rac);
@@ -1359,15 +1359,18 @@ main (int argc, char *argv[])
     }
 
   fflush(stdout);
-
+*/
   readBuffer = (char *)malloc( BUFF_LEN );
   sendBuffer = (char *)malloc( BUFF_LEN );
 
 //  goto C15;
 
+  goto C3;
+
   launch (client1, server1);
-    launch (client2, server2);
-//  launch (client3, server3); // NS3 failed : tcp stack bug like bug 907
+  launch (client2, server2);
+  C3:
+  launch (client3, server3); // NS3 failed : tcp stack bug like bug 907
   // the server defer close because it is waiting for : Stop sending if we need to wait for a larger Tx window
   // But it is never came ....
   // The client is blocked in read ....

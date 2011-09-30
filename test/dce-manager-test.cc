@@ -135,7 +135,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
     bool useNet;
   } testPair;
 
-  const testPair tests[] = {
+  const testPair tests[] = { /*
       { "test-empty", 0, "" , false},
       {  "test-sleep", 0, "", false },
       {  "test-pthread", 0, "" , false},
@@ -157,10 +157,10 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-select", 3600, "", true },
       {  "test-nanosleep", 0, "" , false},
       {  "test-random", 0, "", false }, /*
-      {  "test-fork", 0, "", false }, */
+      {  "test-fork", 0, "", false }, * /
       {  "test-local-socket", 0, "", false },
-      {  "test-poll", 320, "", true },
-      {  "test-tcp-socket", 320, "", true },
+      {  "test-poll", 320, "", true }, */
+      {  "test-tcp-socket", 320, "", true }, /*
       {  "test-exec", 0, "" , false}, /*
       {  "test-raw-socket", 320, "", true }, */
   };
