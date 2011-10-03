@@ -4,8 +4,10 @@
 #include "dce-manager.h"
 #include "process.h"
 #include "utils.h"
+#include "wait-queue.h"
 #include "task-manager.h"
 #include "kingsley-alloc.h"
+#include "file-usage.h"
 #include "sim/include/sim-init.h"
 #include "ns3/log.h"
 #include "ns3/string.h"
@@ -732,7 +734,9 @@ LinuxSocketFdFactory::Accept (struct SimSocket *socket, struct sockaddr *my_addr
     }
 
   UnixFd *unixFd = new LinuxSocketFd (this, newSocket);
-  current->process->openFiles.push_back (std::make_pair (fd, unixFd));
+  unixFd->IncFdCount ();
+  current->process->openFiles[fd] = new FileUsage (fd, unixFd);
+
   return fd;
 }
 int 
@@ -779,48 +783,61 @@ LinuxSocketFdFactory::Getsockopt (struct SimSocket *socket, int level, int optna
     }
   return retval;
 }
-
-bool
-LinuxSocketFdFactory::CanRecv (struct SimSocket *socket)
-{
-  GET_CURRENT(socket);
-  m_loader->NotifyStartExecute ();
-  int retval = m_exported->sock_canrecv(socket);
-  m_loader->NotifyEndExecute ();
-  return retval != 0;
-}
-bool
-LinuxSocketFdFactory::CanSend (struct SimSocket *socket)
-{
-  GET_CURRENT(socket);
-  m_loader->NotifyStartExecute ();
-  int retval = m_exported->sock_cansend(socket);
-  m_loader->NotifyEndExecute ();
-  return retval != 0;
-}
-void*
-LinuxSocketFdFactory::PollWait (struct SimSocket *socket, void *ctxt)
-{
-  void *ret = 0;
-  GET_CURRENT(socket);
-  m_loader->NotifyStartExecute ();
-  ret = m_exported->sock_pollwait(socket, ctxt);
-  m_loader->NotifyEndExecute ();
-  return ret;
-}
-void
-LinuxSocketFdFactory::FreePoll (struct SimSocket *socket, void *ctxt)
-{
-  GET_CURRENT(socket);
-  m_loader->NotifyStartExecute ();
-  m_exported->sock_freepoll(socket, ctxt);
-  m_loader->NotifyEndExecute ();
-}
 void
 LinuxSocketFdFactory::PollEvent ( int flag, void *context)
 {
-  LinuxSocketFd *sock = (LinuxSocketFd*)context;
-  sock->PollEvent(flag);
+  PollTable* ptable = (PollTable*)context;
+  ptable->WakeUpCallback ();
 }
 
+/**
+ * Struct used to pass pool table context between DCE and Kernel and back from Kernel to DCE
+ *
+ * When calling sock_poll we provide in ret field the wanted eventmask, and in the opaque field
+ * the DCE poll table
+ *
+ * if a corresponding event occurs later, the PollEvent will be called by kernel with the DCE
+ * poll table in context variable, then we will able to wake up the thread blocked in poll call.
+ *
+ * Back from sock_poll method the kernel change ret field with the response from poll return of the
+ * corresponding kernel socket, and in opaque field there is a reference to the kernel poll table
+ * we will use this reference to remove us from the file wait queue when ending the DCE poll call or
+ * when ending the DCE process which is currently polling.
+ *
+ */
+struct poll_table_ref
+{
+  int ret;
+  void *opaque;
+};
+int
+LinuxSocketFdFactory::Poll (struct SimSocket *socket, PollTable* ptable)
+{
+  struct poll_table_ref kernelInOut = { 0 };
+  if (ptable)
+    {
+      // Fill Opaque and ptable.
+      kernelInOut.opaque = ptable;
+      kernelInOut.ret = ptable->GetEventMask ();
+    }
+
+  GET_CURRENT(socket);
+  m_loader->NotifyStartExecute ();
+  m_exported->sock_poll(socket, &kernelInOut);
+  m_loader->NotifyEndExecute ();
+
+  if (ptable)
+    {
+      ptable->PollWait (kernelInOut.opaque , MakeCallback( &LinuxSocketFdFactory::PollFreeWait, this ));
+    }
+
+  return kernelInOut.ret;
+}
+void
+LinuxSocketFdFactory::PollFreeWait (void *ref )
+{
+  m_loader->NotifyStartExecute ();
+  m_exported->sock_pollfreewait (ref);
+  m_loader->NotifyEndExecute ();
+}
 } // namespace ns3

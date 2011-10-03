@@ -81,18 +81,19 @@ private:
 class PollTableEntry
 {
 public:
+  PollTableEntry ();
   /**
    * \param file: the involved file,
    * \param wait: the wait queue entry in the wait queue of the file,
    * \param eventMask: Set of wanted events
    */
   PollTableEntry (UnixFd *file, WaitQueueEntryPoll* wait, short eventMask);
-  ~PollTableEntry ();
+  virtual ~PollTableEntry ();
 
   /**
    * Free the wait queue entry
    */
-  void FreeWait();
+  virtual void FreeWait();
   int IsEventMatch (short e) const;
 
 private:
@@ -137,6 +138,7 @@ public:
   void FreeWait();
   // Add new file to Poll table and add corresponding poll table entry to file's wait queue.
   void PollWait (UnixFd* file);
+  void PollWait (void *ref, Callback<void, void*> cb);
   void SetEventMask (short e);
   short GetEventMask () const;
 
@@ -144,6 +146,27 @@ private:
   std::list <PollTableEntry*> m_pollEntryList;
   short m_eventMask;
 };
+
+
+class PollTableEntryLinux : public PollTableEntry
+{
+public:
+  /**
+   * \param file: the involved file,
+   * \param wait: the wait queue entry in the wait queue of the file,
+   * \param eventMask: Set of wanted events
+   */
+  PollTableEntryLinux (void *kernelReference, Callback<void, void*> cb);
+
+
+  virtual void FreeWait();
+
+private:
+  void * const m_kernelRef;
+  Callback<void, void*> const m_freeCb;
+};
+
+
 /**
  * Generic wait queue entry joined with a waitpoint
  */

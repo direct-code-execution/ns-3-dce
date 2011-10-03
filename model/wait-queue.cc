@@ -56,9 +56,11 @@ WaitQueueEntryPoll::WakeUp (void *key)
       m_func ();
     }
 }
-
+PollTableEntry::PollTableEntry () :  m_file (0), m_wait (0), m_eventMask (0)
+{
+}
 PollTableEntry::PollTableEntry (UnixFd *file, WaitQueueEntryPoll *wait, short em) :
-    m_file (file), m_wait (wait), m_eventMask (em)
+      m_file (file), m_wait (wait), m_eventMask (em)
 {
 }
 PollTableEntry::~PollTableEntry ()
@@ -149,7 +151,11 @@ PollTable::PollWait (UnixFd* file)
   m_pollEntryList.push_back ( e );
   file->AddWaitQueue (we, false);
 }
-
+void
+PollTable::PollWait (void *ref, Callback<void, void*> cb)
+{
+  m_pollEntryList.push_back ( new PollTableEntryLinux (ref, cb) );
+}
 void
 PollTable::FreeWait ()
 {
@@ -209,5 +215,15 @@ WaitQueueEntryTimeout::Wait ()
         }
       return WaitPoint::Wait (rest);
     }
+}
+
+PollTableEntryLinux::PollTableEntryLinux (void *kernelReference, Callback<void, void*> cb)
+: m_kernelRef (kernelReference), m_freeCb (cb)
+{
+}
+void
+PollTableEntryLinux::FreeWait()
+{
+  m_freeCb (m_kernelRef);
 }
 }

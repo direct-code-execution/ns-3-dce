@@ -202,72 +202,16 @@ LinuxSocketFd::Gettime (struct itimerspec *cur_value) const
   current->err = EINVAL;
   return -1;
 }
-
-bool 
-LinuxSocketFd::CanRecv (void) const
-{
-  return m_factory->CanRecv (m_socket);
-}
-bool 
-LinuxSocketFd::CanSend (void) const
-{
-  return m_factory->CanSend (m_socket);
-}
 bool
 LinuxSocketFd::HangupReceived (void) const
 {
   // XXX: TO BE IMPLEMENTED OR NOT :)
   return false;
 }
-
-void
-LinuxSocketFd::SetRecvWaiter (Waiter *waiter)
+int
+LinuxSocketFd::Poll (PollTable* ptable)
 {
-  NS_LOG_FUNCTION (this << Current ());
-  UnixFd::SetRecvWaiter (waiter);
-
-  if (waiter)
-    {
-      if (m_kernelPollCtx) return;
-      m_kernelPollCtx = m_factory->PollWait (m_socket, this);
-    }
-  else
-    {
-      m_factory->FreePoll (m_socket, m_kernelPollCtx);
-      m_kernelPollCtx = 0;
-    }
-}
-
-void
-LinuxSocketFd::SetSendWaiter (Waiter *waiter)
-{
-  NS_LOG_FUNCTION (this << Current ());
-  UnixFd::SetSendWaiter (waiter);
-  if (waiter) {
-      if (m_kernelPollCtx) return;
-      m_kernelPollCtx = m_factory->PollWait (m_socket, this);
-  }
-  else
-  {
-    m_factory->FreePoll (m_socket, m_kernelPollCtx);
-    m_kernelPollCtx = 0;
-  }
-
-}
-
-void
-LinuxSocketFd::PollEvent (int flag)
-{
-  NS_LOG_FUNCTION (this << Current ());
-
-  if (flag & POLLIN)
-    {
-      WakeupRecv ();
-    }
-  if (flag & POLLOUT)
-    {
-      WakeupSend ();
-    }
+  return m_factory->Poll (m_socket, ptable);
 }
 
 } // namespace ns3

@@ -50,7 +50,7 @@ public:
   // Return the file
   UnixFd* GetFile () const;
 
-  // TEMPOFUR : heritage de la version precedente surement pas util a mediter ...
+  // Return true the close was already called for the corresponding fd.
   bool IsClosed () const;
 
   // When a process finish we can forget all usage count

@@ -81,7 +81,6 @@ public:
   virtual bool CanSend (void) const;
   virtual bool HangupReceived (void) const;
 
-  // ProtoPoll
   virtual int Poll (PollTable* ptable);
 
 protected:

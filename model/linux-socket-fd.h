@@ -48,11 +48,9 @@ public:
 		       struct itimerspec *old_value);
   virtual int Gettime (struct itimerspec *cur_value) const;
 
-  virtual bool CanRecv (void) const;
-  virtual bool CanSend (void) const;
   virtual bool HangupReceived (void) const;
-  virtual void SetRecvWaiter (Waiter *waiter);
-  virtual void SetSendWaiter (Waiter *waiter);
+
+  virtual int Poll (PollTable* ptable);
 
   void PollEvent (int flag);
 

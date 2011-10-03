@@ -815,24 +815,28 @@ int
 main (int argc, char *argv[])
 {
   signal (SIGPIPE, SIG_IGN);
-
+  //goto C4;
   test_poll_stdin ();
   test_poll_stdout_stdin ();
   test_poll_stdout ();
+  C1:
   launch (client1, server1);
   launch (client2, server2);
   launch (client3, server3);
- // test_nval ();
+  // test_nval ();
 
   launch (client5, server5);
+  C4:
   launch (client4, server4);
   launch (client6, server6);
 
   launch (client_last, server_last);
 
+
   printf("test-poll end.\n ");
   fflush (stdout);
   fflush (stderr);
   sleep(1);
+
   return 0;
 }
