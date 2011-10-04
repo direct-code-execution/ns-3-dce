@@ -1,0 +1,15 @@
+diff -r 97606ed04882 src/internet/model/ipv4-l3-protocol.cc
+--- a/src/internet/model/ipv4-l3-protocol.cc	Fri Sep 30 14:25:23 2011 -0700
++++ b/src/internet/model/ipv4-l3-protocol.cc	Tue Oct 04 17:16:25 2011 +0200
+@@ -1170,6 +1170,11 @@
+ 
+       NS_LOG_LOGIC ("Fragment check - " << fragmentHeader.GetFragmentOffset ()  );
+ 
++      if (Node::ChecksumEnabled ())
++        {
++          fragmentHeader.EnableChecksum ();
++        }
++
+       NS_LOG_LOGIC ("New fragment Header " << fragmentHeader);
+       fragment->AddHeader (fragmentHeader);
+ 

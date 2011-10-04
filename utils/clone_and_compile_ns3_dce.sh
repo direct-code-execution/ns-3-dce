@@ -18,7 +18,8 @@ echo clone ns-3-dev
 hg clone http://code.nsnam.org/ns-3-dev -r 97606ed04882
 mkdir build
 cd ns-3-dev
-patch -p1 <../ns-3-dce/utils/patch-core-bug1261.txt
+patch -p1 <../ns-3-dce/utils/buffer_bug1001.patch
+patch -p1 <../ns-3-dce/utils/frag_sum_bug_1260.patch
 ./waf configure --prefix=`pwd`/../build --enable-tests
 ./waf
 ./waf install

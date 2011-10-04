@@ -23,7 +23,7 @@ int main (int argc, char *argv[])
   int result;
   result = connect (sock, (const struct sockaddr *) &addr, sizeof (addr));
 
-  uint8_t buf[1024];
+  uint8_t buf[10240];
 
   memset (buf, 0x66, 20);
   memset (buf+20, 0x67, 1004);

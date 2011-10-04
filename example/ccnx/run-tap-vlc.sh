@@ -77,7 +77,7 @@
 ## File to look
 VIDEOFILE=big_buck_bunny_240p_mpeg4.ts
 # TRANSPORT : Use tcp or udp
-TRANSPORT=tcp
+TRANSPORT=udp
 echo init keystores
 for i in 1
 do

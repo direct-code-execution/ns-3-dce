@@ -12,7 +12,7 @@ done
 echo setting test file
 cp README files-0/tmp
 EXE=dce-ccnd-udp-2-nodes
-KERN=--kernel=1
+KERN=--kernel=0
 if [ "" == "$GDB" ]
 then
     $NS3_BIN/$EXE $KERN 2>&1 | tee -a output.txt

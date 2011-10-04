@@ -39,7 +39,7 @@ DceManagerTestCase::DceManagerTestCase (std::string filename, Time maxDuration, 
   : TestCase ("Check that process \"" + filename + "\" completes correctly."),
     m_filename (filename), m_stdinFilename( stdin), m_maxDuration ( maxDuration ), m_useKernel (useK), m_useNet (useNet)
 {
-
+  m_useKernel = 0; // TEMPOFUR
 }
 void
 DceManagerTestCase::Finished (int *pstatus, uint16_t pid, int status)

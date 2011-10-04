@@ -31,7 +31,7 @@ int main (int argc, char *argv[])
       exit (-1);
     }
 
-  uint8_t buf[1024];
+  uint8_t buf[10240];
 
   for (uint32_t i = 0; i < 1000; i++)
     {

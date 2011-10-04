@@ -1,0 +1,60 @@
+diff -r 97606ed04882 src/network/model/buffer.cc
+--- a/src/network/model/buffer.cc	Fri Sep 30 14:25:23 2011 -0700
++++ b/src/network/model/buffer.cc	Tue Oct 04 17:15:59 2011 +0200
+@@ -758,9 +758,9 @@
+       uint32_t tmpsize = std::min (m_zeroAreaStart-m_start, size);
+       memcpy (buffer, (const char*)(m_data->m_data + m_start), tmpsize);
+       buffer += tmpsize;
+-      if (size > tmpsize) 
++      size -= tmpsize;
++      if (size > 0) 
+         { 
+-          size -= m_zeroAreaStart-m_start;
+           tmpsize = std::min (m_zeroAreaEnd - m_zeroAreaStart, size);
+           uint32_t left = tmpsize;
+           while (left > 0)
+@@ -770,11 +770,12 @@
+               left -= toWrite;
+               buffer += toWrite;
+             }
+-          if (size > tmpsize)
++          size -= tmpsize;
++          if (size > 0)
+             {
+-              size -= tmpsize;
+               tmpsize = std::min (m_end - m_zeroAreaEnd, size);
+               memcpy (buffer, (const char*)(m_data->m_data + m_zeroAreaStart), tmpsize);
++              size -= tmpsize;
+             }
+         }
+     }
+diff -r 97606ed04882 src/network/test/buffer-test.cc
+--- a/src/network/test/buffer-test.cc	Fri Sep 30 14:25:23 2011 -0700
++++ b/src/network/test/buffer-test.cc	Tue Oct 04 17:15:59 2011 +0200
+@@ -298,6 +298,26 @@
+   i = other.Begin ();
+   i.Write (buffer.Begin (), buffer.End ());
+   ENSURE_WRITTEN_BYTES (other, 9, 0x1, 0x2, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3, 0x4);
++
++  // BUG #1001
++  std::string ct ("This is the next content of the buffer.");
++  buffer = Buffer ();
++  buffer.AddAtStart (ct.size ());
++  i = buffer.Begin ();
++  i.Write ((const uint8_t*)ct.c_str (), ct.size ());
++  uint32_t sizeBuffer = buffer.GetSize ();
++  NS_TEST_ASSERT_MSG_EQ (sizeBuffer, ct.size(), "Buffer bad size");
++  uint8_t const* evilBuffer = buffer.PeekData ();
++  NS_TEST_ASSERT_MSG_NE( evilBuffer, 0, "Buffer PeekData failed");
++  uint8_t *cBuf = (uint8_t*) malloc ( sizeBuffer );
++  uint32_t copyLen = buffer.CopyData (cBuf, sizeBuffer);
++  NS_TEST_ASSERT_MSG_EQ (copyLen, sizeBuffer, "CopyData return bad size");
++  for (uint8_t i=0; i < sizeBuffer ; i++ )
++    {
++      NS_TEST_ASSERT_MSG_EQ ( cBuf [i], *(((const uint8_t*)ct.c_str ()) + i), "Bad buffer copied data");
++      NS_TEST_ASSERT_MSG_EQ ( evilBuffer [i], cBuf [i] , "Bad buffer peeked");
++    }
++
+ }
+ //-----------------------------------------------------------------------------
+ class BufferTestSuite : public TestSuite
