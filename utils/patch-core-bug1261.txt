@@ -1,0 +1,14 @@
+diff -r e52db23c9c8b src/network/model/buffer.cc
+--- a/src/network/model/buffer.cc	Thu Sep 08 18:24:47 2011 -0700
++++ b/src/network/model/buffer.cc	Fri Sep 09 17:34:22 2011 +0200
+@@ -777,6 +777,10 @@
+               memcpy (buffer, (const char*)(m_data->m_data + m_zeroAreaStart), tmpsize);
+             }
+         }
++      else
++        {
++          return tmpsize;
++        }
+     }
+   return originalSize - size;
+ }

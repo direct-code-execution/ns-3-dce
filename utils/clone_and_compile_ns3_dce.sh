@@ -15,9 +15,10 @@ then
  	hg clone http://code.nsnam.org/furbani/ns-3-linux
 fi	
 echo clone ns-3-dev
-hg clone http://code.nsnam.org/ns-3-dev
+hg clone http://code.nsnam.org/ns-3-dev -r 97606ed04882
 mkdir build
 cd ns-3-dev
+patch -p1 <../ns-3-dce/utils/patch-core-bug1261.txt
 ./waf configure --prefix=`pwd`/../build --enable-tests
 ./waf
 ./waf install
