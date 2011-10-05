@@ -164,7 +164,6 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
     }
   if ((PacketSocketAddress::IsMatchingType(from)))
     {
-#ifdef NEW_PACKET_SOCKET
       if ( msg->msg_namelen < sizeof (sockaddr_ll) )
         {
           current->err = EINVAL;
@@ -197,7 +196,6 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
             }
         }
       memcpy (buf+12, &(((struct sockaddr_ll *)msg->msg_name)->sll_protocol) , 2);
-#endif
     }
   else
     {

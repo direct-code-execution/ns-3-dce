@@ -20,6 +20,7 @@ mkdir build
 cd ns-3-dev
 patch -p1 <../ns-3-dce/utils/buffer_bug1001.patch
 patch -p1 <../ns-3-dce/utils/frag_sum_bug_1260.patch
+patch -p1 <../ns-3-dce/utils/packet-socket-upgrade-exp.patch
 ./waf configure --prefix=`pwd`/../build --enable-tests
 ./waf
 ./waf install

@@ -667,6 +667,64 @@ UnixSocketFd::ChangeSocket (Ptr<Socket> socket)
   m_socket->SetRecvCallback (MakeCallback (&UnixSocketFd::RecvSocketData, this));
   m_socket->SetSendCallback (MakeCallback (&UnixSocketFd::SendSocketData, this));
 }
+int
+UnixSocketFd::Ns3AddressToDeviceIndependantPhysicalLayerAddress (const Address& nsaddr, const Packet& pac,
+                                                                 struct sockaddr_ll *addr, socklen_t *addrlen) const
+{
+  if (PacketSocketAddress::IsMatchingType(nsaddr))
+      {
+        PacketSocketAddress ll_addr = PacketSocketAddress::ConvertFrom(nsaddr);
+        if (*addrlen < sizeof (struct sockaddr_ll))
+          {
+            return -1;
+          }
+        memset (addr, 0, sizeof (struct sockaddr_ll));
+        addr->sll_family = AF_PACKET;
+        addr->sll_protocol =  htons( ll_addr.GetProtocol() );
+        addr->sll_ifindex = ll_addr.GetSingleDevice() + 1;
+        addr->sll_hatype = 0;
+        ll_addr.GetPhysicalAddress().CopyAllTo(&(addr->sll_pkttype), 8);
+        *addrlen = sizeof(struct sockaddr_ll);
 
+        PacketSocketTag pst;
+        DeviceNameTag dnt;
+        bool found;
+
+        found = pac.PeekPacketTag (dnt);
+        if  (found)
+          {
+            if ( dnt.GetDeviceName () == "NetDevice" )
+              {
+                addr->sll_hatype = ARPHRD_PPP;
+              }
+            else if ( dnt.GetDeviceName () == "LoopbackNetDevice" )
+                {
+                  addr->sll_hatype = ARPHRD_LOOPBACK;
+                }
+            else if ( dnt.GetDeviceName () == "CsmaNetDevice" )
+                {
+                  addr->sll_hatype = ARPHRD_ETHER;
+                }
+            else if ( dnt.GetDeviceName () == "PointToPointNetDevice" )
+                {
+                  addr->sll_hatype = ARPHRD_PPP;
+                }
+            else if ( dnt.GetDeviceName () == "WifiNetDevice" )
+                {
+                  addr->sll_hatype = ARPHRD_IEEE80211;
+                }
+          }
+        found = pac.PeekPacketTag (pst);
+        if (found)
+          {
+            addr->sll_pkttype = pst.GetPacketType();
+          }
+      }
+    else
+      {
+        NS_ASSERT (false);
+      }
+  return 0;
+}
 
 } // namespace ns3

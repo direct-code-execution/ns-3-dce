@@ -108,7 +108,6 @@ test1_reader (void *ctxt)
 
   do
     {
-
       printf ("test1_reader: waiting 4 raw Data ....\n");
 
       char buffer [1024*10];
@@ -169,8 +168,8 @@ test2_client (void *arg)
   struct sockaddr_ll dest = { 0 };
   char buffer [1024*1];
 
- // rawFd = socket (AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
-  rawFd = socket (AF_PACKET, SOCK_RAW, htons(ETH_P_IP));
+  rawFd = socket (AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+ // rawFd = socket (AF_PACKET, SOCK_RAW, htons(ETH_P_IP));
   TEST_ASSERT (rawFd >= 0);
 
   dest.sll_family = AF_PACKET;
@@ -198,8 +197,8 @@ test2_server (void *arg)
   struct sockaddr_ll from;
   socklen_t l =  sizeof(from);
 
-//  rawFd = socket (AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
-  rawFd = socket (AF_PACKET, SOCK_RAW, htons(ETH_P_IP));
+  rawFd = socket (AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+ // rawFd = socket (AF_PACKET, SOCK_RAW, htons(ETH_P_IP));
   TEST_ASSERT (rawFd >= 0);
 
   st = recvfrom (rawFd, buffer, sizeof (buffer), 0, (sockaddr*) &from, &l);
@@ -223,7 +222,6 @@ test2 ()
 
   pthread_join (t2s, 0);
   pthread_join (t2c, 0);
-
 }
 
 int

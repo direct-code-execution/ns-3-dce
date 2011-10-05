@@ -39,7 +39,6 @@ DceManagerTestCase::DceManagerTestCase (std::string filename, Time maxDuration, 
   : TestCase ("Check that process \"" + filename + "\" completes correctly."),
     m_filename (filename), m_stdinFilename( stdin), m_maxDuration ( maxDuration ), m_useKernel (useK), m_useNet (useNet)
 {
-  m_useKernel = 0; // TEMPOFUR
 }
 void
 DceManagerTestCase::Finished (int *pstatus, uint16_t pid, int status)
@@ -161,8 +160,8 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-local-socket", 0, "", false },
       {  "test-poll", 3200, "", true },
       {  "test-tcp-socket", 320, "", true }, /*
-      {  "test-exec", 0, "" , false}, /*
-      {  "test-raw-socket", 320, "", true }, */
+      {  "test-exec", 0, "" , false}, */
+      {  "test-raw-socket", 320, "", true },
   };
 
   // Prepare directories and files for test-stdio
