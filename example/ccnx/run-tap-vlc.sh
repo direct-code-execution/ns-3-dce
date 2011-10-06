@@ -50,7 +50,7 @@
 ##  |  Linux   |
 ##  |   Host   | 1 ccnd on standard port (9596), 1 ccnd on port 3000, 1 repository using ccnd:3000
 ##  |          |
-##  | "thetap" | 1 vlc client querying ccnx:##/VIDEO/bunny.ts
+##  | "thetap" | 1 vlc client querying ccnx:///VIDEO/bunny.ts
 ##  +----------+
 ##  | 10.0.0.1 |
 ##  +----------+
@@ -74,7 +74,7 @@
 ##
 ##############################################################################
 . run-ccnx-common.sh
-## File to look
+## File to watch with VLC
 VIDEOFILE=big_buck_bunny_240p_mpeg4.ts
 # TRANSPORT : Use tcp or udp
 TRANSPORT=udp

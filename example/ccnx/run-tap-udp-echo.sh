@@ -34,12 +34,9 @@ then
     $NS3_BIN/$EXE 2>&1 | tee -a output.txt & 
 else
     $GDB $NS3_BIN/$EXE 
-    goto fin
 fi
 sleep 1
 $NS3_BIN/udp-echo-client 10.0.0.2 "Hello NS3" >client_out.txt
 sleep 1
 emacs client_out.txt output.txt  files-*/var/log/*/* &
-
-fin:
 

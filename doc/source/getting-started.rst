@@ -359,24 +359,103 @@ now if we use UDP :
 
 In this case the first get take about 1 second. The difference between UDP and TCP is due to fact that in TCP mode it occurs 199 TCP connections. Notice also that in this configuration there is no UDP packet lost, but it is possible to ask NS3 to simulate some sort of packet lost behavior.
 
+Sample VLC Player
+#################
+
+This demonstration show how to watch video using VLC CCN and NS3.
+
+Prerequisite
+============
+
+You should be able to build and run the CCN plugin for VLC in order to display Video using CCNx. 
+So you should follow carefully the instructions delivered in CCNx distribution in the directory :  ccnx.0.4.0/apps/vlc 
+
+You should ensure that the executable named *tap-creator* is owned by *root* and have the sitcky bit setted :
+
+::
+
+   $ cd build/bin
+   $ su
+   # chown root tap-creator 
+   # chmod +s tap-creator
+
+Overview
+========
+
+In this sample we use other exe than *ccnd*:
+ 1. *ccn_repo* is a CCN repository used to serve the Video file
+ 2. *vlc* the well known media player
+ 3. *ccnputfile* used to fill the repository with our Video file
+
+The two first exe are not usable under DCE:
+ 1. *ccn_repo* is a java program and DCE do not yet supports Java,
+ 2. *vlc* use a graphical interface and DCE do not supports this kind of application.
+
+So the parts *cnn_repo* and *vlc* will be launched normally outside of DCE environnement.
+We will also use 3 *ccnd*:
+ 1. the first *ccnd* will be launched normally outside DCE, it will be the server for *vlc* player , it will use the standard CCNx port ie 9596.
+ 2. the second *ccnd* will be launched inside DCE listening port 2000.
+ 3. the third *ccnd* will be launched normally outside DCE listening port 3000 
+
+then we install ccn routes like this : first *ccnd* forward every interests to second *ccnd* and second *ccnd* forward every interests to third one.
+
+In order to link real world and NS3 network we use the NS-3 TAP BRIDGE functionnality which is more documented there: `Tap NetDevice <http://www.nsnam.org/docs/release/3.12/models/singlehtml/index.html#document-tap>`_
+
+A schema of our network:
+
+::
+
+  +----------+
+  | external |
+  |  Linux   |
+  |   Host   | 1 ccnd on standard port (9596), 1 ccnd on port 3000, 1 repository using ccnd:3000
+  |          |
+  | "thetap" | 1 vlc client querying ccnx:///VIDEO/bunny.ts
+  +----------+
+  | 10.0.0.1 |
+  +----------+
+       |           node0         node1
+       |       +----------+    +----------+
+       +-------|  tap     |    |          |
+               | bridge   |    |          |
+               +----------+    +----------+
+               |  CSMA    |    |  CSMA    |
+               +----------+    +----------+
+               | 10.0.0.1 |    | 10.0.0.2 |  ccnd:2000
+               +----------+    +----------+
+                     |               |
+                     |               |
+                     |               |
+                     =================
+                      CSMA LAN 10.0.0
 
 
+Before running the launch script you should edit it to furnish a Video file in the corresponding variable :
 
+::
 
+  $ vi run-tap-vlc.sh
+  .... 
+  VIDEOFILE=big_buck_bunny_240p_mpeg4.ts
+  .... 
 
+Note also that NS3 is launched in real time mode in order to communicate to real world.
 
+Run :
 
+::
 
+  $ ./run-tap-vlc.sh
 
+If all is right you should see a *vlc* window playing the video, then after 600 seconds the script stops itself
+if you interrupt the script before you should terminate real the processes ie:
+ 1. 2 instances of *ccnd*
+ 2. 1 *ccn_repo*
+ 3. and 1 *dce-tap-vlc*
+you may also delete ccnd sockets files like */tmp/.ccnd.sock* and */tmp/.ccnd.sock.3000*
 
- 
-
-
- 
-  
-
-
-
+Note that if you replay the video (url: ccnx:///VIDEO/bunny.ts) the content should be cached in first *ccnd* so in this case 
+NS3/DCE will probably not be used for the second delivery of the video.
 
 
 

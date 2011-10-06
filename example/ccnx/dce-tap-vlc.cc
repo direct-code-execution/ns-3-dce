@@ -155,7 +155,7 @@ main( int argc, char *argv[] )
 
   dce.SetStackSize (1<<20);
 
-  // Launch ccn daemon on node 0
+  // Launch ccn daemon on node 1
   dce.SetBinary ("ccnd");
   dce.ResetArguments();
   dce.ResetEnvironment();
