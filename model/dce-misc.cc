@@ -13,7 +13,7 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("DceMisc");
 
-int dce_uname(struct utsname *buf)
+int dce_uname (struct utsname *buf)
 {
   Ptr<DceNodeContext> nodeContext = DceNodeContext::GetNodeContext ();
   NS_ASSERT ( 0 != nodeContext );

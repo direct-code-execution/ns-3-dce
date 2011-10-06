@@ -27,7 +27,7 @@ NS_LOG_COMPONENT_DEFINE ("FileUsage");
 namespace ns3
 {
 FileUsage::FileUsage (int fd, UnixFd *file)
-: m_count (0), m_fd(fd), m_file (file), m_closing (0)
+  : m_count (0), m_fd (fd), m_file (file), m_closing (0)
 {
 }
 

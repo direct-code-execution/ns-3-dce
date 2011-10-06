@@ -7,20 +7,20 @@
 #include <sys/stat.h>
 #include "ns3/nstime.h"
 
-#define GET_CURRENT(x)					\
-  Thread *current;					\
-  current = Current ();					\
-  do {							\
-  NS_LOG_FUNCTION (current << UtilsGetNodeId () << x);	\
-  NS_ASSERT (current != 0);				\
-  } while (false)
-#define GET_CURRENT_NOLOG()				\
-  Thread *current;					\
-  current = Current ();					\
-  do {							\
-  NS_LOG_FUNCTION (current << UtilsGetNodeId ());	\
-  NS_ASSERT (current != 0);				\
-  } while (false)
+#define GET_CURRENT(x)                                  \
+  Thread *current;                                      \
+  current = Current ();                                 \
+  do {                                                  \
+      NS_LOG_FUNCTION (current << UtilsGetNodeId () << x);  \
+      NS_ASSERT (current != 0);                             \
+    } while (false)
+#define GET_CURRENT_NOLOG()                             \
+  Thread *current;                                      \
+  current = Current ();                                 \
+  do {                                                  \
+      NS_LOG_FUNCTION (current << UtilsGetNodeId ());       \
+      NS_ASSERT (current != 0);                             \
+    } while (false)
 
 
 namespace ns3 {

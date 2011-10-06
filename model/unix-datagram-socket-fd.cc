@@ -62,8 +62,8 @@ UnixDatagramSocketFd::QueueErr (sock_extended_err ee, struct sockaddr_in offende
 
 void
 UnixDatagramSocketFd::IcmpCallback (Ipv4Address icmpSource, uint8_t icmpTtl, 
-				    uint8_t icmpType, uint8_t icmpCode,
-				    uint32_t icmpInfo)
+                                    uint8_t icmpType, uint8_t icmpCode,
+                                    uint32_t icmpInfo)
 {
   NS_LOG_FUNCTION (this << icmpSource << (uint32_t)icmpTtl << (uint32_t)icmpType <<
                    (uint32_t)icmpCode << icmpInfo);
@@ -76,17 +76,17 @@ UnixDatagramSocketFd::IcmpCallback (Ipv4Address icmpSource, uint8_t icmpTtl,
   if (icmpType == Icmpv4Header::DEST_UNREACH &&
       icmpCode == Icmpv4DestinationUnreachable::FRAG_NEEDED)
     {
-      
+
       ee.ee_errno = EMSGSIZE;
     }
   else if (icmpType == Icmpv4Header::DEST_UNREACH &&
-	   icmpCode == Icmpv4DestinationUnreachable::PORT_UNREACHABLE)
+           icmpCode == Icmpv4DestinationUnreachable::PORT_UNREACHABLE)
     {
-      
+
       ee.ee_errno = EHOSTUNREACH;
     }
   else if (icmpType == Icmpv4Header::TIME_EXCEEDED &&
-	   icmpCode == Icmpv4TimeExceeded::TIME_TO_LIVE)
+           icmpCode == Icmpv4TimeExceeded::TIME_TO_LIVE)
     {
       ee.ee_errno = EHOSTUNREACH;
     }
@@ -162,7 +162,7 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
       current->err = ErrnoToSimuErrno ();
       return -1;
     }
-  if ((PacketSocketAddress::IsMatchingType(from)))
+  if ((PacketSocketAddress::IsMatchingType (from)))
     {
       if ( msg->msg_namelen < sizeof (sockaddr_ll) )
         {
@@ -189,13 +189,13 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
       found = packet->PeekPacketTag (sat);
       if (found)
         {
-          if (PacketSocketAddress::IsMatchingType ( sat.GetAddress() ) )
+          if (PacketSocketAddress::IsMatchingType ( sat.GetAddress () ) )
             {
-              PacketSocketAddress psa = PacketSocketAddress::ConvertFrom (sat.GetAddress() );
+              PacketSocketAddress psa = PacketSocketAddress::ConvertFrom (sat.GetAddress () );
               CopyMacAddress (psa.GetPhysicalAddress (), buf );
             }
         }
-      memcpy (buf+12, &(((struct sockaddr_ll *)msg->msg_name)->sll_protocol) , 2);
+      memcpy (buf+12, &(((struct sockaddr_ll *)msg->msg_name)->sll_protocol), 2);
     }
   else
     {
@@ -210,7 +210,7 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
 }
 
 ssize_t 
-UnixDatagramSocketFd::DoSendmsg(const struct msghdr *msg, int flags)
+UnixDatagramSocketFd::DoSendmsg (const struct msghdr *msg, int flags)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current);
@@ -234,17 +234,17 @@ UnixDatagramSocketFd::DoSendmsg(const struct msghdr *msg, int flags)
               Mac48Address dest;
               PacketSocketAddress pad;
 
-              dest.CopyFrom(addr->sll_addr);
+              dest.CopyFrom (addr->sll_addr);
               pad.SetPhysicalAddress (dest);
 
               // Retrieve binded protocol
               Address binded = pad;
               s->GetSockName (binded);
-              if ( PacketSocketAddress::IsMatchingType(binded) )
+              if ( PacketSocketAddress::IsMatchingType (binded) )
                 {
                   PacketSocketAddress pad2 = PacketSocketAddress::ConvertFrom (binded);
 
-                  pad.SetProtocol (pad2.GetProtocol() );
+                  pad.SetProtocol (pad2.GetProtocol () );
                 }
 
               // Set Interface index
@@ -254,16 +254,16 @@ UnixDatagramSocketFd::DoSendmsg(const struct msghdr *msg, int flags)
                 }
               else
                 {
-                  pad.SetAllDevices();
+                  pad.SetAllDevices ();
                 }
 
               ad = pad;
-              packet->RemoveAtStart(14);
+              packet->RemoveAtStart (14);
             }
           else
             {
               ad = PosixAddressToNs3Address ((const struct sockaddr *)msg->msg_name,
-                  (socklen_t)msg->msg_namelen);
+                                             (socklen_t)msg->msg_namelen);
             }
           result = m_socket->SendTo (packet, flags, ad);
         }
@@ -315,7 +315,7 @@ UnixDatagramSocketFd::CopyMacAddress (const Address &a,  uint8_t* const buf)
   if (Mac48Address::IsMatchingType (  a ) )
     {
       uint8_t addr[8];
-      uint32_t l = a.CopyAllTo (addr , sizeof (addr));
+      uint32_t l = a.CopyAllTo (addr, sizeof (addr));
 
       if ( ( sizeof (addr) == l )  && ( addr[1] == 6 ) )
         {
@@ -336,7 +336,7 @@ UnixDatagramSocketFd::Poll (PollTable* ptable)
     {
       ret |= POLLOUT;
     }
-  if (HangupReceived() )
+  if (HangupReceived () )
     {
       ret |= POLLHUP;
     }

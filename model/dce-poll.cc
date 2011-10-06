@@ -15,7 +15,7 @@ NS_LOG_COMPONENT_DEFINE ("PollSelect");
 
 using namespace ns3;
 
-int dce_poll(struct pollfd *fds, nfds_t nfds, int timeout)
+int dce_poll (struct pollfd *fds, nfds_t nfds, int timeout)
 {
   int count = -1;
   int timed_out = 0;
@@ -51,15 +51,16 @@ int dce_poll(struct pollfd *fds, nfds_t nfds, int timeout)
       count = 0;
       for (uint32_t i = 0; i < nfds; ++i)
         {
-          if (current->process->openFiles[fds[i].fd] && !current->process->openFiles[fds[i].fd]->IsClosed())
+          if (current->process->openFiles[fds[i].fd] 
+              && !current->process->openFiles[fds[i].fd]->IsClosed ())
             {
-              validFd ++;
+              validFd++;
               UnixFd *unixFd = 0;
               FileUsage *fu = current->process->openFiles[fds[i].fd];
 
               if (currentTable)
                 {
-                  unixFd = fu->GetFileInc();
+                  unixFd = fu->GetFileInc ();
                   toUnRef[fds[i].fd] = fu;
                   currentTable->SetEventMask (fds[i].events | POLLERR | POLLHUP);
                 }
@@ -74,7 +75,7 @@ int dce_poll(struct pollfd *fds, nfds_t nfds, int timeout)
               fds[i].revents = mask;
               if (mask)
                 {
-                  count ++;
+                  count++;
                   currentTable = 0;
                 }
             }
@@ -88,13 +89,13 @@ int dce_poll(struct pollfd *fds, nfds_t nfds, int timeout)
           if (timeout < 0)
             {
               current->pollTable = table;
-              table->Wait (Seconds(0));
+              table->Wait (Seconds (0));
               current->pollTable = 0;
             }
           else
             {
               Time diff = endtime - Now ();
-              if (diff.IsStrictlyPositive())
+              if (diff.IsStrictlyPositive ())
                 {
                   current->pollTable = table;
                   table->Wait (diff);
@@ -111,15 +112,16 @@ int dce_poll(struct pollfd *fds, nfds_t nfds, int timeout)
   table->FreeWait ();
   delete (table);
 
-  for (std::map <int , FileUsage* >::iterator i = toUnRef.begin ();
-      i != toUnRef.end (); ++i)
+  for (std::map <int, FileUsage* >::iterator i = toUnRef.begin ();
+       i != toUnRef.end (); ++i)
     {
       i->second->DecUsage ();
     }
   return count;
 }
 
-int dce_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)
+int dce_select (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, 
+                struct timeval *timeout)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << nfds << timeout);
@@ -148,7 +150,7 @@ int dce_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, s
     {
       int event = 0;
 
-      if (readfds != 0 && FD_ISSET(fd, readfds))
+      if (readfds != 0 && FD_ISSET (fd, readfds))
         {
           event |= POLLIN;
         }
@@ -163,7 +165,7 @@ int dce_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, s
 
       if (event)
         {
-          if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
+          if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed ()))
             {
               current->err = EBADF;
               return -1;
@@ -214,7 +216,7 @@ int dce_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, s
       for (j=0; j < nfds; j++)
         {
           if ( readfds && ( ( POLLIN & pollFd[j].revents ) || ( POLLHUP & pollFd[j].revents )
-                         || ( POLLERR & pollFd[j].revents )))
+                            || ( POLLERR & pollFd[j].revents )))
             {
               FD_SET (pollFd[j].fd, readfds);
               pollRet++;

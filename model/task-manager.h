@@ -32,7 +32,7 @@ public:
   void *GetExtraContext (void) const;
   void *GetContext (void) const;
 
-  void SetSwitchNotifier (void (*fn) (enum SwitchType, void *), void *context);
+  void SetSwitchNotifier (void (*fn)(enum SwitchType, void *), void *context);
 private:
   friend class TaskManager;
   ~Task ();
@@ -48,7 +48,7 @@ private:
   EventId m_waitTimer;
   void *m_context;
   void *m_extraContext;
-  void (*m_switchNotifier) (enum SwitchType, void *);
+  void (*m_switchNotifier)(enum SwitchType, void *);
   void *m_switchNotifierContext;
 };
 
@@ -125,14 +125,14 @@ public:
    */
   static TaskManager *Current (void);
 
-  void SetSwitchNotify (void (*fn) (void));
+  void SetSwitchNotify (void (*fn)(void));
   uint32_t GetStackSize (Task *task) const;
 private:
   enum FiberManagerType
-    {
-      UCONTEXT_FIBER_MANAGER,
-      PTHREAD_FIBER_MANAGER,
-    };
+  {
+    UCONTEXT_FIBER_MANAGER,
+    PTHREAD_FIBER_MANAGER,
+  };
   struct StartTaskContext
   {
     void (*function)(void *);

@@ -27,17 +27,17 @@ UnixStreamSocketFd::UnixStreamSocketFd (Ptr<Socket> sock, bool connected)
                                 MakeCallback (&UnixStreamSocketFd::ConnectionError, this));
   m_socket->SetCloseCallbacks  (MakeCallback (&UnixStreamSocketFd::CloseSuccess, this),
                                 MakeCallback (&UnixStreamSocketFd::CloseError, this));
-  m_state = (connected)?CONNECTED:CREATED;
+  m_state = (connected) ? CONNECTED : CREATED;
 }
 
 UnixStreamSocketFd::~UnixStreamSocketFd (void)
 {
   SetPeerAddress (0);
-  ClearSocket();
+  ClearSocket ();
 }
 
 ssize_t 
-UnixStreamSocketFd::DoRecvmsg(struct msghdr *msg, int flags)
+UnixStreamSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current << msg << flags << m_state);
@@ -49,7 +49,7 @@ UnixStreamSocketFd::DoRecvmsg(struct msghdr *msg, int flags)
       return -1;
     }
   switch (m_state)
-  {
+    {
     default:
     case CREATED:
       {
@@ -65,14 +65,14 @@ UnixStreamSocketFd::DoRecvmsg(struct msghdr *msg, int flags)
     case REMOTECLOSED:
     case CLOSED:
       {
-        if (  m_socket -> GetRxAvailable () <= 0 )
+        if (  m_socket->GetRxAvailable () <= 0 )
           {
             return 0;
           }
       }
       break;
 
-  }
+    }
 
   uint32_t totalAvailable = 0;
   for (uint32_t i = 0; i < msg->msg_iovlen; i++)
@@ -100,7 +100,7 @@ UnixStreamSocketFd::DoRecvmsg(struct msghdr *msg, int flags)
   return packet->GetSize ();
 }
 ssize_t 
-UnixStreamSocketFd::DoSendmsg(const struct msghdr *msg, int flags)
+UnixStreamSocketFd::DoSendmsg (const struct msghdr *msg, int flags)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current << msg << flags);
@@ -156,7 +156,7 @@ UnixStreamSocketFd::DoSendmsg(const struct msghdr *msg, int flags)
                 }
               AddWaitQueue (wq, true);
               PollTable::Result res = wq->Wait ();
-              RemoveWaitQueue ( wq ,true );
+              RemoveWaitQueue ( wq,true );
 
               switch (res) {
                 case PollTable::OK:
@@ -186,7 +186,7 @@ UnixStreamSocketFd::DoSendmsg(const struct msghdr *msg, int flags)
                       RETURNFREE (-1);
                     }
                   break;
-              }
+                }
             }
           ssize_t availLen = std::min (len, (ssize_t)m_socket->GetTxAvailable ());
           Ptr<Packet> packet = Create<Packet> (buf, availLen);
@@ -246,13 +246,13 @@ UnixStreamSocketFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
           wq = new WaitQueueEntryTimeout (POLLIN | POLLHUP, GetRecvTimeout ());
         }
       AddWaitQueue (wq, true);
-      NS_LOG_DEBUG("Accept: waiting ...");
+      NS_LOG_DEBUG ("Accept: waiting ...");
       PollTable::Result res = wq->Wait ();
-      NS_LOG_DEBUG("Accept: wait result:" << res);
-      RemoveWaitQueue ( wq , true);
+      NS_LOG_DEBUG ("Accept: wait result:" << res);
+      RemoveWaitQueue ( wq, true);
 
       switch (res)
-      {
+        {
         case PollTable::OK:
           break;
         case PollTable::INTERRUPTED:
@@ -266,7 +266,7 @@ UnixStreamSocketFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
             current->err = EAGAIN;
             RETURNFREE (-1);
           }
-      }
+        }
     }
 
   // create an fd for the socket.
@@ -298,19 +298,19 @@ UnixStreamSocketFd::CanRecv (void) const
   else
     {
       switch (m_state)
-      {
-        case CREATED : ret = 1; break;
-        case LISTENING : ret = ( 0 == m_connectionQueue.empty () ); break;
-        case CONNECTING : ret = 0; break;
-        case CONNECTED : ret = ( m_socket->GetRxAvailable () > 0 ); break;
+        {
+        case CREATED: ret = 1; break;
+        case LISTENING: ret = ( 0 == m_connectionQueue.empty () ); break;
+        case CONNECTING: ret = 0; break;
+        case CONNECTED: ret = ( m_socket->GetRxAvailable () > 0 ); break;
 
         case CLOSING:
-        case REMOTECLOSED :
-        case CLOSED : ret = 1; break;
+        case REMOTECLOSED:
+        case CLOSED: ret = 1; break;
 
         default: ret = 0;
-        break;
-      }
+          break;
+        }
       rx = m_socket->GetRxAvailable ();
     }
   NS_LOG_FUNCTION ( m_socket << m_state << rx << m_connectionQueue.empty () << " ret " << ret );
@@ -350,7 +350,7 @@ UnixStreamSocketFd::Shutdown (int how)
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current << how);
   NS_ASSERT (current != 0);
-  
+
   int retval;
   if (how == SHUT_RD)
     {
@@ -395,7 +395,7 @@ UnixStreamSocketFd::ConnectionSuccess (Ptr<Socket> sock)
   WakeWaiters (&pi);
 }
 void
-UnixStreamSocketFd::ConnectionError(Ptr<Socket> sock)
+UnixStreamSocketFd::ConnectionError (Ptr<Socket> sock)
 {
   NS_LOG_FUNCTION (this);
   if ( CONNECTING == m_state)
@@ -422,7 +422,7 @@ UnixStreamSocketFd::CloseSuccess (Ptr<Socket> sock)
   SetPeerAddress (0);
 }
 void
-UnixStreamSocketFd::CloseError(Ptr<Socket> sock)
+UnixStreamSocketFd::CloseError (Ptr<Socket> sock)
 {
   NS_LOG_FUNCTION (this << m_state);
 }
@@ -436,23 +436,23 @@ UnixStreamSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
 
   if ( CONNECTING == m_state )
     {
-      current -> err = EALREADY;
+      current->err = EALREADY;
       return -1;
     }
 
   if ( CLOSED == m_state)
     {
       TypeId tid = TypeId::LookupByName ("ns3::TcpSocketFactory");
-      Ptr<SocketFactory> factory = current->process->manager -> GetObject<SocketFactory> (tid);
+      Ptr<SocketFactory> factory = current->process->manager->GetObject<SocketFactory> (tid);
 
       Ptr<Socket> socket = factory->CreateSocket ();
 
       socket->SetAcceptCallback (MakeCallback (&UnixStreamSocketFd::ConnectionRequest, this),
-                                   MakeCallback (&UnixStreamSocketFd::ConnectionCreated, this));
+                                 MakeCallback (&UnixStreamSocketFd::ConnectionCreated, this));
       socket->SetConnectCallback (MakeCallback (&UnixStreamSocketFd::ConnectionSuccess, this),
-                                    MakeCallback (&UnixStreamSocketFd::ConnectionError, this));
+                                  MakeCallback (&UnixStreamSocketFd::ConnectionError, this));
       socket->SetCloseCallbacks  (MakeCallback (&UnixStreamSocketFd::CloseSuccess, this),
-                                    MakeCallback (&UnixStreamSocketFd::CloseError, this));
+                                  MakeCallback (&UnixStreamSocketFd::CloseError, this));
 
       ChangeSocket (socket);
 
@@ -462,7 +462,7 @@ UnixStreamSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
 
   m_state = CONNECTING;
 
-  int sup = UnixSocketFd::Connect( my_addr, addrlen);
+  int sup = UnixSocketFd::Connect ( my_addr, addrlen);
 
   if (0 == sup) {
       sup = -1;
@@ -471,13 +471,13 @@ UnixStreamSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
       while ( CONNECTING == m_state )
         {
           AddWaitQueue (wq, true);
-          NS_LOG_DEBUG("Connect: waiting ...");
+          NS_LOG_DEBUG ("Connect: waiting ...");
           PollTable::Result res = wq->Wait ();
-          NS_LOG_DEBUG("Connect: wait result:" << res);
-          RemoveWaitQueue ( wq , true);
+          NS_LOG_DEBUG ("Connect: wait result:" << res);
+          RemoveWaitQueue ( wq, true);
 
           switch (res)
-          {
+            {
             case PollTable::OK:
               break;
             case PollTable::INTERRUPTED:
@@ -491,17 +491,17 @@ UnixStreamSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
                 current->err = EAGAIN;
                 RETURNFREE (-1);
               }
-          }
+            }
         }
       delete wq;
       wq = 0;
-  }
+    }
   if (CONNECTED == m_state)
     {
       sup = 0;
-      Address ad = PosixAddressToNs3Address( my_addr, addrlen);
+      Address ad = PosixAddressToNs3Address ( my_addr, addrlen);
 
-      SetPeerAddress( new Address (ad) );
+      SetPeerAddress ( new Address (ad) );
     }
   else
     {
@@ -509,13 +509,13 @@ UnixStreamSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
 
       if ((m_state == CLOSED)||(REMOTECLOSED==m_state))
         {
-          Current () -> err = ECONNREFUSED;
+          Current ()->err = ECONNREFUSED;
         }
     }
   return sup;
 }
 int
-UnixStreamSocketFd::Getpeername(struct sockaddr *name, socklen_t *namelen)
+UnixStreamSocketFd::Getpeername (struct sockaddr *name, socklen_t *namelen)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current << name << *namelen );
@@ -545,7 +545,7 @@ UnixStreamSocketFd::Poll (PollTable* ptable)
     {
       ret |= POLLOUT;
     }
-  if (HangupReceived() )
+  if (HangupReceived () )
     {
       ret |= POLLHUP;
     }

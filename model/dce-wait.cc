@@ -13,12 +13,12 @@ NS_LOG_COMPONENT_DEFINE ("SimuWait");
 
 using namespace ns3;
 
-pid_t dce_wait(int *status)
+pid_t dce_wait (int *status)
 {
   return dce_waitpid (-1, status, 0);
 }
 
-pid_t dce_waitpid(pid_t pid, int *status, int options)
+pid_t dce_waitpid (pid_t pid, int *status, int options)
 {
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread);
@@ -39,18 +39,18 @@ pid_t dce_waitpid(pid_t pid, int *status, int options)
       // Seek an ended child
       int childCount = 0;
 
-      for (std::set<uint16_t>::iterator it = thread->process->children.begin();
-          it != thread->process->children.end (); it++)
+      for (std::set<uint16_t>::iterator it = thread->process->children.begin ();
+           it != thread->process->children.end (); it++)
         {
           if ( (*it) > 1 )
             {
-              Process *p = thread->process->manager->SearchProcess(*it);
+              Process *p = thread->process->manager->SearchProcess (*it);
 
               if ( p )
                 {
                   if ( ( pid == -1 ) || ( pid == p->pid ) )
                     {
-                      childCount ++;
+                      childCount++;
                       if ( !p->alloc && !p->loader )  // process zombie ?
                         {
                           pid_t id = p->pid;
@@ -60,13 +60,13 @@ pid_t dce_waitpid(pid_t pid, int *status, int options)
 
                           if ( it != thread->process->children.end () )
                             {
-                              thread->process->children.erase(it);
+                              thread->process->children.erase (it);
                             }
                           if (status)
                             {
                               *status = exitCode;
                             }
-                          thread->process->manager->FinishChild(id);
+                          thread->process->manager->FinishChild (id);
 
                           return id;
                         }
@@ -81,11 +81,11 @@ pid_t dce_waitpid(pid_t pid, int *status, int options)
               return 0;
             }
           // I need wait
-          Waiter *waiter = new Waiter();
+          Waiter *waiter = new Waiter ();
 
           thread->childWaiter = waiter;
 
-          if (waiter->WaitDoSignal())
+          if (waiter->WaitDoSignal ())
             {
               // loop retry
               delete waiter;

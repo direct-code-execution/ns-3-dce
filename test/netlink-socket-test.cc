@@ -44,7 +44,7 @@ NS_LOG_COMPONENT_DEFINE ("NetlinkSocketTest");
 namespace ns3 {
 
 
-class NetlinkSocketTestCase: public TestCase
+class NetlinkSocketTestCase : public TestCase
 {
 public:
   NetlinkSocketTestCase ();
@@ -78,7 +78,7 @@ private:
   std::list<MultipartNetlinkMessage> m_unicastList;
   std::list<MultipartNetlinkMessage> m_multicastList;
   Ptr<Socket> m_cmdSock;
-  Ptr<Socket> m_groupSock;  
+  Ptr<Socket> m_groupSock;
   int m_pid;
 };
 
@@ -120,8 +120,8 @@ NetlinkSocketTestCase::BuildAddressMessage (uint16_t type, uint16_t flags)
   ifamsg.SetLength (24);
   ifamsg.SetInterfaceIndex (3);
 
-  ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_LOCAL, ADDRESS, Ipv4Address("192.168.0.1")));
-  ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_ADDRESS,ADDRESS, Ipv4Address("192.168.0.2")));
+  ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_LOCAL, ADDRESS, Ipv4Address ("192.168.0.1")));
+  ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_ADDRESS,ADDRESS, Ipv4Address ("192.168.0.2")));
   ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_LABEL, STRING, "TESTSTRING"));
 
   nlmsg.SetInterfaceAddressMessage (ifamsg);
@@ -160,7 +160,7 @@ NetlinkSocketTestCase::BuildRouteMessage (uint16_t type, uint16_t flags)
   rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_GATEWAY, ADDRESS, Ipv4Address ("10.1.1.10")));
   rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_OIF, U32, (uint32_t)2));
 
-  nlmsg.SetRouteMessage(rtmsg);
+  nlmsg.SetRouteMessage (rtmsg);
   return nlmsg;
 }
 
@@ -221,14 +221,14 @@ NetlinkSocketTestCase::CheckIsEqual (MultipartNetlinkMessage mulmsg1, MultipartN
   if (mulmsg1.GetNMessages () != mulmsg2.GetNMessages ())
     return false;
 
-  for (uint32_t i = 0; i < mulmsg1.GetNMessages(); i ++)
+  for (uint32_t i = 0; i < mulmsg1.GetNMessages (); i++)
     {
       if (!CheckIsEqual (mulmsg1.GetMessage (i), mulmsg2.GetMessage (i)))
         {
           return false;
         }
     }
-  return true;  
+  return true;
 }
 
 void
@@ -351,7 +351,7 @@ NetlinkSocketTestCase::TestInferfaceInfoMessage ()
   NS_TEST_ASSERT_MSG_EQ (CheckIsDump (multinlmsg), true, "msg should be dump");
 
   NS_TEST_ASSERT_MSG_EQ ((multinlmsg.GetNMessages () > 1) && (multinlmsg.GetMessage (0).GetMsgType () == NETLINK_RTM_NEWLINK),
-                        true, "msg might be incorrect");
+                         true, "msg might be incorrect");
 }
 
 void
@@ -359,8 +359,8 @@ NetlinkSocketTestCase::TestBroadcastMessage ()
 {
   //at 2Xs, m_cmdSock send an request to kernel to add/del an interface address
   //and an route entry,  the m_groupSock will recv the changed information
-  //through the broadcast way  
-  m_multicastList.clear();
+  //through the broadcast way
+  m_multicastList.clear ();
   Simulator::Schedule (Seconds (1), &NetlinkSocketTestCase::MonitorKernelChanges, this);
   // Not implemented yet (100325)
 #if 0
@@ -388,7 +388,7 @@ NetlinkSocketTestCase::SendNetlinkMessage (NetlinkMessage nlmsg)
   uint32_t count = 20;
   Ptr<Packet> p = ns3::Create<Packet> ((const uint8_t *)buf, (uint32_t)count);
 #endif
-  
+
   m_cmdSock->Send (p);
 }
 void
@@ -407,7 +407,7 @@ NetlinkSocketTestCase::SendCmdToKernel (uint16_t type)
   else
     {
       NS_LOG_ERROR ("netlink cmd not support , type = " << type);
-    }  
+    }
 }
 
 
@@ -450,7 +450,7 @@ NetlinkSocketTestCase::MonitorKernelChanges ()
           type = nlmsg.GetMsgType ();
           NS_ASSERT (type == NETLINK_RTM_NEWADDR || type == NETLINK_RTM_DELADDR ||
                      type == NETLINK_RTM_NEWROUTE || type == NETLINK_RTM_DELROUTE);
-          NS_LOG_INFO ("group socket recv netlink message, type =" << type);          
+          NS_LOG_INFO ("group socket recv netlink message, type =" << type);
         }
       else
         {
@@ -470,7 +470,7 @@ NetlinkSocketTestCase::MonitorKernelChanges ()
 
 NetlinkSocketTestCase::NetlinkSocketTestCase ()
   : TestCase ("Netlink"),
-    m_pid(1) {}
+    m_pid (1) {}
 
 Ptr<SocketFactory>
 NetlinkSocketTestCase::CreateNetlinkFactory (void)
@@ -500,10 +500,10 @@ NetlinkSocketTestCase::DoRun (void)
   InternetStackHelper stack;
   stack.Install (nodes);
 
-  //add a p2p device with an ip address  
-  PointToPointHelper p2p;  
-  p2p.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));  
-  p2p.SetChannelAttribute ("Delay", StringValue ("2ms"));  
+  //add a p2p device with an ip address
+  PointToPointHelper p2p;
+  p2p.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
+  p2p.SetChannelAttribute ("Delay", StringValue ("2ms"));
   NetDeviceContainer d0d1 = p2p.Install (n0n1);
   p2p.SetDeviceAttribute ("DataRate", StringValue ("1.5Mbps"));
   p2p.SetChannelAttribute ("Delay", StringValue ("10ms"));
@@ -522,7 +522,7 @@ NetlinkSocketTestCase::DoRun (void)
   one is to monitor the changes happened in kernel
   */
   Ptr<Node> node0 = nodes.Get (1);
-  Ptr<SocketFactory> socketFactory = CreateNetlinkFactory();
+  Ptr<SocketFactory> socketFactory = CreateNetlinkFactory ();
   node0->AggregateObject (socketFactory);
   NetlinkSocketAddress addr;
 

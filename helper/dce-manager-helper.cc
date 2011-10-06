@@ -95,7 +95,7 @@ DceManagerHelper::Install (NodeContainer nodes)
       node->AggregateObject (manager);
       node->AggregateObject (networkStack);
       node->AggregateObject (CreateObject<LocalSocketFdFactory> ());
-      manager->AggregateObject( CreateObject<DceNodeContext> () );
+      manager->AggregateObject(CreateObject<DceNodeContext> () );
     }
 }
 

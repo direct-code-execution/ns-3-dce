@@ -9,7 +9,7 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("SimuUmask");
 
-mode_t dce_umask(mode_t mask)
+mode_t dce_umask (mode_t mask)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current);

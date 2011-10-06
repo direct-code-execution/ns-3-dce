@@ -7,8 +7,8 @@
 extern "C" {
 #endif
 
-char *dce_strdup(const char *s);
-char *dce_strndup(const char *s, size_t n);
+char *dce_strdup (const char *s);
+char *dce_strndup (const char *s, size_t n);
 
 
 

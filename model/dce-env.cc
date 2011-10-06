@@ -9,7 +9,7 @@ NS_LOG_COMPONENT_DEFINE ("SimuEnv");
 
 using namespace ns3;
 
-char *dce_getenv(const char *name)
+char *dce_getenv (const char *name)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << name);
   NS_ASSERT (Current () != 0);
@@ -21,18 +21,18 @@ char *dce_getenv(const char *name)
     {
       char *equal = strchr (*cur, '=');
       if (equal == 0)
-	{
-	  continue;
-	}
+        {
+          continue;
+        }
       if (strncmp (*cur, name, namelen) != 0)
-	{
-	  continue;
-	}
+        {
+          continue;
+        }
       return equal+1;
     }
   return 0;
 }
-int dce_putenv(char *string)
+int dce_putenv (char *string)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << string);
   NS_ASSERT (Current () != 0);
@@ -54,11 +54,11 @@ int dce_putenv(char *string)
   for (cur = *penvp; *cur != 0; cur++)
     {
       if (strncmp (string, *cur, namelen) == 0)
-	{
-	  // found it, and replace.
-	  *cur = string;
-	  found = true;
-	}
+        {
+          // found it, and replace.
+          *cur = string;
+          found = true;
+        }
       len++;
     }
   if (found)
@@ -74,7 +74,7 @@ int dce_putenv(char *string)
   *penvp = newEnvp;
   return 0;
 }
-int dce_setenv(const char *name, const char *value, int overwrite)
+int dce_setenv (const char *name, const char *value, int overwrite)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << name << value << overwrite);
   NS_ASSERT (Current () != 0);
@@ -90,11 +90,11 @@ int dce_setenv(const char *name, const char *value, int overwrite)
   for (cur = *penvp; *cur != 0; cur++)
     {
       if (overwrite == 0 && strncmp (*cur, name, namelen) == 0)
-	{
-	  // there is already an entry which matches this name and
-	  // we cannot remove it so, we are done.
-	  return 0;
-	}
+        {
+          // there is already an entry which matches this name and
+          // we cannot remove it so, we are done.
+          return 0;
+        }
       len++;
     }
   char **newEnvp = (char**)malloc (sizeof(char*)*(len+1+1));
@@ -112,7 +112,7 @@ int dce_setenv(const char *name, const char *value, int overwrite)
   *penvp = newEnvp;
   return 0;
 }
-int dce_unsetenv(const char *name)
+int dce_unsetenv (const char *name)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << name);
   NS_ASSERT (Current () != 0);
@@ -124,24 +124,24 @@ int dce_unsetenv(const char *name)
     {
       char *equal = strchr (*cur, '=');
       if (equal == 0)
-	{
-	  continue;
-	}
+        {
+          continue;
+        }
       if (strncmp (*cur, name, namelen) != 0)
-	{
-	  cur++;
-	  continue;
-	}
+        {
+          cur++;
+          continue;
+        }
       char **i, **prev;
       *cur = *(cur+1);
       for (i = cur+1, prev = cur; *i != 0; i++, prev++)
-	{
-	  *prev = *i;
-	}
+        {
+          *prev = *i;
+        }
     }
   return 0;
 }
-int dce_clearenv(void)
+int dce_clearenv (void)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);

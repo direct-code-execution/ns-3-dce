@@ -13,7 +13,7 @@ class FiberManager
 public:
   virtual ~FiberManager ();
 
-  virtual struct Fiber *Clone (struct Fiber *fiber) {return 0;};
+  virtual struct Fiber *Clone (struct Fiber *fiber) {return 0; };
 
   /**
    * \param callback function to use as main loop for the 
@@ -22,9 +22,9 @@ public:
    *        fiber.
    * \returns a newly-created fiber context.
    */
-  virtual struct Fiber *Create (void (*callback) (void *),
-				void *context,
-				uint32_t stackSize) = 0;
+  virtual struct Fiber *Create (void (*callback)(void *),
+                                void *context,
+                                uint32_t stackSize) = 0;
   /**
    * \returns an empty context
    *
@@ -58,7 +58,7 @@ public:
    * obtained through Create.
    */
   virtual void SwitchTo (struct Fiber *from, 
-			 const struct Fiber *to) = 0;
+                         const struct Fiber *to) = 0;
 
   /**
    * \return size of stack allocated in fiber.
@@ -69,7 +69,7 @@ public:
    * \param fn a function which will be invoked whenever SwitchTo
    * is invoked, just before it returns to the destination fiber.
    */
-  virtual void SetSwitchNotification (void (*fn) (void)) = 0;
+  virtual void SetSwitchNotification (void (*fn)(void)) = 0;
 };
 
 } // namespace ns3

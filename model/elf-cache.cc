@@ -13,7 +13,7 @@
 
 namespace ns3 {
 
-NS_LOG_COMPONENT_DEFINE("ElfCache");
+NS_LOG_COMPONENT_DEFINE ("ElfCache");
 
 ElfCache::ElfCache (std::string directory, uint32_t uid)
   : m_directory (directory),
@@ -31,7 +31,7 @@ ElfCache::ElfCache (std::string directory, uint32_t uid)
 std::string
 ElfCache::GetBasename (std::string filename) const
 {
-  std::string::size_type tmp = filename.find_last_of ("/");  
+  std::string::size_type tmp = filename.find_last_of ("/");
   if (tmp == std::string::npos)
     {
       return filename;
@@ -51,10 +51,10 @@ ElfCache::CopyFile (std::string source, std::string destination) const
     {
       ssize_t bytes_written = 0;
       while (bytes_written != bytes_read)
-	{
-	  ssize_t written = write (dst, buffer + bytes_written, bytes_read - bytes_written);
-	  bytes_written += written;
-	}
+        {
+          ssize_t written = write (dst, buffer + bytes_written, bytes_read - bytes_written);
+          bytes_written += written;
+        }
       bytes_read = read (src, buffer, 1024);
     }
   close (src);
@@ -70,13 +70,13 @@ ElfCache::GetDtStrTab (ElfW(Dyn) *dyn, long baseAddress) const
   while (dyn->d_tag != DT_NULL)
     {
       if (dyn->d_tag == DT_STRTAB)
-	{
-	  dt_strtab = dyn->d_un.d_val;
-	}
+        {
+          dt_strtab = dyn->d_un.d_val;
+        }
       else if (dyn->d_tag == DT_GNU_PRELINKED)
-	{
-	  prelinked = true;
-	}
+        {
+          prelinked = true;
+        }
       dyn++;
     }
   if (prelinked)
@@ -94,13 +94,13 @@ ElfCache::GetBaseAddress (ElfW(Phdr) *phdr, long phnum) const
   for (long i = 0; i < phnum; i++, phdr++)
     {
       if (phdr->p_type == PT_LOAD)
-	{
-	  unsigned long ph_base = phdr->p_vaddr & ~(phdr->p_align-1);
-	  if (ph_base < base)
-	    {
-	      base = ph_base;
-	    }
-	}
+        {
+          unsigned long ph_base = phdr->p_vaddr & ~(phdr->p_align-1);
+          if (ph_base < base)
+            {
+              base = ph_base;
+            }
+        }
     }
   if (base == end)
     {
@@ -150,34 +150,34 @@ ElfCache::WriteString (char *str, uint32_t uid) const
 struct ElfCache::FileInfo
 ElfCache::EditBuffer (uint8_t *map, uint32_t selfId) const
 {
-  ElfW(Ehdr) *header = (ElfW(Ehdr) *)map;
-  ElfW(Phdr) *phdr = (ElfW(Phdr) *)(map + header->e_phoff);
-  ElfW(Dyn) *dyn = 0;
+  ElfW (Ehdr) *header = (ElfW (Ehdr) *)map;
+  ElfW (Phdr) *phdr = (ElfW (Phdr) *)(map + header->e_phoff);
+  ElfW (Dyn) *dyn = 0;
   long base_address = GetBaseAddress (phdr, header->e_phnum);
 
   // find DYNAMIC and fill DataSection
   struct FileInfo fileInfo;
-  ElfW(Phdr) *pt_load_rw = 0;
-  ElfW(Phdr) *pt_gnu_relro = 0;
+  ElfW (Phdr) *pt_load_rw = 0;
+  ElfW (Phdr) *pt_gnu_relro = 0;
   for (uint32_t i = 0; i < header->e_phnum; i++, phdr++)
     {
       switch (phdr->p_type)
-	{
-	case PT_LOAD:
-	  if (phdr->p_flags & PF_W)
-	    {
-	      // data section !
-	      pt_load_rw = phdr;
-	    }
-	  break;
-	case PT_DYNAMIC:
-	  // now, seek DT_NEEDED
-	  dyn = (ElfW(Dyn) *)(map + phdr->p_offset);
-	  break;
-	case PT_GNU_RELRO:
-	  pt_gnu_relro = phdr;
-	  break;
-	}
+        {
+        case PT_LOAD:
+          if (phdr->p_flags & PF_W)
+            {
+              // data section !
+              pt_load_rw = phdr;
+            }
+          break;
+        case PT_DYNAMIC:
+          // now, seek DT_NEEDED
+          dyn = (ElfW (Dyn) *)(map + phdr->p_offset);
+          break;
+        case PT_GNU_RELRO:
+          pt_gnu_relro = phdr;
+          break;
+        }
     }
   NS_ASSERT (pt_load_rw != 0);
   fileInfo.p_vaddr = pt_load_rw->p_vaddr;
@@ -193,29 +193,29 @@ ElfCache::EditBuffer (uint8_t *map, uint32_t selfId) const
   // and save the DT_INIT entry
   long dt_strtab = GetDtStrTab (dyn, base_address);
   long dt_init = 0;
-  ElfW(Dyn) *cur = dyn;
+  ElfW (Dyn) *cur = dyn;
   while (cur->d_tag != DT_NULL)
     {
       if (cur->d_tag == DT_NEEDED)
-	{
-	  char *needed = (char *)(map + dt_strtab + cur->d_un.d_val);
-	  if (std::string (needed) != "ld-linux-x86-64.so.2" &&
-	      std::string (needed) != "ld-linux.so.2")
-	    {
-	      uint32_t id = GetDepId (needed);
-	      fileInfo.deps.push_back (id);
-	      WriteString (needed, id);
-	    }
-	}
+        {
+          char *needed = (char *)(map + dt_strtab + cur->d_un.d_val);
+          if (std::string (needed) != "ld-linux-x86-64.so.2" &&
+              std::string (needed) != "ld-linux.so.2")
+            {
+              uint32_t id = GetDepId (needed);
+              fileInfo.deps.push_back (id);
+              WriteString (needed, id);
+            }
+        }
       else if (cur->d_tag == DT_SONAME)
-	{
-	  char *soname = (char *)(map + dt_strtab + cur->d_un.d_val);
-	  WriteString (soname, selfId);
-	}
+        {
+          char *soname = (char *)(map + dt_strtab + cur->d_un.d_val);
+          WriteString (soname, selfId);
+        }
       else if (cur->d_tag == DT_INIT)
-	{
-	  dt_init = cur->d_un.d_val;
-	}
+        {
+          dt_init = cur->d_un.d_val;
+        }
       cur++;
     }
   // then, eliminate DT_FINI, DT_FINI_ARRAY and DT_FINI_ARRAYSZ
@@ -223,14 +223,14 @@ ElfCache::EditBuffer (uint8_t *map, uint32_t selfId) const
   while (cur->d_tag != DT_NULL)
     {
       if (cur->d_tag == DT_FINI)
-	{
-	  cur->d_tag = DT_INIT;
-	  cur->d_un.d_val = dt_init;
-	}
+        {
+          cur->d_tag = DT_INIT;
+          cur->d_un.d_val = dt_init;
+        }
       else if (cur->d_tag == DT_FINI_ARRAYSZ)
-	{
-	  cur->d_un.d_val = 0;
-	}
+        {
+          cur->d_un.d_val = 0;
+        }
       cur++;
     }
   return fileInfo;
@@ -243,7 +243,7 @@ ElfCache::EditFile (std::string filename, uint32_t selfId) const
   int fd = ::open (filename.c_str (), O_RDWR);
   NS_ASSERT_MSG (fd != -1, "unable to open file=" << filename << " error=" << strerror (errno));
   struct stat st;
-  int retval = ::fstat(fd, &st);
+  int retval = ::fstat (fd, &st);
   NS_ASSERT_MSG (retval == 0, "unable to fstat file=" << filename << " error=" << strerror (errno));
   uint64_t size = st.st_size;
   uint8_t *buffer = (uint8_t *) ::mmap (0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
@@ -277,16 +277,16 @@ ElfCache::GetDepId (std::string depname) const
     {
       struct Overriden overriden = *i;
       if (overriden.from == depname)
-	{
-	  depname = overriden.to;
-	}
+        {
+          depname = overriden.to;
+        }
     }
   for (std::vector<struct ElfCachedFile>::const_iterator i = m_files.begin (); i != m_files.end (); ++i)
     {
       if (depname == i->basename)
-	{
-	  return i->id;
-	}
+        {
+          return i->id;
+        }
     }
   NS_ASSERT_MSG (false, "did not find " << depname);
   return 0; // quiet compiler
@@ -320,27 +320,27 @@ ElfCache::Add (std::string filename)
     {
       struct Overriden overriden = *i;
       if (overriden.from == basename)
-	{
-	  // check if the overriden file is already in-store.
-	  for (std::vector<struct ElfCachedFile>::const_iterator i = m_files.begin (); i != m_files.end (); ++i)
-	    {
-	      if (i->basename == overriden.to)
-		{
-		  return *i;
-		}
-	    }
-	  NS_ASSERT (false);
-	}
+        {
+          // check if the overriden file is already in-store.
+          for (std::vector<struct ElfCachedFile>::const_iterator i = m_files.begin (); i != m_files.end (); ++i)
+            {
+              if (i->basename == overriden.to)
+                {
+                  return *i;
+                }
+            }
+          NS_ASSERT (false);
+        }
     }
 
   // check if the file is already in-store.
   for (std::vector<struct ElfCachedFile>::const_iterator i = m_files.begin (); i != m_files.end (); ++i)
     {
       if (i->basename == basename)
-	{
-	  return *i;
-	}
-    }  
+        {
+          return *i;
+        }
+    }
 
   std::string directory = EnsureCacheDirectory ();
   std::string fileCopy = directory + "/" + basename;

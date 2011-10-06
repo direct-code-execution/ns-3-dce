@@ -15,7 +15,7 @@ int test1 ()
 
   setenv ("CALLER", "TEST1", 1);
   ret = execv ("build/bin/test-exec", args);
-  TEST_ASSERT( false ); // Must not be reached
+  TEST_ASSERT ( false ); // Must not be reached
 
   return ret;
 }
@@ -30,7 +30,7 @@ int test2 ()
   TEST_ASSERT_EQUAL (errno,  ENOENT);
 
   ret = execvp ("test-exec", args);
-  TEST_ASSERT( false ); // Must not be reached
+  TEST_ASSERT ( false ); // Must not be reached
 
   return ret;
 }
@@ -44,7 +44,7 @@ int test3 ()
   TEST_ASSERT_EQUAL (errno,  ENOENT);
 
   ret = execl ("build/bin/test-exec", "build/bin/test-exec", "4", 0);
-  TEST_ASSERT( false ); // Must not be reached
+  TEST_ASSERT ( false ); // Must not be reached
 
   return ret;
 }
@@ -65,7 +65,7 @@ int test4 ()
     char * args[] = { "build/bin/test-exec", "5", 0 };
 
     ret = execve ("build/bin/test-exec", args, env);
-    TEST_ASSERT( false ); // Must not be reached
+    TEST_ASSERT ( false ); // Must not be reached
   }
 
   return ret;
@@ -80,7 +80,7 @@ int test5 ()
   TEST_ASSERT_EQUAL (errno,  ENOENT);
 
   ret = execlp ("build/bin/test-exec", "build/bin/test-exec", "6", 0);
-  TEST_ASSERT( false ); // Must not be reached
+  TEST_ASSERT ( false ); // Must not be reached
 
   return ret;
 }
@@ -90,13 +90,13 @@ int test6 ()
   TEST_ASSERT_EQUAL ( strcmp ("TEST5", getenv ("CALLER")), 0 );
   setenv ("CALLER", "", 1);
   char * env[] = { "CALLER=TEST6", "LD_LIBRARY_PATH=./build/lib", 0 };
-  int ret = execle ("test-exec", "test-exec",  "7", 0 , env);
+  int ret = execle ("test-exec", "test-exec",  "7", 0, env);
   TEST_ASSERT_EQUAL (ret, -1);
   TEST_ASSERT_EQUAL (errno,  ENOENT);
 
-  ret = execle ("build/bin/test-exec", "build/bin/test-exec", "7", (char*)0 , env );
+  ret = execle ("build/bin/test-exec", "build/bin/test-exec", "7", (char*)0, env );
   printf ("execle -> %d, errno=%d\n", ret, errno);
-  TEST_ASSERT( false ); // Must not be reached
+  TEST_ASSERT ( false ); // Must not be reached
 
   return ret;
 }
@@ -113,13 +113,13 @@ int main (int c, char **v)
   printf ("%s: argc=%d", v[0], c);
   if ( c == 1)
     {
-      printf("\n");
+      printf ("\n");
       return test1 ();
     }
-  printf(" %d\n", atoi (v[1]));
+  printf (" %d\n", atoi (v[1]));
 
-  switch (atoi(v[1]))
-  {
+  switch (atoi (v[1]))
+    {
     case 2: return test2 ();
     case 3: return test3 ();
     case 4: return test4 ();
@@ -127,6 +127,6 @@ int main (int c, char **v)
     case 6: return test6 ();
 
     default: return last_test ();
-  }
+    }
 
 }

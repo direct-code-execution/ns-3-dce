@@ -35,7 +35,7 @@ public:
   void Wait (struct BarrierContext *context);
 private:
   pthread_cond_t m_cond;
-  pthread_mutex_t m_mutex;  
+  pthread_mutex_t m_mutex;
   int m_expected;
   int m_reached;
   int m_release;
@@ -73,9 +73,9 @@ Barrier::Wait (struct BarrierContext *context)
   else
     {
       while (m_release != context->sense)
-	{
-	  pthread_cond_wait (&m_cond, &m_mutex);
-	}
+        {
+          pthread_cond_wait (&m_cond, &m_mutex);
+        }
     }
   pthread_mutex_unlock (&m_mutex);
 }
@@ -96,7 +96,7 @@ void *thread (void *context)
 void test_cond (void)
 {
   int nThreads = 4;
-  
+
   Barrier *barrier = new Barrier (nThreads);
   pthread_t * threads = new pthread_t [nThreads] ();
   for (int i = 0; i < nThreads; i++)

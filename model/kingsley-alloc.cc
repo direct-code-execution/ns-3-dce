@@ -14,10 +14,10 @@ NS_LOG_COMPONENT_DEFINE ("Alloc");
   VALGRIND_MALLOCLIKE_BLOCK (buffer,size, 0, 0)
 # define REPORT_FREE(buffer) \
   VALGRIND_FREELIKE_BLOCK (buffer, 0)
-# define MARK_DEFINED(buffer, size)				\
-  VALGRIND_MAKE_MEM_DEFINED(buffer, size)
-# define MARK_UNDEFINED(buffer, size)			\
-  VALGRIND_MAKE_MEM_UNDEFINED(buffer, size)
+# define MARK_DEFINED(buffer, size)                             \
+  VALGRIND_MAKE_MEM_DEFINED (buffer, size)
+# define MARK_UNDEFINED(buffer, size)                   \
+  VALGRIND_MAKE_MEM_UNDEFINED (buffer, size)
 #else
 # define REPORT_MALLOC(buffer, size)
 # define REPORT_FREE(buffer)
@@ -30,7 +30,7 @@ KingsleyAlloc::KingsleyAlloc ()
   : m_defaultMmapSize (1<<15)
 {
   NS_LOG_FUNCTION (this);
-  memset(m_buckets, 0, sizeof(m_buckets));
+  memset (m_buckets, 0, sizeof(m_buckets));
 }
 KingsleyAlloc::~KingsleyAlloc ()
 {
@@ -39,21 +39,21 @@ KingsleyAlloc::~KingsleyAlloc ()
        i != m_chunks.end (); ++i)
     {
       if (i->mmap->buffer != i->copy)
-	{
-	  // ok, this means that _our_ buffer is not the
-	  // original mmap buffer which means that we were
-	  // cloned once so, we need to free our local 
-	  // buffer.
-	  free (i->copy);
-	}
+        {
+          // ok, this means that _our_ buffer is not the
+          // original mmap buffer which means that we were
+          // cloned once so, we need to free our local
+          // buffer.
+          free (i->copy);
+        }
       i->mmap->refcount--;
       if (i->mmap->refcount == 0)
-	{
-	  // we are the last to release this chunk. 
-	  // so, release the mmaped data.
-	  MmapFree (i->mmap->buffer, i->mmap->size);
-	  delete i->mmap;
-	}
+        {
+          // we are the last to release this chunk.
+          // so, release the mmaped data.
+          MmapFree (i->mmap->buffer, i->mmap->size);
+          delete i->mmap;
+        }
     }
   m_chunks.clear ();
 }
@@ -69,12 +69,12 @@ KingsleyAlloc::Clone (void)
       struct KingsleyAlloc::MmapChunk chunk = *i;
       chunk.mmap->refcount++;
       if (chunk.mmap->refcount == 2)
-	{
-	  NS_ASSERT (chunk.mmap->current == chunk.copy);
-	  // this is the first clone of this heap so, we first
-	  // create buffer copies for ourselves
-	  chunk.copy = (uint8_t *)malloc (chunk.mmap->size);
-	}
+        {
+          NS_ASSERT (chunk.mmap->current == chunk.copy);
+          // this is the first clone of this heap so, we first
+          // create buffer copies for ourselves
+          chunk.copy = (uint8_t *)malloc (chunk.mmap->size);
+        }
       // now, we create a buffer copy for the clone
       struct KingsleyAlloc::MmapChunk chunkClone = chunk;
       chunkClone.copy = (uint8_t *)malloc (chunkClone.mmap->size);
@@ -91,14 +91,14 @@ KingsleyAlloc::SwitchTo (void)
     {
       struct KingsleyAlloc::MmapChunk chunk = *i;
       if (chunk.mmap->current != chunk.copy)
-	{
-	  // save the previous user's heap
-	  memcpy (chunk.mmap->current, chunk.mmap->buffer, chunk.mmap->size);
-	  // swap in our own copy of the heap
-	  memcpy (chunk.mmap->buffer, chunk.copy, chunk.mmap->size);
-	  // and, now, remember that _we_ own the heap
-	  chunk.mmap->current = chunk.copy;
-	}
+        {
+          // save the previous user's heap
+          memcpy (chunk.mmap->current, chunk.mmap->buffer, chunk.mmap->size);
+          // swap in our own copy of the heap
+          memcpy (chunk.mmap->buffer, chunk.copy, chunk.mmap->size);
+          // and, now, remember that _we_ own the heap
+          chunk.mmap->current = chunk.copy;
+        }
     }
 }
 
@@ -118,7 +118,7 @@ KingsleyAlloc::MmapAlloc (uint32_t size)
   mmap_struct->refcount = 1;
   mmap_struct->size = size;
   mmap_struct->buffer = (uint8_t*)::mmap (0, size, PROT_READ | PROT_WRITE, 
-					  MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+                                          MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
   NS_ASSERT_MSG (mmap_struct->buffer != MAP_FAILED, "Unable to mmap memory buffer");
   mmap_struct->current = mmap_struct->buffer;
   struct MmapChunk chunk;
@@ -140,12 +140,12 @@ KingsleyAlloc::Brk (uint32_t needed)
     {
       NS_ASSERT (i->mmap->size >= i->brk);
       if (i->mmap->size - i->brk >= needed)
-	{
-	  uint8_t *buffer = i->mmap->buffer + i->brk;
-	  i->brk += needed;
-	  NS_LOG_DEBUG ("brk: needed=" << needed << ", left=" << i->mmap->size - i->brk);
-	  return buffer;
-	}
+        {
+          uint8_t *buffer = i->mmap->buffer + i->brk;
+          i->brk += needed;
+          NS_LOG_DEBUG ("brk: needed=" << needed << ", left=" << i->mmap->size - i->brk);
+          return buffer;
+        }
     }
   NS_ASSERT_MSG (needed <= m_defaultMmapSize, needed << " " << m_defaultMmapSize);
   MmapAlloc (m_defaultMmapSize);
@@ -165,7 +165,7 @@ KingsleyAlloc::SizeToBucket (uint32_t sz)
     }
   NS_ASSERT (bucket < 32);
   NS_LOG_DEBUG ("size=" << sz << ", bucket=" << (uint32_t)bucket << ", size=" << 
-		BucketToSize (bucket));
+                BucketToSize (bucket));
   return bucket;
 }
 uint32_t
@@ -183,26 +183,26 @@ KingsleyAlloc::Malloc (uint32_t size)
     {
       uint8_t bucket = SizeToBucket (size);
       if (m_buckets[bucket] == 0)
-	{
-	  struct Available *avail = (struct Available *)Brk (BucketToSize (bucket));
-	  MARK_DEFINED(avail, sizeof(void*));
-	  avail->next = 0;
-	  MARK_UNDEFINED(avail, sizeof(void*));
-	  m_buckets[bucket] = avail;
-	}
+        {
+          struct Available *avail = (struct Available *)Brk (BucketToSize (bucket));
+          MARK_DEFINED (avail, sizeof(void*));
+          avail->next = 0;
+          MARK_UNDEFINED (avail, sizeof(void*));
+          m_buckets[bucket] = avail;
+        }
       // fast path.
       struct Available *avail = m_buckets[bucket];
-      MARK_DEFINED(avail, sizeof(void*));
+      MARK_DEFINED (avail, sizeof(void*));
       m_buckets[bucket] = avail->next;
-      MARK_UNDEFINED(avail, sizeof(void*));
-      REPORT_MALLOC(avail, size);
+      MARK_UNDEFINED (avail, sizeof(void*));
+      REPORT_MALLOC (avail, size);
       return (uint8_t*)avail;
     }
   else
     {
       MmapAlloc (size);
       uint8_t *buffer = Brk (size);
-      REPORT_MALLOC(buffer, size);
+      REPORT_MALLOC (buffer, size);
       return buffer;
     }
 }
@@ -217,27 +217,27 @@ KingsleyAlloc::Free (uint8_t *buffer, uint32_t size)
       struct Available *avail = (struct Available *)buffer;
       avail->next = m_buckets[bucket];
       m_buckets[bucket] = avail;
-      REPORT_FREE(buffer);
+      REPORT_FREE (buffer);
     }
   else
     {
       for (std::list<struct KingsleyAlloc::MmapChunk>::iterator i = m_chunks.begin ();
-	   i != m_chunks.end (); ++i)
-	{
-	  if (i->mmap->buffer == buffer && i->mmap->size == size)
-	    {
-	      REPORT_FREE(buffer);
-	      MmapFree (buffer, size);
-	      m_chunks.erase (i);
-	      return;
-	    }
-	}
+           i != m_chunks.end (); ++i)
+        {
+          if (i->mmap->buffer == buffer && i->mmap->size == size)
+            {
+              REPORT_FREE (buffer);
+              MmapFree (buffer, size);
+              m_chunks.erase (i);
+              return;
+            }
+        }
       // this should never happen but it happens in case of a double-free
-      REPORT_FREE(buffer);
+      REPORT_FREE (buffer);
     }
 }
 uint8_t *
-KingsleyAlloc::Realloc(uint8_t *oldBuffer, uint32_t oldSize, uint32_t newSize)
+KingsleyAlloc::Realloc (uint8_t *oldBuffer, uint32_t oldSize, uint32_t newSize)
 {
   NS_LOG_FUNCTION (this << (void*)oldBuffer << oldSize << newSize);
   if (newSize < oldSize)

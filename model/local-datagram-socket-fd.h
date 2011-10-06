@@ -56,35 +56,35 @@ public:
   virtual void DoDispose (void);
   virtual int Close (void);
   virtual ssize_t Write (const void *buf, size_t count);
-  virtual ssize_t Read(void *buf, size_t count);
-  virtual ssize_t Recvmsg(struct msghdr *msg, int flags);
-  virtual ssize_t Sendmsg(const struct msghdr *msg, int flags);
+  virtual ssize_t Read (void *buf, size_t count);
+  virtual ssize_t Recvmsg (struct msghdr *msg, int flags);
+  virtual ssize_t Sendmsg (const struct msghdr *msg, int flags);
 
   virtual int Setsockopt (int level, int optname,
-                          const void *optval, socklen_t optlen) ;
+                          const void *optval, socklen_t optlen);
   virtual int Getsockopt (int level, int optname,
-                          void *optval, socklen_t *optlen) ;
-  virtual int Getsockname(struct sockaddr *name, socklen_t *namelen) ;
-  virtual int Getpeername(struct sockaddr *name, socklen_t *namelen) ;
-  virtual int Bind (const struct sockaddr *my_addr, socklen_t addrlen) ;
-  virtual int Connect (const struct sockaddr *my_addr, socklen_t addrlen) ;
-  virtual int Listen (int backlog) ;
-  virtual int Shutdown(int how) ;
-  virtual int Accept (struct sockaddr *my_addr, socklen_t *addrlen) ;
+                          void *optval, socklen_t *optlen);
+  virtual int Getsockname (struct sockaddr *name, socklen_t *namelen);
+  virtual int Getpeername (struct sockaddr *name, socklen_t *namelen);
+  virtual int Bind (const struct sockaddr *my_addr, socklen_t addrlen);
+  virtual int Connect (const struct sockaddr *my_addr, socklen_t addrlen);
+  virtual int Listen (int backlog);
+  virtual int Shutdown (int how);
+  virtual int Accept (struct sockaddr *my_addr, socklen_t *addrlen);
 
-  virtual bool CanRecv (void) const ;
-  virtual bool CanSend (void) const ;
-  virtual bool HangupReceived (void) const ;
+  virtual bool CanRecv (void) const;
+  virtual bool CanSend (void) const;
+  virtual bool HangupReceived (void) const;
   virtual int Poll (PollTable* ptable);
 
 protected:
-  virtual void ClearAll (bool andWakeUp) ;
-  virtual bool IsClosed (void) const ;
+  virtual void ClearAll (bool andWakeUp);
+  virtual bool IsClosed (void) const;
 
 private:
   bool IsBinded (void);
   void UnBind (void);
-  ssize_t Read(void *buf, size_t count, bool noWait, bool peek);
+  ssize_t Read (void *buf, size_t count, bool noWait, bool peek);
   void AddConnected (LocalDatagramSocketFd *newone);
   void RemoveConnected (LocalDatagramSocketFd *freeOne, bool andWakeUp);
 
@@ -105,7 +105,7 @@ private:
   LocalDatagramSocketFd* m_peer;
   // When I am BINDED I could have much peers.
   std::set< LocalDatagramSocketFd* > m_myPeers;
- };
+};
 
 } // namespace ns3
 

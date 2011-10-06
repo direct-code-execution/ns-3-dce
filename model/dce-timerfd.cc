@@ -9,7 +9,7 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("SimuTimerFd");
 
-int dce_timerfd_create(int clockid, int flags)
+int dce_timerfd_create (int clockid, int flags)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << clockid << flags);
@@ -28,15 +28,15 @@ int dce_timerfd_create(int clockid, int flags)
   return fd;
 }
 
-int dce_timerfd_settime(int fd, int flags,
-			 const struct itimerspec *new_value,
-			 struct itimerspec *old_value)
+int dce_timerfd_settime (int fd, int flags,
+                         const struct itimerspec *new_value,
+                         struct itimerspec *old_value)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << fd << flags << new_value << old_value);
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
 
-  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
+  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed ()))
     {
       current->err = EBADF;
       return -1;
@@ -48,13 +48,13 @@ int dce_timerfd_settime(int fd, int flags,
   return retval;
 }
 
-int dce_timerfd_gettime(int fd, struct itimerspec *cur_value)
+int dce_timerfd_gettime (int fd, struct itimerspec *cur_value)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << fd << cur_value);
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
 
-  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
+  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed ()))
     {
       current->err = EBADF;
       return -1;

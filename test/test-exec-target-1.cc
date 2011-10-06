@@ -8,9 +8,9 @@ int main (int c, char **v)
   printf ("Hello from %s ! FRED=%s argc=%d\n", v[0], getenv ("FRED"), c  );
 
 
-  for (int i=0; i < c ; i++)
+  for (int i=0; i < c; i++)
     {
-      printf("Arg[%d]=%s\n", i, v[i]);
+      printf ("Arg[%d]=%s\n", i, v[i]);
     }
 
   return 0;

@@ -20,7 +20,7 @@
 #include "rr-task-scheduler.h"
 #include "ns3/log.h"
 
-NS_LOG_COMPONENT_DEFINE("RrTaskScheduler");
+NS_LOG_COMPONENT_DEFINE ("RrTaskScheduler");
 
 namespace ns3 {
 
@@ -32,7 +32,7 @@ RrTaskScheduler::GetTypeId (void)
   static TypeId tid = TypeId ("ns3::RrTaskScheduler")
     .SetParent<TaskScheduler> ()
     .AddConstructor<RrTaskScheduler> ()
-    ;
+  ;
   return tid;
 }
 RrTaskScheduler::RrTaskScheduler ()

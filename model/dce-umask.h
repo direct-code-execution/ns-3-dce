@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-mode_t dce_umask(mode_t mask);
+mode_t dce_umask (mode_t mask);
 
 #ifdef __cplusplus
 }

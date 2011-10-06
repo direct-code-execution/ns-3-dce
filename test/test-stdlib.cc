@@ -5,9 +5,9 @@
 static void test_strtod (void)
 {
   double retval;
-  retval = strtod("55", NULL);
+  retval = strtod ("55", NULL);
   TEST_ASSERT_EQUAL (retval, 55);
-  retval = strtod("-127", NULL);
+  retval = strtod ("-127", NULL);
   TEST_ASSERT_EQUAL (retval, -127);
   retval = strtod ("122.233", NULL);
   TEST_ASSERT_EQUAL (retval, 122.233);
@@ -19,6 +19,6 @@ static void test_strtod (void)
 
 int main (int argc, char *argv[])
 {
-  test_strtod();
+  test_strtod ();
   return 0;
 }

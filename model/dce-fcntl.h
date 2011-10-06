@@ -10,7 +10,7 @@ extern "C" {
 
 int dce_open (const char *path, int flags, mode_t mode);
 int dce_creat (const char *path, mode_t mode);
-int dce_fcntl(int fd, int cmd, unsigned long arg);
+int dce_fcntl (int fd, int cmd, unsigned long arg);
 
 
 #ifdef __cplusplus

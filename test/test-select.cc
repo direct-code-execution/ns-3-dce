@@ -41,7 +41,7 @@ test_select_null_null (void)
 
   // doing select() with timeout = {0, 0}
   struct timeval timeout =
-    { 0, 0 };
+  { 0, 0 };
   int nfds = select (timerfd + 1, &fds, NULL, NULL, &timeout);
   close (timerfd);
   // no fds must be ready and select() should complete without errors
@@ -61,7 +61,7 @@ test_select_read (int fd, int timeOutSec, bool needSuccess)
   FD_ZERO (&readFd);
   FD_SET (fd, &readFd);
 
-  ret = select (maxFd, &readFd, NULL, NULL, (timeOutSec>0)?&timeOut:NULL);
+  ret = select (maxFd, &readFd, NULL, NULL, (timeOutSec>0) ? &timeOut : NULL);
   printf ("read select -> %d, errno:%d\n\n ", ret, errno);
   if (needSuccess)
     {
@@ -77,7 +77,7 @@ test_select_read (int fd, int timeOutSec, bool needSuccess)
 static void
 test_select_stdin (void)
 {
-  TEST_ASSERT(test_select_read (0, 1, false));
+  TEST_ASSERT (test_select_read (0, 1, false));
 }
 
 static bool
@@ -144,9 +144,9 @@ client1 (void *arg)
   int res;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
   sock2 = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT( sock2 >= 0 );
+  TEST_ASSERT ( sock2 >= 0 );
 
   res = inet_aton ("127.0.0.1", &(addr.sin_addr));
   TEST_ASSERT_EQUAL ( res, 1);
@@ -157,16 +157,16 @@ client1 (void *arg)
   sleep (1);
 
   res = connect (sock, (struct sockaddr *) &addr, sizeof(addr));
-  TEST_ASSERT_EQUAL( res, 0 );
-  sleep(1);
+  TEST_ASSERT_EQUAL ( res, 0 );
+  sleep (1);
   res = connect (sock2, (struct sockaddr *) &addr, sizeof(addr));
-  TEST_ASSERT_EQUAL( res, 0 );
+  TEST_ASSERT_EQUAL ( res, 0 );
 
   // Can I Write ?
   test_select_write (sock, 1, true);
   // Read ?
   TEST_ASSERT (test_select_read (sock, 1, false));
-  sleep(5);
+  sleep (5);
   // Read ?
   TEST_ASSERT (test_select_read (sock, 10, true));
 
@@ -176,7 +176,7 @@ client1 (void *arg)
   close (sock);
   close (sock2);
 
-  printf("Client1: end\n ");
+  printf ("Client1: end\n ");
 
   return arg;
 }
@@ -189,7 +189,7 @@ server1 (void *arg)
   int res;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
   res = inet_aton ("127.0.0.1", &(addr.sin_addr));
   TEST_ASSERT_EQUAL ( res, 1);
@@ -205,10 +205,10 @@ server1 (void *arg)
   TEST_ASSERT_EQUAL ( res, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT( sockin >= 0 );
-  sleep(1);
+  TEST_ASSERT ( sockin >= 0 );
+  sleep (1);
   sockin2 = accept (sock, NULL, NULL);
-  TEST_ASSERT( sockin2 >= 0 );
+  TEST_ASSERT ( sockin2 >= 0 );
 
   sleep (4);
   res = write (sockin, writeBuf, 1024);
@@ -221,11 +221,11 @@ server1 (void *arg)
   res = setsockopt (sockin, SOL_SOCKET, SO_SNDTIMEO, &tiout, sizeof(tiout));
   TEST_ASSERT_EQUAL (res, 0);
 
-  while ( wait_write(sockin, 10) )
+  while ( wait_write (sockin, 10) )
     { //  Fill the buffer
       res = write (sockin, writeBuf, BUF_LEN);
       printf ("Server1: write->%d\n ",res);
-      fflush(stdout);
+      fflush (stdout);
     }
 
   // buffer is full
@@ -237,7 +237,7 @@ server1 (void *arg)
   close (sockin);
   close (sockin2);
 
-  sleep(1);
+  sleep (1);
 
   printf ("Server1: end\n ");
 
@@ -256,7 +256,7 @@ client2 (void *arg)
   int res;
 
   sock = socket (AF_INET, SOCK_DGRAM, 0);
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
   res = inet_aton ("127.0.0.1", &(addr.sin_addr));
   TEST_ASSERT_EQUAL ( res, 1);
@@ -285,7 +285,7 @@ server2 (void *arg)
   socklen_t len;
 
   sock = socket (AF_INET, SOCK_DGRAM, 0);
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
   res = inet_aton ("127.0.0.1", &(addr.sin_addr));
   // TEST_ASSERT_EQUAL ( res, 1);
@@ -307,7 +307,7 @@ server2 (void *arg)
   TEST_ASSERT_EQUAL ( res, BUF_LEN);
   sleep (1);
 
-  close(sock);
+  close (sock);
 
   printf ("Server2: end\n ");
 
@@ -323,7 +323,7 @@ client3 (void *arg)
   int res;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
   res = inet_aton ("127.0.0.1", &(addr.sin_addr));
   TEST_ASSERT_EQUAL ( res, 1);
@@ -334,16 +334,16 @@ client3 (void *arg)
   sleep (1);
 
   res = connect (sock, (struct sockaddr *) &addr, sizeof(addr));
-  TEST_ASSERT_EQUAL( res, 0 );
+  TEST_ASSERT_EQUAL ( res, 0 );
 
- // sleep (2);
+  // sleep (2);
 
   res = read (sock, readBuf, BUF_LEN);
   printf ("client3: read -> %d \n ", res);
 
   close (sock);
 
-  printf("Client3: end\n ");
+  printf ("Client3: end\n ");
 
   return arg;
 }
@@ -356,7 +356,7 @@ server3 (void *arg)
   int res;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
   res = inet_aton ("127.0.0.1", &(addr.sin_addr));
   TEST_ASSERT_EQUAL ( res, 1);
@@ -374,8 +374,8 @@ server3 (void *arg)
   TEST_ASSERT (test_select_read (sock, 10, true));
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT( sockin >= 0 );
-  sleep(5);
+  TEST_ASSERT ( sockin >= 0 );
+  sleep (5);
 
   close (sock);
   close (sockin);
@@ -394,7 +394,7 @@ client4 (void *arg)
   int res;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
   res = inet_aton ("127.0.0.1", &(addr.sin_addr));
   TEST_ASSERT_EQUAL ( res, 1);
@@ -405,22 +405,22 @@ client4 (void *arg)
   sleep (1);
 
   res = connect (sock, (struct sockaddr *) &addr, sizeof(addr));
-  TEST_ASSERT_EQUAL( res, 0 );
+  TEST_ASSERT_EQUAL ( res, 0 );
 
   sleep (2);
 
   // Select over remote closed socket
-  test_select_read( sock, 1, true);
-  test_select_write( sock, 1, true);
+  test_select_read ( sock, 1, true);
+  test_select_write ( sock, 1, true);
 
   close (sock);
 
   // Select over closed socket
-  test_select_read( sock, 1, false);
-  test_select_write( sock, 1, false);
+  test_select_read ( sock, 1, false);
+  test_select_write ( sock, 1, false);
 
 
-  printf("Client4: end\n ");
+  printf ("Client4: end\n ");
 
   return arg;
 }
@@ -434,13 +434,13 @@ server4 (void *arg)
   int on = 1;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
   // Select over just created socket
-  test_select_read( sock, 1, true);
-  test_select_write( sock, 1, true);
+  test_select_read ( sock, 1, true);
+  test_select_write ( sock, 1, true);
 
-  res = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+  res = setsockopt (sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 
   res = inet_aton ("127.0.0.1", &(addr.sin_addr));
   TEST_ASSERT_EQUAL ( res, 1);
@@ -457,8 +457,8 @@ server4 (void *arg)
   TEST_ASSERT (test_select_read (sock, 10, true));
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT( sockin >= 0 );
-  sleep(1);
+  TEST_ASSERT ( sockin >= 0 );
+  sleep (1);
 
   close (sock);
   close (sockin);
@@ -478,11 +478,11 @@ client5 (void *arg)
   int res;
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
   // Select over just created socket
-  test_select_read( sock, 1, true);
-  test_select_write( sock, 1, true);
+  test_select_read ( sock, 1, true);
+  test_select_write ( sock, 1, true);
 
   memset (&addr, 0, sizeof(addr));
   addr.sun_family = AF_UNIX;
@@ -491,21 +491,21 @@ client5 (void *arg)
   sleep (1);
 
   res = connect (sock, (struct sockaddr *) &addr, sizeof(addr));
-  TEST_ASSERT_EQUAL( res, 0 );
+  TEST_ASSERT_EQUAL ( res, 0 );
 
   sleep (2);
 
   // Select over remote closed socket
-  test_select_read( sock, 1, true);
-  test_select_write( sock, 1, true);
+  test_select_read ( sock, 1, true);
+  test_select_write ( sock, 1, true);
 
   close (sock);
 
   // Select over closed socket
-  test_select_read( sock, 1, false);
-  test_select_write( sock, 1, false);
+  test_select_read ( sock, 1, false);
+  test_select_write ( sock, 1, false);
 
-  printf("Client5: end\n ");
+  printf ("Client5: end\n ");
 
   return arg;
 }
@@ -519,7 +519,7 @@ server5 (void *arg)
   int on = 1;
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
   memset (&addr, 0, sizeof(addr));
   addr.sun_family = AF_UNIX;
@@ -534,8 +534,8 @@ server5 (void *arg)
   TEST_ASSERT_EQUAL ( res, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT( sockin >= 0 );
-  sleep(1);
+  TEST_ASSERT ( sockin >= 0 );
+  sleep (1);
 
   close (sock);
   close (sockin);
@@ -558,7 +558,7 @@ CreateDgramConnect (void)
   address.sun_family = AF_UNIX;
   strcpy (address.sun_path, SOCK_PATH);
 
-  status = connect (sock, (struct sockaddr *) &address, SUN_LEN(&address));
+  status = connect (sock, (struct sockaddr *) &address, SUN_LEN (&address));
 
   if (status == 0)
     {
@@ -581,7 +581,7 @@ CreateDgramBind (void)
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
   strcpy (address.sun_path, SOCK_PATH);
-  status = bind (sock, (struct sockaddr *) &address, SUN_LEN(&address));;
+  status = bind (sock, (struct sockaddr *) &address, SUN_LEN (&address));;
   if (status == 0)
     {
       return sock;
@@ -600,7 +600,7 @@ client6 (void *arg)
   struct sockaddr_in addr;
   int res = 1;
   int status = -1;
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
   sleep (2);
 
@@ -624,7 +624,7 @@ client6 (void *arg)
 
   sleep (1);
   sock = CreateDgramConnect ();
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
   test_select_write (sock, 0, true);
   status = write (sock, &res, sizeof (res));
   TEST_ASSERT_EQUAL (status, sizeof (res));
@@ -645,7 +645,7 @@ server6 (void *arg)
   int res = 1;
   int status = -1;
 
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
   TEST_ASSERT (test_select_read (sock, 2, false));
 
   sleep (3);
@@ -660,11 +660,11 @@ server6 (void *arg)
 
   sleep (1);
 
-  close(sock);
+  close (sock);
 
   unlink (SOCK_PATH);
   sock = CreateDgramBind ();
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
   TEST_ASSERT (test_select_read (sock, 0, true));
   status = read (sock, &res, sizeof (res));
@@ -700,16 +700,16 @@ test_select_stdout_stdin (void)
   ret = select (1 + 1, &rFd, &wFd, NULL, &timeOut);
   after = time (NULL);
 
-  printf("After select -> %d before time %ld after time %ld errno:%d \n ", ret, before ,after, errno );
+  printf ("After select -> %d before time %ld after time %ld errno:%d \n ", ret, before,after, errno );
 
   // time difference must not exceed 1 second
   TEST_ASSERT ( ( 1 == ret ) &&  ( (after - before ) <= 1 ) );
 
-  close(sock);
+  close (sock);
 }
 
 static void
-launch (void *(*clientStart) (void *), void *(*serverStart) (void *))
+launch (void *(*clientStart)(void *), void *(*serverStart)(void *))
 {
   int status;
   pthread_t theClient;
@@ -739,7 +739,7 @@ launch (void *(*clientStart) (void *), void *(*serverStart) (void *))
 // solved with else mustWait=false and take out the else in the if for writefds
 static void test_select_rfds_wfds (void)
 {
-  int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+  int sockfd = socket (AF_INET, SOCK_DGRAM, 0);
 
   // prepare fd_set to select() on it
   fd_set rfds;
@@ -757,7 +757,7 @@ static void test_select_rfds_wfds (void)
   close (sockfd);
   // no fds must be ready and select() should complete without errors
   TEST_ASSERT_EQUAL (nfds, 1);
-  TEST_ASSERT (FD_ISSET(sockfd, &wfds));
+  TEST_ASSERT (FD_ISSET (sockfd, &wfds));
 }
 
 // test, that select () returns correctly if there is two fds for reading and only one available
@@ -816,9 +816,9 @@ main (int argc, char *argv[])
       launch (client6, server6);
     }
 
-  printf("test-select end.\n ");
+  printf ("test-select end.\n ");
   fflush (stdout);
   fflush (stderr);
-  sleep(1);
+  sleep (1);
   return 0;
 }

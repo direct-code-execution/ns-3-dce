@@ -9,7 +9,7 @@ namespace ns3 {
 
 class ElfDependencies
 {
- public:
+public:
   struct Dependency
   {
     std::string required;
@@ -22,7 +22,7 @@ class ElfDependencies
   Iterator Begin (void) const;
   Iterator End (void) const;
 
- private:
+private:
   std::list<std::string> Split (std::string input, std::string sep) const;
   std::list<std::string> GetSearchDirectories (void) const;
   bool Exists (std::string filename) const;

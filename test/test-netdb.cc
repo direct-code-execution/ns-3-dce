@@ -5,7 +5,7 @@
 void test_gethostbyname (void)
 {
   struct hostent *host;
-  host = gethostbyname("127.0.0.1");
+  host = gethostbyname ("127.0.0.1");
   TEST_ASSERT_UNEQUAL (host, 0);
   TEST_ASSERT_EQUAL (host->h_addrtype, AF_INET);
 }

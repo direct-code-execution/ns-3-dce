@@ -14,20 +14,20 @@ class UnixDatagramSocketFd : public UnixSocketFd
 {
 public:
   UnixDatagramSocketFd (Ptr<Socket> sock);
-  
+
 private:
-  virtual ssize_t DoRecvmsg(struct msghdr *msg, int flags);
-  virtual ssize_t DoSendmsg(const struct msghdr *msg, int flags);
+  virtual ssize_t DoRecvmsg (struct msghdr *msg, int flags);
+  virtual ssize_t DoSendmsg (const struct msghdr *msg, int flags);
   virtual int Listen (int backlog);
   virtual int Accept (struct sockaddr *my_addr, socklen_t *addrlen);
-  virtual int Shutdown(int how);
+  virtual int Shutdown (int how);
   virtual bool CanRecv (void) const;
   virtual bool CanSend (void) const;
   virtual bool HangupReceived (void) const;
   virtual int Poll (PollTable* ptable);
   void IcmpCallback (Ipv4Address icmpSource, uint8_t icmpTtl, 
-                    uint8_t icmpType, uint8_t icmpCode,
-                    uint32_t icmpInfo);
+                     uint8_t icmpType, uint8_t icmpCode,
+                     uint32_t icmpInfo);
   void QueueErr (sock_extended_err ee, struct sockaddr_in offender, uint8_t ttl);
   void CopyMacAddress (const Address &a,  uint8_t* const buf);
 

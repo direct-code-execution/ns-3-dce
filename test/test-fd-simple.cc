@@ -123,7 +123,7 @@ static void test_file_remove (void)
   // try to delete with remove.
   status = remove ("X");
   TEST_ASSERT_EQUAL (status, 0);
-  
+
   // finally, close fd
   status = close (fd);
   TEST_ASSERT_EQUAL (status, 0);

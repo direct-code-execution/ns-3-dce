@@ -34,14 +34,14 @@
 #include "ns3/simulator.h"
 #include "file-usage.h"
 
-NS_LOG_COMPONENT_DEFINE("LocalStreamSocketFd");
+NS_LOG_COMPONENT_DEFINE ("LocalStreamSocketFd");
 
 namespace ns3
 {
 TypeId
 LocalStreamSocketFd::GetTypeId (void)
 {
-  static TypeId tid = TypeId ("ns3::LocalStreamSocketFd") .SetParent<LocalSocketFd> ();
+  static TypeId tid = TypeId ("ns3::LocalStreamSocketFd").SetParent<LocalSocketFd> ();
 
   return tid;
 }
@@ -87,7 +87,7 @@ LocalStreamSocketFd::Close (void)
   NS_LOG_FUNCTION (this);
   NS_ASSERT (current != 0);
 
-  NS_LOG_DEBUG("m_state: " << m_state);
+  NS_LOG_DEBUG ("m_state: " << m_state);
 
   switch (m_state)
     {
@@ -101,7 +101,7 @@ LocalStreamSocketFd::Close (void)
     case LISTENING:
     case ACCEPTING:
       {
-        NS_ASSERT( 0 != m_factory);
+        NS_ASSERT ( 0 != m_factory);
         m_factory->UnRegisterBinder (m_bindPath);
         m_bindPath = "";
         ClearAll (ACCEPTING == m_state);
@@ -152,7 +152,7 @@ LocalStreamSocketFd::Write (const void *buf, size_t count)
   NS_LOG_FUNCTION (this << buf << count);
   NS_ASSERT (current != 0);
 
-  NS_LOG_DEBUG("Write enter state " << m_state);
+  NS_LOG_DEBUG ("Write enter state " << m_state);
 
   if (m_state != CONNECTED)
     {
@@ -169,7 +169,7 @@ LocalStreamSocketFd::Write (const void *buf, size_t count)
       return -1;
     }
 
-  NS_ASSERT(m_peer != 0);
+  NS_ASSERT (m_peer != 0);
 
   size_t tot = 0;
 
@@ -261,7 +261,7 @@ LocalStreamSocketFd::Read (void *buf, size_t count)
   NS_LOG_FUNCTION (this << buf << count);
   NS_ASSERT (current != 0);
 
-  NS_LOG_DEBUG("Read enter state: "<< m_state);
+  NS_LOG_DEBUG ("Read enter state: "<< m_state);
 
   if ((m_state != CONNECTED) && (m_state != REMOTECLOSED))
     {
@@ -287,7 +287,7 @@ LocalStreamSocketFd::Read (void *buf, size_t count)
                 }
               return filled;
             }
-          if ( ( 0 != m_peer) && ( m_peer->IsShutWrite()) )
+          if ( ( 0 != m_peer) && ( m_peer->IsShutWrite ()) )
             {
               RETURNFREE (0);
             }
@@ -434,7 +434,7 @@ int
 LocalStreamSocketFd::Setsockopt (int level, int optname, const void *optval, socklen_t optlen)
 {
   Thread *current = Current ();
-  NS_LOG_FUNCTION (this << current << level << optname << optval << optlen);NS_ASSERT (current != 0);
+  NS_LOG_FUNCTION (this << current << level << optname << optval << optlen); NS_ASSERT (current != 0);
 
   if (level != SOL_SOCKET)
     {
@@ -465,7 +465,7 @@ LocalStreamSocketFd::Setsockopt (int level, int optname, const void *optval, soc
 
     case SO_PASSCRED:
       {
-        NS_LOG_DEBUG("LocalStreamSocketFd SO_PASSCRED NOT IMPLEMENTED");
+        NS_LOG_DEBUG ("LocalStreamSocketFd SO_PASSCRED NOT IMPLEMENTED");
         current->err = EINVAL;
         return -1;
       }
@@ -473,17 +473,17 @@ LocalStreamSocketFd::Setsockopt (int level, int optname, const void *optval, soc
     case SO_RCVBUF:
     case SO_SNDBUF:
       {
-        NS_LOG_DEBUG("LocalStreamSocketFd SO_RCVBUF and SO_SNDBUF ignored.");
+        NS_LOG_DEBUG ("LocalStreamSocketFd SO_RCVBUF and SO_SNDBUF ignored.");
         return 0;
       }
     case SO_RCVLOWAT:
       {
-        NS_LOG_DEBUG("LocalStreamSocketFd SO_RCVLOWAT ignored.");
+        NS_LOG_DEBUG ("LocalStreamSocketFd SO_RCVLOWAT ignored.");
         return 0;
       }
     case SO_SNDLOWAT:
       {
-        NS_LOG_DEBUG("LocalStreamSocketFd SO_SNDLOWAT ignored.");
+        NS_LOG_DEBUG ("LocalStreamSocketFd SO_SNDLOWAT ignored.");
         return 0;
       }
 
@@ -549,7 +549,7 @@ LocalStreamSocketFd::Getsockopt (int level, int optname, void *optval, socklen_t
 
     case SO_PASSCRED:
       {
-        NS_LOG_DEBUG("LocalStreamSocketFd SO_PASSCRED NOT IMPLEMENTED");
+        NS_LOG_DEBUG ("LocalStreamSocketFd SO_PASSCRED NOT IMPLEMENTED");
         current->err = EINVAL;
         return -1;
       }
@@ -616,7 +616,7 @@ LocalStreamSocketFd::Getsockopt (int level, int optname, void *optval, socklen_t
 
         struct timeval *tv = (struct timeval*)optval;
 
-        *tv = UtilsTimeToTimeval(m_recvTimeout);
+        *tv = UtilsTimeToTimeval (m_recvTimeout);
 
         return 0;
       }
@@ -631,7 +631,7 @@ LocalStreamSocketFd::Getsockopt (int level, int optname, void *optval, socklen_t
 
         struct timeval *tv = (struct timeval*)optval;
 
-        *tv = UtilsTimeToTimeval(m_sendTimeout);
+        *tv = UtilsTimeToTimeval (m_sendTimeout);
 
         return 0;
       }
@@ -669,24 +669,24 @@ LocalStreamSocketFd::Getsockname (struct sockaddr *name, socklen_t *namelen)
 
   if ( (0 == name) || (0 == namelen) )
     {
-      Current() -> err = EINVAL;
+      Current ()->err = EINVAL;
       return -1;
     }
   struct sockaddr_un address;
 
-  memset (&address , 0, sizeof(sockaddr_un));
+  memset (&address, 0, sizeof(sockaddr_un));
   address.sun_family = AF_UNIX;
-  if ((m_bindPath.length() > 0)&&(m_state != CLOSED))
+  if ((m_bindPath.length () > 0)&&(m_state != CLOSED))
     {
       std::string root = UtilsGetRealFilePath ("/");
-      std::string virtualPath = m_bindPath.substr(root.length()-1);
+      std::string virtualPath = m_bindPath.substr (root.length ()-1);
 
-      memcpy(&address.sun_path, virtualPath.c_str(), std::min(108, (int)virtualPath.length()));
+      memcpy (&address.sun_path, virtualPath.c_str (), std::min (108, (int)virtualPath.length ()));
     }
 
-  socklen_t len = std::min( (int) *namelen, (int) sizeof(struct sockaddr_un) );
+  socklen_t len = std::min ( (int) *namelen, (int) sizeof(struct sockaddr_un) );
 
-  memcpy(name, &address, len);
+  memcpy (name, &address, len);
 
   *namelen = len;
 
@@ -699,29 +699,29 @@ LocalStreamSocketFd::Getpeername (struct sockaddr *name, socklen_t *namelen)
 
   if ( (0 == name) || (0 == namelen) )
     {
-      Current() -> err = EINVAL;
+      Current ()->err = EINVAL;
       return -1;
     }
   if ( (m_state != CONNECTED) && (m_state != REMOTECLOSED) )
     {
-      Current() -> err = ENOTCONN;
+      Current ()->err = ENOTCONN;
       return -1;
     }
   struct sockaddr_un address;
 
-  memset (&address , 0, sizeof(sockaddr_un));
+  memset (&address, 0, sizeof(sockaddr_un));
   address.sun_family = AF_UNIX;
-  if (m_connectPath.length() > 0)
+  if (m_connectPath.length () > 0)
     {
       std::string root = UtilsGetRealFilePath ("/");
-      std::string virtualPath = m_connectPath.substr(root.length()-1);
+      std::string virtualPath = m_connectPath.substr (root.length ()-1);
 
-      memcpy(&address.sun_path, virtualPath.c_str(), std::min(108, (int)virtualPath.length()));
+      memcpy (&address.sun_path, virtualPath.c_str (), std::min (108, (int)virtualPath.length ()));
     }
 
-  socklen_t len = std::min( (int) *namelen, (int) sizeof(struct sockaddr_un) );
+  socklen_t len = std::min ( (int) *namelen, (int) sizeof(struct sockaddr_un) );
 
-  memcpy(name, &address, len);
+  memcpy (name, &address, len);
 
   *namelen = len;
 
@@ -785,15 +785,15 @@ LocalStreamSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
       return -1;
     }
   std::string realPath = UtilsGetRealFilePath (std::string (((struct sockaddr_un*) my_addr)->sun_path));
-  LocalSocketFd* l1 = m_factory->FindBinder (realPath , this->GetTypeId () ) ;
-  LocalStreamSocketFd *listener =  ( 0 == l1)?0:dynamic_cast<LocalStreamSocketFd*>( l1 );
+  LocalSocketFd* l1 = m_factory->FindBinder (realPath, this->GetTypeId () );
+  LocalStreamSocketFd *listener =  ( 0 == l1) ? 0 : dynamic_cast<LocalStreamSocketFd*>( l1 );
 
   if (0 != listener)
     {
       // There is a good listener ...
       if (listener->IsAccepting () || listener->IsListening ())
         {
-          if ( ( ! listener->IsAccepting () ) && (  m_statusFlags & O_NONBLOCK  ) )
+          if ( ( !listener->IsAccepting () ) && (  m_statusFlags & O_NONBLOCK  ) )
             {
               // Socket do not want to wait
               Current ()->err = EAGAIN;
@@ -859,11 +859,11 @@ LocalStreamSocketFd::Shutdown (int how)
   NS_LOG_FUNCTION (this << how);
   if ( (m_state != CONNECTED) && (m_state != REMOTECLOSED ) )
     {
-      Current() -> err = ENOTCONN;
+      Current ()->err = ENOTCONN;
       return -1;
     }
   switch (how)
-  {
+    {
     case SHUT_RD:
       {
         m_shutRead = true;
@@ -882,7 +882,7 @@ LocalStreamSocketFd::Shutdown (int how)
         m_shutRead = true;
       }
       break;
-  }
+    }
   return 0;
 }
 int
@@ -900,7 +900,7 @@ LocalStreamSocketFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
 
   WaitQueueEntryTimeout *wq = 0;
 
-  NS_LOG_DEBUG("Accept: incoming queue len:" << m_cnxQueue.size());
+  NS_LOG_DEBUG ("Accept: incoming queue len:" << m_cnxQueue.size ());
 
   while (m_cnxQueue.empty ())
     {
@@ -920,7 +920,7 @@ LocalStreamSocketFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
       RemoveWaitQueue (wq, true);
 
       switch (res)
-      {
+        {
         case WaitPoint::OK:
           break;
         case WaitPoint::INTERRUPTED:
@@ -934,7 +934,7 @@ LocalStreamSocketFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
             current->err = EAGAIN;
             RETURNFREE (-1);
           }
-      }
+        }
     }
 
   m_state = LISTENING;
@@ -978,7 +978,7 @@ bool
 LocalStreamSocketFd::CanRecv (void) const
 {
   switch(m_state)
-  {
+    {
     case CONNECTED:
     case REMOTECLOSED:
       {
@@ -988,11 +988,11 @@ LocalStreamSocketFd::CanRecv (void) const
     case LISTENING:
     case ACCEPTING:
       {
-        return m_cnxQueue.size() > 0;
+        return m_cnxQueue.size () > 0;
       }
 
     default: return 0;
-  }
+    }
 }
 bool
 LocalStreamSocketFd::CanSend (void) const
@@ -1003,13 +1003,13 @@ LocalStreamSocketFd::CanSend (void) const
 bool
 LocalStreamSocketFd::HangupReceived (void) const
 {
-  NS_LOG_FUNCTION( this << " state:" << m_state);
+  NS_LOG_FUNCTION ( this << " state:" << m_state);
   return ( REMOTECLOSED == m_state );
 }
 bool
 LocalStreamSocketFd::InternalConnect (void)
 {
-  NS_LOG_FUNCTION( this << " state:" << m_state);
+  NS_LOG_FUNCTION ( this << " state:" << m_state);
   if (CONNECTING != m_state)
     return false;
 
@@ -1089,7 +1089,7 @@ LocalStreamSocketFd::ClearAll (bool andWakeUp)
 }
 
 bool
-LocalStreamSocketFd::IsShutWrite(void) const
+LocalStreamSocketFd::IsShutWrite (void) const
 {
   return m_shutWrite;
 }
@@ -1113,7 +1113,7 @@ LocalStreamSocketFd::Poll (PollTable* ptable)
     {
       ret |= POLLOUT;
     }
-  if (IsClosed() || HangupReceived() )
+  if (IsClosed () || HangupReceived () )
     {
       ret |= POLLHUP;
     }

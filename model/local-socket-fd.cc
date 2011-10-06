@@ -31,14 +31,14 @@
 #include <exception>
 #include "poll.h"
 
-NS_LOG_COMPONENT_DEFINE("LocalSocketFd");
+NS_LOG_COMPONENT_DEFINE ("LocalSocketFd");
 
 namespace ns3
 {
 TypeId
 LocalSocketFd::GetTypeId (void)
 {
-  static TypeId tid = TypeId ("ns3::LocalSocketFd") .SetParent<UnixFd> ();
+  static TypeId tid = TypeId ("ns3::LocalSocketFd").SetParent<UnixFd> ();
 
   return tid;
 }
@@ -47,9 +47,9 @@ LocalSocketFd::GetInstanceTypeId (void) const
 {
   return LocalSocketFd::GetTypeId ();
 }
-LocalSocketFd::LocalSocketFd () : m_readBuffer(0), m_readBufferSize(0), m_sendTimeout(0), m_recvTimeout(0),
-     m_factory(0), m_linger(0), m_statusFlags(0), m_bindPath(""), m_connectPath (""),
-     m_shutRead(false), m_shutWrite(false)
+LocalSocketFd::LocalSocketFd () : m_readBuffer (0), m_readBufferSize (0), m_sendTimeout (0), m_recvTimeout (0),
+                                  m_factory (0), m_linger (0), m_statusFlags (0), m_bindPath (""), m_connectPath (""),
+                                  m_shutRead (false), m_shutWrite (false)
 {
 }
 LocalSocketFd::~LocalSocketFd ()
@@ -75,7 +75,7 @@ LocalSocketFd::Setsockopt (int level, int optname, const void *optval, socklen_t
     }
 
   switch (optname)
-  {
+    {
 
     case SO_LINGER:
       {
@@ -97,7 +97,7 @@ LocalSocketFd::Setsockopt (int level, int optname, const void *optval, socklen_t
 
     case SO_PASSCRED:
       {
-        NS_LOG_DEBUG("LocalSocketFd SO_PASSCRED NOT IMPLEMENTED");
+        NS_LOG_DEBUG ("LocalSocketFd SO_PASSCRED NOT IMPLEMENTED");
         current->err = EINVAL;
         return -1;
       }
@@ -105,17 +105,17 @@ LocalSocketFd::Setsockopt (int level, int optname, const void *optval, socklen_t
     case SO_RCVBUF:
     case SO_SNDBUF:
       {
-        NS_LOG_DEBUG("LocalSocketFd SO_RCVBUF and SO_SNDBUF ignored.");
+        NS_LOG_DEBUG ("LocalSocketFd SO_RCVBUF and SO_SNDBUF ignored.");
         return 0;
       }
     case SO_RCVLOWAT:
       {
-        NS_LOG_DEBUG("LocalSocketFd SO_RCVLOWAT ignored.");
+        NS_LOG_DEBUG ("LocalSocketFd SO_RCVLOWAT ignored.");
         return 0;
       }
     case SO_SNDLOWAT:
       {
-        NS_LOG_DEBUG("LocalSocketFd SO_SNDLOWAT ignored.");
+        NS_LOG_DEBUG ("LocalSocketFd SO_SNDLOWAT ignored.");
         return 0;
       }
 
@@ -146,7 +146,7 @@ LocalSocketFd::Setsockopt (int level, int optname, const void *optval, socklen_t
       }
 
     default: break;
-  }
+    }
   current->err = EINVAL;
   return -1;
 }
@@ -166,14 +166,14 @@ LocalSocketFd::Mmap (void *start, size_t length, int prot, int flags, off64_t of
 off64_t
 LocalSocketFd::Lseek (off64_t offset, int whence)
 {
-  GET_CURRENT(offset << whence);
+  GET_CURRENT (offset << whence);
   current->err = ESPIPE;
   return -1;
 }
 int
 LocalSocketFd::Fxstat (int ver, struct ::stat *buf)
 {
-  GET_CURRENT(ver << buf);
+  GET_CURRENT (ver << buf);
   buf->st_mode = S_IFSOCK;
   buf->st_dev = -1;
   buf->st_blksize = 0;
@@ -182,7 +182,7 @@ LocalSocketFd::Fxstat (int ver, struct ::stat *buf)
 int
 LocalSocketFd::Fxstat64 (int ver, struct ::stat64 *buf)
 {
-  GET_CURRENT(ver << buf);
+  GET_CURRENT (ver << buf);
   buf->st_mode = S_IFSOCK;
   buf->st_dev = -1;
   buf->st_blksize = 0;
@@ -264,7 +264,7 @@ LocalSocketFd::DoRecvPacket (uint8_t* buf, size_t len)
     {
       Thread *current = Current ();
       NS_ASSERT (current != 0);
-      current -> err = ENOMEM;
+      current->err = ENOMEM;
       return -1;
     }
   myBuf->readOffset = 0;
@@ -276,7 +276,7 @@ LocalSocketFd::DoRecvPacket (uint8_t* buf, size_t len)
 
   m_readBufferSize += l;
 
-  NS_LOG_DEBUG("DoRecvPacket before WakeUpRecv");
+  NS_LOG_DEBUG ("DoRecvPacket before WakeUpRecv");
 
   short pi = POLLIN;
   WakeWaiters (&pi); // WakeUp reader or poller for read or select for read
@@ -299,7 +299,7 @@ LocalSocketFd::ReadData (uint8_t* buf, size_t len, bool peek)
           struct Buffer* myBuf = *i;
 
           size_t avail = std::min (rest, myBuf->size - myBuf->readOffset);
-          NS_LOG_DEBUG( "ReadData avail:" << avail << " offset:" <<  myBuf->readOffset << " size:" << myBuf->size );
+          NS_LOG_DEBUG ( "ReadData avail:" << avail << " offset:" <<  myBuf->readOffset << " size:" << myBuf->size );
 
           if (avail > 0)
             {
@@ -316,7 +316,7 @@ LocalSocketFd::ReadData (uint8_t* buf, size_t len, bool peek)
           struct Buffer* myBuf = m_readBuffer.front ();
 
           size_t avail = std::min (rest, myBuf->size - myBuf->readOffset);
-          NS_LOG_DEBUG( "ReadData avail:" << avail << " offset:" <<  myBuf->readOffset << " size:" << myBuf->size );
+          NS_LOG_DEBUG ( "ReadData avail:" << avail << " offset:" <<  myBuf->readOffset << " size:" << myBuf->size );
 
           if (avail > 0)
             {

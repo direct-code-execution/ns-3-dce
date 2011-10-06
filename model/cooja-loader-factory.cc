@@ -105,20 +105,20 @@ CoojaLoader::NotifyStartExecute (void)
     {
       const struct Module *module = *i;
       if (module->buffer == module->module->current_buffer)
-	{
-	  continue;
-	}
+        {
+          continue;
+        }
       if (module->module->current_buffer != 0)
-	{
-	  // save the previous one
-	  memcpy (module->module->current_buffer,
-		  module->module->data_buffer,
-		  module->module->buffer_size);
-	}
+        {
+          // save the previous one
+          memcpy (module->module->current_buffer,
+                  module->module->data_buffer,
+                  module->module->buffer_size);
+        }
       // restore our own
       memcpy (module->module->data_buffer,
-	      module->buffer,
-	      module->module->buffer_size);
+              module->buffer,
+              module->module->buffer_size);
       // remember what we did
       module->module->current_buffer = module->buffer;
     }
@@ -140,17 +140,17 @@ CoojaLoader::Clone (void)
       clonedModule->refcount = module->refcount;
       clonedModule->buffer = malloc (module->module->buffer_size);
       memcpy (clonedModule->buffer, 
-	      module->module->data_buffer,
-	      clonedModule->module->buffer_size);
+              module->module->data_buffer,
+              clonedModule->module->buffer_size);
       // setup deps.
       for (std::list<struct Module *>::iterator j = module->deps.begin ();
-	   j != module->deps.end (); ++j)
-	{
-	  struct Module *dep = *j;
-	  struct Module *cloneDep = clone->SearchModule (dep->module->id);
-	  cloneDep->refcount++;
-	  clonedModule->deps.push_back (cloneDep);
-	}
+           j != module->deps.end (); ++j)
+        {
+          struct Module *dep = *j;
+          struct Module *cloneDep = clone->SearchModule (dep->module->id);
+          cloneDep->refcount++;
+          clonedModule->deps.push_back (cloneDep);
+        }
       NS_LOG_DEBUG ("add " << clonedModule->module->id);
       clone->m_modules.push_back (clonedModule);
     }
@@ -161,7 +161,7 @@ void *
 CoojaLoader::Load (std::string filename, int flag)
 {
   struct Module *module = LoadModule (filename, flag);
-  
+
   // acquire ref for client
   module->refcount++;
   return module->module->handle;
@@ -174,10 +174,10 @@ CoojaLoader::SearchModule (uint32_t id)
     {
       struct Module *module = *i;
       if (module->module->id == id)
-	{
-	  // already in, ignore.
-	  return module;
-	}
+        {
+          // already in, ignore.
+          return module;
+        }
     }
   return 0;
 }
@@ -185,14 +185,14 @@ CoojaLoader::SearchModule (uint32_t id)
 struct SharedModule *
 CoojaLoader::SearchSharedModule (uint32_t id)
 {
-  struct SharedModules *ns = Peek ();  
+  struct SharedModules *ns = Peek ();
   for (std::list<struct SharedModule *>::iterator i = ns->modules.begin ();
        i != ns->modules.end (); ++i)
     {
       if ((*i)->id == id)
-	{
-	  return *i;
-	}
+        {
+          return *i;
+        }
     }
   return 0;
 }
@@ -212,70 +212,70 @@ CoojaLoader::LoadModule (std::string filename, int flag)
       ElfCache::ElfCachedFile cached = modules->cache.Add (i->found);
       struct SharedModule *sharedModule = SearchSharedModule (cached.id);
       if (sharedModule == 0)
-	{
-	  void *handle = dlopen (cached.cachedFilename.c_str (), 
-				 RTLD_LAZY | RTLD_DEEPBIND | RTLD_LOCAL);
-	  NS_ASSERT_MSG (handle != 0, "Could not open " << cached.cachedFilename << " " << dlerror ());
-	  struct link_map *link_map;
-	  dlinfo (handle, RTLD_DI_LINKMAP, &link_map);
+        {
+          void *handle = dlopen (cached.cachedFilename.c_str (),
+                                 RTLD_LAZY | RTLD_DEEPBIND | RTLD_LOCAL);
+          NS_ASSERT_MSG (handle != 0, "Could not open " << cached.cachedFilename << " " << dlerror ());
+          struct link_map *link_map;
+          dlinfo (handle, RTLD_DI_LINKMAP, &link_map);
 
-	  sharedModule = new SharedModule ();
-	  NS_LOG_DEBUG ("create shared module=" << sharedModule << 
-			" file=" << cached.cachedFilename << 
-			" id=" << cached.id);
-	  sharedModule->refcount = 0;
-	  sharedModule->id = cached.id;
-	  sharedModule->handle = handle;
-	  sharedModule->buffer_size = cached.data_p_memsz;
-	  sharedModule->template_buffer = malloc (cached.data_p_memsz);
-	  sharedModule->data_buffer = (void *)(link_map->l_addr + cached.data_p_vaddr);
-	  memcpy (sharedModule->template_buffer, 
-		  sharedModule->data_buffer,
-		  sharedModule->buffer_size);
-	  sharedModule->current_buffer = 0;
-	  for (std::vector<uint32_t>::const_iterator j = cached.deps.begin (); 
-	       j != cached.deps.end (); ++j)
-	    {
-	      struct SharedModule *dep = SearchSharedModule (*j);
-	      dep->refcount++;
-	      sharedModule->deps.push_back (dep);
-	    }
-	  modules->modules.push_back (sharedModule);
-	}
+          sharedModule = new SharedModule ();
+          NS_LOG_DEBUG ("create shared module=" << sharedModule <<
+                        " file=" << cached.cachedFilename <<
+                        " id=" << cached.id);
+          sharedModule->refcount = 0;
+          sharedModule->id = cached.id;
+          sharedModule->handle = handle;
+          sharedModule->buffer_size = cached.data_p_memsz;
+          sharedModule->template_buffer = malloc (cached.data_p_memsz);
+          sharedModule->data_buffer = (void *)(link_map->l_addr + cached.data_p_vaddr);
+          memcpy (sharedModule->template_buffer,
+                  sharedModule->data_buffer,
+                  sharedModule->buffer_size);
+          sharedModule->current_buffer = 0;
+          for (std::vector<uint32_t>::const_iterator j = cached.deps.begin ();
+               j != cached.deps.end (); ++j)
+            {
+              struct SharedModule *dep = SearchSharedModule (*j);
+              dep->refcount++;
+              sharedModule->deps.push_back (dep);
+            }
+          modules->modules.push_back (sharedModule);
+        }
       module = SearchModule (sharedModule->id);
       if (module == 0)
-	{
-	  module = new Module ();
-	  NS_LOG_DEBUG ("Create module for " << sharedModule->handle <<
-			" " << cached.cachedFilename);
-	  module->module = sharedModule;
-	  sharedModule->refcount++;
-	  module->refcount = 0;
-	  module->buffer = malloc (sharedModule->buffer_size);
-	  if (sharedModule->current_buffer != 0)
-	    {
-	      // save the previous one
-	      memcpy (module->module->current_buffer,
-		      module->module->data_buffer,
-		      module->module->buffer_size);
-	    }
-	  // make sure we re-initialize the data section with the template
-	  memcpy (sharedModule->data_buffer, 
-		  sharedModule->template_buffer,
-		  sharedModule->buffer_size);
-	  // record current buffer to ensure that it is saved later
-	  sharedModule->current_buffer = module->buffer;
-	  // setup deps.
-	  for (std::vector<uint32_t>::const_iterator j = cached.deps.begin (); 
-	       j != cached.deps.end (); ++j)
-	    {
-	      struct Module *dep = SearchModule (*j);
-	      dep->refcount++;
-	      module->deps.push_back (dep);
-	    }
-	  NS_LOG_DEBUG ("add " << module);
-	  m_modules.push_back (module);
-	}
+        {
+          module = new Module ();
+          NS_LOG_DEBUG ("Create module for " << sharedModule->handle <<
+                        " " << cached.cachedFilename);
+          module->module = sharedModule;
+          sharedModule->refcount++;
+          module->refcount = 0;
+          module->buffer = malloc (sharedModule->buffer_size);
+          if (sharedModule->current_buffer != 0)
+            {
+              // save the previous one
+              memcpy (module->module->current_buffer,
+                      module->module->data_buffer,
+                      module->module->buffer_size);
+            }
+          // make sure we re-initialize the data section with the template
+          memcpy (sharedModule->data_buffer,
+                  sharedModule->template_buffer,
+                  sharedModule->buffer_size);
+          // record current buffer to ensure that it is saved later
+          sharedModule->current_buffer = module->buffer;
+          // setup deps.
+          for (std::vector<uint32_t>::const_iterator j = cached.deps.begin ();
+               j != cached.deps.end (); ++j)
+            {
+              struct Module *dep = SearchModule (*j);
+              dep->refcount++;
+              module->deps.push_back (dep);
+            }
+          NS_LOG_DEBUG ("add " << module);
+          m_modules.push_back (module);
+        }
     }
   return module;
 }
@@ -283,30 +283,30 @@ void
 CoojaLoader::UnrefSharedModule (SharedModule *search)
 {
   NS_LOG_FUNCTION (this << search << search->refcount);
-  struct SharedModules *ns = Peek ();  
+  struct SharedModules *ns = Peek ();
   for (std::list<struct SharedModule *>::iterator i = ns->modules.begin ();
        i != ns->modules.end (); ++i)
     {
       struct SharedModule *module = *i;
       if (module == search)
-	{
-	  module->refcount--;
-	  if (module->refcount == 0)
-	    {
-	      NS_LOG_DEBUG ("delete shared module " << module);
-	      for (std::list<struct SharedModule *>::iterator j = module->deps.begin (); 
-		   j != module->deps.end (); ++j)
-		{
-		  struct SharedModule *dep = *j;
-		  UnrefSharedModule (dep);
-		}
-	      dlclose (module->handle);
-	      free (module->template_buffer);
-	      delete module;
-	      ns->modules.erase (i);
-	    }
-	  break;
-	}
+        {
+          module->refcount--;
+          if (module->refcount == 0)
+            {
+              NS_LOG_DEBUG ("delete shared module " << module);
+              for (std::list<struct SharedModule *>::iterator j = module->deps.begin ();
+                   j != module->deps.end (); ++j)
+                {
+                  struct SharedModule *dep = *j;
+                  UnrefSharedModule (dep);
+                }
+              dlclose (module->handle);
+              free (module->template_buffer);
+              delete module;
+              ns->modules.erase (i);
+            }
+          break;
+        }
     }
 }
 void 
@@ -318,9 +318,9 @@ CoojaLoader::UnloadAll (void)
       struct Module *module = *i;
       NS_LOG_DEBUG ("Delete module " << module);
       if (module->module->current_buffer == module->buffer)
-	{
-	  module->module->current_buffer = 0;
-	}
+        {
+          module->module->current_buffer = 0;
+        }
       UnrefSharedModule (module->module);
       free (module->buffer);
       delete module;
@@ -335,29 +335,29 @@ CoojaLoader::Unload (void *handle)
     {
       struct Module *module = *i;
       if (module->module->handle == handle)
-	{
-	  module->refcount--;
-	  if (module->refcount == 0)
-	    {
-	      m_modules.erase (i);
-	      for (std::list<struct Module *>::iterator j = module->deps.begin (); 
-		   j != module->deps.end (); ++j)
-		{
-		  struct Module *dep = *j;
-		  Unload (dep->module->handle);
-		}
-	      // close only after unloading the deps.
-	      NS_LOG_DEBUG ("Delete module for " << module->module->handle);
-	      if (module->module->current_buffer == module->buffer)
-		{
-		  module->module->current_buffer = 0;
-		}
-	      UnrefSharedModule (module->module);
-	      free (module->buffer);
-	      delete module;
-	    }
-	  break;
-	}
+        {
+          module->refcount--;
+          if (module->refcount == 0)
+            {
+              m_modules.erase (i);
+              for (std::list<struct Module *>::iterator j = module->deps.begin ();
+                   j != module->deps.end (); ++j)
+                {
+                  struct Module *dep = *j;
+                  Unload (dep->module->handle);
+                }
+              // close only after unloading the deps.
+              NS_LOG_DEBUG ("Delete module for " << module->module->handle);
+              if (module->module->current_buffer == module->buffer)
+                {
+                  module->module->current_buffer = 0;
+                }
+              UnrefSharedModule (module->module);
+              free (module->buffer);
+              delete module;
+            }
+          break;
+        }
     }
 }
 void *
@@ -386,7 +386,7 @@ CoojaLoaderFactory::GetTypeId (void)
   static TypeId tid = TypeId ("ns3::CoojaLoaderFactory")
     .SetParent<LoaderFactory> ()
     .AddConstructor<CoojaLoaderFactory> ()
-    ;
+  ;
   return tid;
 }
 CoojaLoaderFactory::CoojaLoaderFactory ()

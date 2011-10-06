@@ -7,7 +7,7 @@ namespace ns3 {
 
 class CoojaLoaderFactory : public LoaderFactory
 {
- public:
+public:
   static TypeId GetTypeId (void);
   CoojaLoaderFactory ();
   virtual ~CoojaLoaderFactory ();

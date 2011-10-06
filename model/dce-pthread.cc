@@ -79,7 +79,7 @@ void dce_exit_exec (int status, DceManager::ProcessEndCause type)
   CleanupPthreadKeys ();
   if ( 0 == type ) dce__cxa_finalize (0);
   dce_fflush (0);
-  current->process->exitValue = __W_EXITCODE( status,  WTERMSIG( current->process->exitValue ) );
+  current->process->exitValue = __W_EXITCODE ( status,  WTERMSIG ( current->process->exitValue ) );
   current->task->SetSwitchNotifier (0, 0);
   current->process->loader->UnloadAll ();
 
@@ -89,7 +89,7 @@ void dce_exit_exec (int status, DceManager::ProcessEndCause type)
       std::string line;
 
       switch (type)
-      {
+        {
         case 0:
           {
             oss << "Exit (" << status << ")";
@@ -110,7 +110,7 @@ void dce_exit_exec (int status, DceManager::ProcessEndCause type)
           break;
 
         default: break;
-      }
+        }
       DceManager::AppendStatusFile (current->process->pid, current->process->nodeId, line);
     }
 
@@ -153,10 +153,10 @@ static void PthreadTaskSwitch (enum Task::SwitchType type, void *context)
     }
 }
 
-int dce_pthread_create(pthread_t *thread_handle,
-			const pthread_attr_t *attr,
-			void *(*start_routine)(void*), 
-			void *arg)
+int dce_pthread_create (pthread_t *thread_handle,
+                        const pthread_attr_t *attr,
+                        void *(*start_routine)(void*),
+                        void *arg)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << arg);
@@ -192,9 +192,9 @@ void dce_pthread_exit (void *arg)
       current->hasExitValue = true;
       current->exitValue = arg;
       if (current->joinWaiter != 0)
-	{
-	  current->process->manager->Wakeup (current->joinWaiter);
-	}
+        {
+          current->process->manager->Wakeup (current->joinWaiter);
+        }
       // thread will be deleted by joining thread.
       // but we clear this up to make sure that DeleteThread
       // does not try to 'Stop' the task because the call to
@@ -207,7 +207,7 @@ void dce_pthread_exit (void *arg)
     }
   TaskManager::Current ()->Exit ();
 }
-int dce_pthread_join(pthread_t thread_handle, void **value_ptr)
+int dce_pthread_join (pthread_t thread_handle, void **value_ptr)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << PthreadToPid (thread_handle) << PthreadToTid (thread_handle));
@@ -217,9 +217,9 @@ int dce_pthread_join(pthread_t thread_handle, void **value_ptr)
     {
       return EDEADLK;
     }
-  
+
   Thread *thread = current->process->manager->SearchThread (PthreadToPid (thread_handle),
-							    PthreadToTid (thread_handle));
+                                                            PthreadToTid (thread_handle));
   if (thread == 0)
     {
       return ESRCH;
@@ -248,13 +248,13 @@ int dce_pthread_join(pthread_t thread_handle, void **value_ptr)
   current->process->manager->DeleteThread (thread);
   return 0;
 }
-int dce_pthread_detach(pthread_t thread_handle)
+int dce_pthread_detach (pthread_t thread_handle)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << PthreadToPid (thread_handle) << PthreadToTid (thread_handle));
   NS_ASSERT (current != 0);
   Thread *thread = current->process->manager->SearchThread (PthreadToPid (thread_handle),
-							    PthreadToTid (thread_handle));
+                                                            PthreadToTid (thread_handle));
   if (thread == 0)
     {
       return ESRCH;
@@ -273,12 +273,12 @@ int dce_pthread_detach(pthread_t thread_handle)
   thread->isDetached = true;
   return 0;
 }
-int dce_pthread_cancel(pthread_t thread)
+int dce_pthread_cancel (pthread_t thread)
 {
   // XXX
   return 0;
 }
-pthread_t dce_pthread_self(void)
+pthread_t dce_pthread_self (void)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId ());
@@ -299,7 +299,7 @@ int dce_pthread_once (pthread_once_t *once_control, void (*init_routine)(void))
       return 0;
     }
   *once_control = 1;
-  (*init_routine) ();
+  (*init_routine)();
   return 0;
 }
 
@@ -408,39 +408,39 @@ int dce_pthread_key_delete (pthread_key_t key)
     }
   return 0;
 }
-int dce_pthread_kill(pthread_t th, int sig)
+int dce_pthread_kill (pthread_t th, int sig)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << PthreadToPid (th) << PthreadToTid (th) << sig);
   NS_ASSERT (current != 0);
   Thread *thread = current->process->manager->SearchThread (PthreadToPid (th),
-							    PthreadToTid (th));
+                                                            PthreadToTid (th));
   if (thread == 0)
     {
       return ESRCH;
     }
-  
+
   sigaddset (&thread->pendingSignals, sig);
   if (sigismember (&thread->signalMask, sig) == 0)
     {
       // signal not blocked by thread.
       if (thread->task->IsBlocked ())
-	{
-	  thread->process->manager->Wakeup (thread);
-	}
+        {
+          thread->process->manager->Wakeup (thread);
+        }
     }
 
   return 0;
 }
 #if 0
-int dce_pthread_sigmask(int how, const sigset_t *restrict set,
-			 sigset_t *restrict oset)
+int dce_pthread_sigmask (int how, const sigset_t *restrict set,
+                         sigset_t *restrict oset)
 {
   // XXX implement
   return 0;
 }
-int dce_sigprocmask(int how, const sigset_t *restrict set,
-		     sigset_t *restrict oset)
+int dce_sigprocmask (int how, const sigset_t *restrict set,
+                     sigset_t *restrict oset)
 {
   // XXX implement
   return 0;

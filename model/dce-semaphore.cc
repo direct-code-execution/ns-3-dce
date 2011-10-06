@@ -56,12 +56,12 @@ SearchSemaphore (const sem_t *sem)
   return 0;
 }
 
-int dce_sem_init(sem_t *sem, int pshared, unsigned int value)
+int dce_sem_init (sem_t *sem, int pshared, unsigned int value)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << sem << pshared << value);
   NS_ASSERT (current != 0);
-  
+
   if (pshared != 0)
     {
       current->err = ENOSYS;
@@ -75,7 +75,7 @@ int dce_sem_init(sem_t *sem, int pshared, unsigned int value)
   SidToSem (semaphore->sid, sem);
   return 0;
 }
-int dce_sem_destroy(sem_t *sem)
+int dce_sem_destroy (sem_t *sem)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << sem);
@@ -105,7 +105,7 @@ int dce_sem_destroy(sem_t *sem)
   SidToSem (2, sem);
   return 0;
 }
-int dce_sem_post(sem_t *sem)
+int dce_sem_post (sem_t *sem)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << sem);
@@ -128,10 +128,10 @@ int dce_sem_post(sem_t *sem)
       // give them a chance to run.
       current->process->manager->Yield ();
     }
-  
+
   return 0;
 }
-int dce_sem_wait(sem_t *sem)
+int dce_sem_wait (sem_t *sem)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << sem);
@@ -152,7 +152,7 @@ int dce_sem_wait(sem_t *sem)
   semaphore->count--;
   return 0;
 }
-int dce_sem_trywait(sem_t *sem)
+int dce_sem_trywait (sem_t *sem)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << sem);
@@ -172,7 +172,7 @@ int dce_sem_trywait(sem_t *sem)
   semaphore->count--;
   return 0;
 }
-int dce_sem_timedwait(sem_t *sem, const struct timespec *abs_timeout)
+int dce_sem_timedwait (sem_t *sem, const struct timespec *abs_timeout)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << sem);
@@ -184,7 +184,7 @@ int dce_sem_timedwait(sem_t *sem, const struct timespec *abs_timeout)
       current->err = EINVAL;
       return -1;
     }
-  
+
   if (semaphore->count > 0)
     {
       // fast path
@@ -206,16 +206,16 @@ int dce_sem_timedwait(sem_t *sem, const struct timespec *abs_timeout)
       timeoutLeft = current->process->manager->Wait (timeoutLeft);
       semaphore->waiting.remove (current);
       if (timeoutLeft.IsZero ())
-	{
-	  // timer expired
-	  current->err = ETIMEDOUT;
-	  return -1;
-	}
+        {
+          // timer expired
+          current->err = ETIMEDOUT;
+          return -1;
+        }
     }
   semaphore->count--;
   return 0;
 }
-int dce_sem_getvalue(sem_t *sem, int *sval)
+int dce_sem_getvalue (sem_t *sem, int *sval)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << sem);

@@ -50,7 +50,7 @@ thread3 (void *arg)
 static void *
 thread4 (void *arg)
 {
-  sleep(1);
+  sleep (1);
   // thread is joined from main thread already
   int status = pthread_detach (pthread_self ());
   TEST_ASSERT_EQUAL (status, 0);
@@ -91,8 +91,8 @@ int main (int argc, char *argv[])
 
   // try to join after the thread exits.
   status = pthread_create (&thread, NULL, 
-			   &thread0,
-			   (void*)-3);
+                           &thread0,
+                           (void*)-3);
   TEST_ASSERT_EQUAL (status, 0);
   status = sleep (20);
   TEST_ASSERT_EQUAL (status, 0);
@@ -102,10 +102,10 @@ int main (int argc, char *argv[])
   TEST_ASSERT_EQUAL (return_value, (void*)-3);
 
 
-  // try to join before the thread exits.  
+  // try to join before the thread exits.
   status = pthread_create (&thread, NULL, 
-			   &thread1,
-			   (void*)-4);
+                           &thread1,
+                           (void*)-4);
   TEST_ASSERT_EQUAL (status, 0);
   status = pthread_join (thread, &return_value);
   TEST_ASSERT_EQUAL (status, 0);
@@ -117,21 +117,21 @@ int main (int argc, char *argv[])
 
   // try to join a thread in detached state.
   status = pthread_create (&thread, NULL, 
-			   &thread2,
-			   (void*)-5);
+                           &thread2,
+                           (void*)-5);
   TEST_ASSERT_EQUAL (status, 0);
   status = sleep (20);
   TEST_ASSERT_EQUAL (status, 0);
   status = pthread_join (thread, &return_value);
   TEST_ASSERT_UNEQUAL (status, 0);
   TEST_ASSERT_EQUAL (status, EINVAL);
-  status = sleep(11); // make sure thread2 is dead.
+  status = sleep (11); // make sure thread2 is dead.
   TEST_ASSERT_EQUAL (status, 0);
 
   // try to join a thread in detached state which is dead.
   status = pthread_create (&thread, NULL, 
-			   &thread3,
-			   (void*)-6);
+                           &thread3,
+                           (void*)-6);
   TEST_ASSERT_EQUAL (status, 0);
   status = sleep (20);
   TEST_ASSERT_EQUAL (status, 0);
@@ -146,12 +146,12 @@ int main (int argc, char *argv[])
   // So, theoretically, ESRCH is the correct return value here
   // but EINVAL is what we get on nptl
   TEST_ASSERT (status == ESRCH 
-	       || status == EINVAL);
+               || status == EINVAL);
 
   // try to detach a thread which is joined.
   status = pthread_create (&thread, NULL, 
-			   &thread4,
-			   (void*)-7);
+                           &thread4,
+                           (void*)-7);
   TEST_ASSERT_EQUAL (status, 0);
   status = pthread_join (thread, &return_value);
   TEST_ASSERT_EQUAL (status, 0);
@@ -159,12 +159,12 @@ int main (int argc, char *argv[])
 
   // try to join the same thread twice
   status = pthread_create (&thread, NULL, 
-			   &thread5,
-			   (void*)&thread);
+                           &thread5,
+                           (void*)&thread);
   TEST_ASSERT_EQUAL (status, 0);
   status = pthread_create (&thread, NULL, 
-			   &thread6,
-			   (void*)-82);
+                           &thread6,
+                           (void*)-82);
   TEST_ASSERT_EQUAL (status, 0);
   status = pthread_join (thread, &return_value);
   TEST_ASSERT_EQUAL (status, 0);

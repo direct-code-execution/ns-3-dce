@@ -44,7 +44,7 @@ class WaitQueueEntry
 {
 public:
   WaitQueueEntry ();
- // virtual ~WaitQueueEntry ();
+  // virtual ~WaitQueueEntry ();
 
   // Wake Up the waiter of some events
   // \param key: generic parameter describing the event source
@@ -93,7 +93,7 @@ public:
   /**
    * Free the wait queue entry
    */
-  virtual void FreeWait();
+  virtual void FreeWait ();
   int IsEventMatch (short e) const;
 
 private:
@@ -135,7 +135,7 @@ public:
   ~PollTable ();
 
   // Remove from every wait queues
-  void FreeWait();
+  void FreeWait ();
   // Add new file to Poll table and add corresponding poll table entry to file's wait queue.
   void PollWait (UnixFd* file);
   void PollWait (void *ref, Callback<void, void*> cb);
@@ -159,7 +159,7 @@ public:
   PollTableEntryLinux (void *kernelReference, Callback<void, void*> cb);
 
 
-  virtual void FreeWait();
+  virtual void FreeWait ();
 
 private:
   void * const m_kernelRef;

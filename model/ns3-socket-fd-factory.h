@@ -13,7 +13,7 @@ public:
   static TypeId GetTypeId (void);
   Ns3SocketFdFactory ();
   virtual UnixFd *CreateSocket (int domain, int type, int protocol);
- private:
+private:
   Ptr<SocketFactory> m_netlink;
 };
 

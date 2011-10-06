@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-int dce_uname(struct utsname *buf);
+int dce_uname (struct utsname *buf);
 
 #ifdef __cplusplus
 }

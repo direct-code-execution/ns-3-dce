@@ -15,18 +15,18 @@ static void *thread_fn (void *ctx)
   struct SharedData *data = (struct SharedData *)ctx;
   int status;
   do {
-    status = sleep (2);
-    TEST_ASSERT_EQUAL (status, 0);
-    status = pthread_mutex_lock (&data->mutex);
-    TEST_ASSERT_EQUAL (status, 0);
-    data->count++;
-    uint32_t a = data->count;
-    status = sleep (2);
-    TEST_ASSERT_EQUAL (status, 0);
-    TEST_ASSERT_EQUAL (data->count, a);
-    status = pthread_mutex_unlock (&data->mutex);
-    TEST_ASSERT_EQUAL (status, 0);
-  } while (data->count < 1000);
+      status = sleep (2);
+      TEST_ASSERT_EQUAL (status, 0);
+      status = pthread_mutex_lock (&data->mutex);
+      TEST_ASSERT_EQUAL (status, 0);
+      data->count++;
+      uint32_t a = data->count;
+      status = sleep (2);
+      TEST_ASSERT_EQUAL (status, 0);
+      TEST_ASSERT_EQUAL (data->count, a);
+      status = pthread_mutex_unlock (&data->mutex);
+      TEST_ASSERT_EQUAL (status, 0);
+    } while (data->count < 1000);
 
   return 0;
 }
@@ -110,27 +110,27 @@ int main (int argc, char *argv[])
   TEST_ASSERT_EQUAL (status, 0);
   pthread_t thread;
   status = pthread_create (&thread, NULL,
-				&thread_fn,
-				(void*)&data);
+                           &thread_fn,
+                           (void*)&data);
   TEST_ASSERT_EQUAL (status, 0);
 
   do {
-    status = sleep (5);
-    TEST_ASSERT_EQUAL (status, 0);
-    status = pthread_mutex_lock (&data.mutex);
-    TEST_ASSERT_EQUAL (status, 0);
-    data.count++;
-    uint32_t a = data.count;
-    TEST_ASSERT_EQUAL (status, 0);
-    TEST_ASSERT_EQUAL (data.count, a);
-    status = sleep (10);
-    TEST_ASSERT_EQUAL (status, 0);
-    TEST_ASSERT_EQUAL (data.count, a);
-    status = pthread_mutex_unlock (&data.mutex);
-    TEST_ASSERT_EQUAL (status, 0);
-    status = sleep (5);
-    TEST_ASSERT_EQUAL (status, 0);
-  } while (data.count < 1000);
+      status = sleep (5);
+      TEST_ASSERT_EQUAL (status, 0);
+      status = pthread_mutex_lock (&data.mutex);
+      TEST_ASSERT_EQUAL (status, 0);
+      data.count++;
+      uint32_t a = data.count;
+      TEST_ASSERT_EQUAL (status, 0);
+      TEST_ASSERT_EQUAL (data.count, a);
+      status = sleep (10);
+      TEST_ASSERT_EQUAL (status, 0);
+      TEST_ASSERT_EQUAL (data.count, a);
+      status = pthread_mutex_unlock (&data.mutex);
+      TEST_ASSERT_EQUAL (status, 0);
+      status = sleep (5);
+      TEST_ASSERT_EQUAL (status, 0);
+    } while (data.count < 1000);
 
   status = pthread_join (thread, NULL);
   TEST_ASSERT_EQUAL (status, 0);

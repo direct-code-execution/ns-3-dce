@@ -48,9 +48,9 @@ public:
    * \param task a task to add to the list of 'active' tasks.
    */
   virtual void Enqueue (struct Task *task) = 0;
-  
+
   virtual void Dequeue (struct Task *task) = 0;
-  
+
 };
 
 } // namespace ns3

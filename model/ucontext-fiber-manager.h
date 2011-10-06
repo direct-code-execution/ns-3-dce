@@ -13,17 +13,17 @@ public:
   UcontextFiberManager ();
   virtual ~UcontextFiberManager ();
 
-  virtual struct Fiber *Create (void (*callback) (void *),
-				void *context,
-				uint32_t stackSize);
+  virtual struct Fiber *Create (void (*callback)(void *),
+                                void *context,
+                                uint32_t stackSize);
   virtual struct Fiber *CreateFromCaller (void);
   virtual void Delete (struct Fiber *fiber);
   virtual void SwitchTo (struct Fiber *from, 
-			 const struct Fiber *to);
+                         const struct Fiber *to);
   virtual uint32_t GetStackSize (struct Fiber *fiber) const;
-  virtual void SetSwitchNotification (void (*fn) (void));
+  virtual void SetSwitchNotification (void (*fn)(void));
 private:
-  static void SegfaultHandler(int sig, siginfo_t *si, void *unused);
+  static void SegfaultHandler (int sig, siginfo_t *si, void *unused);
   // invoked as atexit handler
   static void FreeAlternateSignalStack (void);
 
@@ -32,9 +32,9 @@ private:
   uint8_t *AllocateStack (uint32_t stackSize);
   void DeallocateStack (uint8_t *buffer, uint32_t stackSize);
   static void Trampoline (int a0, int a1, int a2, int a3);
-  
 
-  void (*m_notifySwitch) (void);
+
+  void (*m_notifySwitch)(void);
   static void *g_alternateSignalStack;
   static std::list<unsigned long> g_guardPages;
 };

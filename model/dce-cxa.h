@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-int dce__cxa_atexit (void (*func) (void *), void *arg, void *d);
+int dce__cxa_atexit (void (*func)(void *), void *arg, void *d);
 void dce__cxa_finalize (void *d);
 
 #ifdef __cplusplus

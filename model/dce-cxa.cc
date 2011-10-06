@@ -9,7 +9,7 @@ NS_LOG_COMPONENT_DEFINE ("SimuCxa");
 using namespace ns3;
 
 int 
-dce__cxa_atexit (void (*func) (void *), void *arg, void *d)
+dce__cxa_atexit (void (*func)(void *), void *arg, void *d)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << func << arg << d);
   NS_ASSERT (Current () != 0);
@@ -36,19 +36,19 @@ void dce__cxa_finalize (void *d)
       struct AtExitHandler handler = current->process->atExitHandlers.back ();
       current->process->atExitHandlers.pop_back ();
       switch (handler.type)
-	{
-	case AtExitHandler::CXA:
-	  if (d == 0 || handler.value.cxa.d == d)
-	    {
-	      handler.value.cxa.fn (handler.value.cxa.arg);
-	    }
-	  break;
-	case AtExitHandler::NORMAL:
-	  if (d == 0)
-	    {
-	      handler.value.normal ();
-	    }
-	  break;
-	}
+        {
+        case AtExitHandler::CXA:
+          if (d == 0 || handler.value.cxa.d == d)
+            {
+              handler.value.cxa.fn (handler.value.cxa.arg);
+            }
+          break;
+        case AtExitHandler::NORMAL:
+          if (d == 0)
+            {
+              handler.value.normal ();
+            }
+          break;
+        }
     }
 }

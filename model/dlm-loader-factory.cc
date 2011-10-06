@@ -4,24 +4,24 @@
 #include <list>
 #include <dlfcn.h>
 
-NS_LOG_COMPONENT_DEFINE("DlmLoaderFactory");
+NS_LOG_COMPONENT_DEFINE ("DlmLoaderFactory");
 
 extern "C" {
-  // The function and structure declarations below are not exactly equal to the
-  // corresponding declarations in the elf loader, mostly for simplicity to 
-  // avoid dragging in too many dependent declarations.
+// The function and structure declarations below are not exactly equal to the
+// corresponding declarations in the elf loader, mostly for simplicity to
+// avoid dragging in too many dependent declarations.
 
-typedef Lmid_t (*DlLmidNew) (int, char **, char **);
+typedef Lmid_t (*DlLmidNew)(int, char **, char **);
 typedef void (*DlLmidDelete)(Lmid_t);
-typedef int (*DlLmidAddLibRemap) (Lmid_t lmid, const char *src, const char *dst);
-typedef void (*Ns3ReportTestError) (const char *);
+typedef int (*DlLmidAddLibRemap)(Lmid_t lmid, const char *src, const char *dst);
+typedef void (*Ns3ReportTestError)(const char *);
 
 }
 
 
 namespace ns3 {
 
-NS_OBJECT_ENSURE_REGISTERED(DlmLoaderFactory);
+NS_OBJECT_ENSURE_REGISTERED (DlmLoaderFactory);
 
 class DlmLoader : public Loader
 {
@@ -113,7 +113,7 @@ DlmLoaderFactory::GetTypeId (void)
   static TypeId tid = TypeId ("ns3::DlmLoaderFactory")
     .SetParent<LoaderFactory> ()
     .AddConstructor<DlmLoaderFactory> ()
-    ;
+  ;
   return tid;
 }
 

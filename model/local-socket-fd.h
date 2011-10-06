@@ -54,21 +54,21 @@ public:
 
   virtual int Close (void) = 0;
   virtual ssize_t Write (const void *buf, size_t count) = 0;
-  virtual ssize_t Read(void *buf, size_t count) = 0;
-  virtual ssize_t Recvmsg(struct msghdr *msg, int flags) = 0;
-  virtual ssize_t Sendmsg(const struct msghdr *msg, int flags) = 0;
+  virtual ssize_t Read (void *buf, size_t count) = 0;
+  virtual ssize_t Recvmsg (struct msghdr *msg, int flags) = 0;
+  virtual ssize_t Sendmsg (const struct msghdr *msg, int flags) = 0;
   virtual bool Isatty (void) const;
   virtual int Setsockopt (int level, int optname,
                           const void *optval, socklen_t optlen) = 0;
   virtual int Getsockopt (int level, int optname,
                           void *optval, socklen_t *optlen) = 0;
-  virtual int Getsockname(struct sockaddr *name, socklen_t *namelen) = 0;
-  virtual int Getpeername(struct sockaddr *name, socklen_t *namelen) = 0;
+  virtual int Getsockname (struct sockaddr *name, socklen_t *namelen) = 0;
+  virtual int Getpeername (struct sockaddr *name, socklen_t *namelen) = 0;
   virtual int Ioctl (int request, char *argp);
   virtual int Bind (const struct sockaddr *my_addr, socklen_t addrlen) = 0;
   virtual int Connect (const struct sockaddr *my_addr, socklen_t addrlen) = 0;
   virtual int Listen (int backlog) = 0;
-  virtual int Shutdown(int how) = 0;
+  virtual int Shutdown (int how) = 0;
   virtual int Accept (struct sockaddr *my_addr, socklen_t *addrlen) = 0;
   virtual void *Mmap (void *start, size_t length, int prot, int flags, off64_t offset);
   virtual off64_t Lseek (off64_t offset, int whence);
@@ -86,7 +86,7 @@ public:
 
 protected:
   void ClearReadBuffer (void);
-  virtual void ClearAll(bool andWakeUp) = 0;
+  virtual void ClearAll (bool andWakeUp) = 0;
   virtual bool IsClosed (void) const = 0;
 
   Time GetRecvTimeout (void);
@@ -120,7 +120,7 @@ protected:
   std::string m_connectPath;
   bool m_shutRead;
   bool m_shutWrite;
- };
+};
 
 } // namespace ns3
 

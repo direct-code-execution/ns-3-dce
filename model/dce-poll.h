@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-int dce_poll(struct pollfd *fds, nfds_t nfds, int timeout);
+int dce_poll (struct pollfd *fds, nfds_t nfds, int timeout);
 
 #ifdef __cplusplus
 }

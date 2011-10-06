@@ -16,8 +16,8 @@
 
 namespace ns3 {
 
-NS_LOG_COMPONENT_DEFINE("TaskManager");
-NS_OBJECT_ENSURE_REGISTERED(TaskManager);
+NS_LOG_COMPONENT_DEFINE ("TaskManager");
+NS_OBJECT_ENSURE_REGISTERED (TaskManager);
 
 
 
@@ -63,7 +63,7 @@ Task::GetContext (void) const
 }
 
 void 
-Task::SetSwitchNotifier (void (*fn) (enum SwitchType, void *), void *context)
+Task::SetSwitchNotifier (void (*fn)(enum SwitchType, void *), void *context)
 {
   m_switchNotifier = fn;
   m_switchNotifierContext = context;
@@ -92,7 +92,7 @@ TaskManager::GetTypeId (void)
                    MakeEnumAccessor (&TaskManager::SetFiberManagerType),
                    MakeEnumChecker (PTHREAD_FIBER_MANAGER, "PthreadFiberManager",
                                     UCONTEXT_FIBER_MANAGER, "UcontextFiberManager"))
-    ;
+  ;
   return tid;
 }
 
@@ -126,10 +126,10 @@ void TaskManager::DoDispose (void)
 
   if (0 != dceManager)
     {
-      std::map<uint16_t, Process *> procs = dceManager->GetProcs();
+      std::map<uint16_t, Process *> procs = dceManager->GetProcs ();
       std::map<uint16_t, Process *>::iterator it;
 
-      for ( it = procs.begin(); it != procs.end (); it++)
+      for ( it = procs.begin (); it != procs.end (); it++)
         {
           if ( 0 != it->second )
             {
@@ -137,7 +137,7 @@ void TaskManager::DoDispose (void)
 
               if ( 0 != gDisposingThreadContext)
                 {
-                  dce_fflush(0);
+                  dce_fflush (0);
                 }
               gDisposingThreadContext = 0;
             }
@@ -220,7 +220,7 @@ void
 TaskManager::Trampoline (void *context)
 {
   struct StartTaskContext *ctx = (struct StartTaskContext *)context;
-  void (*fn) (void*) = ctx->function;
+  void (*fn)(void*) = ctx->function;
   void *fn_context = ctx->context;
   delete ctx;
   fn (fn_context);
@@ -352,23 +352,23 @@ TaskManager::Schedule (void)
       // we have nothing to schedule from
       struct Task *next = m_scheduler->PeekNext ();
       if (next != 0)
-	{
-	  // and now, we have something to schedule to.
-	  NS_LOG_DEBUG ("Leaving main, entering " << next);
-	  m_scheduler->DequeueNext ();
-	  m_current = next;
-	  NS_ASSERT (next->m_state == Task::ACTIVE);
-	  next->m_state = Task::RUNNING;
-	  if (next->m_switchNotifier != 0)
-	    {
-	      next->m_switchNotifier (Task::TO, next->m_switchNotifierContext);
-	    }
+        {
+          // and now, we have something to schedule to.
+          NS_LOG_DEBUG ("Leaving main, entering " << next);
+          m_scheduler->DequeueNext ();
+          m_current = next;
+          NS_ASSERT (next->m_state == Task::ACTIVE);
+          next->m_state = Task::RUNNING;
+          if (next->m_switchNotifier != 0)
+            {
+              next->m_switchNotifier (Task::TO, next->m_switchNotifierContext);
+            }
           m_fiberManager->SwitchTo (m_mainFiber, next->m_fiber);
-	}
+        }
       else
-	{
-	  // but, we have nothing to schedule to.
-	}
+        {
+          // but, we have nothing to schedule to.
+        }
     }
   else
     {
@@ -377,16 +377,16 @@ TaskManager::Schedule (void)
       NS_LOG_DEBUG ("Leaving " << m_current <<", entering main");
       struct Task *next = m_scheduler->PeekNext ();
       if (next != 0)
-	{
-	  // but before leaving, we check if we have further processes active, and,
-	  // if so, make sure we will schedule them later.
-	  Simulator::ScheduleNow (&TaskManager::Schedule, this);
-	}
+        {
+          // but before leaving, we check if we have further processes active, and,
+          // if so, make sure we will schedule them later.
+          Simulator::ScheduleNow (&TaskManager::Schedule, this);
+        }
       struct Fiber *fiber = m_current->m_fiber;
       if (m_current->m_switchNotifier != 0)
-	{
-	  m_current->m_switchNotifier (Task::FROM, m_current->m_switchNotifierContext);
-	}
+        {
+          m_current->m_switchNotifier (Task::FROM, m_current->m_switchNotifierContext);
+        }
       m_current = 0;
       m_fiberManager->SwitchTo (fiber, m_mainFiber);
     }
@@ -422,7 +422,7 @@ TaskManager::EndWait (Task *task)
 }
 
 void 
-TaskManager::SetSwitchNotify (void (*fn) (void))
+TaskManager::SetSwitchNotify (void (*fn)(void))
 {
   m_fiberManager->SetSwitchNotification (fn);
 }

@@ -55,20 +55,20 @@ private:
 
   // called from LinuxSocketFd
   int Close (struct SimSocket *socket);
-  ssize_t Recvmsg(struct SimSocket *socket, struct msghdr *msg, int flags);
-  ssize_t Sendmsg(struct SimSocket *socket, const struct msghdr *msg, int flags);
-  int Getsockname(struct SimSocket *socket, struct sockaddr *name, socklen_t *namelen);
-  int Getpeername(struct SimSocket *socket, struct sockaddr *name, socklen_t *namelen);
+  ssize_t Recvmsg (struct SimSocket *socket, struct msghdr *msg, int flags);
+  ssize_t Sendmsg (struct SimSocket *socket, const struct msghdr *msg, int flags);
+  int Getsockname (struct SimSocket *socket, struct sockaddr *name, socklen_t *namelen);
+  int Getpeername (struct SimSocket *socket, struct sockaddr *name, socklen_t *namelen);
   int Bind (struct SimSocket *socket, const struct sockaddr *my_addr, socklen_t addrlen);
   int Connect (struct SimSocket *socket, const struct sockaddr *my_addr, socklen_t addrlen);
   int Listen (struct SimSocket *socket, int backlog);
-  int Shutdown(struct SimSocket *socket, int how);
+  int Shutdown (struct SimSocket *socket, int how);
   int Accept (struct SimSocket *socket, struct sockaddr *my_addr, socklen_t *addrlen);
   int Ioctl (struct SimSocket *socket, int request, char *argp);
   int Setsockopt (struct SimSocket *socket, int level, int optname,
-		  const void *optval, socklen_t optlen);
+                  const void *optval, socklen_t optlen);
   int Getsockopt (struct SimSocket *socket, int level, int optname,
-		  void *optval, socklen_t *optlen);
+                  void *optval, socklen_t *optlen);
   bool CanRecv (struct SimSocket *socket);
   bool CanSend (struct SimSocket *socket);
   void* PollWait (struct SimSocket *socket, void *ctxt);
@@ -83,16 +83,16 @@ private:
   static void *Memcpy (struct SimKernel *kernel, void *dst, const void *src, unsigned long size);
   static void *Memset (struct SimKernel *kernel, void *dst, char value, unsigned long size);
   static unsigned long Random (struct SimKernel *kernel);
-  static void *EventScheduleNs (struct SimKernel *kernel, unsigned long ns, void (*fn) (void *context), void *context,
-				void (*pre_fn) (void));
+  static void *EventScheduleNs (struct SimKernel *kernel, unsigned long ns, void (*fn)(void *context), void *context,
+                                void (*pre_fn)(void));
   static void EventCancel (struct SimKernel *kernel, void *ev);
-  static struct SimTask *TaskStart (struct SimKernel *kernel, void (*callback) (void *), void *context);
+  static struct SimTask *TaskStart (struct SimKernel *kernel, void (*callback)(void *), void *context);
   static struct SimTask *TaskCurrent (struct SimKernel *kernel);
   static void TaskWait (struct SimKernel *kernel);
   static int TaskWakeup (struct SimKernel *kernel, struct SimTask *task);
   static void TaskYield (struct SimKernel *kernel);
   static void DevXmit (struct SimKernel *kernel, struct SimDevice *dev, unsigned char *data, int len);
-  static void SignalRaised ( struct SimKernel *kernel, struct SimTask *task , int signalNumber);
+  static void SignalRaised ( struct SimKernel *kernel, struct SimTask *task, int signalNumber);
   static void PollEvent ( int flag, void *context);
 
 
@@ -106,8 +106,8 @@ private:
   void StartInitializationTask (void);
   void InitializeStack (void);
   void RxFromDevice (Ptr<NetDevice> device, Ptr<const Packet> p,
-		     uint16_t protocol, const Address & from,
-		     const Address &to, NetDevice::PacketType type);
+                     uint16_t protocol, const Address & from,
+                     const Address &to, NetDevice::PacketType type);
   struct SimDevice *DevToDev (Ptr<NetDevice> dev);
   void NotifyDeviceStateChange (Ptr<NetDevice> device);
   void NotifyDeviceStateChangeTask (Ptr<NetDevice> device);
@@ -119,9 +119,9 @@ private:
   static void TaskSwitch (enum Task::SwitchType type, void *context);
   static void ScheduleTaskTrampoline (void *context);
   void ScheduleTask (EventImpl *event);
-  void EventTrampoline (void (*fn) (void *context), 
-			void *context, void (*pre_fn) (void),
-			Ptr<EventIdHolder> event);
+  void EventTrampoline (void (*fn)(void *context),
+                        void *context, void (*pre_fn)(void),
+                        Ptr<EventIdHolder> event);
 
   std::vector<std::pair<Ptr<NetDevice>,struct SimDevice *> > m_devices;
   std::string m_library;

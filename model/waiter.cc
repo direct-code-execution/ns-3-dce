@@ -17,12 +17,12 @@ Waiter::Waiter ()
   : m_waiting (0),
     m_timeout (Seconds (0.0))
 {
-  NS_LOG_FUNCTION(this);
+  NS_LOG_FUNCTION (this);
 }
 
 Waiter::~Waiter ()
 {
-  NS_LOG_FUNCTION(this);
+  NS_LOG_FUNCTION (this);
 }
 
 void
@@ -52,7 +52,7 @@ Waiter::Wait (void)
       NS_LOG_DEBUG ("interrupted self=" << this << " current=" << current);
       return Waiter::INTERRUPTED;
     }
-  if (!m_timeout.IsZero () && left.IsZero())
+  if (!m_timeout.IsZero () && left.IsZero ())
     {
       m_timeout = Seconds (0.0);
       NS_LOG_DEBUG ("timeout self=" << this << " current=" << current);
@@ -70,18 +70,18 @@ Waiter::WaitDoSignal (void)
   NS_LOG_FUNCTION (this << current);
   Waiter::Result result = Wait ();
   switch (result) {
-  case Waiter::INTERRUPTED:
-    UtilsDoSignal ();
-    current->err = EINTR;
-    return false;
-    break;
-  case Waiter::TIMEOUT:
-    current->err = EAGAIN;
-    return false;
-    break;
-  case Waiter::OK:
-    break;
-  }
+    case Waiter::INTERRUPTED:
+      UtilsDoSignal ();
+      current->err = EINTR;
+      return false;
+      break;
+    case Waiter::TIMEOUT:
+      current->err = EAGAIN;
+      return false;
+      break;
+    case Waiter::OK:
+      break;
+    }
   return true;
 }
 
@@ -96,13 +96,13 @@ Waiter::Wakeup (void)
        * m_waiting to zero has not been done yet in Waiter::Wait.
        */
       if (m_waiting->task->IsBlocked ())
-	{
-	  m_waiting->process->manager->Wakeup (m_waiting);
-	}
+        {
+          m_waiting->process->manager->Wakeup (m_waiting);
+        }
       else
-	{
-	  NS_ASSERT (m_waiting->task->IsActive ());
-	}
+        {
+          NS_ASSERT (m_waiting->task->IsActive ());
+        }
     }
 }
 

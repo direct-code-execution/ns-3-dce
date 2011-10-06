@@ -14,8 +14,7 @@ TypeId
 LoaderFactory::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::LoaderFactory")
-    .SetParent<Object> ()
-    ;
+    .SetParent<Object> ();
   return tid;
 }
 LoaderFactory::~LoaderFactory ()

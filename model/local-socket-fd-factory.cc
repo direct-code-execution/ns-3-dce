@@ -26,18 +26,18 @@
 #include "ns3/log.h"
 #include <map>
 
-NS_LOG_COMPONENT_DEFINE("LocalSocketFdFactory");
+NS_LOG_COMPONENT_DEFINE ("LocalSocketFdFactory");
 
 namespace ns3
 {
 
-NS_OBJECT_ENSURE_REGISTERED(LocalSocketFdFactory);
+NS_OBJECT_ENSURE_REGISTERED (LocalSocketFdFactory);
 
 TypeId
 LocalSocketFdFactory::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::LocalSocketFdFactory").SetParent<Object> ()
-      .AddConstructor<LocalSocketFdFactory> ();
+    .AddConstructor<LocalSocketFdFactory> ();
 
   return tid;
 }
@@ -92,7 +92,7 @@ LocalSocketFdFactory::FindBinder (std::string path, TypeId type) const
 
   LocalSocketFd* winner = i->second;
 
-  if ( ( winner != 0 ) && ( winner->GetInstanceTypeId() == type ) ) return winner;
+  if ( ( winner != 0 ) && ( winner->GetInstanceTypeId () == type ) ) return winner;
 
   return 0;
 }
@@ -109,6 +109,9 @@ LocalSocketFdFactory::UnRegisterBinder (std::string path)
   if (0 == m_bindByPath.count (path)) return;
   m_bindByPath.erase (path);
 }
-
-
+void
+LocalSocketFdFactory::UnlinkNotify (std::string path)
+{
+  UnRegisterBinder (path);
+}
 } // namespace ns3

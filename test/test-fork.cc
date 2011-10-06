@@ -49,7 +49,7 @@ static void test_fork (void)
       TEST_ASSERT_EQUAL (parent, 0);
       TEST_ASSERT_EQUAL (g_static, 0);
       TEST_ASSERT_EQUAL (g_global, 0);
- //     sleep (30);
+      //     sleep (30);
     }
 }
 
@@ -61,9 +61,9 @@ test_wait_fork_thread (void *arg)
 
   printf ("Thread about to wait \n");
 
-  pid_t w = wait(&status);
+  pid_t w = wait (&status);
 
-  printf ("test wait fork thread: after wait >>> %d,  status = %d signal %d \n", w,  WEXITSTATUS( status), WTERMSIG (status) );
+  printf ("test wait fork thread: after wait >>> %d,  status = %d signal %d \n", w,  WEXITSTATUS ( status), WTERMSIG (status) );
 
   return 0;
 }
@@ -113,17 +113,17 @@ static void test_wait_fork (void)
       pthread_t thread;
       int status = pthread_create (&thread, NULL, &test_wait_fork_thread, (void*)&pid);
       sleep (1);
-      pid_t w =  waitpid( -1, &status, WNOHANG) ;
+      pid_t w =  waitpid ( -1, &status, WNOHANG);
       if ( 0 == w )
         {
           printf ("child not yet ended.\n");
-          w = waitpid( pid, &status, 0);
+          w = waitpid ( pid, &status, 0);
         }
-      printf ("father wait fork thread: after wait >>> %d, status = %d signal %d \n", w,  WEXITSTATUS( status), WTERMSIG (status) );
+      printf ("father wait fork thread: after wait >>> %d, status = %d signal %d \n", w,  WEXITSTATUS ( status), WTERMSIG (status) );
 
       pthread_join (thread, 0);
     }
- }
+}
 
 void big_fork (int prof)
 {
@@ -140,15 +140,15 @@ void big_fork (int prof)
         {
           int st = 0;
 
-          pid_t w =  waitpid( pid, &st, 0);
-          printf("Child pid:%d %d\n", pid, w);
-          if (prof>0) exit(0);
+          pid_t w =  waitpid ( pid, &st, 0);
+          printf ("Child pid:%d %d\n", pid, w);
+          if (prof>0) exit (0);
           return;
         }
       else
         {
           if (prof++ >= 100) exit (0);
-          printf ("pid:%d prof%d\n",getpid(), prof);
+          printf ("pid:%d prof%d\n",getpid (), prof);
         }
     }
 }
@@ -168,9 +168,9 @@ void big_fork_exec (int prof)
         {
           int st = 0;
 
-          pid_t w =  waitpid( pid, &st, 0);
-          printf("Child pid:%d %d\n", pid, w);
-          if (prof>0) exit(0);
+          pid_t w =  waitpid ( pid, &st, 0);
+          printf ("Child pid:%d %d\n", pid, w);
+          if (prof>0) exit (0);
           return;
         }
       else
@@ -179,7 +179,7 @@ void big_fork_exec (int prof)
 
           char arg[100];
 
-          sprintf(arg,"%d",prof);
+          sprintf (arg,"%d",prof);
 
           static char* const args[] = { "build/bin/test-fork", arg };
 
@@ -196,18 +196,18 @@ int main (int argc, char *argv[])
     {
       test_fork ();
 
-      pid_t w = wait(0);
+      pid_t w = wait (0);
 
       test_wait_fork ();
 
       big_fork (0);
 
-      printf ("pid: %d after \n",getpid());
+      printf ("pid: %d after \n",getpid ());
       big_fork_exec (0);
     }
   else
     {
-      big_fork_exec (argc > 1?(atoi(argv[1])):0 );
+      big_fork_exec (argc > 1 ? (atoi (argv[1])) : 0 );
     }
   return 0;
 }

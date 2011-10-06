@@ -42,7 +42,7 @@
 
 namespace ns3 {
 
-NS_LOG_COMPONENT_DEFINE("PthreadFiberManager");
+NS_LOG_COMPONENT_DEFINE ("PthreadFiberManager");
 
 enum PthreadFiberState {
   RUNNING,
@@ -71,7 +71,7 @@ public:
   {
     int size = getpagesize ();
     unsigned long start = m_min - (m_min % size);
-    unsigned long end = ((m_max % size) == 0)?m_max:(m_max+(size-(m_max %size)));
+    unsigned long end = ((m_max % size) == 0) ? m_max : (m_max+(size-(m_max %size)));
     return end - start;
   }
 private:
@@ -101,7 +101,7 @@ struct PthreadFiberThread
   uint32_t refcount;
   bool thread_started;
   jmp_buf initial_env;
-  void (*func) (void *);
+  void (*func)(void *);
   void *context;
   size_t stack_size;
   StackTrampoline *trampoline;
@@ -125,10 +125,10 @@ public:
     newstack.ss_sp = m_stack;
     newstack.ss_size = SIGSTKSZ;
     newstack.ss_flags = 0;
-    m_vgId = VALGRIND_STACK_REGISTER(m_stack,((unsigned long)m_stack)+SIGSTKSZ);
+    m_vgId = VALGRIND_STACK_REGISTER (m_stack,((unsigned long)m_stack)+SIGSTKSZ);
     status = sigaltstack (&newstack, &oldstack);
     NS_ASSERT_MSG (status == 0, "first sigaltstack failed stack=" << m_stack << 
-		   " stacksize=" << SIGSTKSZ);
+                   " stacksize=" << SIGSTKSZ);
     struct sigaction newact;
     struct sigaction oldact;
     newact.sa_handler = &StackTrampoline::SignalHandler;
@@ -146,7 +146,7 @@ public:
   }
   ~StackTrampoline ()
   {
-    VALGRIND_STACK_DEREGISTER(m_vgId);
+    VALGRIND_STACK_DEREGISTER (m_vgId);
     free (m_stack);
   }
 
@@ -161,8 +161,8 @@ public:
     // switching to a temporary stack to do save/restore.
     if (previous != next)
       {
-	VALGRIND_MAKE_MEM_DEFINED (m_stack, SIGSTKSZ);
-	longjmp (m_buf, 1);
+        VALGRIND_MAKE_MEM_DEFINED (m_stack, SIGSTKSZ);
+        longjmp (m_buf, 1);
       }
   }
 
@@ -179,7 +179,7 @@ private:
     StackTrampoline *self = g_current;
     if (setjmp (self->m_buf) == 0)
       {
-	return;
+        return;
       }
     VALGRIND_MAKE_MEM_DEFINED (self->m_stack, SIGSTKSZ);
     DoWork (self->m_jumpTarget);
@@ -191,29 +191,29 @@ private:
     struct PthreadFiber *previous = thread->previous;
     if (previous != next)
       {
-	if (previous != 0)
-	  {
-	    // first, we save the stack of previous.
-	    if (previous->stack_copy == 0)
-	      {
-		previous->stack_copy = malloc (previous->thread->stack_size);
-	      }
-	    VALGRIND_MAKE_MEM_DEFINED (previous->stack_bounds.GetStart (),
-				       previous->stack_bounds.GetSize ());
-	    NS_LOG_DEBUG ("save start=" << previous->stack_bounds.GetStart () <<
-			  " size=" << previous->stack_bounds.GetSize ());
-	    memcpy (previous->stack_copy,
-		    previous->stack_bounds.GetStart (),
-		    previous->stack_bounds.GetSize ());
-	  }
-	// then, we restore the stack of next
-	VALGRIND_MAKE_MEM_DEFINED (next->stack_bounds.GetStart (),
-				   next->stack_bounds.GetSize ());
-	NS_LOG_DEBUG ("restore start=" << next->stack_bounds.GetStart () <<
-		      " size=" << next->stack_bounds.GetSize ());
-	memcpy (next->stack_bounds.GetStart (), 
-		next->stack_copy,
-		next->stack_bounds.GetSize ());
+        if (previous != 0)
+          {
+            // first, we save the stack of previous.
+            if (previous->stack_copy == 0)
+              {
+                previous->stack_copy = malloc (previous->thread->stack_size);
+              }
+            VALGRIND_MAKE_MEM_DEFINED (previous->stack_bounds.GetStart (),
+                                       previous->stack_bounds.GetSize ());
+            NS_LOG_DEBUG ("save start=" << previous->stack_bounds.GetStart () <<
+                          " size=" << previous->stack_bounds.GetSize ());
+            memcpy (previous->stack_copy,
+                    previous->stack_bounds.GetStart (),
+                    previous->stack_bounds.GetSize ());
+          }
+        // then, we restore the stack of next
+        VALGRIND_MAKE_MEM_DEFINED (next->stack_bounds.GetStart (),
+                                   next->stack_bounds.GetSize ());
+        NS_LOG_DEBUG ("restore start=" << next->stack_bounds.GetStart () <<
+                      " size=" << next->stack_bounds.GetSize ());
+        memcpy (next->stack_bounds.GetStart (),
+                next->stack_copy,
+                next->stack_bounds.GetSize ());
       }
     // Finally, we can go back to the thread's last suspend point
     // which was either in Yield or in Clone.
@@ -271,7 +271,7 @@ PthreadFiberManager::Clone (struct Fiber *fib)
     size_t sz = clone->stack_bounds.GetSize ();
     VALGRIND_MAKE_MEM_DEFINED (src, sz);
     NS_LOG_DEBUG ("save start=" << clone->stack_bounds.GetStart () <<
-		  " size=" << clone->stack_bounds.GetSize ());
+                  " size=" << clone->stack_bounds.GetSize ());
 
 //    dst = clone->stack_copy = malloc ( sz );
 
@@ -310,7 +310,7 @@ PthreadFiberManager::Start (struct PthreadFiber *fiber)
   error = pthread_attr_init (&attr);
   NS_ASSERT_MSG (error == 0, "error=" << strerror (error));
   error = pthread_attr_setstacksize (&attr, std::max (fiber->thread->stack_size, 
-						      (size_t)PTHREAD_STACK_MIN));
+                                                      (size_t)PTHREAD_STACK_MIN));
   NS_ASSERT_MSG (error == 0, "error=" << strerror (error));
   error = pthread_create (&fiber->thread->thread, &attr, &PthreadFiberManager::Run, 
                           (void*) fiber);
@@ -365,22 +365,22 @@ PthreadFiberManager::Yield (struct PthreadFiber *fiber)
         }
       else
         {
-	  fiber->stack_bounds = fiber->thread->stack_bounds;
-	  fiber->stack_bounds.AddBound (__builtin_frame_address (0));
-	  fiber->stack_bounds.AddBound (SelfStackBottom ());
-	  if (setjmp (fiber->yield_env) == 0)
-	    {
-	      // force the thread variable to be stored on the stack.
-	      volatile PthreadFiberThread *thread = fiber->thread;
-	      NS_LOG_DEBUG ("Yield after setjmp before wait");
-	      // wait for the master thread to re-schedule us.
-	      pthread_cond_wait (&((PthreadFiberThread *)thread)->condvar, 
-				 &((PthreadFiberThread *)thread)->mutex);
-	      NS_LOG_DEBUG ("Yield after wait");
-	      // finally, jump back where we want to go within this thread
-	      ((PthreadFiberThread *)thread)->trampoline->Jump ((PthreadFiberThread *)thread);
-	    }
-	  NS_LOG_DEBUG ("Yield after setjmp");
+          fiber->stack_bounds = fiber->thread->stack_bounds;
+          fiber->stack_bounds.AddBound (__builtin_frame_address (0));
+          fiber->stack_bounds.AddBound (SelfStackBottom ());
+          if (setjmp (fiber->yield_env) == 0)
+            {
+              // force the thread variable to be stored on the stack.
+              volatile PthreadFiberThread *thread = fiber->thread;
+              NS_LOG_DEBUG ("Yield after setjmp before wait");
+              // wait for the master thread to re-schedule us.
+              pthread_cond_wait (&((PthreadFiberThread *)thread)->condvar,
+                                 &((PthreadFiberThread *)thread)->mutex);
+              NS_LOG_DEBUG ("Yield after wait");
+              // finally, jump back where we want to go within this thread
+              ((PthreadFiberThread *)thread)->trampoline->Jump ((PthreadFiberThread *)thread);
+            }
+          NS_LOG_DEBUG ("Yield after setjmp");
         }
     }
 }
@@ -410,9 +410,9 @@ PthreadFiberManager::Run (void *arg)
 }
 
 struct Fiber *
-PthreadFiberManager::Create (void (*callback) (void *),
-			     void *context,
-			     uint32_t stackSize)
+PthreadFiberManager::Create (void (*callback)(void *),
+                             void *context,
+                             uint32_t stackSize)
 {
   struct PthreadFiber *fiber = (struct PthreadFiber *)CreateFromCaller ();
   fiber->thread->func = callback;
@@ -448,20 +448,20 @@ PthreadFiberManager::Delete (struct Fiber *fib)
   if (fiber->thread->refcount == 0)
     {
       if (fiber->thread->func != 0)
-	{
-	  pthread_mutex_lock (&fiber->thread->mutex);
-	  if (fiber->state != DESTROY && fiber->thread->thread_started)
-	    {
-	      fiber->state = DESTROY;
-	      pthread_cond_signal (&fiber->thread->condvar);
-	      pthread_mutex_unlock (&fiber->thread->mutex);
-	      pthread_join (fiber->thread->thread, 0);
-	    }
-	  else
-	    {
-	      pthread_mutex_unlock (&fiber->thread->mutex);
-	    }
-	}
+        {
+          pthread_mutex_lock (&fiber->thread->mutex);
+          if (fiber->state != DESTROY && fiber->thread->thread_started)
+            {
+              fiber->state = DESTROY;
+              pthread_cond_signal (&fiber->thread->condvar);
+              pthread_mutex_unlock (&fiber->thread->mutex);
+              pthread_join (fiber->thread->thread, 0);
+            }
+          else
+            {
+              pthread_mutex_unlock (&fiber->thread->mutex);
+            }
+        }
       int status = pthread_mutex_destroy (&fiber->thread->mutex);
       NS_ASSERT (status == 0);
       status = pthread_cond_destroy (&fiber->thread->condvar);
@@ -480,7 +480,7 @@ PthreadFiberManager::Delete (struct Fiber *fib)
 }
 void 
 PthreadFiberManager::SwitchTo (struct Fiber *fromFiber,
-			       const struct Fiber *toFiber)
+                               const struct Fiber *toFiber)
 {
   struct PthreadFiber *from = (struct PthreadFiber *)fromFiber;
   struct PthreadFiber *to = (struct PthreadFiber *)toFiber;
@@ -506,7 +506,7 @@ PthreadFiberManager::GetStackSize (struct Fiber *fib) const
   return fiber->thread->stack_size;
 }
 void 
-PthreadFiberManager::SetSwitchNotification (void (*fn) (void))
+PthreadFiberManager::SetSwitchNotification (void (*fn)(void))
 {
   m_notifySwitch = fn;
 }

@@ -39,7 +39,7 @@ std::string UtilsGetAbsRealFilePath (uint32_t node, std::string path)
 
   std::string nodeDir = UtilsGetRealFilePath (node);
   UtilsEnsureDirectoryExists (nodeDir);
-  return nodeDir + path;  
+  return nodeDir + path;
 }
 
 std::string 
@@ -56,14 +56,14 @@ void
 UtilsEnsureAllDirectoriesExist (std::string realPath)
 {
   int idx = 0;
-  
+
   while ((idx = realPath.find ('/', idx)) >= 0)
     {
       UtilsEnsureDirectoryExists (realPath.substr (0, idx + 1));
       idx++;
     }
 }
-  
+
 void UtilsEnsureDirectoryExists (std::string realPath)
 {
   ::DIR *dir = ::opendir (realPath.c_str ());
@@ -75,10 +75,10 @@ void UtilsEnsureDirectoryExists (std::string realPath)
     {
       int status = ::mkdir (realPath.c_str (), S_IRWXU | S_IRWXG);
       if (status == -1)
-	{
-	  NS_FATAL_ERROR ("Could not create directory " << realPath <<
-			  ": " << strerror (errno));
-	}
+        {
+          NS_FATAL_ERROR ("Could not create directory " << realPath <<
+                          ": " << strerror (errno));
+        }
     }
 }
 
@@ -174,14 +174,14 @@ UtilsSendSignal (Process *process, int signum)
     {
       Thread *thread = *i;
       if (sigismember (&thread->signalMask, signum) == 0)
-	{
-	  // signal not blocked by thread.
-	  if (thread->task->IsBlocked ())
-	    {
-	      process->manager->Wakeup (thread);
-	      return;
-	    }
-	}
+        {
+          // signal not blocked by thread.
+          if (thread->task->IsBlocked ())
+            {
+              process->manager->Wakeup (thread);
+              return;
+            }
+        }
     }
   // Could not find any candidate thread to receive signal.
   // signal pending until a thread unblocks it.
@@ -195,46 +195,46 @@ void UtilsDoSignal (void)
        i != current->process->signalHandlers.end (); ++i)
     {
       if (sigismember (&current->signalMask, i->signal) == 1 &&
-	  i->signal != SIGKILL &&
-	  i->signal != SIGSTOP)
-	{
-	  // don't deliver signals which are masked
-	  // ignore the signal mask for SIGKILL and SIGSTOP
-	  // though.
-	  continue;
-	}
+          i->signal != SIGKILL &&
+          i->signal != SIGSTOP)
+        {
+          // don't deliver signals which are masked
+          // ignore the signal mask for SIGKILL and SIGSTOP
+          // though.
+          continue;
+        }
       if (sigismember (&current->pendingSignals, i->signal) == 1)
-	{
-	  NS_LOG_DEBUG ("deliver signal=" << i->signal);
-	  // the signal is pending so, we try to deliver it.
-	  if (i->flags & SA_SIGINFO)
-	    {
-	      siginfo_t info;
-	      ucontext_t ctx;
-	      i->sigaction (i->signal, &info, &ctx);
-	    }
-	  else
-	    {
-	      i->handler (i->signal);
-	    }
-	  sigdelset (&current->pendingSignals, i->signal);
-	}
+        {
+          NS_LOG_DEBUG ("deliver signal=" << i->signal);
+          // the signal is pending so, we try to deliver it.
+          if (i->flags & SA_SIGINFO)
+            {
+              siginfo_t info;
+              ucontext_t ctx;
+              i->sigaction (i->signal, &info, &ctx);
+            }
+          else
+            {
+              i->handler (i->signal);
+            }
+          sigdelset (&current->pendingSignals, i->signal);
+        }
       if (sigismember (&current->process->pendingSignals, i->signal) == 1)
-	{
-	  NS_LOG_DEBUG ("deliver signal=" << i->signal);
-	  // the signal is pending so, we try to deliver it.
-	  if (i->flags & SA_SIGINFO)
-	    {
-	      siginfo_t info;
-	      ucontext_t ctx;
-	      i->sigaction (i->signal, &info, &ctx);
-	    }
-	  else
-	    {
-	      i->handler (i->signal);
-	    }
-	  sigdelset (&current->process->pendingSignals, i->signal);
-	}
+        {
+          NS_LOG_DEBUG ("deliver signal=" << i->signal);
+          // the signal is pending so, we try to deliver it.
+          if (i->flags & SA_SIGINFO)
+            {
+              siginfo_t info;
+              ucontext_t ctx;
+              i->sigaction (i->signal, &info, &ctx);
+            }
+          else
+            {
+              i->handler (i->signal);
+            }
+          sigdelset (&current->process->pendingSignals, i->signal);
+        }
     }
 }
 int UtilsAllocateFd (void)
@@ -246,10 +246,10 @@ int UtilsAllocateFd (void)
   for (int fd = 0; fd < MAX_FDS; fd++)
     {
       if (current->process->openFiles[fd] == 0)
-	{
-	  NS_LOG_DEBUG ("Allocated fd=" << fd);
-	  return fd;
-	}
+        {
+          NS_LOG_DEBUG ("Allocated fd=" << fd);
+          return fd;
+        }
     }
   return -1;
 }
@@ -261,7 +261,7 @@ void UtilsAdvanceTime (Thread *current)
   if (now == current->lastTime)
     {
       NS_LOG_DEBUG ("UtilsAdvanceTime current thread wait 1ms.");
-      current->process->manager->Wait (Time( MilliSeconds(1) ) );
+      current->process->manager->Wait (Time ( MilliSeconds (1) ) );
     }
 
   current->lastTime = Now ();
@@ -279,7 +279,7 @@ GetTimeStamp ()
   std::string padding = "";
   if ( sec.length () < indent )
     {
-      padding = std::string ( indent-sec.length() , ' ');
+      padding = std::string ( indent-sec.length (), ' ');
     }
   sec = padding + sec;
   padding = "";
@@ -290,7 +290,7 @@ GetTimeStamp ()
   std::string ns = oss.str ();
   if ( ns.length () < indent )
     {
-      padding = std::string ( indent-ns.length() , ' ');
+      padding = std::string ( indent-ns.length (), ' ');
     }
   ns = padding + ns;
   padding = "";
@@ -310,7 +310,7 @@ Split (std::string input, std::string sep)
       next = input.find (sep, cur);
       if (next == cur)
         {
-          cur ++;
+          cur++;
           continue;
         }
       else if (next == std::string::npos)
@@ -334,7 +334,7 @@ FindExecFile (std::string root, std::string envPath, std::string fileName, uid_t
   std::string found = "";
   *errNo = ENOENT;
 
-  int idx =  fileName.find('/',0 );
+  int idx =  fileName.find ('/',0 );
 
   if ( idx >= 0 )  // fileName contain a '/'
     {
@@ -373,8 +373,8 @@ bool
 CheckExeMode (struct stat *st, uid_t uid, gid_t gid)
 {
   return ( ( gid != st->st_gid) && ( uid != st->st_uid ) && ( ( st->st_mode & (S_IROTH|S_IXOTH) ) ==  (S_IROTH|S_IXOTH) ) )  ||
-      ( ( gid == st->st_gid ) && ( uid != st->st_uid ) && ( ( st->st_mode & (S_IRGRP|S_IXGRP)) ==  (S_IRGRP|S_IXGRP) ) ) ||
-      ( ( uid == st->st_uid ) && ( ( st->st_mode & (S_IRUSR|S_IXUSR)) == (S_IRUSR|S_IXUSR) ) );
+         ( ( gid == st->st_gid ) && ( uid != st->st_uid ) && ( ( st->st_mode & (S_IRGRP|S_IXGRP)) ==  (S_IRGRP|S_IXGRP) ) ) ||
+         ( ( uid == st->st_uid ) && ( ( st->st_mode & (S_IRUSR|S_IXUSR)) == (S_IRUSR|S_IXUSR) ) );
 }
 void
 FdDecUsage (int fd)

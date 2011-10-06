@@ -1,8 +1,8 @@
 #include "test-macros.h"
 
-extern "C" void ns3_report_test_error(const char *s);
+extern "C" void ns3_report_test_error (const char *s);
 
-void ns3_report_test_error(const char *s)
+void ns3_report_test_error (const char *s)
 {
   std::cerr << s;
 }

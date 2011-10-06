@@ -11,7 +11,7 @@ NS_LOG_COMPONENT_DEFINE ("SimuStdlib");
 
 using namespace ns3;
 
-long int dce_strtol(const char *nptr, char **endptr, int base)
+long int dce_strtol (const char *nptr, char **endptr, int base)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << nptr << endptr << base);
@@ -23,7 +23,7 @@ long int dce_strtol(const char *nptr, char **endptr, int base)
     }
   return retval;
 }
-long long int dce_strtoll(const char *nptr, char **endptr, int base)
+long long int dce_strtoll (const char *nptr, char **endptr, int base)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << nptr << endptr << base);
@@ -36,7 +36,7 @@ long long int dce_strtoll(const char *nptr, char **endptr, int base)
   return retval;
 }
 
-unsigned long int dce_strtoul(const char *nptr, char **endptr, int base)
+unsigned long int dce_strtoul (const char *nptr, char **endptr, int base)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << nptr << endptr << base);
@@ -48,7 +48,7 @@ unsigned long int dce_strtoul(const char *nptr, char **endptr, int base)
     }
   return retval;
 }
-unsigned long long int dce_strtoull(const char *nptr, char **endptr, int base)
+unsigned long long int dce_strtoull (const char *nptr, char **endptr, int base)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << nptr << endptr << base);
@@ -60,7 +60,7 @@ unsigned long long int dce_strtoull(const char *nptr, char **endptr, int base)
     }
   return retval;
 }
-double dce_strtod(const char *nptr, char **endptr)
+double dce_strtod (const char *nptr, char **endptr)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << nptr << endptr);
@@ -73,7 +73,7 @@ double dce_strtod(const char *nptr, char **endptr)
   return retval;
 }
 
-int dce_atexit(void (*function)(void))
+int dce_atexit (void (*function)(void))
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << function);
   NS_ASSERT (Current () != 0);

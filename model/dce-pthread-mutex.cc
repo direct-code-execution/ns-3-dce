@@ -58,7 +58,7 @@ PthreadMutexInitStatic (pthread_mutex_t *mutex)
   mtx->count = 0;
   mtx->waiting.clear ();
   mtx->current = 0;
-  current->process->mutexes.push_back (mtx);  
+  current->process->mutexes.push_back (mtx);
   MidToMutex (mtx->mid, mutex);
 }
 
@@ -88,7 +88,7 @@ SearchMutex (pthread_mutex_t *mutex)
 }
 
 int dce_pthread_mutex_init (pthread_mutex_t *mutex,
-			     const pthread_mutexattr_t *attribute)
+                            const pthread_mutexattr_t *attribute)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << mutex << attribute);
@@ -131,7 +131,7 @@ int dce_pthread_mutex_init (pthread_mutex_t *mutex,
   current->process->mutexes.push_back (mtx);
 
   MidToMutex (mtx->mid, mutex);
-  
+
   return 0;
 }
 int dce_pthread_mutex_destroy (pthread_mutex_t *mutex)
@@ -167,10 +167,10 @@ int dce_pthread_mutex_destroy (pthread_mutex_t *mutex)
     }
   NS_ASSERT (mtx == 0);
   MidToMutex (2, mutex);
-  
+
   return 0;
 }
-int dce_pthread_mutex_lock(pthread_mutex_t *mutex)
+int dce_pthread_mutex_lock (pthread_mutex_t *mutex)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << mutex);
@@ -208,7 +208,7 @@ int dce_pthread_mutex_lock(pthread_mutex_t *mutex)
 
   return 0;
 }
-int dce_pthread_mutex_trylock(pthread_mutex_t *mutex)
+int dce_pthread_mutex_trylock (pthread_mutex_t *mutex)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << mutex);
@@ -258,7 +258,7 @@ int dce_pthread_mutex_trylock(pthread_mutex_t *mutex)
   // quiet compiler.
   return 0;
 }
-int dce_pthread_mutex_unlock(pthread_mutex_t *mutex)
+int dce_pthread_mutex_unlock (pthread_mutex_t *mutex)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << mutex);
@@ -292,9 +292,9 @@ int dce_pthread_mutex_unlock(pthread_mutex_t *mutex)
       Thread *waiting = mtx->waiting.front ();
       if (waiting != 0)
         {
-	  current->process->manager->Wakeup (waiting);
-	  // give them a chance to run.
-	  current->process->manager->Yield ();
+          current->process->manager->Wakeup (waiting);
+          // give them a chance to run.
+          current->process->manager->Yield ();
         }
     }
   return 0;

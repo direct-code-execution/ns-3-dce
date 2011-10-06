@@ -29,7 +29,7 @@ UnixTimerFd::Close (void)
     }
   return 0;
 }
-  
+
 ssize_t 
 UnixTimerFd::Write (const void *buf, size_t count)
 {
@@ -39,7 +39,7 @@ UnixTimerFd::Write (const void *buf, size_t count)
   return -1;
 }
 ssize_t 
-UnixTimerFd::Read(void *buf, size_t count)
+UnixTimerFd::Read (void *buf, size_t count)
 {
   Thread *current = Current ();
   if (count < 8)
@@ -59,11 +59,11 @@ UnixTimerFd::Read(void *buf, size_t count)
   m_waiter = 0;
   *counter = m_skipped;
   m_skipped = 0;
-  
+
   return 0;
 }
 ssize_t 
-UnixTimerFd::Recvmsg(struct msghdr *msg, int flags)
+UnixTimerFd::Recvmsg (struct msghdr *msg, int flags)
 {
   NS_LOG_FUNCTION (this << msg << flags);
   Thread *current = Current ();
@@ -71,7 +71,7 @@ UnixTimerFd::Recvmsg(struct msghdr *msg, int flags)
   return -1;
 }
 ssize_t 
-UnixTimerFd::Sendmsg(const struct msghdr *msg, int flags)
+UnixTimerFd::Sendmsg (const struct msghdr *msg, int flags)
 {
   NS_LOG_FUNCTION (this << msg << flags);
   Thread *current = Current ();
@@ -85,7 +85,7 @@ UnixTimerFd::Isatty (void) const
 }
 int 
 UnixTimerFd::Setsockopt (int level, int optname,
-			 const void *optval, socklen_t optlen)
+                         const void *optval, socklen_t optlen)
 {
   NS_LOG_FUNCTION (this << level << optname << optval << optlen);
   Thread *current = Current ();
@@ -94,7 +94,7 @@ UnixTimerFd::Setsockopt (int level, int optname,
 }
 int 
 UnixTimerFd::Getsockopt (int level, int optname,
-			 void *optval, socklen_t *optlen)
+                         void *optval, socklen_t *optlen)
 {
   NS_LOG_FUNCTION (this << level << optname << optval << optlen);
   Thread *current = Current ();
@@ -102,7 +102,7 @@ UnixTimerFd::Getsockopt (int level, int optname,
   return -1;
 }
 int 
-UnixTimerFd::Getsockname(struct sockaddr *name, socklen_t *namelen)
+UnixTimerFd::Getsockname (struct sockaddr *name, socklen_t *namelen)
 {
   NS_LOG_FUNCTION (this << name << namelen);
   Thread *current = Current ();
@@ -110,7 +110,7 @@ UnixTimerFd::Getsockname(struct sockaddr *name, socklen_t *namelen)
   return -1;
 }
 int 
-UnixTimerFd::Getpeername(struct sockaddr *name, socklen_t *namelen)
+UnixTimerFd::Getpeername (struct sockaddr *name, socklen_t *namelen)
 {
   NS_LOG_FUNCTION (this << name << namelen);
   Thread *current = Current ();
@@ -148,7 +148,7 @@ UnixTimerFd::Listen (int backlog)
   return -1;
 }
 int 
-UnixTimerFd::Shutdown(int how)
+UnixTimerFd::Shutdown (int how)
 {
   NS_LOG_FUNCTION (this << how);
   Thread *current = Current ();
@@ -207,10 +207,10 @@ UnixTimerFd::TimerExpired (void)
   if (!m_period.IsZero ())
     {
       m_timer = Simulator::Schedule (m_period,
-				     &UnixTimerFd::TimerExpired,
-				     this);
+                                     &UnixTimerFd::TimerExpired,
+                                     this);
     }
-  m_skipped ++;
+  m_skipped++;
   if (m_waiter != 0)
     {
       m_waiter->process->manager->Wakeup (m_waiter);
@@ -218,8 +218,8 @@ UnixTimerFd::TimerExpired (void)
 }
 int 
 UnixTimerFd::Settime (int flags,
-		      const struct itimerspec *new_value,
-		      struct itimerspec *old_value)
+                      const struct itimerspec *new_value,
+                      struct itimerspec *old_value)
 {
   NS_ASSERT (flags == 0);
   if (old_value != 0)
@@ -233,8 +233,8 @@ UnixTimerFd::Settime (int flags,
   if (!initial.IsZero ())
     {
       m_timer = Simulator::Schedule (initial, 
-				     &UnixTimerFd::TimerExpired,
-				     this);
+                                     &UnixTimerFd::TimerExpired,
+                                     this);
     }
   return 0;
 }
@@ -284,7 +284,7 @@ UnixTimerFd::Poll (PollTable* ptable)
     {
       ret |= POLLOUT;
     }
-  if (HangupReceived() )
+  if (HangupReceived () )
     {
       ret |= POLLHUP;
     }

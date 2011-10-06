@@ -61,20 +61,20 @@ public:
 
   virtual int Close (void);
   virtual ssize_t Write (const void *buf, size_t count);
-  virtual ssize_t Read(void *buf, size_t count);
-  virtual ssize_t Recvmsg(struct msghdr *msg, int flags);
-  virtual ssize_t Sendmsg(const struct msghdr *msg, int flags);
+  virtual ssize_t Read (void *buf, size_t count);
+  virtual ssize_t Recvmsg (struct msghdr *msg, int flags);
+  virtual ssize_t Sendmsg (const struct msghdr *msg, int flags);
   virtual bool Isatty (void) const;
   virtual int Setsockopt (int level, int optname,
                           const void *optval, socklen_t optlen);
   virtual int Getsockopt (int level, int optname,
                           void *optval, socklen_t *optlen);
-  virtual int Getsockname(struct sockaddr *name, socklen_t *namelen);
-  virtual int Getpeername(struct sockaddr *name, socklen_t *namelen);
+  virtual int Getsockname (struct sockaddr *name, socklen_t *namelen);
+  virtual int Getpeername (struct sockaddr *name, socklen_t *namelen);
   virtual int Bind (const struct sockaddr *my_addr, socklen_t addrlen);
   virtual int Connect (const struct sockaddr *my_addr, socklen_t addrlen);
   virtual int Listen (int backlog);
-  virtual int Shutdown(int how);
+  virtual int Shutdown (int how);
   virtual int Accept (struct sockaddr *my_addr, socklen_t *addrlen);
 
   virtual bool CanRecv (void) const;
@@ -85,7 +85,7 @@ public:
 
 protected:
   virtual void ClearAll (bool andWakeUp);
-  virtual bool IsClosed (void) const ;
+  virtual bool IsClosed (void) const;
 
 private:
   bool InternalConnect (void);
@@ -94,7 +94,7 @@ private:
   void ConnectionCreated (LocalStreamSocketFd* sock, WaitQueueEntryTimeout *wq);
   void RemoveFromQueue (LocalStreamSocketFd* sock);
   void SetPeer (LocalStreamSocketFd *sock);
-  void PeerClosed(void);
+  void PeerClosed (void);
   bool IsShutWrite (void) const;
 
   enum State
@@ -115,7 +115,7 @@ private:
   int m_backLog;
   LocalStreamSocketFd *m_peer;
 
- };
+};
 
 } // namespace ns3
 

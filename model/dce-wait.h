@@ -6,8 +6,8 @@
 extern "C" {
 #endif
 
-pid_t dce_wait(int *status);
-pid_t dce_waitpid(pid_t pid, int *status, int options);
+pid_t dce_wait (int *status);
+pid_t dce_waitpid (pid_t pid, int *status, int options);
 
 
 #ifdef __cplusplus

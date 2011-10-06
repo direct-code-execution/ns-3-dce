@@ -6,9 +6,9 @@ static bool environ_search (const char *str)
   for (char **cur = environ; *cur != 0; cur++)
     {
       if (strcmp (str, *cur) == 0)
-	{
-	  return true;
-	}
+        {
+          return true;
+        }
     }
   return false;
 }
@@ -54,7 +54,7 @@ void test_putenv (void)
   TEST_ASSERT_EQUAL (status, 0);
   shel = getenv ("SHEL");
   TEST_ASSERT_EQUAL (shel, 0);
-  
+
   status = putenv ((char*)"A=a");
   TEST_ASSERT_EQUAL (status, 0);
   status = putenv ((char*)"B=b");
@@ -74,7 +74,7 @@ void test_putenv (void)
 }
 
 void test_setenv (void)
-{  
+{
   int status = clearenv ();
   TEST_ASSERT_EQUAL (status, 0);
   char *shel = getenv ("A");

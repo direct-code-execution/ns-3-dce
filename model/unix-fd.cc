@@ -13,7 +13,7 @@ UnixFd::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::UnixFd")
     .SetParent<Object> ()
-    ;
+  ;
   return tid;
 }
 
@@ -41,7 +41,7 @@ void
 UnixFd::WakeWaiters (void* key)
 {
   for (std::list<WaitQueueEntry*>::iterator i = m_waitQueueList.begin ();
-      i != m_waitQueueList.end (); ++i)
+       i != m_waitQueueList.end (); ++i)
     {
       (*i)->WakeUp (key);
     }

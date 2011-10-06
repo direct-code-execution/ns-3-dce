@@ -22,7 +22,7 @@ Cmsg::Add (int level, int type, int len, const uint8_t *buffer)
   msghdr.cmsg_len = cmsglen;
   msghdr.cmsg_level = level;
   msghdr.cmsg_type = type;
-  memcpy (m_current, &msghdr, sizeof (struct cmsghdr));  
+  memcpy (m_current, &msghdr, sizeof (struct cmsghdr));
   memcpy (CMSG_DATA ((struct cmsghdr*)m_current), buffer, cmsglen-sizeof (struct cmsghdr));
   m_current += cmsglen;
   m_len -= cmsglen;
@@ -30,11 +30,11 @@ Cmsg::Add (int level, int type, int len, const uint8_t *buffer)
 
 
 int
-Cmsg::GetNext(int *level, int *type, int *len, uint8_t **buffer)
+Cmsg::GetNext (int *level, int *type, int *len, uint8_t **buffer)
 {
   struct cmsghdr *cm = NULL;
 
-  if (m_len < (int)CMSG_LEN(0))
+  if (m_len < (int)CMSG_LEN (0))
     return -1;
 
   cm = (struct cmsghdr *)m_current;
@@ -43,11 +43,11 @@ Cmsg::GetNext(int *level, int *type, int *len, uint8_t **buffer)
 
   *level = cm->cmsg_level;
   *type = cm->cmsg_type;
-  *len = cm->cmsg_len - CMSG_LEN(0);
-  *buffer = CMSG_DATA(cm);
+  *len = cm->cmsg_len - CMSG_LEN (0);
+  *buffer = CMSG_DATA (cm);
 
-  m_current += CMSG_ALIGN(cm->cmsg_len);
-  m_len -= CMSG_ALIGN(cm->cmsg_len);
+  m_current += CMSG_ALIGN (cm->cmsg_len);
+  m_len -= CMSG_ALIGN (cm->cmsg_len);
 
   return 0;
 }

@@ -70,7 +70,7 @@ SearchCondition (pthread_cond_t *cond)
 
 
 int dce_pthread_cond_init (pthread_cond_t *cond,
-			    const pthread_condattr_t *attr)
+                           const pthread_condattr_t *attr)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << cond << attr);
   NS_ASSERT (Current () != 0);
@@ -108,7 +108,7 @@ int dce_pthread_cond_destroy (pthread_cond_t *cond)
     }
   NS_ASSERT (condition == 0);
   CidToCond (2, cond);
-  
+
   return 0;
 }
 int dce_pthread_cond_broadcast (pthread_cond_t *cond)
@@ -150,9 +150,9 @@ int dce_pthread_cond_signal (pthread_cond_t *cond)
     }
   return 0;
 }
-int dce_pthread_cond_timedwait(pthread_cond_t * cond,
-				pthread_mutex_t * mutex,
-				const struct timespec * abstime)
+int dce_pthread_cond_timedwait (pthread_cond_t * cond,
+                                pthread_mutex_t * mutex,
+                                const struct timespec * abstime)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << cond << mutex);
   NS_ASSERT (Current () != 0);
@@ -177,8 +177,8 @@ int dce_pthread_cond_timedwait(pthread_cond_t * cond,
     }
   return 0;
 }
-int dce_pthread_cond_wait(pthread_cond_t * cond,
-			   pthread_mutex_t * mutex)
+int dce_pthread_cond_wait (pthread_cond_t * cond,
+                           pthread_mutex_t * mutex)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << cond << mutex);
   NS_ASSERT (Current () != 0);
@@ -197,11 +197,11 @@ int dce_pthread_cond_wait(pthread_cond_t * cond,
 }
 
 // we don't implement any attribute for condition variables
-int dce_pthread_condattr_init(pthread_condattr_t *attr)
+int dce_pthread_condattr_init (pthread_condattr_t *attr)
 {
   return 0;
 }
-int dce_pthread_condattr_destroy(pthread_condattr_t *attr)
+int dce_pthread_condattr_destroy (pthread_condattr_t *attr)
 {
   return 0;
 }

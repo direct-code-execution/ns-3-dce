@@ -49,9 +49,9 @@ WaitQueueEntryPoll::SetPollTableEntry (PollTableEntry* p)
 void
 WaitQueueEntryPoll::WakeUp (void *key)
 {
-  short event = (0!=key)?(*((short*)key)):0;  // Deference a short * if not 0
+  short event = (0!=key) ? (*((short*)key)) : 0;  // Deference a short * if not 0
 
-  if ((m_pollTableEntry)&&(m_pollTableEntry->IsEventMatch( event )))
+  if ((m_pollTableEntry)&&(m_pollTableEntry->IsEventMatch ( event )))
     {
       m_func ();
     }
@@ -60,20 +60,20 @@ PollTableEntry::PollTableEntry () :  m_file (0), m_wait (0), m_eventMask (0)
 {
 }
 PollTableEntry::PollTableEntry (UnixFd *file, WaitQueueEntryPoll *wait, short em) :
-      m_file (file), m_wait (wait), m_eventMask (em)
+  m_file (file), m_wait (wait), m_eventMask (em)
 {
 }
 PollTableEntry::~PollTableEntry ()
 {
- if (m_wait)
-   {
-     delete m_wait;
-   }
+  if (m_wait)
+    {
+      delete m_wait;
+    }
 }
 void
 PollTableEntry::FreeWait ()
 {
-   m_file->RemoveWaitQueue (m_wait, false);
+  m_file->RemoveWaitQueue (m_wait, false);
 }
 
 int
@@ -99,7 +99,7 @@ WaitPoint::Wait (Time to)
     {
       return PollTable::INTERRUPTED;
     }
-  if (!to.IsZero () && left.IsZero())
+  if (!to.IsZero () && left.IsZero ())
     {
       return PollTable::TIMEOUT;
     }
@@ -145,7 +145,7 @@ PollTable::~PollTable ()
 void
 PollTable::PollWait (UnixFd* file)
 {
-  WaitQueueEntryPoll* we = new WaitQueueEntryPoll ( MakeCallback( &PollTable::WakeUpCallback, this ) );
+  WaitQueueEntryPoll* we = new WaitQueueEntryPoll ( MakeCallback ( &PollTable::WakeUpCallback, this ) );
   PollTableEntry* e = new PollTableEntry (file, we, m_eventMask);
   we->SetPollTableEntry (e);
   m_pollEntryList.push_back ( e );
@@ -160,7 +160,7 @@ void
 PollTable::FreeWait ()
 {
   for (std::list <PollTableEntry*> :: iterator i = m_pollEntryList.begin ();
-        i != m_pollEntryList.end (); ++i )
+       i != m_pollEntryList.end (); ++i )
     {
       (*i)->FreeWait ();
     }
@@ -190,7 +190,7 @@ WaitQueueEntryTimeout::WaitQueueEntryTimeout (short em, Time to) : m_waitTask (0
 void
 WaitQueueEntryTimeout::WakeUp (void *key)
 {
-  short event = (0!=key)?(*((short*)key)):0; // Deference a short * if not 0
+  short event = (0!=key) ? (*((short*)key)) : 0; // Deference a short * if not 0
 
   if (event & m_eventMask)
     {
@@ -200,16 +200,16 @@ WaitQueueEntryTimeout::WakeUp (void *key)
 WaitPoint::Result
 WaitQueueEntryTimeout::Wait ()
 {
-  NS_LOG_FUNCTION( m_lastTime );
-  if (m_lastTime.IsNegative())
+  NS_LOG_FUNCTION ( m_lastTime );
+  if (m_lastTime.IsNegative ())
     {
-      return WaitPoint::Wait (Seconds(0));
+      return WaitPoint::Wait (Seconds (0));
     }
   else
     {
       Time rest = m_lastTime - Simulator::Now ();
 
-      if (rest.IsNegative())
+      if (rest.IsNegative ())
         {
           return TIMEOUT;
         }
@@ -218,11 +218,11 @@ WaitQueueEntryTimeout::Wait ()
 }
 
 PollTableEntryLinux::PollTableEntryLinux (void *kernelReference, Callback<void, void*> cb)
-: m_kernelRef (kernelReference), m_freeCb (cb)
+  : m_kernelRef (kernelReference), m_freeCb (cb)
 {
 }
 void
-PollTableEntryLinux::FreeWait()
+PollTableEntryLinux::FreeWait ()
 {
   m_freeCb (m_kernelRef);
 }

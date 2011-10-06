@@ -40,7 +40,7 @@ void *
 CopyLoader::Load (std::string filename, int flag)
 {
   struct Module *module = LoadModule (filename, flag);
-  
+
   // acquire ref for client
   module->refcount++;
   return module->handle;
@@ -53,10 +53,10 @@ CopyLoader::SearchModule (uint32_t id)
     {
       struct Module *module = *i;
       if (module->cached.id == id)
-	{
-	  // already in, ignore.
-	  return module;
-	}
+        {
+          // already in, ignore.
+          return module;
+        }
     }
   return 0;
 }
@@ -72,20 +72,20 @@ CopyLoader::LoadModule (std::string filename, int flag)
       ElfCache::ElfCachedFile cached = m_cache.Add (i->found);
       module = SearchModule (cached.id);
       if (module == 0)
-	{
-	  void *handle = dlopen (cached.cachedFilename.c_str (), RTLD_LAZY | RTLD_DEEPBIND | RTLD_LOCAL);
-	  module = new Module ();
-	  module->cached = cached;
-	  module->handle = handle;
-	  module->refcount = 0; // will be incremented later in ::Load or as a dep below.
-	  for (std::vector<uint32_t>::const_iterator j = cached.deps.begin (); j != cached.deps.end (); ++j)
-	    {
-	      struct Module *dep = SearchModule (*j);
-	      dep->refcount++;
-	      module->deps.push_back (dep);
-	    }
-	  m_modules.push_back (module);
-	}
+        {
+          void *handle = dlopen (cached.cachedFilename.c_str (), RTLD_LAZY | RTLD_DEEPBIND | RTLD_LOCAL);
+          module = new Module ();
+          module->cached = cached;
+          module->handle = handle;
+          module->refcount = 0; // will be incremented later in ::Load or as a dep below.
+          for (std::vector<uint32_t>::const_iterator j = cached.deps.begin (); j != cached.deps.end (); ++j)
+            {
+              struct Module *dep = SearchModule (*j);
+              dep->refcount++;
+              module->deps.push_back (dep);
+            }
+          m_modules.push_back (module);
+        }
     }
   return module;
 }
@@ -109,23 +109,23 @@ CopyLoader::Unload (void *handle)
     {
       struct Module *module = *i;
       if (module->handle == handle)
-	{
-	  module->refcount--;
-	  if (module->refcount == 0)
-	    {
-	      m_modules.erase (i);
-	      for (std::list<struct Module *>::iterator j = module->deps.begin (); 
-		   j != module->deps.end (); ++j)
-		{
-		  struct Module *dep = *j;
-		  Unload (dep->handle);
-		}
-	      // close only after unloading the deps.
-	      dlclose (module->handle);
-	      delete module;
-	    }
-	  break;
-	}
+        {
+          module->refcount--;
+          if (module->refcount == 0)
+            {
+              m_modules.erase (i);
+              for (std::list<struct Module *>::iterator j = module->deps.begin ();
+                   j != module->deps.end (); ++j)
+                {
+                  struct Module *dep = *j;
+                  Unload (dep->handle);
+                }
+              // close only after unloading the deps.
+              dlclose (module->handle);
+              delete module;
+            }
+          break;
+        }
     }
 }
 void *
@@ -149,7 +149,7 @@ CopyLoader::~CopyLoader ()
 }
 
 
-NS_OBJECT_ENSURE_REGISTERED(CopyLoaderFactory);
+NS_OBJECT_ENSURE_REGISTERED (CopyLoaderFactory);
 
 TypeId 
 CopyLoaderFactory::GetTypeId (void)
@@ -157,7 +157,7 @@ CopyLoaderFactory::GetTypeId (void)
   static TypeId tid = TypeId ("ns3::CopyLoaderFactory")
     .SetParent<LoaderFactory> ()
     .AddConstructor<CopyLoaderFactory> ()
-    ;
+  ;
   return tid;
 }
 CopyLoaderFactory::CopyLoaderFactory ()

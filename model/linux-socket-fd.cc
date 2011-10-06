@@ -8,7 +8,7 @@
 #include <sys/mman.h> // for MMAP_FAILED
 #include <poll.h>
 
-NS_LOG_COMPONENT_DEFINE("LinuxSocketFd");
+NS_LOG_COMPONENT_DEFINE ("LinuxSocketFd");
 
 namespace ns3 {
 
@@ -45,7 +45,7 @@ LinuxSocketFd::Write (const void *buf, size_t count)
   return retval;
 }
 ssize_t 
-LinuxSocketFd::Read(void *buf, size_t count)
+LinuxSocketFd::Read (void *buf, size_t count)
 {
   NS_LOG_FUNCTION (this << buf << count);
   struct msghdr msg;
@@ -62,17 +62,17 @@ LinuxSocketFd::Read(void *buf, size_t count)
   return retval;
 }
 ssize_t 
-LinuxSocketFd::Recvmsg(struct msghdr *msg, int flags)
+LinuxSocketFd::Recvmsg (struct msghdr *msg, int flags)
 {
   bool nonBlocking = (m_statusFlags & O_NONBLOCK) == O_NONBLOCK;
-  flags |= nonBlocking?MSG_DONTWAIT:0;
+  flags |= nonBlocking ? MSG_DONTWAIT : 0;
   return m_factory->Recvmsg (m_socket, msg, flags);
 }
 ssize_t 
-LinuxSocketFd::Sendmsg(const struct msghdr *msg, int flags)
+LinuxSocketFd::Sendmsg (const struct msghdr *msg, int flags)
 {
   bool nonBlocking = (m_statusFlags & O_NONBLOCK) == O_NONBLOCK;
-  flags |= nonBlocking?MSG_DONTWAIT:0;
+  flags |= nonBlocking ? MSG_DONTWAIT : 0;
   return m_factory->Sendmsg (m_socket, msg, flags);
 }
 bool 
@@ -82,23 +82,23 @@ LinuxSocketFd::Isatty (void) const
 }
 int 
 LinuxSocketFd::Setsockopt (int level, int optname,
-			   const void *optval, socklen_t optlen)
+                           const void *optval, socklen_t optlen)
 {
   return m_factory->Setsockopt (m_socket, level, optname, optval, optlen);
 }
 int 
 LinuxSocketFd::Getsockopt (int level, int optname,
-			   void *optval, socklen_t *optlen)
+                           void *optval, socklen_t *optlen)
 {
   return m_factory->Getsockopt (m_socket, level, optname, optval, optlen);
 }
 int 
-LinuxSocketFd::Getsockname(struct sockaddr *name, socklen_t *namelen)
+LinuxSocketFd::Getsockname (struct sockaddr *name, socklen_t *namelen)
 {
   return m_factory->Getsockname (m_socket, name, namelen);
 }
 int 
-LinuxSocketFd::Getpeername(struct sockaddr *name, socklen_t *namelen)
+LinuxSocketFd::Getpeername (struct sockaddr *name, socklen_t *namelen)
 {
   return m_factory->Getpeername (m_socket, name, namelen);
 }
@@ -123,7 +123,7 @@ LinuxSocketFd::Listen (int backlog)
   return m_factory->Listen (m_socket, backlog);
 }
 int 
-LinuxSocketFd::Shutdown(int how)
+LinuxSocketFd::Shutdown (int how)
 {
   return m_factory->Shutdown (m_socket, how);
 }
@@ -142,14 +142,14 @@ LinuxSocketFd::Mmap (void *start, size_t length, int prot, int flags, off64_t of
 off64_t 
 LinuxSocketFd::Lseek (off64_t offset, int whence)
 {
-  GET_CURRENT(offset << whence);
+  GET_CURRENT (offset << whence);
   current->err = ESPIPE;
-  return -1;  
+  return -1;
 }
 int 
 LinuxSocketFd::Fxstat (int ver, struct ::stat *buf)
 {
-  GET_CURRENT(ver << buf);
+  GET_CURRENT (ver << buf);
   buf->st_mode = S_IFSOCK;
   buf->st_dev = -1;
   buf->st_blksize = 0;
@@ -158,7 +158,7 @@ LinuxSocketFd::Fxstat (int ver, struct ::stat *buf)
 int 
 LinuxSocketFd::Fxstat64 (int ver, struct ::stat64 *buf)
 {
-  GET_CURRENT(ver << buf);
+  GET_CURRENT (ver << buf);
   buf->st_mode = S_IFSOCK;
   buf->st_dev = -1;
   buf->st_blksize = 0;
@@ -184,8 +184,8 @@ LinuxSocketFd::Fcntl (int cmd, unsigned long arg)
 }
 int 
 LinuxSocketFd::Settime (int flags,
-			const struct itimerspec *new_value,
-			struct itimerspec *old_value)
+                        const struct itimerspec *new_value,
+                        struct itimerspec *old_value)
 {
   NS_LOG_FUNCTION (this << Current () << flags << new_value << old_value);
   NS_ASSERT (Current () != 0);

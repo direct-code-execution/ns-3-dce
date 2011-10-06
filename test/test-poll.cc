@@ -42,7 +42,7 @@ test_poll_read (int fd, int timeOutSec, bool needSuccess)
 static void
 test_poll_stdin (void)
 {
-  TEST_ASSERT( test_poll_read (0, 1, false) );
+  TEST_ASSERT ( test_poll_read (0, 1, false) );
 }
 
 static bool
@@ -104,9 +104,9 @@ client1 (void *arg)
   int res;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
   sock2 = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT( sock2 >= 0 );
+  TEST_ASSERT ( sock2 >= 0 );
 
   res = inet_aton ("127.0.0.1", &(addr.sin_addr));
   TEST_ASSERT_EQUAL ( res, 1);
@@ -117,16 +117,16 @@ client1 (void *arg)
   sleep (1);
 
   res = connect (sock, (struct sockaddr *) &addr, sizeof(addr));
-  TEST_ASSERT_EQUAL( res, 0 );
-  sleep(1);
+  TEST_ASSERT_EQUAL ( res, 0 );
+  sleep (1);
   res = connect (sock2, (struct sockaddr *) &addr, sizeof(addr));
-  TEST_ASSERT_EQUAL( res, 0 );
+  TEST_ASSERT_EQUAL ( res, 0 );
 
   // Can I Write ?
   test_poll_write (sock, 1, true);
   // Read ?
   TEST_ASSERT (test_poll_read (sock, 1, false));
-  sleep(5);
+  sleep (5);
   // Read ?
   TEST_ASSERT (test_poll_read (sock, 10, true));
 
@@ -136,7 +136,7 @@ client1 (void *arg)
   close (sock);
   close (sock2);
 
-  printf("Client1: end\n ");
+  printf ("Client1: end\n ");
 
   return arg;
 }
@@ -150,14 +150,14 @@ server1 (void *arg)
   int on = 1;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
   res = inet_aton ("127.0.0.1", &(addr.sin_addr));
   TEST_ASSERT_EQUAL ( res, 1);
 
   addr.sin_family = AF_INET;
   addr.sin_port = htons (1234);
-  res = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+  res = setsockopt (sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 
   res = bind (sock, (struct sockaddr *) &addr, sizeof(addr));
   printf ("Server1: bind -> %d, errno:%d\n ", res, errno);
@@ -167,10 +167,10 @@ server1 (void *arg)
   TEST_ASSERT_EQUAL ( res, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT( sockin >= 0 );
-  sleep(1);
+  TEST_ASSERT ( sockin >= 0 );
+  sleep (1);
   sockin2 = accept (sock, NULL, NULL);
-  TEST_ASSERT( sockin2 >= 0 );
+  TEST_ASSERT ( sockin2 >= 0 );
 
   sleep (4);
   res = write (sockin, writeBuf, 1024);
@@ -182,11 +182,11 @@ server1 (void *arg)
   res = setsockopt (sockin, SOL_SOCKET, SO_SNDTIMEO, &tiout, sizeof(tiout));
   TEST_ASSERT_EQUAL (res, 0);
 
-  while ( wait_write(sockin, 10) )
+  while ( wait_write (sockin, 10) )
     { //  Fill the buffer
       res = write (sockin, writeBuf, BUF_LEN);
       printf ("Server1: write->%d\n ",res);
-      fflush(stdout);
+      fflush (stdout);
     }
 
   // buffer is full
@@ -198,7 +198,7 @@ server1 (void *arg)
   close (sockin);
   close (sockin2);
 
-  sleep(1);
+  sleep (1);
 
   printf ("Server1: end\n ");
 
@@ -217,7 +217,7 @@ client2 (void *arg)
   int res;
 
   sock = socket (AF_INET, SOCK_DGRAM, 0);
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
   res = inet_aton ("127.0.0.1", &(addr.sin_addr));
   TEST_ASSERT_EQUAL ( res, 1);
@@ -247,14 +247,14 @@ server2 (void *arg)
   int on = 1;
 
   sock = socket (AF_INET, SOCK_DGRAM, 0);
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
   res = inet_aton ("127.0.0.1", &(addr.sin_addr));
   // TEST_ASSERT_EQUAL ( res, 1);
 
   addr.sin_family = AF_INET;
   addr.sin_port = htons (1235);
-  res = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+  res = setsockopt (sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
   TEST_ASSERT_EQUAL ( res, 0);
   res = bind (sock, (struct sockaddr *) &addr, sizeof(addr));
   TEST_ASSERT_EQUAL ( res, 0);
@@ -270,7 +270,7 @@ server2 (void *arg)
   TEST_ASSERT_EQUAL ( res, BUF_LEN);
   sleep (1);
 
-  close(sock);
+  close (sock);
 
   printf ("Server2: end\n ");
 
@@ -286,7 +286,7 @@ client3 (void *arg)
   int res;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
   res = inet_aton ("127.0.0.1", &(addr.sin_addr));
   TEST_ASSERT_EQUAL ( res, 1);
@@ -297,13 +297,13 @@ client3 (void *arg)
   sleep (1);
 
   res = connect (sock, (struct sockaddr *) &addr, sizeof(addr));
-  TEST_ASSERT_EQUAL( res, 0 );
+  TEST_ASSERT_EQUAL ( res, 0 );
 
   sleep (1);
 
   close (sock);
 
-  printf("Client3: end\n ");
+  printf ("Client3: end\n ");
 
   return arg;
 }
@@ -317,14 +317,14 @@ server3 (void *arg)
   int on = 1;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
   res = inet_aton ("127.0.0.1", &(addr.sin_addr));
   TEST_ASSERT_EQUAL ( res, 1);
 
   addr.sin_family = AF_INET;
   addr.sin_port = htons (1236);
-  res = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+  res = setsockopt (sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
   res = bind (sock, (struct sockaddr *) &addr, sizeof(addr));
   printf ("Server3: bind -> %d, errno:%d\n ", res, errno);
   TEST_ASSERT_EQUAL ( res, 0);
@@ -335,8 +335,8 @@ server3 (void *arg)
   TEST_ASSERT (test_poll_read (sock, 10, true));
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT( sockin >= 0 );
-  sleep(1);
+  TEST_ASSERT ( sockin >= 0 );
+  sleep (1);
 
   close (sock);
   close (sockin);
@@ -363,10 +363,10 @@ test_poll_stdout_stdin (void)
 
   // should immediately return 1 because stdout is writable.
   before = time (NULL);
-  ret = poll ( duo, 2 , 10 * 1000 );
+  ret = poll ( duo, 2, 10 * 1000 );
   after = time (NULL);
 
-  printf("After poll -> %d before time %ld after time %ld errno:%d \n ", ret, before ,after, errno );
+  printf ("After poll -> %d before time %ld after time %ld errno:%d \n ", ret, before,after, errno );
 
   // time difference must not exceed 1 second
   TEST_ASSERT ( ( 1 == ret ) &&  ( (after - before ) <= 1 ) );
@@ -378,20 +378,20 @@ test_poll_stdout_stdin (void)
 static void
 test_nval (void)
 {
-    int d = dup(0);
-    struct pollfd fd;
-    int ret = -1;
+  int d = dup (0);
+  struct pollfd fd;
+  int ret = -1;
 
-    close(d);
-    printf("test_nval: fd:%d\n",d);
-    fd.fd = d;
-    fd.events = POLLIN;
-    fd.revents = 0;
+  close (d);
+  printf ("test_nval: fd:%d\n",d);
+  fd.fd = d;
+  fd.events = POLLIN;
+  fd.revents = 0;
 
-    ret = poll ( &fd, 1, 10);
+  ret = poll ( &fd, 1, 10);
 
-    TEST_ASSERT ( 1 == ret );
-    TEST_ASSERT ( fd.revents == POLLNVAL );
+  TEST_ASSERT ( 1 == ret );
+  TEST_ASSERT ( fd.revents == POLLNVAL );
 
 }
 
@@ -405,7 +405,7 @@ client4 (void *arg)
   struct pollfd fd;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
   res = inet_aton ("127.0.0.1", &(addr.sin_addr));
   TEST_ASSERT_EQUAL ( res, 1);
@@ -415,33 +415,33 @@ client4 (void *arg)
 
   sleep (1);
   res = connect (sock, (struct sockaddr *) &addr, sizeof(addr));
-  TEST_ASSERT_EQUAL( res, 0 );
+  TEST_ASSERT_EQUAL ( res, 0 );
   sleep (1);
 
   fd.fd = sock;
   fd.events = POLLIN | POLLOUT;
   fd.revents = 0;
-  printf("Client4: polling\n");
+  printf ("Client4: polling\n");
   res = poll ( &fd, 1, 0);
-  printf("res %d, revents : %d \n " , res, fd.revents);
+  printf ("res %d, revents : %d \n ", res, fd.revents);
   TEST_ASSERT ( 1 == res );
   TEST_ASSERT ( fd.revents & POLLOUT );
 
-  sleep(2);
+  sleep (2);
 
   fd.fd = sock;
   fd.events = POLLIN | POLLOUT;
   fd.revents = 0;
-  printf("Client4: polling\n");
+  printf ("Client4: polling\n");
   res = poll ( &fd, 1, 0);
-  printf("res %d, revents : %d \n " , res, fd.revents);
+  printf ("res %d, revents : %d \n ", res, fd.revents);
   TEST_ASSERT ( 1 == res );
   TEST_ASSERT ( fd.revents & POLLIN );
   TEST_ASSERT ( fd.revents & POLLOUT );
 
   close (sock);
 
-  printf("Client4: end\n ");
+  printf ("Client4: end\n ");
 
   return arg;
 }
@@ -455,22 +455,22 @@ server4 (void *arg)
   int on = 1;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
   res = inet_aton ("127.0.0.1", &(addr.sin_addr));
   TEST_ASSERT_EQUAL ( res, 1);
 
   addr.sin_family = AF_INET;
   addr.sin_port = htons (1237);
-  res = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+  res = setsockopt (sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
   res = bind (sock, (struct sockaddr *) &addr, sizeof(addr));
   TEST_ASSERT_EQUAL ( res, 0);
 
   res = listen (sock, 1);
   TEST_ASSERT_EQUAL ( res, 0);
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT( sockin >= 0 );
+  TEST_ASSERT ( sockin >= 0 );
 
-  sleep(2);
+  sleep (2);
 
   close (sock);
   close (sockin);
@@ -492,14 +492,14 @@ client5 (void *arg)
   sleep (1);
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
   strcpy (address.sun_path, SOCK_PATH);
 
-  status = connect (sock, (struct sockaddr *) &address, SUN_LEN(&address));
-  TEST_ASSERT_EQUAL( status, 0 );
+  status = connect (sock, (struct sockaddr *) &address, SUN_LEN (&address));
+  TEST_ASSERT_EQUAL ( status, 0 );
 
   sleep (2);
   printf ("Client5: fd: %d\n", sock);
@@ -511,11 +511,11 @@ client5 (void *arg)
   fd.revents = 0;
 
   status = poll (&fd, 1, -1);
-  printf("Client5: poll -> %d, revents : %d, errno %d \n " , status, fd.revents, errno);
+  printf ("Client5: poll -> %d, revents : %d, errno %d \n ", status, fd.revents, errno);
 
   TEST_ASSERT ( status == 1);
-  TEST_ASSERT( fd.revents & POLLIN );
-  TEST_ASSERT( fd.revents & POLLOUT );
+  TEST_ASSERT ( fd.revents & POLLIN );
+  TEST_ASSERT ( fd.revents & POLLOUT );
 //  TEST_ASSERT( fd.revents & POLLHUP );
 
   status = close (sock);
@@ -537,26 +537,26 @@ server5 (void *arg)
   printf ("Server5: BUF_LEN:%ld\n", BUF_LEN);
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
   strcpy (address.sun_path, SOCK_PATH);
   unlink (SOCK_PATH);
-  status = bind (sock, (struct sockaddr *) &address, SUN_LEN(&address));
+  status = bind (sock, (struct sockaddr *) &address, SUN_LEN (&address));
   TEST_ASSERT_EQUAL (status, 0);
 
   status = listen (sock, 1);
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT( sockin >= 0 );
+  TEST_ASSERT ( sockin >= 0 );
   printf ("Server5: fd: %d\n", sockin);
 
   status = send (sockin, writeBuf, BUF_LEN, 0);
-  TEST_ASSERT( status >= 0 );
+  TEST_ASSERT ( status >= 0 );
 
-  sleep(1);
+  sleep (1);
 
   status = close (sockin);
   TEST_ASSERT_EQUAL (status, 0);
@@ -582,7 +582,7 @@ CreateDgramConnect (void)
   address.sun_family = AF_UNIX;
   strcpy (address.sun_path, SOCK_PATH);
 
-  status = connect (sock, (struct sockaddr *) &address, SUN_LEN(&address));
+  status = connect (sock, (struct sockaddr *) &address, SUN_LEN (&address));
 
   if (status == 0)
     {
@@ -605,7 +605,7 @@ CreateDgramBind (void)
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
   strcpy (address.sun_path, SOCK_PATH);
-  status = bind (sock, (struct sockaddr *) &address, SUN_LEN(&address));;
+  status = bind (sock, (struct sockaddr *) &address, SUN_LEN (&address));;
   if (status == 0)
     {
       return sock;
@@ -624,7 +624,7 @@ client6 (void *arg)
   struct sockaddr_in addr;
   int res = 1;
   int status = -1;
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
   sleep (2);
 
@@ -634,8 +634,8 @@ client6 (void *arg)
   fd.events = POLLOUT;
   fd.revents = 0;
   status = poll (&fd, 1, 2000);
-  printf("Client6: poll -> %d, revents : %d, errno %d \n " , status, fd.revents, errno);
-  TEST_ASSERT( fd.revents & POLLOUT );
+  printf ("Client6: poll -> %d, revents : %d, errno %d \n ", status, fd.revents, errno);
+  TEST_ASSERT ( fd.revents & POLLOUT );
 
   status = write (sock, &res, sizeof (res));
   TEST_ASSERT_EQUAL (status, sizeof (res));
@@ -646,8 +646,8 @@ client6 (void *arg)
   fd.events = POLLOUT;
   fd.revents = 0;
   status = poll (&fd, 1, -1);
-  printf("Client6: poll -> %d, revents : %d, errno %d \n " , status, fd.revents, errno);
-  TEST_ASSERT( fd.revents & POLLOUT );
+  printf ("Client6: poll -> %d, revents : %d, errno %d \n ", status, fd.revents, errno);
+  TEST_ASSERT ( fd.revents & POLLOUT );
 
   status = write (sock, &res, sizeof (res));
   TEST_ASSERT_EQUAL (status, sizeof (res));
@@ -657,8 +657,8 @@ client6 (void *arg)
   fd.events = POLLOUT;
   fd.revents = 0;
   status = poll (&fd, 1, -1);
-  printf("Client6: poll -> %d, revents : %d, errno %d \n " , status, fd.revents, errno);
-  TEST_ASSERT( fd.revents & POLLOUT );
+  printf ("Client6: poll -> %d, revents : %d, errno %d \n ", status, fd.revents, errno);
+  TEST_ASSERT ( fd.revents & POLLOUT );
 
   status = write (sock, &res, sizeof (res));
   TEST_ASSERT_EQUAL (status, -1);
@@ -668,14 +668,14 @@ client6 (void *arg)
 
   sleep (1);
   sock = CreateDgramConnect ();
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
   fd.fd = sock;
   fd.events = POLLOUT;
   fd.revents = 0;
   status = poll (&fd, 1, -1);
-  printf("Client6: poll -> %d, revents : %d, errno %d \n " , status, fd.revents, errno);
-  TEST_ASSERT( fd.revents & POLLOUT );
+  printf ("Client6: poll -> %d, revents : %d, errno %d \n ", status, fd.revents, errno);
+  TEST_ASSERT ( fd.revents & POLLOUT );
 
   status = write (sock, &res, sizeof (res));
   TEST_ASSERT_EQUAL (status, sizeof (res));
@@ -695,7 +695,7 @@ server6 (void *arg)
   int res = 1;
   int status = -1;
 
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
   struct pollfd fd;
 
@@ -703,8 +703,8 @@ server6 (void *arg)
   fd.events = POLLIN;
   fd.revents = 0;
   status = poll (&fd, 1, 2000);
-  printf("Server6: poll -> %d, revents : %d, errno %d \n " , status, fd.revents, errno);
-  TEST_ASSERT(  ( fd.revents & POLLIN ) == 0 );
+  printf ("Server6: poll -> %d, revents : %d, errno %d \n ", status, fd.revents, errno);
+  TEST_ASSERT (  ( fd.revents & POLLIN ) == 0 );
 
   sleep (3);
 
@@ -712,8 +712,8 @@ server6 (void *arg)
   fd.events = POLLIN;
   fd.revents = 0;
   status = poll (&fd, 1, 1000);
-  printf("Server6: poll -> %d, revents : %d, errno %d \n " , status, fd.revents, errno);
-  TEST_ASSERT( fd.revents & POLLIN );
+  printf ("Server6: poll -> %d, revents : %d, errno %d \n ", status, fd.revents, errno);
+  TEST_ASSERT ( fd.revents & POLLIN );
 
   status = read (sock, &res, sizeof (res));
   TEST_ASSERT_EQUAL (status, sizeof (res));
@@ -722,25 +722,25 @@ server6 (void *arg)
   fd.events = POLLIN;
   fd.revents = 0;
   status = poll (&fd, 1, -1);
-  printf("Server6: poll -> %d, revents : %d, errno %d \n " , status, fd.revents, errno);
-  TEST_ASSERT( fd.revents & POLLIN );
+  printf ("Server6: poll -> %d, revents : %d, errno %d \n ", status, fd.revents, errno);
+  TEST_ASSERT ( fd.revents & POLLIN );
 
   status = read (sock, &res, sizeof (res));
   TEST_ASSERT_EQUAL (status, sizeof (res));
 
   sleep (1);
-  close(sock);
+  close (sock);
 
   unlink (SOCK_PATH);
   sock = CreateDgramBind ();
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
   fd.fd = sock;
   fd.events = POLLIN;
   fd.revents = 0;
   status = poll (&fd, 1, -1);
-  printf("Server6: poll -> %d, revents : %d, errno %d \n " , status, fd.revents, errno);
-  TEST_ASSERT( fd.revents & POLLIN );
+  printf ("Server6: poll -> %d, revents : %d, errno %d \n ", status, fd.revents, errno);
+  TEST_ASSERT ( fd.revents & POLLIN );
 
   status = read (sock, &res, sizeof (res));
   TEST_ASSERT_EQUAL (status, sizeof (res));
@@ -784,7 +784,7 @@ server_last (void *arg)
 }
 
 static void
-launch (void *(*clientStart) (void *), void *(*serverStart) (void *))
+launch (void *(*clientStart)(void *), void *(*serverStart)(void *))
 {
   int status;
   pthread_t theClient;
@@ -819,24 +819,24 @@ main (int argc, char *argv[])
   test_poll_stdin ();
   test_poll_stdout_stdin ();
   test_poll_stdout ();
-  C1:
+C1:
   launch (client1, server1);
   launch (client2, server2);
   launch (client3, server3);
   // test_nval ();
 
   launch (client5, server5);
-  C4:
+C4:
   launch (client4, server4);
   launch (client6, server6);
 
   launch (client_last, server_last);
 
 
-  printf("test-poll end.\n ");
+  printf ("test-poll end.\n ");
   fflush (stdout);
   fflush (stderr);
-  sleep(1);
+  sleep (1);
 
   return 0;
 }

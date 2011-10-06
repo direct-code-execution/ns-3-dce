@@ -113,22 +113,22 @@ bool mode_valid (const char *mode)
   while (*mode != 0)
     {
       switch (*mode)
-	{
-	case 'a':
-	case 'r':
-	case 'w':
-	case '+':
-	case 'b':
-	  break;
-	default:
-	  return false;
-	  break;
-	}
+        {
+        case 'a':
+        case 'r':
+        case 'w':
+        case '+':
+        case 'b':
+          break;
+        default:
+          return false;
+          break;
+        }
       mode++;
     }
   return true;
 }
-int mode_posix_flags(const char *mode)
+int mode_posix_flags (const char *mode)
 {
   int mode_flag = 0;
   int posix_flags = 0;
@@ -150,9 +150,9 @@ int mode_posix_flags(const char *mode)
   while (*mode != 0)
     {
       if (*mode == '+')
-	{
-	  mode_flag = O_RDWR;
-	}
+        {
+          mode_flag = O_RDWR;
+        }
       mode++;
     }
   posix_flags |= mode_flag;
@@ -174,7 +174,7 @@ void mode_setup (FILE *file, int fd, const char *mode)
 
 }
 
-FILE *dce_fdopen(int fildes, const char *mode)
+FILE *dce_fdopen (int fildes, const char *mode)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << fildes << mode);
   NS_ASSERT (Current () != 0);
@@ -203,17 +203,17 @@ FILE *dce_fdopen(int fildes, const char *mode)
 }
 
 
-FILE *dce_fopen(const char *path, const char *mode)
+FILE *dce_fopen (const char *path, const char *mode)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << path << mode);
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
-  if (!mode_valid(mode))
+  if (!mode_valid (mode))
     {
       current->err = EINVAL;
       return 0;
     }
-  int fd = dce_open (path, mode_posix_flags (mode), 0666 & ~ (current->process->uMask) );
+  int fd = dce_open (path, mode_posix_flags (mode), 0666 & ~(current->process->uMask) );
   if (fd == -1)
     {
       current->err = errno;
@@ -227,12 +227,12 @@ FILE *dce_fopen(const char *path, const char *mode)
   mode_setup (file, fd, mode);
   return file;
 }
-FILE *dce_freopen(const char *path, const char *mode, FILE *stream)
+FILE *dce_freopen (const char *path, const char *mode, FILE *stream)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << path << mode << stream);
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
-  if (!mode_valid(mode))
+  if (!mode_valid (mode))
     {
       current->err = EINVAL;
       return 0;
@@ -275,11 +275,11 @@ int dce_fcloseall (void)
     {
       int status = dce_fclose (process->openStreams[i]);
       if (status != 0)
-	{
-	  error = true;
-	}
+        {
+          error = true;
+        }
     }
-  return error?EOF:0;
+  return error ? EOF : 0;
 }
 static void
 remove_stream (FILE *fp)
@@ -290,11 +290,11 @@ remove_stream (FILE *fp)
        i != current->process->openStreams.end (); ++i)
     {
       if (*i == fp)
-	{
-	  current->process->openStreams.erase (i);
-	  found = true;
-	  break;
-	}
+        {
+          current->process->openStreams.erase (i);
+          found = true;
+          break;
+        }
     }
   if (!found)
     {
@@ -302,7 +302,7 @@ remove_stream (FILE *fp)
       NS_FATAL_ERROR ("invalid FILE * closed=" << fp);
     }
 }
-int dce_fclose_unconditional(FILE *file)
+int dce_fclose_unconditional (FILE *file)
 {
   // Note: it is important here not to call the Current function here
   // because we need to be able to run this function even if there is no context.
@@ -316,7 +316,7 @@ int dce_fclose_unconditional(FILE *file)
   fclose (file);
   return 0;
 }
-int dce_fclose(FILE *fp)
+int dce_fclose (FILE *fp)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << fp);
   NS_ASSERT (Current () != 0);
@@ -340,7 +340,7 @@ int dce_fclose(FILE *fp)
     }
   return status;
 }
-size_t dce_fread(void *ptr, size_t size, size_t nmemb, FILE *stream)
+size_t dce_fread (void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << ptr << size << nmemb << stream);
   NS_ASSERT (Current () != 0);
@@ -348,7 +348,7 @@ size_t dce_fread(void *ptr, size_t size, size_t nmemb, FILE *stream)
   size_t status = fread (ptr, size, nmemb, stream);
   return status;
 }
-size_t dce_fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream)
+size_t dce_fwrite (const void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << ptr << size << nmemb << stream);
   NS_ASSERT (Current () != 0);
@@ -356,7 +356,7 @@ size_t dce_fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream)
   size_t status = fwrite (ptr, size, nmemb, stream);
   return status;
 }
-int dce_fflush(FILE *stream)
+int dce_fflush (FILE *stream)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream);
   NS_ASSERT (Current () != 0);
@@ -365,48 +365,48 @@ int dce_fflush(FILE *stream)
     {
       // only flush the streams of the current process
       for (std::vector<FILE *>::const_iterator i = current->process->openStreams.begin ();
-	   i != current->process->openStreams.end (); ++i)
-	{
-	  int status = fflush (*i);
-	  if (status != 0)
-	    {
-	      current->err = errno;
-	      return status;
-	    }
-	}
+           i != current->process->openStreams.end (); ++i)
+        {
+          int status = fflush (*i);
+          if (status != 0)
+            {
+              current->err = errno;
+              return status;
+            }
+        }
     }
   else
     {
       int status = fflush (stream);
       if (status != 0)
-	{
-	  current->err = errno;
-	  return status;
-	}
+        {
+          current->err = errno;
+          return status;
+        }
     }
   return 0;
 }
-void dce_clearerr(FILE *stream)
+void dce_clearerr (FILE *stream)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream);
   NS_ASSERT (Current () != 0);
   clearerr (stream);
 }
-int dce_feof(FILE *stream)
+int dce_feof (FILE *stream)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream);
   NS_ASSERT (Current () != 0);
   int status = feof (stream);
   return status;
 }
-int dce_ferror(FILE *stream)
+int dce_ferror (FILE *stream)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream);
   NS_ASSERT (Current () != 0);
   int status = ferror (stream);
   return status;
 }
-int dce_fileno(FILE *stream)
+int dce_fileno (FILE *stream)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream);
   NS_ASSERT (Current () != 0);
@@ -420,7 +420,7 @@ int dce_fileno(FILE *stream)
   return status;
 }
 
-int dce_vfprintf(FILE *stream, const char *format, va_list ap)
+int dce_vfprintf (FILE *stream, const char *format, va_list ap)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream << format);
   NS_ASSERT (Current () != 0);
@@ -428,7 +428,7 @@ int dce_vfprintf(FILE *stream, const char *format, va_list ap)
   int status = vfprintf (stream, format, ap);
   return status;
 }
-int dce_fputc(int c, FILE *stream)
+int dce_fputc (int c, FILE *stream)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << c << stream);
   NS_ASSERT (Current () != 0);
@@ -436,7 +436,7 @@ int dce_fputc(int c, FILE *stream)
   int status = fputc (c, stream);
   return status;
 }
-int dce_fgetc(FILE *stream)
+int dce_fgetc (FILE *stream)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream);
   NS_ASSERT (Current () != 0);
@@ -444,7 +444,7 @@ int dce_fgetc(FILE *stream)
   int status = fgetc (stream);
   return status;
 }
-int dce_fputs(const char *s, FILE *stream)
+int dce_fputs (const char *s, FILE *stream)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << s << stream);
   NS_ASSERT (Current () != 0);
@@ -452,7 +452,7 @@ int dce_fputs(const char *s, FILE *stream)
   int status = fputs (s, stream);
   return status;
 }
-char* dce_fgets(char *s, int size, FILE *stream)
+char* dce_fgets (char *s, int size, FILE *stream)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << s << size << stream);
   NS_ASSERT (Current () != 0);
@@ -460,15 +460,15 @@ char* dce_fgets(char *s, int size, FILE *stream)
   char *status = fgets (s, size, stream);
   return status;
 }
-int dce_ungetc(int c, FILE *stream)
+int dce_ungetc (int c, FILE *stream)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << c << stream);
   NS_ASSERT (Current () != 0);
   // Note: I don't believe that this function sets errno
   int status = ungetc (c, stream);
-  return status;  
+  return status;
 }
-int dce_fseek(FILE *stream, long offset, int whence)
+int dce_fseek (FILE *stream, long offset, int whence)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream << offset << whence);
   NS_ASSERT (Current () != 0);
@@ -481,7 +481,7 @@ int dce_fseek(FILE *stream, long offset, int whence)
     }
   return status;
 }
-long dce_ftell(FILE *stream)
+long dce_ftell (FILE *stream)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream);
   NS_ASSERT (Current () != 0);
@@ -494,7 +494,7 @@ long dce_ftell(FILE *stream)
     }
   return status;
 }
-int dce_fgetpos(FILE *stream, fpos_t *pos)
+int dce_fgetpos (FILE *stream, fpos_t *pos)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream << pos);
   NS_ASSERT (Current () != 0);
@@ -507,7 +507,7 @@ int dce_fgetpos(FILE *stream, fpos_t *pos)
     }
   return status;
 }
-int dce_fsetpos(FILE *stream, const fpos_t *pos)
+int dce_fsetpos (FILE *stream, const fpos_t *pos)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream << pos);
   NS_ASSERT (Current () != 0);
@@ -521,15 +521,15 @@ int dce_fsetpos(FILE *stream, const fpos_t *pos)
   return status;
 }
 
-void dce_rewind(FILE *stream)
+void dce_rewind (FILE *stream)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream);
   NS_ASSERT (Current () != 0);
   rewind (stream);
 }
-int dce_setvbuf(FILE *stream, char *buf, int mode, size_t size)
+int dce_setvbuf (FILE *stream, char *buf, int mode, size_t size)
 {
-  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream << ((NULL==buf)?"":buf) << mode << size);
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream << ((NULL==buf) ? "" : buf) << mode << size);
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
   int status = setvbuf (stream, buf, mode, size);

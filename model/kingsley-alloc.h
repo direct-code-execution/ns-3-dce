@@ -14,7 +14,7 @@ public:
   void SwitchTo (void);
   uint8_t * Malloc (uint32_t size);
   void Free (uint8_t *buffer, uint32_t size);
-  uint8_t *Realloc(uint8_t *oldBuffer, uint32_t oldSize, uint32_t newSize);
+  uint8_t *Realloc (uint8_t *oldBuffer, uint32_t oldSize, uint32_t newSize);
 private:
   struct Mmap
   {
@@ -39,7 +39,7 @@ private:
   uint8_t *Brk (uint32_t needed);
   uint8_t SizeToBucket (uint32_t size);
   uint32_t BucketToSize (uint8_t bucket);
-  
+
   std::list<struct KingsleyAlloc::MmapChunk> m_chunks;
   struct Available *m_buckets[32];
   uint32_t m_defaultMmapSize;

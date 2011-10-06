@@ -16,8 +16,8 @@ DceApplication::GetTypeId (void)
     .SetParent<Application> ()
     .AddConstructor<DceApplication> ()
     .AddTraceSource ("ProcessStarted", "notify when the dce is started",
-		     MakeTraceSourceAccessor (&DceApplication::m_dceStarted))
-    ;
+                     MakeTraceSourceAccessor (&DceApplication::m_dceStarted))
+  ;
   return tid;
 }
 
@@ -75,7 +75,7 @@ DceApplication::StartApplication (void)
     {
       m_pid = manager->Start (m_filename, m_stdinFilename, m_args, m_envs);
     }
-  if ( ! m_finishedCallback.IsNull() )
+  if ( !m_finishedCallback.IsNull () )
     {
       manager->SetFinishedCallback (m_pid, m_finishedCallback );
     }

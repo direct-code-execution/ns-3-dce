@@ -79,12 +79,12 @@ DceManager::GetTypeId (void)
                    MakeUintegerAccessor (&DceManager::m_nextPid),
                    MakeUintegerChecker<uint16_t> ())
     .AddAttribute ("MinimizeOpenFiles", "For each DCE virtual process running it exists 3 files opened (stdin,stdout and stderr),"
-        " if you enable this flag, the 2 files stderr and stdout will be closed between each write in order to "
-        " minimize the number of opened files and then maximize the number of DCE virtual process running at the same time.",
+                   " if you enable this flag, the 2 files stderr and stdout will be closed between each write in order to "
+                   " minimize the number of opened files and then maximize the number of DCE virtual process running at the same time.",
                    BooleanValue (false),
                    MakeBooleanAccessor (&DceManager::m_minimizeFiles),
                    MakeBooleanChecker ())
-    ;
+  ;
   return tid;
 }
 
@@ -111,11 +111,11 @@ DceManager::DoDispose (void)
     {
       tmp = it->second;
       if ( 0 != tmp )
-      {
+        {
           std::string statusWord = "Never ended.";
-    	  AppendStatusFile (tmp->pid, tmp->nodeId, statusWord );
+          AppendStatusFile (tmp->pid, tmp->nodeId, statusWord );
           DeleteProcess (tmp, PEC_NS3_END);
-      }
+        }
     }
 
   Object::DoDispose ();
@@ -138,7 +138,7 @@ DceManager::GetLibc (void)
 void
 DceManager::EnsureDirectoryExists (struct Thread *current, std::string dirName)
 {
-  int fd = dce_open (dirName.c_str(), O_DIRECTORY | O_RDONLY, 0);
+  int fd = dce_open (dirName.c_str (), O_DIRECTORY | O_RDONLY, 0);
   if (fd != -1)
     {
       dce_close (fd);
@@ -147,10 +147,10 @@ DceManager::EnsureDirectoryExists (struct Thread *current, std::string dirName)
     {
       int status = dce_mkdir (dirName.c_str (), S_IRWXU | S_IRWXG);
       if (status == -1)
-	{
-	  NS_FATAL_ERROR ("Could not create directory " << dirName
-			  << ": " << strerror (current->err));
-	}
+        {
+          NS_FATAL_ERROR ("Could not create directory " << dirName
+                                                        << ": " << strerror (current->err));
+        }
     }
   else
     {
@@ -165,10 +165,10 @@ DceManager::CreatePidFile (struct Thread *current, std::string filename)
   EnsureDirectoryExists (current, "/var/log");
   std::ostringstream oss;
   oss << "/var/log/" << current->process->pid;
-  std::string pidDirName = oss.str();
-  EnsureDirectoryExists (current, oss.str());
+  std::string pidDirName = oss.str ();
+  EnsureDirectoryExists (current, oss.str ());
   oss << "/" << filename;
-  std::string s = oss.str();
+  std::string s = oss.str ();
   int fd = dce_creat (s.c_str (), S_IWUSR | S_IRUSR);
   return fd;
 }
@@ -181,7 +181,7 @@ DceManager::DoStartProcess (void *context)
   Thread *current = (Thread *)context;
   UnixFd *unixFd = 0;
 
-  if ( current->process->stdinFilename.length() > 0 )
+  if ( current->process->stdinFilename.length () > 0 )
     {
       std::string fullpath = UtilsGetRealFilePath (current->process->stdinFilename);
       int realFd = ::open (fullpath.c_str (), O_RDONLY, 0);
@@ -222,7 +222,7 @@ DceManager::DoStartProcess (void *context)
   NS_ASSERT (fd == 3);
   std::ostringstream oss;
   oss << "Start Time: " << GetTimeStamp () << std::endl;
-  const char *str = oss.str ().c_str();
+  const char *str = oss.str ().c_str ();
   dce_write (fd, str, strlen (str));
   dce_close (fd);
 
@@ -237,8 +237,8 @@ DceManager::DoStartProcess (void *context)
       NS_FATAL_ERROR ("This is not our fake libc !");
     }
   // construct the libc now
-  void (*libc_setup) (const struct Libc *fn);
-  libc_setup = (void (*) (const struct Libc *))(symbol);
+  void (*libc_setup)(const struct Libc *fn);
+  libc_setup = (void (*)(const struct Libc *))(symbol);
   libc_setup (libc);
 
   h = current->process->loader->Load ("libpthread-ns3.so", RTLD_GLOBAL);
@@ -252,16 +252,16 @@ DceManager::DoStartProcess (void *context)
       NS_FATAL_ERROR ("This is not our fake libpthread !");
     }
   // construct libpthread now
-  void (*libpthread_setup) (const struct Libc *fn);
-  libpthread_setup = (void (*) (const struct Libc *))(symbol);
+  void (*libpthread_setup)(const struct Libc *fn);
+  libpthread_setup = (void (*)(const struct Libc *))(symbol);
   libpthread_setup (libc);
 
   // finally, call into 'main'.
   h = current->process->loader->Load (current->process->originalArgv[0], RTLD_GLOBAL);
   current->process->mainHandle = h;
   symbol = current->process->loader->Lookup (h, "main");
-  int (*main) (int, char **);
-  main = (int (*) (int, char **)) symbol;
+  int (*main)(int, char **);
+  main = (int (*)(int, char **))symbol;
 
   StartProcessDebugHook ();
 
@@ -296,7 +296,7 @@ DceManager::CreateProcess (std::string name, std::string stdinfilename, std::vec
   process->exitValue = 0;
   process->name = name;
   process->ppid = 0;
-  process->pid = pid?pid:AllocatePid ();
+  process->pid = pid ? pid : AllocatePid ();
   process->manager = this;
   sigemptyset (&process->pendingSignals);
   // setup a signal handler for SIGKILL which calls dce_exit.
@@ -343,7 +343,7 @@ DceManager::CreateProcess (std::string name, std::string stdinfilename, std::vec
 
   process->nodeId = UtilsGetNodeId ();
 
-  process->minimizeFiles = (m_minimizeFiles?1:0);
+  process->minimizeFiles = (m_minimizeFiles ? 1 : 0);
 
   if (!pid) m_processes[process->pid] = process;
 
@@ -353,7 +353,7 @@ DceManager::CreateProcess (std::string name, std::string stdinfilename, std::vec
 // Allocate new process with the same pid
 struct Process *
 DceManager::CopyExecProcess (struct Process *proc, std::string name, std::vector<std::string> args,
-                         std::vector<std::pair<std::string,std::string> > envs)
+                             std::vector<std::pair<std::string,std::string> > envs)
 {
   struct Process *process = CreateProcess (name, "",  args, envs, proc->pid);
 
@@ -395,7 +395,7 @@ DceManager::TaskSwitch (enum Task::SwitchType type, void *context)
 
 uint16_t
 DceManager::Start (std::string name, std::string stdinfilename, std::vector<std::string> args,
-                       std::vector<std::pair<std::string,std::string> > envs)
+                   std::vector<std::pair<std::string,std::string> > envs)
 {
   NS_LOG_FUNCTION (this << name << args.size ());
   struct Process *process = CreateProcess (name, stdinfilename, args, envs, 0);
@@ -477,7 +477,7 @@ DceManager::CreateThread (struct Process *process)
   thread->isDetached = false;
   thread->hasExitValue = false;
   thread->joinWaiter = 0;
-  thread->lastTime = Time(0);
+  thread->lastTime = Time (0);
   thread->childWaiter = 0;
   thread->pollTable = 0;
   thread->ioWait = std::make_pair ((UnixFd*)0,(WaitQueueEntry*)0);
@@ -513,7 +513,7 @@ DceManager::ThreadExists (Thread *thread)
   Process *process = thread->process;
 
   for (std::vector<Thread *>::const_iterator j = process->threads.begin ();
-      j != process->threads.end (); ++j)
+       j != process->threads.end (); ++j)
     {
       Thread *cur = *j;
       if (cur == thread)
@@ -547,8 +547,8 @@ DceManager::Clone (Thread *thread)
   thread->process->children.insert (clone->pid);
   // dup each file descriptor.
   std::map<int,FileUsage *> openFiles = thread->process->openFiles;
-  for (std::map <int, FileUsage* >::iterator i = openFiles.begin () ;
-      i != openFiles.end (); ++i)
+  for (std::map <int, FileUsage* >::iterator i = openFiles.begin ();
+       i != openFiles.end (); ++i)
     {
       int fd = i->first;
       FileUsage* fu = i->second;
@@ -677,7 +677,7 @@ DceManager::CleanupThread (struct Thread *thread)
 {
   if (thread->ioWait.first != 0 && thread->ioWait.second != 0)
     {
-      thread->ioWait.first->RemoveWaitQueue(thread->ioWait.second, false);
+      thread->ioWait.first->RemoveWaitQueue (thread->ioWait.second, false);
       if (thread->ioWait.second)
         {
           delete thread->ioWait.second;
@@ -746,20 +746,20 @@ DceManager::DeleteProcess (struct Process *process, ProcessEndCause type)
       // We have a Current so we can call dce_close !
       std::map<int,FileUsage *> openFiles = process->openFiles;
 
-        for (std::map <int, FileUsage* >::iterator i = openFiles.begin () ;
-            i != openFiles.end (); ++i)
-          {
-            int fd = i->first;
-            FileUsage* fu = i->second;
+      for (std::map <int, FileUsage* >::iterator i = openFiles.begin ();
+           i != openFiles.end (); ++i)
+        {
+          int fd = i->first;
+          FileUsage* fu = i->second;
 
-            if (fu)
-              {
-                // Nullify count of thread using this file.
-                fu->NullifyUsage ();
-                // Close my files and eventually wake up others processes.
-                dce_close(fd);
-              }
-          }
+          if (fu)
+            {
+              // Nullify count of thread using this file.
+              fu->NullifyUsage ();
+              // Close my files and eventually wake up others processes.
+              dce_close (fd);
+            }
+        }
     }
 
   // Close all streams opened
@@ -784,16 +784,16 @@ DceManager::DeleteProcess (struct Process *process, ProcessEndCause type)
   // Delete File References Memory : TEMPOFUR test to put in the up one loop
   std::map<int,FileUsage *> openFiles = process->openFiles;
   process->openFiles.clear ();
-  for (std::map <int, FileUsage* >::iterator i = openFiles.begin () ;
-      i != openFiles.end (); ++i)
-      {
-        FileUsage* fu = i->second;
+  for (std::map <int, FileUsage* >::iterator i = openFiles.begin ();
+       i != openFiles.end (); ++i)
+    {
+      FileUsage* fu = i->second;
 
-        if (fu)
-          {
-            delete fu;
-          }
-      }
+      if (fu)
+        {
+          delete fu;
+        }
+    }
   openFiles.clear ();
 
   // finally, delete remaining threads
@@ -837,7 +837,7 @@ DceManager::DeleteProcess (struct Process *process, ProcessEndCause type)
       process->children.clear ();
       std::set<uint16_t>::iterator it;
 
-      for (it = children.begin () ; it != children.end (); it++ )
+      for (it = children.begin (); it != children.end (); it++ )
         {
           Process *child = m_processes [*it];
 
@@ -937,7 +937,7 @@ DceManager::SetArgv (struct Process *process, std::string filename, std::vector<
 
 void 
 DceManager::SetEnvp (struct Process *process, 
-                         std::vector<std::pair<std::string,std::string> > envs)
+                     std::vector<std::pair<std::string,std::string> > envs)
 {
   int envpc = envs.size ();
   char **envp = (char **)malloc (sizeof (char *) * (envpc + 1));
@@ -961,8 +961,8 @@ void
 DceManager::AppendStatusFile (uint16_t pid, uint32_t nodeId,  std::string &line)
 {
   std::ostringstream oss;
-  oss << "files-" << nodeId << "/var/log/" << pid << "/status" ;
-  std::string s = oss.str();
+  oss << "files-" << nodeId << "/var/log/" << pid << "/status";
+  std::string s = oss.str ();
 
   int fd = ::open (s.c_str (), O_WRONLY | O_APPEND, 0 );
 
@@ -972,8 +972,8 @@ DceManager::AppendStatusFile (uint16_t pid, uint32_t nodeId,  std::string &line)
       oss.clear ();
       oss << "      Time: " << GetTimeStamp () << " --> " << line << std::endl;
       std::string wholeLine = oss.str ();
-      int l =  wholeLine.length();
-      const char *str = wholeLine.c_str();
+      int l =  wholeLine.length ();
+      const char *str = wholeLine.c_str ();
       ::write (fd, str, l);
       ::close (fd);
     }
@@ -988,39 +988,39 @@ DceManager::GetProcs ()
 int
 DceManager::Execve (Thread *threadOld, const char *path, char *const argv[], char *const envp[])
 {
-   NS_LOG_FUNCTION (this << path);
-   struct ExecContext *con = new (struct ExecContext);
+  NS_LOG_FUNCTION (this << path);
+  struct ExecContext *con = new (struct ExecContext);
 
-   con->caller = threadOld;
-   con->execResult = -1;
+  con->caller = threadOld;
+  con->execResult = -1;
 
-   struct Process *newOne = StartExecProcess (con, path, argv, envp);
+  struct Process *newOne = StartExecProcess (con, path, argv, envp);
 
-   if (! newOne ) return -1;
+  if (!newOne ) return -1;
 
-   while ( -1 == con->execResult ) // Wait exec result
-     {
-       Yield ();
-     }
-   int res = con->execResult;
-   con->execResult = -2;
+  while ( -1 == con->execResult ) // Wait exec result
+    {
+      Yield ();
+    }
+  int res = con->execResult;
+  con->execResult = -2;
 
-   if ( 0 == res )
-     { // SUCCESS
-       Current ()->process->ppid = 1;
-       Current ()->process->children.clear ();
-       m_processes.erase ( Current ()->process-> pid );
-       m_processes [newOne->pid] = newOne;
-       dce_fflush (0);
-       dce_exit_exec (0, PEC_EXEC_SUCCESS);
-     }
-   else
-     { // ERROR
-       Current ()->err = res;
-       Yield ();
-     }
+  if ( 0 == res )
+    { // SUCCESS
+      Current ()->process->ppid = 1;
+      Current ()->process->children.clear ();
+      m_processes.erase ( Current ()->process->pid );
+      m_processes [newOne->pid] = newOne;
+      dce_fflush (0);
+      dce_exit_exec (0, PEC_EXEC_SUCCESS);
+    }
+  else
+    { // ERROR
+      Current ()->err = res;
+      Yield ();
+    }
 
-   return -1;
+  return -1;
 }
 
 struct Process *
@@ -1033,7 +1033,7 @@ DceManager::StartExecProcess (struct ExecContext *context, const char *path, cha
   if ( 0 != argv )
     {
       char **v = (char **) argv;
-      if (*v) v++; // Ignore argv[0]
+      if (*v) v++;  // Ignore argv[0]
       while (*v)
         {
           char *s = *v++;
@@ -1052,23 +1052,24 @@ DceManager::StartExecProcess (struct ExecContext *context, const char *path, cha
 
           while ( ( *c != 0 ) && ( *c != '=' ) ) c++;
 
-          if (( '=' != *c ) || (s == c) )  {
-              Current () -> err = EINVAL;
+          if (( '=' != *c ) || (s == c) )
+            {
+              Current ()->err = EINVAL;
               return 0;
-          }
+            }
           std::string key = std::string (s, c);
           std::string val = std::string (1 + c);
-          envs.push_back(std::make_pair (key, val));
+          envs.push_back (std::make_pair (key, val));
         }
     }
-   struct Process *process = CopyExecProcess ( context->caller->process, path, args, envs);
-   struct Thread *thread = CreateThread (process);
-   uint32_t stackSize = TaskManager::Current ()->GetStackSize (context->caller->task);
-   Task *task = TaskManager::Current ()->Start (&DceManager::DoExec, context, stackSize );
-   task->SetContext (thread);
-   task->SetSwitchNotifier (&DceManager::TaskSwitch, process);
-   thread->task = task;
-   return process;
+  struct Process *process = CopyExecProcess ( context->caller->process, path, args, envs);
+  struct Thread *thread = CreateThread (process);
+  uint32_t stackSize = TaskManager::Current ()->GetStackSize (context->caller->task);
+  Task *task = TaskManager::Current ()->Start (&DceManager::DoExec, context, stackSize );
+  task->SetContext (thread);
+  task->SetSwitchNotifier (&DceManager::TaskSwitch, process);
+  thread->task = task;
+  return process;
 }
 
 void
@@ -1082,8 +1083,8 @@ DceManager::DoExec (void *context)
   int ppid = oldProc->ppid;
   int cpt = 0;
 
-  for (std::map <int, FileUsage* >::iterator i = oldProc->openFiles.begin () ;
-      i != oldProc->openFiles.end (); ++i)
+  for (std::map <int, FileUsage* >::iterator i = oldProc->openFiles.begin ();
+       i != oldProc->openFiles.end (); ++i)
     {
       int fd = i->first;
       FileUsage* fu = i->second;
@@ -1121,8 +1122,8 @@ DceManager::DoExec (void *context)
           NS_FATAL_ERROR ("This is not our fake libc !");
         }
       // construct the libc now
-      void (*libc_setup) (const struct Libc *fn);
-      libc_setup = (void (*) (const struct Libc *))(symbol);
+      void (*libc_setup)(const struct Libc *fn);
+      libc_setup = (void (*)(const struct Libc *))(symbol);
       libc_setup (libc);
 
       h = current->process->loader->Load ("libpthread-ns3.so", RTLD_GLOBAL);
@@ -1138,8 +1139,8 @@ DceManager::DoExec (void *context)
               NS_FATAL_ERROR ("This is not our fake libpthread !");
             }
           // construct libpthread now
-          void (*libpthread_setup) (const struct Libc *fn);
-          libpthread_setup = (void (*) (const struct Libc *))(symbol);
+          void (*libpthread_setup)(const struct Libc *fn);
+          libpthread_setup = (void (*)(const struct Libc *))(symbol);
           libpthread_setup (libc);
 
           // finally, call into 'main'.
@@ -1167,8 +1168,8 @@ DceManager::DoExec (void *context)
 
   if ( 0 != symbol )
     {
-      int (*main) (int, char **);
-      main = (int (*) (int, char **)) symbol;
+      int (*main)(int, char **);
+      main = (int (*)(int, char **))symbol;
 
       StartProcessDebugHook ();
 
@@ -1199,15 +1200,15 @@ DceManager::ChildFinished (uint16_t pid)
 
   WakeupChildWaiters ( p );
 
-  if ( ! true ) // IF WAIT DONE !
+  if ( !true ) // IF WAIT DONE !
     {
       std::set<uint16_t>::iterator it = p->children.find (pid);
 
       if ( it != p->children.end () )
         {
-          p->children.erase(it);
+          p->children.erase (it);
         }
-      m_processes.erase(pid);
+      m_processes.erase (pid);
       delete child;
     }
 }
@@ -1217,12 +1218,11 @@ DceManager::WakeupChildWaiters (struct Process *p)
   bool ret = false;
   std::vector<Thread *> tt = p->threads;
 
-  for (std::vector<Thread*>::iterator it = tt.begin() ; it != tt.end(); it++ )
+  for (std::vector<Thread*>::iterator it = tt.begin (); it != tt.end (); it++ )
     {
-  //    ret !=
       Thread *t = *it;
 
-      if ( t && t->childWaiter ) t->childWaiter->Wakeup();
+      if ( t && t->childWaiter ) t->childWaiter->Wakeup ();
     }
 
   return ret;
@@ -1235,7 +1235,7 @@ DceManager::FinishChild (uint16_t pid)
 
   if (child)
     {
-      m_processes.erase(pid);
+      m_processes.erase (pid);
       delete child;
     }
 }

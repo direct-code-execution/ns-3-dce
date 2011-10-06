@@ -39,14 +39,15 @@ public:
   virtual TypeId GetInstanceTypeId (void) const;
 
   LocalSocketFdFactory ();
-  virtual void DoDispose();
+  virtual void DoDispose ();
   virtual ~LocalSocketFdFactory ();
   virtual UnixFd *CreateSocket (int domain, int type, int protocol);
+  virtual void UnlinkNotify (std::string path);
   LocalSocketFd* FindBinder (std::string path, TypeId type) const;
   void RegisterBinder (std::string path, LocalSocketFd* socket);
   void UnRegisterBinder (std::string path);
 
- private:
+private:
   typedef std::map<std::string, LocalSocketFd* > BindMap;
   BindMap m_bindByPath;
   size_t m_totalBuffersSize;

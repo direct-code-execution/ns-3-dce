@@ -30,18 +30,18 @@
 #include "process.h"
 #include "dce-manager.h"
 
-NS_LOG_COMPONENT_DEFINE("DceNodeContext");
+NS_LOG_COMPONENT_DEFINE ("DceNodeContext");
 
 namespace ns3
 {
 
-NS_OBJECT_ENSURE_REGISTERED(DceNodeContext);
+NS_OBJECT_ENSURE_REGISTERED (DceNodeContext);
 
 TypeId
 DceNodeContext::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::DceNodeContext").SetParent<Object> ()
-          .AddConstructor<DceNodeContext> ();
+    .AddConstructor<DceNodeContext> ();
 
   return tid;
 }
@@ -72,7 +72,7 @@ DceNodeContext::UName (struct utsname *buf)
       std::string nn = Names::FindName (node);
       std::ostringstream oss;
 
-      if (nn.length() == 0)
+      if (nn.length () == 0)
         {
           oss << "NODE_" << nodeId;
           nn = oss.str ();
@@ -87,7 +87,7 @@ DceNodeContext::UName (struct utsname *buf)
       oss << nodeId;
       m_hardId = oss.str ();
     }
-  memset (buf, 0 , sizeof(struct utsname) );
+  memset (buf, 0, sizeof(struct utsname) );
 
   memcpy (buf->sysname, m_sysName.c_str (), std::min ( (int) m_sysName.length (), 64) );
   memcpy (buf->nodename, m_nodeName.c_str (), std::min ( (int) m_nodeName.length (), 64) );
@@ -114,7 +114,7 @@ int
 DceNodeContext::RandomRead (void *buf, size_t count)
 {
   uint8_t *crsr = (uint8_t*)buf;
-  for (int i = 0 ; i < count; i++)
+  for (int i = 0; i < count; i++)
     {
       *crsr++ = GetNextRnd ();
     }

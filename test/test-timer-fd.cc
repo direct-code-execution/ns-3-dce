@@ -19,7 +19,7 @@ static void test_file (void)
   int status = timerfd_gettime (fd, &cur_value);
   TEST_ASSERT_EQUAL (status, -1);
   TEST_ASSERT_EQUAL (errno, EINVAL);
-  
+
   status = close (fd);
   TEST_ASSERT_EQUAL (status, 0);
 }
@@ -53,7 +53,7 @@ static void test_timerfd (void)
   flags &= ~O_NONBLOCK;
   status = fcntl (fd, F_SETFL, flags);
   TEST_ASSERT_EQUAL (status, 0);
-  
+
   struct itimerspec new_value;
   new_value.it_value.tv_sec = 1;
   new_value.it_value.tv_nsec = 500000000;
@@ -61,7 +61,7 @@ static void test_timerfd (void)
   new_value.it_interval.tv_nsec = 500000000;
   status = timerfd_settime (fd, 0, &new_value, 0);
   TEST_ASSERT_EQUAL (status, 0);
-  
+
   status = timerfd_gettime (fd, &cur_value);
   TEST_ASSERT_EQUAL (status, 0);
 
@@ -91,7 +91,7 @@ static void test_otherops (void)
 {
   int fd = timerfd_create (CLOCK_MONOTONIC, 0);
   TEST_ASSERT_UNEQUAL (fd, -1);
-  
+
   struct itimerspec new_value;
   new_value.it_value.tv_sec = 1;
   new_value.it_value.tv_nsec = 500000000;

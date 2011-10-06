@@ -25,16 +25,16 @@ private:
     CLOSED
   };
   virtual int Close (void);
-  virtual ssize_t DoRecvmsg(struct msghdr *msg, int flags);
-  virtual ssize_t DoSendmsg(const struct msghdr *msg, int flags);
+  virtual ssize_t DoRecvmsg (struct msghdr *msg, int flags);
+  virtual ssize_t DoSendmsg (const struct msghdr *msg, int flags);
   virtual int Listen (int backlog);
   virtual int Accept (struct sockaddr *my_addr, socklen_t *addrlen);
-  virtual int Shutdown(int how);
+  virtual int Shutdown (int how);
   virtual bool CanRecv (void) const;
   virtual bool CanSend (void) const;
   virtual bool HangupReceived (void) const;
   virtual int Connect (const struct sockaddr *my_addr, socklen_t addrlen);
-  virtual int Getpeername(struct sockaddr *name, socklen_t *namelen);
+  virtual int Getpeername (struct sockaddr *name, socklen_t *namelen);
   virtual int Poll (PollTable* ptable);
 
   bool ConnectionRequest (Ptr<Socket> sock, const Address & from);

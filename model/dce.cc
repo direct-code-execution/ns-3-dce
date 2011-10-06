@@ -72,20 +72,20 @@ static bool is_set_ucapable (uid_t uid)
 {
   GET_CURRENT (uid);
   return is_ucapable () ||
-    current->process->euid == uid ||
-    current->process->ruid == uid ||
-    current->process->suid == uid;
+         current->process->euid == uid ||
+         current->process->ruid == uid ||
+         current->process->suid == uid;
 }
 static bool is_set_gcapable (gid_t gid)
 {
   GET_CURRENT (gid);
   return is_gcapable () ||
-    current->process->egid == gid ||
-    current->process->rgid == gid ||
-    current->process->sgid == gid;
+         current->process->egid == gid ||
+         current->process->rgid == gid ||
+         current->process->sgid == gid;
 }
 
-int dce_setresuid(uid_t ruid, uid_t euid, uid_t suid)
+int dce_setresuid (uid_t ruid, uid_t euid, uid_t suid)
 {
   GET_CURRENT (ruid << euid << suid);
   if (ruid != (uid_t)-1 &&
@@ -121,7 +121,7 @@ int dce_setresuid(uid_t ruid, uid_t euid, uid_t suid)
 
   return 0;
 }
-int dce_setresgid(gid_t rgid, gid_t egid, gid_t sgid)
+int dce_setresgid (gid_t rgid, gid_t egid, gid_t sgid)
 {
   GET_CURRENT (rgid << egid << sgid);
   if (rgid != (gid_t)-1 &&
@@ -156,38 +156,38 @@ int dce_setresgid(gid_t rgid, gid_t egid, gid_t sgid)
     }
   return 0;
 }
-int dce_setreuid(uid_t ruid, uid_t euid)
+int dce_setreuid (uid_t ruid, uid_t euid)
 {
   GET_CURRENT (ruid << euid);
   return dce_setresuid (ruid,euid,-1);
 }
-int dce_setregid(gid_t rgid, gid_t egid)
+int dce_setregid (gid_t rgid, gid_t egid)
 {
   GET_CURRENT (rgid << egid);
   return dce_setresgid (rgid,egid,-1);
 }
 
-int dce_seteuid(uid_t euid)
+int dce_seteuid (uid_t euid)
 {
   GET_CURRENT (euid);
   return dce_setresuid (-1, euid, -1);
 }
-int dce_setegid(gid_t egid)
+int dce_setegid (gid_t egid)
 {
   GET_CURRENT (egid);
   return dce_setresgid (-1, egid, -1);
 }
-int dce_setuid(uid_t uid)
+int dce_setuid (uid_t uid)
 {
   GET_CURRENT (uid);
   if (is_set_ucapable (uid))
     {
       current->process->ruid = uid;
       if (current->process->euid == 0)
-	{
-	  current->process->euid = uid;
-	  current->process->suid = uid;
-	}
+        {
+          current->process->euid = uid;
+          current->process->suid = uid;
+        }
       return 0;
     }
   else
@@ -196,17 +196,17 @@ int dce_setuid(uid_t uid)
       return -1;
     }
 }
-int dce_setgid(gid_t gid)
+int dce_setgid (gid_t gid)
 {
   GET_CURRENT (gid);
   if (is_set_gcapable (gid))
     {
       current->process->rgid = gid;
       if (current->process->egid == 0)
-	{
-	  current->process->egid = gid;
-	  current->process->sgid = gid;
-	}
+        {
+          current->process->egid = gid;
+          current->process->sgid = gid;
+        }
       return 0;
     }
   else
@@ -216,7 +216,7 @@ int dce_setgid(gid_t gid)
     }
 }
 
-unsigned int dce_sleep(unsigned int seconds)
+unsigned int dce_sleep (unsigned int seconds)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId ());
@@ -289,13 +289,13 @@ int dce_nanosleep (const struct timespec *req, struct timespec *rem) {
   NS_LOG_FUNCTION (current << UtilsGetNodeId ());
   NS_ASSERT (current != 0);
   if (req == 0) {
-    current->err = EFAULT;
-    return -1;
-  }
+      current->err = EFAULT;
+      return -1;
+    }
   if ((req->tv_sec < 0) || (req->tv_nsec < 0) || (req->tv_nsec > 999999999)) {
-    current->err = EINVAL;
-    return -1;
-  }
+      current->err = EINVAL;
+      return -1;
+    }
   Time reqTime = UtilsTimespecToTime (*req);
   Time remTime = current->process->manager->Wait (reqTime);
   if (remTime == Seconds (0.0))
@@ -308,7 +308,7 @@ int dce_nanosleep (const struct timespec *req, struct timespec *rem) {
       if (rem != 0) *rem = UtilsTimeToTimespec (remTime);
       return -1;
     }
-  }
+}
 
 long int dce_random (void) {
   Thread *current = Current ();
@@ -361,12 +361,12 @@ long int dce_mrand48 (void)
 
   long int res;
 
-  jrand48_r ( current->process->seed48Current.__x ,  &(current->process->seed48Current), &res);
+  jrand48_r ( current->process->seed48Current.__x,  &(current->process->seed48Current), &res);
 
   return res;
 }
 
-double dce_erand48(unsigned short xsubi[3])
+double dce_erand48 (unsigned short xsubi[3])
 {
   Thread *current = Current ();
   double res;
@@ -393,7 +393,7 @@ void dce_srand48 (long int seedval)
   srand48_r (seedval, &(current->process->seed48Current) );
 }
 
-void dce_lcong48(unsigned short param[7])
+void dce_lcong48 (unsigned short param[7])
 {
   Thread *current = Current ();
 
@@ -409,8 +409,8 @@ void dce_srand (unsigned int seed) {
   return;
 }
 
-const char *dce_inet_ntop(int af, const void *src,
-			   char *dst, socklen_t cnt)
+const char *dce_inet_ntop (int af, const void *src,
+                           char *dst, socklen_t cnt)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << af << src << dst << cnt);
   Thread *current = Current ();
@@ -423,14 +423,14 @@ const char *dce_inet_ntop(int af, const void *src,
 }
 
 int dce_getopt_r (int argc, char * const argv[], const char *optstring, 
-		   char **poptarg, int *poptind, int *popterr, int *poptopt)
+                  char **poptarg, int *poptind, int *popterr, int *poptopt)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << argc << argv << optstring << poptarg << 
-		   poptind << popterr << poptopt);
+                   poptind << popterr << poptopt);
   NS_ASSERT (Current () != 0);
   NS_LOG_DEBUG ("optind=" << *poptind << 
-		" opterr=" << *popterr << 
-		" optopt=" << *poptopt);
+                " opterr=" << *popterr <<
+                " optopt=" << *poptopt);
   /* The following is pretty evil but it all comes down to the fact
    * that the libc does not export getopt_internal_r which is really the
    * function we want to call here.
@@ -455,8 +455,8 @@ int dce_getopt_r (int argc, char * const argv[], const char *optstring,
   return retval;
 }
 int dce_getopt_long_r (int argc, char * const argv[], const char *optstring, 
-                        const struct option *longopts, int *longindex,
-                        char **poptarg, int *poptind, int *popterr, int *poptopt)
+                       const struct option *longopts, int *longindex,
+                       char **poptarg, int *poptind, int *popterr, int *poptopt)
 {
   NS_LOG_FUNCTION (Current () << "node" << UtilsGetNodeId () << argc << argv << optstring << 
                    longopts << longindex);
@@ -497,12 +497,12 @@ static void Itimer (Process *process)
   if (!process->itimerInterval.IsZero ())
     {
       process->itimer = Simulator::Schedule (process->itimerInterval,
-					     &Itimer, process);
+                                             &Itimer, process);
     }
   // wakeup one thread
   UtilsSendSignal (process, SIGALRM);
 }
-int dce_getitimer(int which, struct itimerval *value)
+int dce_getitimer (int which, struct itimerval *value)
 {
 
   Thread *current = Current ();
@@ -519,8 +519,8 @@ int dce_getitimer(int which, struct itimerval *value)
   value->it_value = UtilsTimeToTimeval (Simulator::GetDelayLeft (current->process->itimer));
   return 0;
 }
-int dce_setitimer(int which, const struct itimerval *value,
-		   struct itimerval *ovalue)
+int dce_setitimer (int which, const struct itimerval *value,
+                   struct itimerval *ovalue)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << which << value << ovalue);
@@ -546,7 +546,7 @@ int dce_setitimer(int which, const struct itimerval *value,
       return 0;
     }
   current->process->itimer = Simulator::Schedule (UtilsTimevalToTime (value->it_value),
-						  &Itimer, current->process);
+                                                  &Itimer, current->process);
   return 0;
 }
 char *dce_getcwd (char *buf, size_t size)
@@ -566,14 +566,14 @@ char *dce_getcwd (char *buf, size_t size)
   if (buf == 0)
     {
       if (size == 0)
-	{
-	  buf = (char *)dce_malloc (cwd_size + 1);
-	  size = cwd_size + 1;
-	}
+        {
+          buf = (char *)dce_malloc (cwd_size + 1);
+          size = cwd_size + 1;
+        }
       else
-	{
-	  buf = (char *)dce_malloc (size);
-	}
+        {
+          buf = (char *)dce_malloc (size);
+        }
       buf[size-1] = 0;
     }
   const char *source = current->process->cwd.c_str ();
@@ -584,8 +584,8 @@ char *dce_getwd (char *buf)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << buf);
   NS_ASSERT (Current () != 0);
-  Thread *current = Current ();  
-  uint32_t cwd_size = current->process->cwd.size ();  
+  Thread *current = Current ();
+  uint32_t cwd_size = current->process->cwd.size ();
   if (PATH_MAX < cwd_size + 1)
     {
       current->err = ENAMETOOLONG;
@@ -593,7 +593,7 @@ char *dce_getwd (char *buf)
     }
   const char *source = current->process->cwd.c_str ();
   strcpy (buf, source);
-  return buf;  
+  return buf;
 }
 char *dce_get_current_dir_name (void)
 {
@@ -602,7 +602,7 @@ char *dce_get_current_dir_name (void)
   return dce_getcwd (0, 0);
 }
 
-int dce_chdir(const char *path)
+int dce_chdir (const char *path)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId ());
@@ -620,7 +620,7 @@ int dce_chdir(const char *path)
   current->process->cwd = UtilsGetVirtualFilePath (path);
   return 0;
 }
-int dce_fchdir(int fd)
+int dce_fchdir (int fd)
 {
   //XXX that one is not super trivial to implement.
   // this fd is coming from the function dirfd
@@ -657,7 +657,7 @@ int dce_execv (const char *path, char *const argv[])
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << path);
 
-  std::string fileName = FindExecFile ("/", "" , path, getuid (), getgid (), &(thread->err) );
+  std::string fileName = FindExecFile ("/", "", path, getuid (), getgid (), &(thread->err) );
 
   if  ( 0 == fileName.length () )
     {
@@ -672,7 +672,7 @@ int dce_execl (const char *path, const char *arg, va_list ap)
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << path);
 
-  std::string fileName = FindExecFile ("/", "" , path, getuid (), getgid (), &(thread->err) );
+  std::string fileName = FindExecFile ("/", "", path, getuid (), getgid (), &(thread->err) );
 
   if  ( 0 == fileName.length () )
     {
@@ -686,9 +686,9 @@ int dce_execl (const char *path, const char *arg, va_list ap)
   va_copy (cp, ap );
   char *p =  0;
   do {
-      p = va_arg (cp , char *);
-      nb ++;
-  } while ( p );
+      p = va_arg (cp, char *);
+      nb++;
+    } while ( p );
 
   char const** argv = (char const **) dce_malloc ( nb * sizeof (char * )); // Use dce_malloc to be sure it will be freed when exec is successfull
 
@@ -696,8 +696,8 @@ int dce_execl (const char *path, const char *arg, va_list ap)
   nb = 1;
 
   do {
-      argv[nb++] = p = va_arg (ap , char *);
-  } while ( p );
+      argv[nb++] = p = va_arg (ap, char *);
+    } while ( p );
 
   int retval = thread->process->manager->Execve (thread, fileName.c_str (), (char* const*) argv, *(thread->process->penvp) );
 
@@ -709,7 +709,7 @@ int dce_execve (const char *path, char *const argv[], char *const envp[])
 {
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << path);
-  std::string fileName = FindExecFile ("/", "" , path, getuid (), getgid (), &(thread->err) );
+  std::string fileName = FindExecFile ("/", "", path, getuid (), getgid (), &(thread->err) );
 
   if  ( 0 == fileName.length () )
     {
@@ -720,12 +720,12 @@ int dce_execve (const char *path, char *const argv[], char *const envp[])
   return thread->process->manager->Execve (thread, fileName.c_str (), argv, envp );
 }
 
-int dce_execlp(const char *file, const char *arg, va_list ap)
+int dce_execlp (const char *file, const char *arg, va_list ap)
 {
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << file);
-  std::string fileName = FindExecFile ("/", std::string(getenv("PATH")) + std::string(getenv("LD_LIBRARY_PATH")) ,
-      file, getuid (), getgid (), &(thread->err) );
+  std::string fileName = FindExecFile ("/", std::string (getenv ("PATH")) + std::string (getenv ("LD_LIBRARY_PATH")),
+                                       file, getuid (), getgid (), &(thread->err) );
   if  ( 0 == fileName.length () )
     {
       // Errno setted by FindExecFile
@@ -737,9 +737,9 @@ int dce_execlp(const char *file, const char *arg, va_list ap)
   va_copy (cp, ap );
   char *p =  0;
   do {
-      p = va_arg (cp , char *);
-      nb ++;
-  } while ( p );
+      p = va_arg (cp, char *);
+      nb++;
+    } while ( p );
 
   char const** argv = (char const **) dce_malloc ( nb * sizeof (char * )); // Use dce_malloc to be sure it will be freed when exec is successfull
 
@@ -747,8 +747,8 @@ int dce_execlp(const char *file, const char *arg, va_list ap)
   nb = 1;
 
   do {
-      argv[nb++] = p = va_arg (ap , char *);
-  } while ( p );
+      argv[nb++] = p = va_arg (ap, char *);
+    } while ( p );
 
   int retval = thread->process->manager->Execve (thread, fileName.c_str (), (char* const*) argv, *(thread->process->penvp) );
 
@@ -756,12 +756,12 @@ int dce_execlp(const char *file, const char *arg, va_list ap)
 
   return retval;
 }
-int dce_execvp(const char *file, char *const argv[])
+int dce_execvp (const char *file, char *const argv[])
 {
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << file);
-  std::string fileName = FindExecFile ("/", std::string(getenv("PATH")) + std::string(getenv("LD_LIBRARY_PATH")) ,
-      file, getuid (), getgid (), &(thread->err) );
+  std::string fileName = FindExecFile ("/", std::string (getenv ("PATH")) + std::string (getenv ("LD_LIBRARY_PATH")),
+                                       file, getuid (), getgid (), &(thread->err) );
 
   if  ( 0 == fileName.length () )
     {
@@ -775,7 +775,7 @@ int dce_execle (const char *path, const char *arg, va_list ap)
 {
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << path);
-  std::string fileName = FindExecFile ("/", "", path , getuid (), getgid (), &(thread->err) );
+  std::string fileName = FindExecFile ("/", "", path, getuid (), getgid (), &(thread->err) );
   if  ( 0 == fileName.length () )
     {
       // Errno setted by FindExecFile
@@ -786,19 +786,19 @@ int dce_execle (const char *path, const char *arg, va_list ap)
   va_copy (cp, ap );
   char *p =  0;
   do {
-      p = va_arg (cp , char *);
-      nb ++;
-  } while ( p );
+      p = va_arg (cp, char *);
+      nb++;
+    } while ( p );
 
-  char const** envp = (char const **) va_arg(cp , char **);
+  char const** envp = (char const **) va_arg (cp, char **);
   char const** argv = (char const **) dce_malloc ( nb * sizeof (char * )); // Use dce_malloc to be sure it will be freed when exec is successfull
 
   argv[0] = arg;
   nb = 1;
 
   do {
-      argv[nb++] = p = va_arg (ap , char *);
-  } while ( p );
+      argv[nb++] = p = va_arg (ap, char *);
+    } while ( p );
 
   int retval = thread->process->manager->Execve (thread, fileName.c_str (), (char* const*) argv, (char* const*) envp );
 

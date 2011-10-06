@@ -42,7 +42,7 @@ second_thread1 (void *arg)
 }
 
 void
-father1()
+father1 ()
 {
   int status = -1;
   int sock = -1;
@@ -53,10 +53,10 @@ father1()
   sleep (1);
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
-  fill_addr(ad, 2000);
-  encore:
+  fill_addr (ad, 2000);
+encore:
   status = connect (sock, (struct sockaddr *) &ad, sizeof(ad));
   printf ("father1: connect -> %d\n",status);
   TEST_ASSERT_EQUAL (status, 0)
@@ -65,7 +65,7 @@ father1()
   TEST_ASSERT_EQUAL (status, 0);
 
 //  printf ("father1: sleeping 5s\n");
- // sleep (5);
+// sleep (5);
 
   if (true)
     {
@@ -77,8 +77,8 @@ father1()
       printf ("father1: about to poll on sock fd:%d with a timeout of -5 s \n",sock);
       status = poll (&p, 1, -5000);
       printf ("father1: poll result : %d, revents %d POLLIN %d, POLLOUT %d, POLLHUP %d POLLERR %d POLLNVAL %d\n",
-          status, p.revents,  POLLIN & p.revents, POLLOUT & p.revents,  POLLHUP & p.revents,
-          POLLERR & p.revents,  POLLNVAL & p.revents);
+              status, p.revents,  POLLIN & p.revents, POLLOUT & p.revents,  POLLHUP & p.revents,
+              POLLERR & p.revents,  POLLNVAL & p.revents);
     }
   else
     {
@@ -108,9 +108,9 @@ first_child1 ()
   char buf[1024];
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT ( sock >= 0 );
 
-  fill_addr(ad, 2000);
+  fill_addr (ad, 2000);
   status = bind (sock, (struct sockaddr *) &ad, sizeof(ad));
   TEST_ASSERT_EQUAL (status, 0);
 
@@ -119,7 +119,7 @@ first_child1 ()
 
   sockin = accept (sock, NULL, NULL);
   printf ("first_child1 accept -> %d\n", sockin);
-  TEST_ASSERT( sockin >= 0 );
+  TEST_ASSERT ( sockin >= 0 );
 
   status = read (sockin, buf, sizeof(buf));
   printf ("first_child1: read result : %d\n",status);

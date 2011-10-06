@@ -79,10 +79,10 @@ int main (int argc, char *argv[])
   status = sem_init (&sems[1], 0, 0);
   TEST_ASSERT_EQUAL (status, 0);
   status = pthread_create (&threads[0], 0, 
-			   &thread_a, sems);
+                           &thread_a, sems);
   TEST_ASSERT_EQUAL (status, 0);
   status = pthread_create (&threads[1], 0, 
-			   &thread_b, sems);
+                           &thread_b, sems);
   TEST_ASSERT_EQUAL (status, 0);
   status = pthread_join (threads[0], 0);
   TEST_ASSERT_EQUAL (status, 0);

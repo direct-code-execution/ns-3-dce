@@ -66,7 +66,7 @@ static void test_freadwrite (void)
   FILE *file;
   file = fopen ("X", "w");
   TEST_ASSERT_UNEQUAL (file, 0);
-  
+
   size_t items;
   items = fwrite (buffer, sizeof(buffer), 1, file);
   TEST_ASSERT_EQUAL (items, 1);
@@ -156,7 +156,7 @@ void test_seek (void)
   FILE *file;
   file = fopen ("X", "w+");
   TEST_ASSERT_UNEQUAL (file, 0);
-  
+
   size_t items;
   items = fwrite (buffer, sizeof(buffer), 1, file);
   TEST_ASSERT_EQUAL (items, 1);
@@ -278,7 +278,7 @@ void test_formatted_io (void)
   char *retval = fgets (buffer, 100, f);
   TEST_ASSERT_UNEQUAL (retval, 0);
   TEST_ASSERT (strcmp ("test\n", retval) == 0);
-  
+
 
   fclose (f);
 
@@ -294,7 +294,7 @@ void test_stdin (void)
 {
   int l = 0;
   char buf;
-  FILE *copyIt = fopen( "/tmp/copy_stdin", "w");
+  FILE *copyIt = fopen ( "/tmp/copy_stdin", "w");
 
   while (!feof (stdin) )
     {

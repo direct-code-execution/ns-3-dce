@@ -77,8 +77,8 @@ struct SignalHandler
   int signal;
   int flags;
   sigset_t mask;
-  void (*handler) (int);
-  void (*sigaction) (int, siginfo_t *, void *);
+  void (*handler)(int);
+  void (*sigaction)(int, siginfo_t *, void *);
 };
 enum ThreadState_e {
   // the thread is executing
@@ -99,9 +99,9 @@ struct AtExitHandler
     CXA
   } type;
   union {
-    void (*normal) (void);
+    void (*normal)(void);
     struct {
-      void (*fn) (void *);
+      void (*fn)(void *);
       void *arg;
       void *d;
     } cxa;
@@ -172,7 +172,7 @@ struct Process
 struct ThreadKeyValue
 {
   pthread_key_t key;
-  void (*destructor) (void*);
+  void (*destructor)(void*);
   void *value;
 };
 

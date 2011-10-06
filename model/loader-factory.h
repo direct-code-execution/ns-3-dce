@@ -8,7 +8,7 @@ namespace ns3 {
 
 class Loader
 {
- public:
+public:
   virtual ~Loader () = 0;
   virtual void NotifyStartExecute (void);
   virtual void NotifyEndExecute (void);
@@ -21,7 +21,7 @@ class Loader
 
 class LoaderFactory : public Object
 {
- public:
+public:
   static TypeId GetTypeId (void);
   virtual ~LoaderFactory () = 0;
   virtual Loader *Create (int argc, char **argv, char **envp) = 0;

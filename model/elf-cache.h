@@ -46,8 +46,8 @@ private:
   struct FileInfo EditFile (std::string filename, uint32_t selfId) const;
   uint32_t GetDepId (std::string depname) const;
   std::string EnsureCacheDirectory (void) const;
-  unsigned long GetBaseAddress (ElfW(Phdr) *phdr, long phnum) const;
-  long GetDtStrTab (ElfW(Dyn) *dyn, long baseAddress) const;
+  unsigned long GetBaseAddress (ElfW (Phdr) *phdr, long phnum) const;
+  long GetDtStrTab (ElfW (Dyn) *dyn, long baseAddress) const;
 
 
   std::string m_directory;

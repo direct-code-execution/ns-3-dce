@@ -25,7 +25,7 @@
 #include <errno.h>
 #include <arpa/inet.h>
 
-NS_LOG_COMPONENT_DEFINE("LinuxSocketFdFactory");
+NS_LOG_COMPONENT_DEFINE ("LinuxSocketFdFactory");
 
 namespace ns3 {
 
@@ -45,8 +45,8 @@ private:
 };
 
 LinuxDeviceStateListener::LinuxDeviceStateListener(Ptr<NetDevice> d,
-    Ptr<LinuxSocketFdFactory> f):
-    m_netDevice(d), m_factory(f)
+                                                   Ptr<LinuxSocketFdFactory> f) :
+  m_netDevice (d), m_factory (f)
 {
 }
 
@@ -56,7 +56,7 @@ LinuxDeviceStateListener::NotifyDeviceStateChange ()
   m_factory->NotifyDeviceStateChange (m_netDevice);
 }
 
-NS_OBJECT_ENSURE_REGISTERED(LinuxSocketFdFactory);
+NS_OBJECT_ENSURE_REGISTERED (LinuxSocketFdFactory);
 
 TypeId 
 LinuxSocketFdFactory::GetTypeId (void)
@@ -65,10 +65,9 @@ LinuxSocketFdFactory::GetTypeId (void)
     .SetParent<SocketFdFactory> ()
     .AddConstructor<LinuxSocketFdFactory> ()
     .AddAttribute ("Library", "File to load in memory",
-		   StringValue("liblinux.so"),
-		   MakeStringAccessor (&LinuxSocketFdFactory::m_library),
-		   MakeStringChecker ())
-    ;
+                   StringValue ("liblinux.so"),
+                   MakeStringAccessor (&LinuxSocketFdFactory::m_library),
+                   MakeStringChecker ());
   return tid;
 }
 LinuxSocketFdFactory::LinuxSocketFdFactory ()
@@ -80,7 +79,7 @@ LinuxSocketFdFactory::LinuxSocketFdFactory ()
 
 LinuxSocketFdFactory::~LinuxSocketFdFactory ()
 {
-  for (uint32_t i = 0; i < m_devices.size(); i++)
+  for (uint32_t i = 0; i < m_devices.size (); i++)
     {
       // Note: we don't really destroy devices from here
       // because calling destroy requires a task context
@@ -156,16 +155,16 @@ LinuxSocketFdFactory::Random (struct SimKernel *kernel)
     uint8_t buffer[sizeof(unsigned long)];
     unsigned long v;
   } u;
-  for (uint8_t i = 0; i < sizeof(u.buffer); i++)
+  for (uint8_t i = 0; i < sizeof (u.buffer); i++)
     {
-      u.buffer[i] = self->m_variable.GetInteger(0,255);
+      u.buffer[i] = self->m_variable.GetInteger (0,255);
     }
   return u.v;
 }
 void 
-LinuxSocketFdFactory::EventTrampoline (void (*fn) (void *context), 
-				       void *context, void (*pre_fn) (void),
-				       Ptr<EventIdHolder> event)
+LinuxSocketFdFactory::EventTrampoline (void (*fn)(void *context),
+                                       void *context, void (*pre_fn)(void),
+                                       Ptr<EventIdHolder> event)
 {
   m_loader->NotifyStartExecute ();
   pre_fn ();
@@ -173,14 +172,14 @@ LinuxSocketFdFactory::EventTrampoline (void (*fn) (void *context),
   m_loader->NotifyEndExecute ();
 }
 void *
-LinuxSocketFdFactory::EventScheduleNs (struct SimKernel *kernel, unsigned long ns, void (*fn) (void *context), void *context,
-				       void (*pre_fn) (void))
+LinuxSocketFdFactory::EventScheduleNs (struct SimKernel *kernel, unsigned long ns, void (*fn)(void *context), void *context,
+                                       void (*pre_fn)(void))
 {
   LinuxSocketFdFactory *self = (LinuxSocketFdFactory *)kernel;
   Ptr<EventIdHolder> ev = Create<EventIdHolder> ();
-  EventId event = Simulator::Schedule (NanoSeconds(ns), 
-				       &LinuxSocketFdFactory::EventTrampoline, 
-				       self, fn, context, pre_fn, ev);
+  EventId event = Simulator::Schedule (NanoSeconds (ns), 
+                                       &LinuxSocketFdFactory::EventTrampoline,
+                                       self, fn, context, pre_fn, ev);
   ev->id = event;
   return &ev->id;
 }
@@ -188,7 +187,7 @@ void
 LinuxSocketFdFactory::EventCancel (struct SimKernel *kernel, void *ev)
 {
   EventId *event = (EventId *)ev;
-  Simulator::Remove(*event);
+  Simulator::Remove (*event);
 }
 static __u64 CurrentNs (struct SimKernel *kernel)
 {
@@ -212,11 +211,11 @@ LinuxSocketFdFactory::TaskSwitch (enum Task::SwitchType type, void *context)
 }
 
 struct SimTask *
-LinuxSocketFdFactory::TaskStart (struct SimKernel *kernel, void (*callback) (void *), void *context)
+LinuxSocketFdFactory::TaskStart (struct SimKernel *kernel, void (*callback)(void *), void *context)
 {
   LinuxSocketFdFactory *self = (LinuxSocketFdFactory *)kernel;
   Task *task = self->m_manager->Start (callback, context, 1<<17);
-  struct SimTask *simTask = self->m_exported->task_create(task, 0);
+  struct SimTask *simTask = self->m_exported->task_create (task, 0);
   task->SetExtraContext (simTask);
   task->SetSwitchNotifier (&LinuxSocketFdFactory::TaskSwitch, self->m_loader);
   self->m_kernelTasks.push_back (task);
@@ -233,10 +232,10 @@ LinuxSocketFdFactory::TaskCurrent (struct SimKernel *kernel)
       uint32_t pid = 0;
       struct Thread *thread = (struct Thread *)current->GetContext ();
       if (thread != 0)
-	{
-	  pid = thread->process->pid;
-	}
-      struct SimTask *simTask = self->m_exported->task_create(current, pid);
+        {
+          pid = thread->process->pid;
+        }
+      struct SimTask *simTask = self->m_exported->task_create (current, pid);
       current->SetExtraContext (simTask);
     }
   return (struct SimTask *)current->GetExtraContext ();
@@ -252,12 +251,12 @@ LinuxSocketFdFactory::TaskWait (struct SimKernel *kernel)
 int 
 LinuxSocketFdFactory::TaskWakeup (struct SimKernel *kernel, struct SimTask *task)
 {
-  LinuxSocketFdFactory *self = (LinuxSocketFdFactory *)kernel;  
+  LinuxSocketFdFactory *self = (LinuxSocketFdFactory *)kernel;
   TaskManager *manager = TaskManager::Current ();
-  Task *other = (Task *)self->m_exported->task_get_private(task);
+  Task *other = (Task *)self->m_exported->task_get_private (task);
   bool isBlocked = other->IsBlocked ();
   manager->Wakeup (other);
-  return isBlocked?1:0;
+  return isBlocked ? 1 : 0;
 }
 void 
 LinuxSocketFdFactory::TaskYield (struct SimKernel *kernel)
@@ -289,9 +288,9 @@ LinuxSocketFdFactory::DevXmit (struct SimKernel *kernel, struct SimDevice *dev, 
 }
 
 void
-LinuxSocketFdFactory::SignalRaised ( struct SimKernel *kernel, struct SimTask *task , int signalNumber)
+LinuxSocketFdFactory::SignalRaised ( struct SimKernel *kernel, struct SimTask *task, int signalNumber)
 {
-    NS_LOG_FUNCTION ("XXX: Not Yet Implemented "<<signalNumber);
+  NS_LOG_FUNCTION ("XXX: Not Yet Implemented "<<signalNumber);
 }
 
 struct SimDevice *
@@ -300,18 +299,18 @@ LinuxSocketFdFactory::DevToDev (Ptr<NetDevice> device)
   for (uint32_t i = 0; i < m_devices.size (); i++)
     {
       if (m_devices[i].first == device)
-	{
-	  struct SimDevice *dev = m_devices[i].second;
-	  return dev;
-	}
+        {
+          struct SimDevice *dev = m_devices[i].second;
+          return dev;
+        }
     }
   return 0;
 }
 
 void
 LinuxSocketFdFactory::RxFromDevice (Ptr<NetDevice> device, Ptr<const Packet> p,
-				    uint16_t protocol, const Address & from,
-				    const Address &to, NetDevice::PacketType type)
+                                    uint16_t protocol, const Address & from,
+                                    const Address &to, NetDevice::PacketType type)
 {
   struct SimDevice *dev = DevToDev (device);
   if (dev == 0)
@@ -340,7 +339,7 @@ void
 LinuxSocketFdFactory::NotifyDeviceStateChange (Ptr<NetDevice> device)
 {
   ScheduleTask (MakeEvent (&LinuxSocketFdFactory::NotifyDeviceStateChangeTask, 
-			   this, device));
+                           this, device));
 }
 void
 LinuxSocketFdFactory::NotifyDeviceStateChangeTask (Ptr<NetDevice> device)
@@ -350,11 +349,11 @@ LinuxSocketFdFactory::NotifyDeviceStateChangeTask (Ptr<NetDevice> device)
   if (dev == 0)
     {
       return;
-    }  
+    }
   Mac48Address ad = Mac48Address::ConvertFrom (device->GetAddress ());
   uint8_t buffer[6];
   ad.CopyTo (buffer);
-  m_exported->dev_set_address(dev, buffer);
+  m_exported->dev_set_address (dev, buffer);
   m_exported->dev_set_mtu (dev, device->GetMtu ());
 }
 
@@ -375,7 +374,7 @@ void
 LinuxSocketFdFactory::ScheduleTask (EventImpl *event)
 {
   Task *task = m_manager->Start (&LinuxSocketFdFactory::ScheduleTaskTrampoline, 
-				 event, 1<<17);
+                                 event, 1<<17);
   task->SetExtraContext (this);
   task->SetSwitchNotifier (&LinuxSocketFdFactory::TaskSwitch, m_loader);
   m_kernelTasks.push_back (task);
@@ -403,16 +402,16 @@ LinuxSocketFdFactory::NotifyAddDeviceTask (Ptr<NetDevice> device)
     {
       flags |= SIM_DEV_BROADCAST;
     }
-  struct SimDevice *dev = m_exported->dev_create(PeekPointer(device), (enum SimDevFlags)flags);
+  struct SimDevice *dev = m_exported->dev_create (PeekPointer (device), (enum SimDevFlags)flags);
 
   Ptr<LinuxDeviceStateListener> listener = Create <LinuxDeviceStateListener> (device, this);
   m_listeners.push_back (listener);
   device->AddLinkChangeCallback (MakeCallback (&LinuxDeviceStateListener::NotifyDeviceStateChange, listener));
 
-  m_devices.push_back (std::make_pair(device,dev));
+  m_devices.push_back (std::make_pair (device,dev));
   Ptr<Node> node = GetObject<Node> ();
   node->RegisterProtocolHandler (MakeCallback (&LinuxSocketFdFactory::RxFromDevice, this), 
-				 0, device, true);
+                                 0, device, true);
   NotifyDeviceStateChangeTask (device);
 }
 
@@ -460,13 +459,13 @@ LinuxSocketFdFactory::SetTask (std::string path, std::string value)
   for (uint32_t i = 0; i < files.size (); i++)
     {
       if (files[i].first == path)
-	{
-	  const char *s = value.c_str ();
-	  int toWrite = value.size ();
-	  int written;
-	  written = m_exported->sys_file_write (files[i].second, s, toWrite, 0);
-	  break;
-	}
+        {
+          const char *s = value.c_str ();
+          int toWrite = value.size ();
+          int written;
+          written = m_exported->sys_file_write (files[i].second, s, toWrite, 0);
+          break;
+        }
     }
 }
 
@@ -485,7 +484,7 @@ LinuxSocketFdFactory::Set (std::string path, std::string value)
 
 void
 LinuxSocketFdFactory::InitializeStack (void)
-{  
+{
   void *handle = m_loader->Load (m_library, RTLD_LOCAL);
   void *symbol = m_loader->Lookup (handle, "sim_init");
   SimInit init = (SimInit) symbol;
@@ -517,7 +516,7 @@ LinuxSocketFdFactory::InitializeStack (void)
   // update the linux device list with simulation device list
   Ptr<Node> node = GetObject<Node> ();
   node->RegisterDeviceAdditionListener (MakeCallback (&LinuxSocketFdFactory::NotifyAddDevice,
-						      this));
+                                                      this));
   Set (".net.ipv4.conf.all.forwarding", "1");
   Set (".net.ipv4.conf.all.log_martians", "1");
 
@@ -543,23 +542,23 @@ LinuxSocketFdFactory::NotifyNewAggregate (void)
       UtilsEnsureDirectoryExists (UtilsGetAbsRealFilePath (node->GetId (), "/var/log"));
       std::string path = UtilsGetAbsRealFilePath (node->GetId (), "/var/log/messages");
       m_logFile = fopen (path.c_str (), "w");
-      setlinebuf(m_logFile);
+      setlinebuf (m_logFile);
       // must use ScheduleWithContext to ensure that the initialization task gets
       // a node context to be able to retrieve the task manager when it runs.
       // i.e., TaskManager::Current() needs it.
       Simulator::ScheduleWithContext (node->GetId (), Seconds (0.0),
-				      &LinuxSocketFdFactory::ScheduleTask, this,
-				      MakeEvent (&LinuxSocketFdFactory::InitializeStack, this));
+                                      &LinuxSocketFdFactory::ScheduleTask, this,
+                                      MakeEvent (&LinuxSocketFdFactory::InitializeStack, this));
     }
 }
 
 UnixFd *
 LinuxSocketFdFactory::CreateSocket (int domain, int type, int protocol)
 {
-  GET_CURRENT(this << domain << type << protocol);
+  GET_CURRENT (this << domain << type << protocol);
   struct SimSocket *socket;
   m_loader->NotifyStartExecute ();
-  int retval = m_exported->sock_socket(domain, type, protocol, &socket);
+  int retval = m_exported->sock_socket (domain, type, protocol, &socket);
   m_loader->NotifyEndExecute ();
   if (retval < 0)
     {
@@ -572,7 +571,7 @@ LinuxSocketFdFactory::CreateSocket (int domain, int type, int protocol)
 int 
 LinuxSocketFdFactory::Close (struct SimSocket *socket)
 {
-  GET_CURRENT(socket);
+  GET_CURRENT (socket);
   m_loader->NotifyStartExecute ();
   int retval = m_exported->sock_close (socket);
   m_loader->NotifyEndExecute ();
@@ -584,9 +583,9 @@ LinuxSocketFdFactory::Close (struct SimSocket *socket)
   return retval;
 }
 ssize_t 
-LinuxSocketFdFactory::Recvmsg(struct SimSocket *socket, struct msghdr *msg, int flags)
+LinuxSocketFdFactory::Recvmsg (struct SimSocket *socket, struct msghdr *msg, int flags)
 {
-  GET_CURRENT(socket << msg << flags);
+  GET_CURRENT (socket << msg << flags);
   m_loader->NotifyStartExecute ();
   ssize_t retval = m_exported->sock_recvmsg (socket, msg, flags);
   m_loader->NotifyEndExecute ();
@@ -598,9 +597,9 @@ LinuxSocketFdFactory::Recvmsg(struct SimSocket *socket, struct msghdr *msg, int 
   return retval;
 }
 ssize_t 
-LinuxSocketFdFactory::Sendmsg(struct SimSocket *socket, const struct msghdr *msg, int flags)
+LinuxSocketFdFactory::Sendmsg (struct SimSocket *socket, const struct msghdr *msg, int flags)
 {
-  GET_CURRENT(socket << msg << flags);
+  GET_CURRENT (socket << msg << flags);
   m_loader->NotifyStartExecute ();
   ssize_t retval = m_exported->sock_sendmsg (socket, msg, flags);
   m_loader->NotifyEndExecute ();
@@ -612,9 +611,9 @@ LinuxSocketFdFactory::Sendmsg(struct SimSocket *socket, const struct msghdr *msg
   return retval;
 }
 int 
-LinuxSocketFdFactory::Getsockname(struct SimSocket *socket, struct sockaddr *name, socklen_t *namelen)
+LinuxSocketFdFactory::Getsockname (struct SimSocket *socket, struct sockaddr *name, socklen_t *namelen)
 {
-  GET_CURRENT(socket << name << namelen);
+  GET_CURRENT (socket << name << namelen);
   m_loader->NotifyStartExecute ();
   int retval = m_exported->sock_getsockname (socket, name, (int*)namelen);
   m_loader->NotifyEndExecute ();
@@ -626,9 +625,9 @@ LinuxSocketFdFactory::Getsockname(struct SimSocket *socket, struct sockaddr *nam
   return retval;
 }
 int 
-LinuxSocketFdFactory::Getpeername(struct SimSocket *socket, struct sockaddr *name, socklen_t *namelen)
+LinuxSocketFdFactory::Getpeername (struct SimSocket *socket, struct sockaddr *name, socklen_t *namelen)
 {
-  GET_CURRENT(socket << name << namelen);
+  GET_CURRENT (socket << name << namelen);
   m_loader->NotifyStartExecute ();
   int retval = m_exported->sock_getpeername (socket, name, (int*)namelen);
   m_loader->NotifyEndExecute ();
@@ -642,7 +641,7 @@ LinuxSocketFdFactory::Getpeername(struct SimSocket *socket, struct sockaddr *nam
 int 
 LinuxSocketFdFactory::Bind (struct SimSocket *socket, const struct sockaddr *my_addr, socklen_t addrlen)
 {
-  GET_CURRENT(socket << my_addr << addrlen);
+  GET_CURRENT (socket << my_addr << addrlen);
   m_loader->NotifyStartExecute ();
   int retval = m_exported->sock_bind (socket, my_addr, addrlen);
   m_loader->NotifyEndExecute ();
@@ -656,7 +655,7 @@ LinuxSocketFdFactory::Bind (struct SimSocket *socket, const struct sockaddr *my_
 int 
 LinuxSocketFdFactory::Connect (struct SimSocket *socket, const struct sockaddr *my_addr, socklen_t addrlen)
 {
-  GET_CURRENT(socket << my_addr << addrlen);
+  GET_CURRENT (socket << my_addr << addrlen);
   // XXX: handle O_NONBLOCK with flags.
   m_loader->NotifyStartExecute ();
   int retval = m_exported->sock_connect (socket, my_addr, addrlen, 0);
@@ -671,7 +670,7 @@ LinuxSocketFdFactory::Connect (struct SimSocket *socket, const struct sockaddr *
 int 
 LinuxSocketFdFactory::Listen (struct SimSocket *socket, int backlog)
 {
-  GET_CURRENT(socket << backlog);
+  GET_CURRENT (socket << backlog);
   m_loader->NotifyStartExecute ();
   int retval = m_exported->sock_listen (socket, backlog);
   m_loader->NotifyEndExecute ();
@@ -683,9 +682,9 @@ LinuxSocketFdFactory::Listen (struct SimSocket *socket, int backlog)
   return retval;
 }
 int 
-LinuxSocketFdFactory::Shutdown(struct SimSocket *socket, int how)
+LinuxSocketFdFactory::Shutdown (struct SimSocket *socket, int how)
 {
-  GET_CURRENT(socket << how);
+  GET_CURRENT (socket << how);
   m_loader->NotifyStartExecute ();
   int retval = m_exported->sock_shutdown (socket, how);
   m_loader->NotifyEndExecute ();
@@ -699,7 +698,7 @@ LinuxSocketFdFactory::Shutdown(struct SimSocket *socket, int how)
 int
 LinuxSocketFdFactory::Accept (struct SimSocket *socket, struct sockaddr *my_addr, socklen_t *addrlen)
 {
-  GET_CURRENT(socket << my_addr << addrlen);
+  GET_CURRENT (socket << my_addr << addrlen);
   struct SimSocket *newSocket;
   // XXX: handle O_NONBLOCK
   m_loader->NotifyStartExecute ();
@@ -715,12 +714,12 @@ LinuxSocketFdFactory::Accept (struct SimSocket *socket, struct sockaddr *my_addr
       m_loader->NotifyStartExecute ();
       retval = m_exported->sock_getpeername (newSocket, my_addr, (int*)addrlen);
       if (retval < 0)
-	{
-	  current->err = -retval;
-	  m_exported->sock_close (newSocket);
-	  m_loader->NotifyEndExecute ();
-	  return -1;
-	}
+        {
+          current->err = -retval;
+          m_exported->sock_close (newSocket);
+          m_loader->NotifyEndExecute ();
+          return -1;
+        }
       m_loader->NotifyEndExecute ();
     }
   int fd = UtilsAllocateFd ();
@@ -742,7 +741,7 @@ LinuxSocketFdFactory::Accept (struct SimSocket *socket, struct sockaddr *my_addr
 int 
 LinuxSocketFdFactory::Ioctl (struct SimSocket *socket, int request, char *argp)
 {
-  GET_CURRENT(socket << request << argp);
+  GET_CURRENT (socket << request << argp);
   m_loader->NotifyStartExecute ();
   int retval = m_exported->sock_ioctl (socket, request, argp);
   m_loader->NotifyEndExecute ();
@@ -755,9 +754,9 @@ LinuxSocketFdFactory::Ioctl (struct SimSocket *socket, int request, char *argp)
 }
 int 
 LinuxSocketFdFactory::Setsockopt (struct SimSocket *socket, int level, int optname,
-				  const void *optval, socklen_t optlen)
+                                  const void *optval, socklen_t optlen)
 {
-  GET_CURRENT(socket << level << optname << optval << optlen);
+  GET_CURRENT (socket << level << optname << optval << optlen);
   m_loader->NotifyStartExecute ();
   int retval = m_exported->sock_setsockopt (socket, level, optname, optval, optlen);
   m_loader->NotifyEndExecute ();
@@ -770,9 +769,9 @@ LinuxSocketFdFactory::Setsockopt (struct SimSocket *socket, int level, int optna
 }
 int 
 LinuxSocketFdFactory::Getsockopt (struct SimSocket *socket, int level, int optname,
-				  void *optval, socklen_t *optlen)
+                                  void *optval, socklen_t *optlen)
 {
-  GET_CURRENT(socket << level << optname << optval << optlen);
+  GET_CURRENT (socket << level << optname << optval << optlen);
   m_loader->NotifyStartExecute ();
   int retval = m_exported->sock_getsockopt (socket, level, optname, optval, (int*)optlen);
   m_loader->NotifyEndExecute ();
@@ -821,14 +820,14 @@ LinuxSocketFdFactory::Poll (struct SimSocket *socket, PollTable* ptable)
       kernelInOut.ret = ptable->GetEventMask ();
     }
 
-  GET_CURRENT(socket);
+  GET_CURRENT (socket);
   m_loader->NotifyStartExecute ();
-  m_exported->sock_poll(socket, &kernelInOut);
+  m_exported->sock_poll (socket, &kernelInOut);
   m_loader->NotifyEndExecute ();
 
   if (ptable)
     {
-      ptable->PollWait (kernelInOut.opaque , MakeCallback( &LinuxSocketFdFactory::PollFreeWait, this ));
+      ptable->PollWait (kernelInOut.opaque, MakeCallback ( &LinuxSocketFdFactory::PollFreeWait, this ));
     }
 
   return kernelInOut.ret;

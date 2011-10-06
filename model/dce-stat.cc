@@ -52,7 +52,7 @@ int dce_fxstat (int ver, int fd, struct stat *buf)
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd);
   NS_ASSERT (current != 0);
 
-  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
+  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed ()))
     {
       current->err = EBADF;
       return -1;
@@ -69,7 +69,7 @@ int dce_fxstat64 (int ver, int fd, struct stat64 *buf)
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd);
   NS_ASSERT (current != 0);
 
-  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed()))
+  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed ()))
     {
       current->err = EBADF;
       return -1;

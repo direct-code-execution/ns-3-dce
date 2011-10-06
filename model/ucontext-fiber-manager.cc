@@ -35,9 +35,9 @@ struct UcontextFiber : public Fiber
   unsigned int vgId;
 };
 void 
-UcontextFiberManager::SegfaultHandler(int sig, siginfo_t *si, void *unused)
+UcontextFiberManager::SegfaultHandler (int sig, siginfo_t *si, void *unused)
 {
-  int pagesize = sysconf(_SC_PAGE_SIZE);
+  int pagesize = sysconf (_SC_PAGE_SIZE);
   if (pagesize == -1)
     {
       NS_FATAL_ERROR ("Unable to query page size");
@@ -48,14 +48,14 @@ UcontextFiberManager::SegfaultHandler(int sig, siginfo_t *si, void *unused)
        i != g_guardPages.end (); ++i)
     {
       if (*i == page)
-	{
-	  // This is a stack overflow: all we can do is print some error message
-	  {
-	    char message[] = "Stack overflow !";
-	    write (2, message, strlen (message));
-	  }
-	  break;
-	}
+        {
+          // This is a stack overflow: all we can do is print some error message
+          {
+            char message[] = "Stack overflow !";
+            write (2, message, strlen (message));
+          }
+          break;
+        }
     }
 }
 
@@ -83,14 +83,14 @@ UcontextFiberManager::SetupSignalHandler (void)
    * the stack which triggered this same error. This kind of makes sense
    * so, we cannot blame the kernel for this.
    */
-  ss.ss_sp = malloc(SIGSTKSZ);
+  ss.ss_sp = malloc (SIGSTKSZ);
   ss.ss_size = SIGSTKSZ;
   ss.ss_flags = 0;
   int status = sigaltstack (&ss, NULL);
   if (status == -1)
     {
       NS_FATAL_ERROR ("Unable to setup an alternate signal stack handler, errno="
-		      << strerror (errno));
+                      << strerror (errno));
     }
   g_alternateSignalStack = ss.ss_sp;
 
@@ -98,20 +98,20 @@ UcontextFiberManager::SetupSignalHandler (void)
 
   struct sigaction sa;
   sa.sa_flags = SA_SIGINFO | SA_ONSTACK | SA_RESETHAND;
-  sigemptyset(&sa.sa_mask);
+  sigemptyset (&sa.sa_mask);
   sa.sa_sigaction = &UcontextFiberManager::SegfaultHandler;
-  status = sigaction(SIGSEGV, &sa, NULL);
+  status = sigaction (SIGSEGV, &sa, NULL);
   if (status == -1)
     {
       NS_FATAL_ERROR ("Unable to setup page fault handler, errno="
-		      << strerror (errno));
+                      << strerror (errno));
     }
 }
 
 uint32_t 
 UcontextFiberManager::CalcStackSize (uint32_t size)
 {
-  int pagesize = sysconf(_SC_PAGE_SIZE);
+  int pagesize = sysconf (_SC_PAGE_SIZE);
   if (pagesize == -1)
     {
       NS_FATAL_ERROR ("Unable to query page size");
@@ -130,7 +130,7 @@ UcontextFiberManager::CalcStackSize (uint32_t size)
 uint8_t *
 UcontextFiberManager::AllocateStack (uint32_t size)
 {
-  int pagesize = sysconf(_SC_PAGE_SIZE);
+  int pagesize = sysconf (_SC_PAGE_SIZE);
   if (pagesize == -1)
     {
       NS_FATAL_ERROR ("Unable to query page size");
@@ -143,8 +143,8 @@ UcontextFiberManager::AllocateStack (uint32_t size)
   if (map == MAP_FAILED)
     {
       NS_FATAL_ERROR ("Unable to allocate stack pages: size=" << size <<
-		      ", alloced=" << realSize <<
-		      ", errno=" << strerror (errno));
+                      ", alloced=" << realSize <<
+                      ", errno=" << strerror (errno));
     }
   uint8_t *stack = (uint8_t *)map;
   int status = mprotect (stack+pagesize, realSize-2*pagesize, PROT_READ | PROT_WRITE);
@@ -157,9 +157,9 @@ UcontextFiberManager::AllocateStack (uint32_t size)
 }
 void 
 UcontextFiberManager::DeallocateStack (uint8_t *buffer, 
-				       uint32_t stackSize)
+                                       uint32_t stackSize)
 {
-  int pagesize = sysconf(_SC_PAGE_SIZE);
+  int pagesize = sysconf (_SC_PAGE_SIZE);
   if (pagesize == -1)
     {
       NS_FATAL_ERROR ("Unable to query page size, errno=" << strerror (errno));
@@ -193,21 +193,21 @@ UcontextFiberManager::Trampoline (int a0, int a1, int a2, int a3)
   ctx <<= 32;
   ctx |= (uint32_t)a3;
 
-  void (*cb) (void *) = (void (*)(void*)) fn;
+  void (*cb)(void *) = (void (*)(void*))fn;
   cb ((void*)ctx);
 }
 
 struct Fiber *
-UcontextFiberManager::Create (void (*callback) (void *),
-			      void *context,
-			      uint32_t stackSize)
+UcontextFiberManager::Create (void (*callback)(void *),
+                              void *context,
+                              uint32_t stackSize)
 {
   struct UcontextFiber *fiber = new struct UcontextFiber ();
   uint8_t *stack;
   int retval;
 
   stack = AllocateStack (stackSize);
-  fiber->vgId = VALGRIND_STACK_REGISTER(stack,stack+stackSize);
+  fiber->vgId = VALGRIND_STACK_REGISTER (stack,stack+stackSize);
   fiber->stack = stack;
   fiber->stackSize = stackSize;
 
@@ -224,7 +224,7 @@ UcontextFiberManager::Create (void (*callback) (void *),
   uint32_t a1 = cb & 0xffffffff;
   uint32_t a2 = ctx >> 32;
   uint32_t a3 = ctx & 0xffffffff;
-  void (*fn) () = (void (*) ()) &UcontextFiberManager::Trampoline;
+  void (*fn)() = (void (*)()) &UcontextFiberManager::Trampoline;
   makecontext (&fiber->context, fn, 4, a0, a1, a2, a3);
 
   return fiber;
@@ -243,7 +243,7 @@ void
 UcontextFiberManager::Delete (struct Fiber *fib)
 {
   struct UcontextFiber *fiber = (struct UcontextFiber *)fib;
-  VALGRIND_STACK_DEREGISTER(fiber->vgId);
+  VALGRIND_STACK_DEREGISTER (fiber->vgId);
   if (fiber->stack != 0)
     {
       DeallocateStack (fiber->stack, fiber->stackSize);
@@ -255,7 +255,7 @@ UcontextFiberManager::Delete (struct Fiber *fib)
 
 void 
 UcontextFiberManager::SwitchTo (struct Fiber *fromFiber, 
-				const struct Fiber *toFiber)
+                                const struct Fiber *toFiber)
 {
   struct UcontextFiber *from = (struct UcontextFiber *)fromFiber;
   struct UcontextFiber *to = (struct UcontextFiber *)toFiber;
@@ -274,7 +274,7 @@ UcontextFiberManager::GetStackSize (struct Fiber *fib) const
 }
 
 void 
-UcontextFiberManager::SetSwitchNotification (void (*fn) (void))
+UcontextFiberManager::SetSwitchNotification (void (*fn)(void))
 {
   m_notifySwitch = fn;
 }

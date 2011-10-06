@@ -28,7 +28,7 @@ TaskScheduler::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::TaskScheduler")
     .SetParent<Object> ()
-    ;
+  ;
   return tid;
 }
 

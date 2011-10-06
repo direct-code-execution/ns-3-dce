@@ -8,7 +8,7 @@ class Cmsg
 public:
   Cmsg (struct msghdr *msg);
   void Add (int level, int type, int len, const uint8_t *buffer);
-  int GetNext(int *level, int *type, int *len, uint8_t **buffer);
+  int GetNext (int *level, int *type, int *len, uint8_t **buffer);
   void Finish (void);
 private:
   struct msghdr *m_msg;

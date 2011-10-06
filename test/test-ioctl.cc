@@ -30,7 +30,7 @@ int main (int argc, char *argv[])
   ioctlres = ioctl (sock, SIOCGIFFLAGS, &m_ifreq);
   TEST_ASSERT_UNEQUAL (ioctlres, -1);
   TEST_ASSERT_UNEQUAL (m_ifreq.ifr_flags & (IFF_UP | IFF_BROADCAST), 0 );
-  
+
   //SIOCGIWNAME
   ioctlres = ioctl (sock, SIOCGIWNAME, &m_iwreq);
   TEST_ASSERT_UNEQUAL (ioctlres, -1);
@@ -40,7 +40,7 @@ int main (int argc, char *argv[])
   //SIOCGIFADDR
   {
     ioctlres = ioctl (sock, SIOCGIFADDR, &m_ifreq);
-      TEST_ASSERT_UNEQUAL (ioctlres, -1);
+    TEST_ASSERT_UNEQUAL (ioctlres, -1);
     struct sockaddr* saddr = &m_ifreq.ifr_addr;
     struct sockaddr_in *ipv4 = (struct sockaddr_in *) saddr;
     struct in_addr re_addr;

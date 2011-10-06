@@ -40,8 +40,8 @@ const char *dce_debug_processname (void)
 bool dce_debug_is_node (uint32_t node)
 {
   return std::find (g_dce_debug_nodes.begin (), 
-		    g_dce_debug_nodes.end (), 
-		    node) != g_dce_debug_nodes.end ();
+                    g_dce_debug_nodes.end (),
+                    node) != g_dce_debug_nodes.end ();
 }
 static void dce_debug_switch_notify (void)
 {

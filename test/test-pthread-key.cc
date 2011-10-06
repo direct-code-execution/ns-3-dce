@@ -43,8 +43,8 @@ int main (int argc, char *argv[])
   TEST_ASSERT_EQUAL (tmp, av);
   pthread_t thread;
   status = pthread_create (&thread, NULL, 
-			   &thread_fn,
-			   (void*)-5);
+                           &thread_fn,
+                           (void*)-5);
   TEST_ASSERT_EQUAL (status, 0);
   status = pthread_setspecific (a, 0);
   TEST_ASSERT_EQUAL (status, 0);
