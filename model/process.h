@@ -21,6 +21,7 @@
 #define PROCESS_H
 
 #include <signal.h>
+#include <map>
 #include <vector>
 #include <list>
 #include <set>
@@ -30,7 +31,6 @@
 #include "ns3/nstime.h"
 #include "unix-fd.h"
 #include "ns3/random-variable.h"
-#include <map>
 
 class KingsleyAlloc;
 

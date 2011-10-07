@@ -117,7 +117,7 @@ DceManager::DoDispose (void)
           DeleteProcess (tmp, PEC_NS3_END);
         }
     }
-
+  mapCopy.clear ();
   Object::DoDispose ();
 }
 
@@ -222,7 +222,8 @@ DceManager::DoStartProcess (void *context)
   NS_ASSERT (fd == 3);
   std::ostringstream oss;
   oss << "Start Time: " << GetTimeStamp () << std::endl;
-  const char *str = oss.str ().c_str ();
+  std::string tmp = oss.str ();
+  const char *str = tmp.c_str ();
   dce_write (fd, str, strlen (str));
   dce_close (fd);
 
@@ -546,9 +547,8 @@ DceManager::Clone (Thread *thread)
   clone->pid = AllocatePid ();
   thread->process->children.insert (clone->pid);
   // dup each file descriptor.
-  std::map<int,FileUsage *> openFiles = thread->process->openFiles;
-  for (std::map <int, FileUsage* >::iterator i = openFiles.begin ();
-       i != openFiles.end (); ++i)
+  for (std::map <int, FileUsage* >::iterator i = thread->process->openFiles.begin ();
+       i != thread->process->openFiles.end (); ++i)
     {
       int fd = i->first;
       FileUsage* fu = i->second;
@@ -760,6 +760,7 @@ DceManager::DeleteProcess (struct Process *process, ProcessEndCause type)
               dce_close (fd);
             }
         }
+      openFiles.clear ();
     }
 
   // Close all streams opened
@@ -781,7 +782,7 @@ DceManager::DeleteProcess (struct Process *process, ProcessEndCause type)
     }
   // stop itimer timers if there are any.
   process->itimer.Cancel ();
-  // Delete File References Memory : TEMPOFUR test to put in the up one loop
+  // Delete File References Memory
   std::map<int,FileUsage *> openFiles = process->openFiles;
   process->openFiles.clear ();
   for (std::map <int, FileUsage* >::iterator i = openFiles.begin ();

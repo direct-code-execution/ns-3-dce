@@ -170,18 +170,26 @@ void big_fork_exec (int prof)
 
           pid_t w =  waitpid ( pid, &st, 0);
           printf ("Child pid:%d %d\n", pid, w);
-          if (prof>0) exit (0);
+          if (prof>0)
+            {
+              exit (0);
+            }
           return;
         }
       else
         {
-          if (prof++ >= 100) exit (0);
-
+          if (prof++ >= 100)
+            {
+              printf ("exit \n");
+              exit (0);
+            }
           char arg[100];
 
           sprintf (arg,"%d",prof);
 
-          static char* const args[] = { "build/bin/test-fork", arg };
+          static char* const args[] = { "build/bin/test-fork", arg , 0 };
+
+          printf ("Before exec ! \n");
 
           int ret = execv ("build/bin/test-fork", args);
 
@@ -192,6 +200,11 @@ void big_fork_exec (int prof)
 
 int main (int argc, char *argv[])
 {
+  printf ("main argc=%d\n",argc);
+  for (int i=0; i < argc ; ++i)
+    {
+      printf ("main argv[%d]=%s\n",i, argv[i]);
+    }
   if (argc == 1)
     {
       test_fork ();
