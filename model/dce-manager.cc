@@ -91,8 +91,6 @@ DceManager::GetTypeId (void)
 DceManager::DceManager ()
 {
   NS_LOG_FUNCTION (this);
-  // Allocate Init Process
-  m_processes [1] = 0;
 }
 DceManager::~DceManager ()
 {
@@ -106,16 +104,12 @@ DceManager::DoDispose (void)
   std::map<uint16_t, Process*> mapCopy = m_processes;
 
   m_processes.clear ();
-
   for(std::map<uint16_t, Process*>::iterator it = mapCopy.begin (); it != mapCopy.end (); it++)
     {
       tmp = it->second;
-      if ( 0 != tmp )
-        {
-          std::string statusWord = "Never ended.";
-          AppendStatusFile (tmp->pid, tmp->nodeId, statusWord );
-          DeleteProcess (tmp, PEC_NS3_END);
-        }
+      std::string statusWord = "Never ended.";
+      AppendStatusFile (tmp->pid, tmp->nodeId, statusWord );
+      DeleteProcess (tmp, PEC_NS3_END);
     }
   mapCopy.clear ();
   Object::DoDispose ();
@@ -432,7 +426,7 @@ DceManager::AllocatePid (void)
   for (uint16_t i = 0; i < 0xffff; i++)
     {
       uint16_t candidatePid = (m_nextPid + i) & 0xffff;
-      if (candidatePid != 0 && SearchProcess (candidatePid) == 0)
+      if (candidatePid > 1 && SearchProcess (candidatePid) == 0)
         {
           m_nextPid = (candidatePid + 1) & 0xffff;
           return candidatePid;
@@ -741,7 +735,7 @@ DceManager::DeleteProcess (struct Process *process, ProcessEndCause type)
       tmp = 0;
     }
 
-  if (type == PEC_EXIT)
+  if ((type == PEC_EXIT)||(type == PEC_NS3_STOP))
     {
       // We have a Current so we can call dce_close !
       std::map<int,FileUsage *> openFiles = process->openFiles;
@@ -831,7 +825,7 @@ DceManager::DeleteProcess (struct Process *process, ProcessEndCause type)
 
   int ppid = process->ppid;
 
-  if (!type)
+  if ((type == PEC_EXIT)||(type == PEC_NS3_STOP))
     {
       // Re-parent children
       std::set<uint16_t> children = process->children;
@@ -859,7 +853,7 @@ DceManager::DeleteProcess (struct Process *process, ProcessEndCause type)
   delete process->alloc;
   process->alloc = 0;
 
-  if (!type)
+  if ((type == PEC_EXIT)||(type == PEC_NS3_STOP))
     {
       if ( ppid > 1 )
         {
