@@ -81,6 +81,7 @@ void libc_dce (struct Libc *libc)
   libc->memcpy_fn = memcpy;
   libc->memcmp_fn = memcmp;
   libc->memmove_fn = memmove;
+  libc->memchr_fn = memchr;
   libc->strcpy_fn = strcpy;
   libc->strncpy_fn = strncpy;
   libc->strcat_fn = strcat;

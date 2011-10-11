@@ -96,6 +96,7 @@ struct Libc
   void * (*memcpy_fn)(void *dest, const void *src, size_t n);
   int (*memcmp_fn)(const void *s1, const void *s2, size_t n);
   void *(*memmove_fn)(void *dest, const void *src, size_t n);
+  void *(*memchr_fn)(const void *s, int c, size_t n);
   char *(*strcpy_fn)(char *dest, const char *src);
   char *(*strcat_fn)(char *dest, const char *src);
   char *(*strncat_fn)(char *dest, const char *src, size_t n);

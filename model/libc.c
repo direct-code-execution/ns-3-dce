@@ -262,6 +262,10 @@ int memcmp (const void *s1, const void *s2, size_t n)
 {
   return g_libc.memcmp_fn (s1, s2, n);
 }
+void *memchr(const void *s, int c, size_t n)
+{
+  return g_libc.memchr_fn (s, c, n);
+}
 void *memmove(void *dest, const void *src, size_t n)
 {
   return g_libc.memmove_fn (dest, src, n);
