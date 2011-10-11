@@ -117,6 +117,13 @@ int dce_poll (struct pollfd *fds, nfds_t nfds, int timeout)
     {
       i->second->DecUsage ();
     }
+
+  // Try to break infinite loop in poll with a 0 timeout !
+  if ( ( 0 == count ) && ( 0 == timeout ) )
+    {
+      UtilsAdvanceTime (current);
+    }
+
   return count;
 }
 
