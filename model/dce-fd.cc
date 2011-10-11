@@ -28,7 +28,6 @@
 #include "ns3/node.h"
 #include "local-socket-fd-factory.h"
 #include "ns3-socket-fd-factory.h"
-#include "linux-socket-fd-factory.h"
 #include "file-usage.h"
 #include "dce-stdlib.h"
 
@@ -140,12 +139,7 @@ int dce_unlink (const char *pathname)
         {
           factory->UnlinkNotify (fullpath);
         }
-      factory = Current ()->process->manager->GetObject<LinuxSocketFdFactory> ();
-      if ( 0 != factory )
-        {
-          factory->UnlinkNotify (fullpath);
-        }
-      factory = Current ()->process->manager->GetObject<Ns3SocketFdFactory> ();
+      factory = Current ()->process->manager->GetObject<SocketFdFactory> ();
       if ( 0 != factory )
         {
           factory->UnlinkNotify (fullpath);
