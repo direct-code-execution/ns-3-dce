@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <poll.h>
 #include "test-macros.h"
 
 // Test ExecV with an invalid path then with a valid one.
@@ -101,9 +102,43 @@ int test6 ()
   return ret;
 }
 
+static void *
+thread_test7 (void *arg)
+{
+  struct pollfd fds;
+  int ret = -1;
+
+  fds.fd = 0;
+  fds.events = POLLIN;
+  fds.revents = 0;
+
+  // Block on stdin
+  ret = poll (&fds, 1, -1);
+
+  return arg;
+}
+
+// Create some thread before execing
+int test7 ()
+{
+  for (int i=0; i < 30 ; i++)
+    {
+      int status;
+      pthread_t thread;
+
+      // try to join after the thread exits.
+      status = pthread_create (&thread, NULL, &thread_test7, 0);
+    }
+  int ret = execl ("build/bin/test-exec", "build/bin/test-exec", "8", 0);
+  TEST_ASSERT ( false ); // Must not be reached
+
+  return ret;
+}
+
 int last_test ()
 {
   TEST_ASSERT_EQUAL ( strcmp ("TEST6", getenv ("CALLER")), 0 );
+  sleep (1);
   printf ("Last test.\n");
   return 0;
 }
@@ -125,6 +160,7 @@ int main (int c, char **v)
     case 4: return test4 ();
     case 5: return test5 ();
     case 6: return test6 ();
+    case 7: return test7 ();
 
     default: return last_test ();
     }

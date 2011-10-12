@@ -46,10 +46,6 @@ int dce_pthread_cond_wait (pthread_cond_t * cond,
 int dce_pthread_condattr_destroy (pthread_condattr_t *attr);
 int dce_pthread_condattr_init (pthread_condattr_t *attr);
 
-
-
-
-
 #ifdef __cplusplus
 }
 #endif

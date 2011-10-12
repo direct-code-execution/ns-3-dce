@@ -35,7 +35,8 @@ namespace ns3 {
 
 struct Process;
 struct Thread;
-
+struct SignalHandler;
+class Loader;
 
 
 /**
@@ -76,8 +77,6 @@ public:
   typedef enum
   {
     PEC_EXIT,
-    PEC_EXEC_SUCCESS,
-    PEC_EXEC_FAILED,
     PEC_NS3_END, // NO MORE EVENTS
     PEC_NS3_STOP, // STOP AT PREDEFINED TIME
   } ProcessEndCause;
@@ -112,34 +111,15 @@ public:
   uint16_t Clone (Thread *thread);
   std::map<uint16_t, Process *> GetProcs ();
   static void AppendStatusFile (uint16_t pid, uint32_t nodeId, std::string &line);
-
-  // Prototype for exec
-  // A new process with same pid will be created in order to clean memory, stack, data, bss
-  // then the calling process will be stopped ... I do not exactly how now : )
-  // Premiere Etape on va passer la main au thread NS3 car il se peut qu'on kill la memoire ou je suis...
-  int Execve (Thread *threadOld, const char *path, char *const argv[], char *const envp[]);
-
-
+  int Execve (const char *path, char *const argv[], char *const envp[]);
 
 private:
-  struct ExecContext
-  {
-    Thread *caller;
-    int execResult; // 0 OK else errno !
-  };
   // inherited from Object.
   virtual void DoDispose (void);
 
   struct Process *CreateProcess (std::string name, std::string stdinfilename, std::vector<std::string> args,
                                  std::vector<std::pair<std::string,std::string> > envs, int pid);
   static void DoStartProcess (void *context);
-
-  // Allocate new process with the same pid that the process trying to execking
-  struct Process *CopyExecProcess (struct Process *proc, std::string name, std::vector<std::string> args,
-                                   std::vector<std::pair<std::string,std::string> > envs);
-  struct Process *StartExecProcess (struct ExecContext *context, const char *path, char *const argv[], char *const envp[]);
-  static void DoExec (void *context);
-
   bool CheckProcessContext (void) const;
   uint16_t AllocatePid (void);
   uint16_t AllocateTid (const struct Process *process) const;
@@ -157,13 +137,17 @@ private:
   bool WakeupChildWaiters (struct Process *p);
   // Remove memory used by thread poll table and iowait, remove from wait queues
   void CleanupThread (struct Thread *thread);
+  std::vector<std::string> CopyArgs (char *const argv[]);
+  int CopyEnv (char *const envp[], std::vector<std::pair<std::string,std::string> > &res);
+  static void* LoadMain (Loader *ld, std::string filename, Process *proc, int &err);
+  static void DoExecProcess (void *c);
+  static void SetDefaultSigHandler (std::vector<SignalHandler> &signalHandlers);
 
-  //std::vector<Process *> m_processes;
   std::map<uint16_t, Process *> m_processes; // Key is the pid
-
   uint16_t m_nextPid;
   TracedCallback<uint16_t, int> m_processExit;
-  bool m_minimizeFiles; // If true close stderr and stdout between writes .
+  // If true close stderr and stdout between writes .
+  bool m_minimizeFiles;
 };
 
 } // namespace ns3

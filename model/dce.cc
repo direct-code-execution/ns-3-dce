@@ -665,7 +665,7 @@ int dce_execv (const char *path, char *const argv[])
       return -1;
     }
 
-  return thread->process->manager->Execve (thread, fileName.c_str (), argv, *(thread->process->penvp) );
+  return thread->process->manager->Execve (fileName.c_str (), argv, *(thread->process->penvp) );
 }
 int dce_execl (const char *path, const char *arg, va_list ap)
 {
@@ -699,7 +699,7 @@ int dce_execl (const char *path, const char *arg, va_list ap)
       argv[nb++] = p = va_arg (ap, char *);
     } while ( p );
 
-  int retval = thread->process->manager->Execve (thread, fileName.c_str (), (char* const*) argv, *(thread->process->penvp) );
+  int retval = thread->process->manager->Execve (fileName.c_str (), (char* const*) argv, *(thread->process->penvp) );
 
   dce_free (argv);
 
@@ -717,7 +717,7 @@ int dce_execve (const char *path, char *const argv[], char *const envp[])
       return -1;
     }
 
-  return thread->process->manager->Execve (thread, fileName.c_str (), argv, envp );
+  return thread->process->manager->Execve (fileName.c_str (), argv, envp );
 }
 
 int dce_execlp (const char *file, const char *arg, va_list ap)
@@ -750,7 +750,7 @@ int dce_execlp (const char *file, const char *arg, va_list ap)
       argv[nb++] = p = va_arg (ap, char *);
     } while ( p );
 
-  int retval = thread->process->manager->Execve (thread, fileName.c_str (), (char* const*) argv, *(thread->process->penvp) );
+  int retval = thread->process->manager->Execve (fileName.c_str (), (char* const*) argv, *(thread->process->penvp) );
 
   dce_free (argv);
 
@@ -769,7 +769,7 @@ int dce_execvp (const char *file, char *const argv[])
       return -1;
     }
 
-  return thread->process->manager->Execve (thread, fileName.c_str (), argv, *(thread->process->penvp) );
+  return thread->process->manager->Execve (fileName.c_str (), argv, *(thread->process->penvp) );
 }
 int dce_execle (const char *path, const char *arg, va_list ap)
 {
@@ -800,7 +800,7 @@ int dce_execle (const char *path, const char *arg, va_list ap)
       argv[nb++] = p = va_arg (ap, char *);
     } while ( p );
 
-  int retval = thread->process->manager->Execve (thread, fileName.c_str (), (char* const*) argv, (char* const*) envp );
+  int retval = thread->process->manager->Execve (fileName.c_str (), (char* const*) argv, (char* const*) envp );
 
   dce_free (argv);
 

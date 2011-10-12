@@ -316,6 +316,19 @@ int dce_fclose_unconditional (FILE *file)
   fclose (file);
   return 0;
 }
+int dce_fclose_onexec (FILE *file)
+{
+  // Note: it is important here not to call the Current function here
+  // because we need to be able to run this function even if there is no context.
+  // For example, this is why we have no call to NS_LOG_FUNCTION (Current () ...);
+  struct my_IO_FILE_plus *fp = (struct my_IO_FILE_plus *)file;
+  static struct my_IO_jump_t vtable;
+  memcpy (&vtable, fp->vtable, sizeof(struct my_IO_jump_t));
+  vtable.__close = (void*)my_close_unconditional;
+  fp->vtable = &vtable;
+  fclose (file);
+  return 0;
+}
 int dce_fclose (FILE *fp)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << fp);
