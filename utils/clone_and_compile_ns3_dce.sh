@@ -35,20 +35,33 @@ cd ..
 if [ "YES" == "$USE_KERNEL" ]
 then
 	cd ns-3-linux/
- 	git clone git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next-2.6.git net-next-2.6
+# 	git clone git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next-2.6.git net-next-2.6
+ 	git clone git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git net-next-2.6
 	make unpatch
 	make  setup
 	make defconfig
+	make config
+	sed s/CONFIG_PACKET=m/CONFIG_PACKET=y/ config >c2
+	rm config
+	mv c2 config
 	make
 	cd ..
-	wget http://devresources.linuxfoundation.org/dev/iproute2/download/iproute2-2.6.33.tar.bz2
-	tar jxf iproute2-2.6.33.tar.bz2
-	cd iproute2-2.6.33
+#	wget http://devresources.linuxfoundation.org/dev/iproute2/download/iproute2-2.6.33.tar.bz2
+	wget http://www.linuxgrill.com/anonymous/iproute2/NEW-OSDL/iproute2-2.6.38.tar.bz2     
+#	tar jxf iproute2-2.6.33.tar.bz2
+	tar jxf iproute2-2.6.38.tar.bz2
+#	cd iproute2-2.6.33
+	cd iproute2-2.6.38
+	./configure
 	LDFLAGS=-pie make CCOPTS='-fpic -D_GNU_SOURCE -O0 -U_FORTIFY_SOURCE'
 	cd ../ns-3-dce
 	ln -s ../ns-3-linux/libnet-next-2.6.so
-	ln -s ../iproute2-2.6.33/ip/ip
-	cd ..
+#	ln -s ../iproute2-2.6.33/ip/ip
+	ln -s ../iproute2-2.6.38/ip/ip
+	cd example/ccnx
+	ln -s ../../libnet-next-2.6.so
+	ln -s ../../ip
+	cd ../../..
 fi
 cd ns-3-dce/
 if [ "YES" == "$USE_KERNEL" ]
