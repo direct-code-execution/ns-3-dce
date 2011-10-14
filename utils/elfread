@@ -178,22 +178,18 @@ sub find_defined_func_object
     return \%result;
 }
 
-
-#ldd /home/furbani/dev/dce/second-try/ns-3-dce/build/debug/src/dce/example/ccnd 
-#	linux-vdso.so.1 =>  (0x00007fff7e70f000)
-#	libcrypto.so.10 => /lib64/libcrypto.so.10 (0x00007f88b37e7000)
-#	libc.so.6 => /lib64/libc.so.6 (0x00007f88b344b000)
-#	libdl.so.2 => /lib64/libdl.so.2 (0x00007f88b3247000)
-#	libz.so.1 => /lib64/libz.so.1 (0x00007f88b3030000)
-#	/lib64/ld-linux-x86-64.so.2 (0x00007f88b3b7e000)
-# return ldd result as an array of path to library minus someones ( linux-vdso libc libdl libpthread );
-sub ldd
+# return ldd result as an array of path to library minus someones if second args is true skip or keep only some else the rest
+# of args are skyp or keep base names.
+sub ldd4
 {
     my @lines = `ldd $_[0]`;	
     my @res;
-    my @skip = qw( linux-vdso libc libdl libpthread );
+    shift @_;
+    my $is_skip = $_[0]; 
+    shift @_;
+    my @keepskip = @_;
 # turn array to hash !
-    my %skip = map { $_ => 1 } @skip;
+    my %keepskip = map { $_ => 1 } @keepskip;
     
     foreach (@lines) 
     {
@@ -218,10 +214,8 @@ sub ldd
 		    print "ldd second filter $shortname \n";
 		}
 
-#		print "Short Name $1 \n";
-		# now skip some libraries like linux-vdso libc libdl
-
-		if ( ! exists $skip{$shortname} )
+		# now keep or skip some libraries like linux-vdso libc libdl
+		if ( exists $keepskip{$shortname} != $is_skip )
 		{
 		    if ($Debug)
 		    {
@@ -238,7 +232,6 @@ sub ldd
     }
     return @res;
 }
-
 
 # args:
 #  1 : ref of array of binaries to check : the first should be the exe one and the other its ldd reported libs
@@ -371,17 +364,52 @@ if ($#bins < 0)
     push @bins, "/home/furbani/dev/dce/second-try/ns-3-dce/build/debug/src/dce/example/ccnd";
 }
 
-my @reallibs = qw( /lib64/libc.so.6 /lib64/libpthread.so.0 );
-my @simulibs = qw( /home/furbani/dev/dce/new-one/ns-3-dce/build/lib/libc-ns3.so
-                    /home/furbani/dev/dce/new-one/ns-3-dce/build/lib/libpthread-ns3.so );
+# first Arg En Path Variable like PATH or LD_LIBRARY_PATH
+# 2nd : file to search
+sub search_path 
+{
+    my @pates = split(/:/,$ENV{$_[0]});
+    my $filename = $_[1];
+    my $ret = "";
+
+    foreach my $pate (@pates)
+    {
+	my $fichier = $pate . "/" . $filename;
+	if ( -e $fichier )
+	{
+	    return $fichier;
+	}
+    }
+    return $ret;
+}
+
+my @reallibs =  &ldd4( "/usr/bin/perl", 0, "libc", "libpthread" );
+foreach my $rl (@reallibs)
+{
+    print "use real lib : ".$rl."\n";
+}
+my @simulibs = qw( libc-ns3.so
+                   libpthread-ns3.so );
+my @fullsimulibs;
+
+foreach my $file (@simulibs)
+{
+    my $fname = &search_path( "LD_LIBRARY_PATH", $file);
+
+    if ( length ($fname) > 0 ) 
+    {
+	push (@fullsimulibs, $fname);
+	print "use NS3 lib : ".$fname."\n"; 
+    }
+}
 
 foreach my $arg0 (@bins) 
 {    
-    my @extralibs = &ldd( $arg0 );
+    my @extralibs = &ldd4( $arg0, 1, "linux-vdso",  "libc", "libdl", "libpthread" );
     my @targets = reverse ( @extralibs ) ;
 
     push @targets , $arg0 ;
     @targets = reverse ( @targets );
 
-    my $ret = &cross_reference( \@targets, \@reallibs, \@simulibs );
+    my $ret = &cross_reference( \@targets, \@reallibs, \@fullsimulibs );
 }
