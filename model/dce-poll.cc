@@ -51,8 +51,7 @@ int dce_poll (struct pollfd *fds, nfds_t nfds, int timeout)
       count = 0;
       for (uint32_t i = 0; i < nfds; ++i)
         {
-          if (current->process->openFiles[fds[i].fd] 
-              && !current->process->openFiles[fds[i].fd]->IsClosed ())
+          if ( CheckFdExists( current->process, fds[i].fd, true ) )
             {
               validFd++;
               UnixFd *unixFd = 0;
@@ -172,7 +171,7 @@ int dce_select (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
 
       if (event)
         {
-          if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed ()))
+          if (!CheckFdExists (current->process, fd, true ))
             {
               current->err = EBADF;
               return -1;

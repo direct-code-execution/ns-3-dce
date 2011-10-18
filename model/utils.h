@@ -56,8 +56,36 @@ bool CheckExeMode (struct stat *st, uid_t uid, gid_t gid);
 std::string FindExecFile (std::string root, std::string envPath, std::string fileName, uid_t uid, gid_t gid, int *errNo);
 std::list<std::string> Split (std::string input, std::string sep);
 void FdDecUsage (int fd);
+bool CheckFdExists (Process* const p, int const fd, bool const opened);
 
 #define MAX_FDS 1024
+
+#define OPENED_FD_METHOD_ERR( errCode, rettype, args ) \
+  std::map<int,FileUsage *>::iterator it = current->process->openFiles.find (fd); \
+  if ( current->process->openFiles.end () == it ) \
+  { \
+      current->err = EBADF; \
+      return errCode; \
+    } \
+    FileUsage *fu = it->second; \
+    if (fu->IsClosed ()) \
+    { \
+        current->err = EBADF; \
+        return errCode; \
+      } \
+    UnixFd *unixFd =  fu->GetFileInc (); \
+    rettype retval = unixFd->args; \
+    if ( fu && fu->DecUsage ()) \
+      { \
+        current->process->openFiles.erase (fd); \
+        delete fu; \
+        fu = 0; \
+      } \
+\
+    return retval;
+
+#define OPENED_FD_METHOD(rettype, args ) OPENED_FD_METHOD_ERR( -1, rettype, args )
+
 } // namespace ns3
 
 #endif /* UTILS_H */

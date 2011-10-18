@@ -385,9 +385,21 @@ FdDecUsage (int fd)
 
   if ( fu && fu->DecUsage ())
     {
-      current->process->openFiles[fd] = 0;
+      current->process->openFiles.erase (fd);
       delete fu;
       fu = 0;
     }
+}
+bool
+CheckFdExists (Process* const p, int const fd, bool const opened)
+{
+  std::map<int,FileUsage *>::iterator it = p->openFiles.find (fd);
+
+  if (it != p->openFiles.end ())
+    {
+      return !opened || (! (*it).second->IsClosed ());
+    }
+
+  return false;
 }
 } // namespace ns3

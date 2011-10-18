@@ -36,16 +36,7 @@ int dce_timerfd_settime (int fd, int flags,
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
 
-  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed ()))
-    {
-      current->err = EBADF;
-      return -1;
-    }
-  UnixFd *unixFd =  current->process->openFiles[fd]->GetFileInc ();
-  int retval = unixFd->Settime (flags, new_value, old_value);
-  FdDecUsage (fd);
-
-  return retval;
+  OPENED_FD_METHOD (int, Settime (flags, new_value, old_value) )
 }
 
 int dce_timerfd_gettime (int fd, struct itimerspec *cur_value)
@@ -54,15 +45,6 @@ int dce_timerfd_gettime (int fd, struct itimerspec *cur_value)
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
 
-  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed ()))
-    {
-      current->err = EBADF;
-      return -1;
-    }
-  UnixFd *unixFd =  current->process->openFiles[fd]->GetFileInc ();
-  int retval = unixFd->Gettime (cur_value);
-  FdDecUsage (fd);
-
-  return retval;
+  OPENED_FD_METHOD (int, Gettime (cur_value) )
 }
 

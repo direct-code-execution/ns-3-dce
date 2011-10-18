@@ -52,16 +52,7 @@ int dce_fxstat (int ver, int fd, struct stat *buf)
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd);
   NS_ASSERT (current != 0);
 
-  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed ()))
-    {
-      current->err = EBADF;
-      return -1;
-    }
-  UnixFd *unixFd = current->process->openFiles[fd]->GetFileInc ();
-  int retval = unixFd->Fxstat (ver, buf);
-  FdDecUsage (fd);
-
-  return retval;
+  OPENED_FD_METHOD(int, Fxstat (ver, buf) )
 }
 int dce_fxstat64 (int ver, int fd, struct stat64 *buf)
 {
@@ -69,16 +60,7 @@ int dce_fxstat64 (int ver, int fd, struct stat64 *buf)
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd);
   NS_ASSERT (current != 0);
 
-  if ((0 == current->process->openFiles[fd])||(current->process->openFiles[fd]->IsClosed ()))
-    {
-      current->err = EBADF;
-      return -1;
-    }
-  UnixFd *unixFd = current->process->openFiles[fd]->GetFileInc ();
-  int retval = unixFd->Fxstat64 (ver, buf);
-  FdDecUsage (fd);
-
-  return retval;
+  OPENED_FD_METHOD(int, Fxstat64 (ver, buf) )
 }
 int dce_lxstat (int ver, const char *pathname, struct stat *buf)
 {
