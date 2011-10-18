@@ -15,6 +15,7 @@ ssize_t dce_writev (int fd, const struct iovec *iov, int iovcnt);
 ssize_t dce_read (int fd, void *buf, size_t count);
 void dce_exit (int status);
 unsigned int dce_sleep (unsigned int seconds);
+int dce_usleep (useconds_t usec);
 pid_t dce_getpid (void);
 pid_t dce_getppid (void);
 int dce_pause (void);

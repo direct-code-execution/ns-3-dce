@@ -340,6 +340,8 @@ struct Libc
   pid_t (*wait_fn)(int *status);
   pid_t (*waitpid_fn)(pid_t pid, int *status, int options);
 
+  int (*usleep_fn)(useconds_t usec);
+
 };
 
 #ifdef __cplusplus

@@ -224,7 +224,14 @@ unsigned int dce_sleep (unsigned int seconds)
   current->process->manager->Wait (Seconds (seconds));
   return 0;
 }
-
+int dce_usleep (useconds_t usec)
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (current << UtilsGetNodeId ());
+  NS_ASSERT (current != 0);
+  current->process->manager->Wait (MicroSeconds (usec));
+  return 0;
+}
 
 int dce_kill (pid_t pid, int sig)
 {

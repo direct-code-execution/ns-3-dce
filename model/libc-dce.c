@@ -321,6 +321,8 @@ void libc_dce (struct Libc *libc)
   libc->wait_fn = dce_wait;
   libc->waitpid_fn = dce_waitpid;
 
+  libc->usleep_fn = dce_usleep;
+
 }
 
 #ifdef __cplusplus
