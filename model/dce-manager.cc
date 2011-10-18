@@ -562,19 +562,16 @@ void
 DceManager::Stop (uint16_t pid)
 {
   NS_LOG_FUNCTION (this << pid);
-  while (true)
-    {
-      Process *process = SearchProcess (pid);
-      if (process == 0)
-        {
-          return;
-        }
-      std::string statusWord = "Stopped by NS3.";
-      AppendStatusFile (process->pid, process->nodeId, statusWord);
-      DeleteProcess (process, PEC_NS3_STOP);
-    }
-}
 
+  Process *process = SearchProcess (pid);
+  if (process == 0)
+    {
+      return;
+    }
+  std::string statusWord = "Stopped by NS3.";
+  AppendStatusFile (process->pid, process->nodeId, statusWord);
+  DeleteProcess (process, PEC_NS3_STOP);
+}
 void 
 DceManager::SigkillHandler (int signal)
 {
@@ -656,7 +653,7 @@ DceManager::DeleteProcess (struct Process *process, ProcessEndCause type)
       tmp = 0;
     }
 
-  if ((type == PEC_EXIT)||(type == PEC_NS3_STOP))
+  if (type == PEC_EXIT)
     {
       // We have a Current so we can call dce_close !
       std::map<int,FileUsage *> openFiles = process->openFiles;
@@ -828,7 +825,13 @@ DceManager::SearchProcess (uint16_t pid)
 {
   NS_LOG_FUNCTION (this << pid);
 
-  return m_processes [pid];
+  std::map<uint16_t, Process *>::iterator it = m_processes.find (pid);
+
+  if ( it !=  m_processes.end ())
+    {
+      return m_processes [pid];
+    }
+  return 0;
 }
 
 void 
