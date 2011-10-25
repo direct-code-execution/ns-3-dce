@@ -237,9 +237,12 @@ FILE *dce_freopen (const char *path, const char *mode, FILE *stream)
       current->err = EINVAL;
       return 0;
     }
+  int oldFd = stream->_fileno;
+  stream->_fileno = -1;
   stream = freopen ("/dev/null", mode, stream);
   if (stream == 0)
     {
+      stream->_fileno = oldFd;
       current->err = errno;
       return 0;
     }
@@ -256,11 +259,12 @@ FILE *dce_freopen (const char *path, const char *mode, FILE *stream)
   int fd = dce_open (path, mode_posix_flags (mode), ~0);
   if (fd == -1)
     {
+      dce_close (oldFd);
       fclose (stream);
       current->err = errno;
       return 0;
     }
-  close (stream->_fileno);
+  dce_close (oldFd);
   stream->_fileno = fd;
   mode_setup (stream, fd, mode);
   return stream;
