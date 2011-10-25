@@ -18,7 +18,7 @@ MINFILES=--ns3::DceManager::MinimizeOpenFiles=1
 #NS_LOG=$NS_LOG:CcndInLine
 # Comment out to use TCP instead of UDP
 USE_TCP=--tcp=1
-KERN=--kernel=1
+KERN=--kernel=0
 echo Run NS3
 if [ "" == "$GDB" ]
 then

@@ -176,6 +176,21 @@ TaskManager::Start (void (*fn)(void*), void *context)
 {
   return Start (fn, context, m_defaultStackSize);
 }
+// At every switch of context this method is called and it runs the signal handlers of pending signals.
+static void SwitchNotifEatSignal (void)
+{
+  TaskManager *manager = TaskManager::Current ();
+  if (manager == 0)
+    {
+      return;
+    }
+  if ( ! manager->CurrentTask () )
+    {
+      return;
+    }
+  Thread *current = Current ();
+  UtilsDoSignal () ;
+}
 Task *
 TaskManager::Start (void (*fn)(void*), void *context, uint32_t stackSize)
 {
@@ -408,6 +423,7 @@ TaskManager::SetFiberManagerType (enum FiberManagerType type)
       NS_ASSERT (false);
       break;
     }
+  m_fiberManager->SetSwitchNotification (SwitchNotifEatSignal);
   m_mainFiber = m_fiberManager->CreateFromCaller ();
 }
 

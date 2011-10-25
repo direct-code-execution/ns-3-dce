@@ -149,7 +149,8 @@ def build_dce_tests(module, kern):
              ['test-exec', []],
              ['test-exec-target-1', []],
              ['test-raw-socket', []],
-             ['test-fork-fd', []]
+             ['test-fork-fd', []],
+             ['test-iperf', []]
              ]
     for name,uselib in tests:
         module.add_test(**dce_kw(target='bin/' + name, source = ['test/' + name + '.cc'],
@@ -211,7 +212,15 @@ def build_dce_examples(module):
     module.add_example(needed = ['core', 'internet', 'dce', 'tap-bridge', 'csma' ], 
                        target='bin/dce-tap-vlc',
                        source=['example/ccnx/dce-tap-vlc.cc'])       
+    
+    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
+                       target='bin/dce-ping',
+                       source=['example/dce-ping.cc', 'example/ccnx/misc-tools.cc'])
 
+    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
+                       target='bin/dce-iperf',
+                       source=['example/dce-iperf.cc', 'example/ccnx/misc-tools.cc'])
+                        
 def build_dce_kernel_examples(module):
     module.add_example(needed = ['core', 'network', 'dce'], 
                        target='bin/dce-linux-simple',
