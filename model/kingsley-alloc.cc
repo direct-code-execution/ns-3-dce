@@ -35,16 +35,18 @@ KingsleyAlloc::KingsleyAlloc ()
 KingsleyAlloc::~KingsleyAlloc ()
 {
   NS_LOG_FUNCTION (this);
+ // return;
   for (std::list<struct KingsleyAlloc::MmapChunk>::iterator i = m_chunks.begin ();
        i != m_chunks.end (); ++i)
     {
-      if (i->mmap->buffer != i->copy)
+      if (i->copy)
         {
           // ok, this means that _our_ buffer is not the
           // original mmap buffer which means that we were
           // cloned once so, we need to free our local
           // buffer.
           free (i->copy);
+          i->copy = 0;
         }
       i->mmap->refcount--;
       if (i->mmap->refcount == 0)
@@ -57,48 +59,70 @@ KingsleyAlloc::~KingsleyAlloc ()
     }
   m_chunks.clear ();
 }
-
+// Call me only from my context
+void
+KingsleyAlloc::Dispose ()
+{
+  for (std::list<struct KingsleyAlloc::MmapChunk>::iterator i = m_chunks.begin ();
+       i != m_chunks.end (); ++i)
+    {
+      if (i->copy == i->mmap->current)
+        {
+          // Current must be nullify because we the next switch of context do not need to save our heap.
+          i->mmap->current = 0;
+        }
+    }
+}
 KingsleyAlloc *
 KingsleyAlloc::Clone (void)
 {
+  NS_LOG_FUNCTION (this << "begin" );
   KingsleyAlloc *clone = new KingsleyAlloc ();
   *clone->m_buckets = *m_buckets;
-  for (std::list<struct KingsleyAlloc::MmapChunk>::const_iterator i = m_chunks.begin ();
+  for (std::list<struct KingsleyAlloc::MmapChunk>::iterator i = m_chunks.begin ();
        i != m_chunks.end (); ++i)
     {
       struct KingsleyAlloc::MmapChunk chunk = *i;
       chunk.mmap->refcount++;
-      if (chunk.mmap->refcount == 2)
+      if ((chunk.mmap->refcount == 2)&&(0 == chunk.copy))
         {
-          NS_ASSERT (chunk.mmap->current == chunk.copy);
           // this is the first clone of this heap so, we first
           // create buffer copies for ourselves
-          chunk.copy = (uint8_t *)malloc (chunk.mmap->size);
+          chunk.mmap->current = i->copy = (uint8_t *)malloc (chunk.mmap->size);
         }
       // now, we create a buffer copy for the clone
       struct KingsleyAlloc::MmapChunk chunkClone = chunk;
       chunkClone.copy = (uint8_t *)malloc (chunkClone.mmap->size);
+      // Save the heap in the clone copy memory
+      memcpy (chunkClone.copy, chunk.mmap->buffer, chunk.mmap->size);
       clone->m_chunks.push_back (chunkClone);
     }
+  NS_LOG_FUNCTION (this << "end");
   return clone;
 }
 
 void 
 KingsleyAlloc::SwitchTo (void)
 {
+  NS_LOG_FUNCTION (this);
   for (std::list<struct KingsleyAlloc::MmapChunk>::const_iterator i = m_chunks.begin ();
-       i != m_chunks.end (); ++i)
+      i != m_chunks.end (); ++i)
     {
       struct KingsleyAlloc::MmapChunk chunk = *i;
-      if (chunk.mmap->current != chunk.copy)
+
+      // save the previous user's heap if necessary
+      if ( chunk.mmap->current && ( chunk.mmap->current!=chunk.mmap->buffer ))
         {
-          // save the previous user's heap
           memcpy (chunk.mmap->current, chunk.mmap->buffer, chunk.mmap->size);
-          // swap in our own copy of the heap
-          memcpy (chunk.mmap->buffer, chunk.copy, chunk.mmap->size);
-          // and, now, remember that _we_ own the heap
-          chunk.mmap->current = chunk.copy;
         }
+
+      // swap in our own copy of the heap if necessary
+      if ( chunk.copy && ( chunk.mmap->buffer != chunk.copy ))
+        {
+          memcpy (chunk.mmap->buffer, chunk.copy, chunk.mmap->size);
+        }
+      // and, now, remember that _we_ own the heap
+      chunk.mmap->current = chunk.copy;
     }
 }
 
@@ -124,7 +148,7 @@ KingsleyAlloc::MmapAlloc (uint32_t size)
   struct MmapChunk chunk;
   chunk.mmap = mmap_struct;
   chunk.brk = 0;
-  chunk.copy = mmap_struct->buffer;
+  chunk.copy = 0;// no clone yet, no copy yet.
 
   m_chunks.push_front (chunk);
   NS_LOG_DEBUG ("mmap alloced=" << size << " at=" << (void*)chunk.copy);

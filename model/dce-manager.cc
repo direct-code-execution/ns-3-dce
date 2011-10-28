@@ -768,6 +768,11 @@ DceManager::DeleteProcess (struct Process *process, ProcessEndCause type)
     }
   delete process->loader;
   process->loader = 0;
+  if (type == PEC_EXIT)
+     {
+        // Only dispose from good context
+        process->alloc->Dispose();
+     }
   delete process->alloc;
   process->alloc = 0;
 
