@@ -1,3 +1,16 @@
+Introduction
+------------
+
+The DCE ns-3 module provides facilities to execute within ns-3 existing
+implementations of userspace and kernelspace network protocols. 
+
+As of today, the Quagga routing protocol implementation, the CCNx CCN
+implementation, and recent versions of the Linux kernel network stack are
+known to run within DCE, hence allowing network protocol experimenters and
+researchers to use the unmodified implementation of their protocols for
+real-world deployments and simulations.
+
+
 Getting Started
 ---------------
 
@@ -12,7 +25,7 @@ Building options
 
 DCE offers two majors mode of operation:
  1. The basic mode, where DCE use the NS3 TCP stacks,
- 2. The advanced mode, where DCE use a linux network stack instead.
+ 2. The advanced mode, where DCE uses a linux network stack instead.
 
 Building ns-3 and DCE
 *********************
@@ -26,7 +39,7 @@ First you need to download NS-3 DCE using mercurial:
   $ hg clone http://code.nsnam.org/furbani/ns-3-dce 
 
 
-DCE brings a script usable to retrieve the others sources and build the whole things:
+DCE brings a script to retrieve the other sources and build the whole things:
 
 :: 
 
@@ -38,13 +51,13 @@ You should edit this file if you want to try the advanced mode and change the fo
 
   USE_KERNEL=NO
 
-by
+to
 
 ::
 
   USE_KERNEL=YES
 
-then you can launch the build:
+then you can build the project:
 
 ::
 
@@ -84,8 +97,8 @@ then you can launch the build:
     PASS Check that process "test-poll" completes correctly. 0.090ms
     PASS Check that process "test-tcp-socket" completes correctly. 0.880ms
     
-After some minutes all is compiled and DCE test should complete successfully as above.
-Now you should see some directories:
+DCE is compiled after a few minutes and if the tests completed successfully, you should see the directories:
+
 ::
 
   $ ls
@@ -107,7 +120,7 @@ Where:
 Setting Environnement
 *********************
 
-In order to have the good paths you should call the setenv.sh script in order to setup env variables (PATH, LD_LIBRARY_PATH and PKG_CONFIG_PATH):
+Call the setenv.sh script to correctly setup the environment variables (i.e., PATH, LD_LIBRARY_PATH and PKG_CONFIG_PATH)
 
 ::
 
@@ -116,14 +129,14 @@ In order to have the good paths you should call the setenv.sh script in order to
 Examples
 ********
 
-Under example directory there is the sources files of DCE samples simulations.
+Under example directory there is the sources files of DCE examples simulations.
 
-Sample: DCE UPD SAMPLE
-######################
+Example: DCE UDP EXAMPLE
+########################
 
-This sample execute the binaries named udp-client and udp-server under NS3 using DCE.
+This example execute the binaries named udp-client and udp-server under NS3 using DCE.
 
-This 2 binaries are writen using libc api in order to send and received udp packets.
+These 2 binaries are writen using libc api in order to send and receive udp packets.
 
 Please take time to look at the source dce-udp-simple.cc which is our NS3 simulation "script":
 
@@ -166,13 +179,13 @@ Please take time to look at the source dce-udp-simple.cc which is our NS3 simula
     return 0;
   }
   
-You can notice that we create a NS-3 Node with an Internet Stack (please refer to `NS-3 <http://www.nsnam.org/documentation/>`_ doc. for more infos),
+You can notice that we create a NS-3 Node with an Internet Stack (please refer to `NS-3 <http://www.nsnam.org/documentation/>`_ doc. for more info),
 and we can also see 2 new Helpers:
 
- 1. DceManagerHelper which is used to Manage DCE loading system in each nodes where it DCE will be used.
+ 1. DceManagerHelper which is used to Manage DCE loading system in each node where DCE will be used.
  2. DceApplicationHelper which is used to describe real application to be lauched by DCE within NS-3 simulation environnement.
  
-As you have already set the environnement you can launch this simulation from anywhere:
+As you have already set the environnement variables you can launch this simulation from anywhere:
 
 ::
 
@@ -210,27 +223,27 @@ As you have already set the environnement you can launch this simulation from an
     -rw------- 1 furbani planete   0 Sep  2 17:02 stderr
     -rw------- 1 furbani planete  22 Sep  2 17:02 stdout
 
-This simulation produce two directories, the content of elf-cache is not important now for us, but files-0 is.
-files-0 contains the files tree of the first node, it also contains the result files of the dce applications launched on this node. So in the directory /var/log there is some directories named with the virtual pid of corresponding DCE applications. Under these directories there is always 4 files:
+This simulation produces two directories, the content of elf-cache is not important now for us, but files-0 is.
+files-0 contains first node's file system, it also contains the output files of the dce applications launched on this node. In the /var/log directory there is some directories named with the virtual pid of corresponding DCE applications. Under these directories there is always 4 files:
 
-  1. cmdline : which contains the command line of the corresponding DCE application, in order to help you to retrieve what is it,
-  2. stdout: contains the stdout produced by the execution of the corresponding application,
-  3. stderr: contains the stderr produced by the execution of the corresponding application.
-  4. status: contains a status of the corresponding process with the start time of it and if exists the end time with the exit code.
+1. cmdline: which contains the command line of the corresponding DCE application, in order to help you to retrieve what is it,
+2. stdout: contains the stdout produced by the execution of the corresponding application,
+3. stderr: contains the stderr produced by the execution of the corresponding application.
+4. status: contains a status of the corresponding process with its start time. This file also contains the end time and exit code if applicable.
               
-You may also create files-xx directories before launching your simulation, and you may also provides some files needed by your applications under these directories.
+Before launching a simulation, you may also create files-xx directories and provide files required by the applications to be executed correctly.
 
-Sample DCE LINUX
-################
+DCE LINUX Example
+#################
 
-This sample show how to use DCE in advanced mode, with a linux kernel IP stack.
-It uses also the binaries *udp-server* and *udp-client* like the above sample, there is also *tcp-server* and *tcp-client* if you choose the reliable transport option.
-Two other binaries are required the linux kernel stack named *libnet-next-2.6.so* and the tool needed to configure this kernel stack named *ip*.
+This example shows how to use DCE in advanced mode, with a linux kernel IP stack.
+It uses also the binaries *udp-server* and *udp-client* like the above example, there is also *tcp-server* and *tcp-client* if you choose the reliable transport option.
+Two other binaries are needed: the linux kernel stack named *libnet-next-2.6.so* and the tool needed to configure this kernel stack named *ip*.
 This example simulates an exchange of data between too nodes, using TCP or UDP, and the nodes are linked by one of three possible links , Wifi, Point 2 point or CSMA.
 The main executable is named *dce-linux*, it cames with too options:
 
-  1. linkType allow to choose the link type between c, w or p for Csma, Wifi or Point 2 point,
-  2. reliable allow to choose transport between TCP (1) or UDP (0).
+1. linkType allow to choose the link type between c, w or p for Csma, Wifi or Point 2 point,
+2. reliable allow to choose transport between TCP (1) or UDP (0).
 
 The following code snippet show how to enable DCE advanced mode (you can see it in the source file dce-linux.cc under example directory):
 
@@ -251,7 +264,7 @@ The following code snippet show how to enable DCE advanced mode (you can see it 
     }
 
 The first important call is *SetNetworkStack* used to indicate which file contains the linux kernel stack.
-Then in the for loop we setup on each nodes the networks interfaces using the ip executable to configure the kernel stack.
+Then in the for loop we setup on each nodes the network interfaces using the ip executable to configure the kernel stack.
 Because this source code factorizes some call, it is not very readeable so below there is the corresponding calls to ip executable with the arguments:
 
 ::
@@ -264,10 +277,10 @@ Because this source code factorizes some call, it is not very readeable so below
 
 
 
-CCNx samples
-############
+CCNx examples
+#############
 
-Under example/ccnx there is more realistics samples using the implementation of an experimental protocol named CCN. In this examples we use the `PARC  <http://www.parc.com>`_ implementation named `CCNx <http://www.ccnx.org>`_ (c) in its early version 0.4.0.
+Under example/ccnx there is more realistics examples using the implementation of an experimental protocol named CCN. In this examples we use the `PARC  <http://www.parc.com>`_ implementation named `CCNx <http://www.ccnx.org>`_ (c) in its early version 0.4.0.
   
 CCNx setup
 ==========
@@ -288,7 +301,7 @@ Then you should start the make like this:
 
   $ make MORE_LDLIBS=-pie
 
-Then you must verify that your ccnx run well, to do this read the README file, then try to launch a ccnd daemon and retrieve a file using the commands ccnget and ccnput. This verification is MANDATORY in order to create the key files used by ccnx to sign and verify exchanged data, these keys files can not by produced by NS3/DCE so we should copy them in simulation environnement before doing the simulations as we explain it in the following chapter.
+Then you must verify that your ccnx runs well, to do this read the README file, then try to launch a ccnd daemon and retrieve a file using the commands ccnget and ccnput. This verification is MANDATORY to create the key files used by ccnx to sign and verify exchanged data, the key files can not be produced by NS3/DCE so we should copy them in simulation environnement before doing the simulations as explained in the next chapter.
 
 Simulation script setup
 =======================
@@ -308,24 +321,24 @@ This script shell is under example/ccnx directory, it is named run-ccnx-common.s
 | VIRTUAL_USER_KEYSTORE | Path to NS3 keystore used by ccn commands         | /home/furbani            |
 +-----------------------+---------------------------------------------------+--------------------------+
 
-Sample CCNX-SIMPLE
-##################
+Example CCNX-SIMPLE
+###################
 
-This simulation launch a ccnd daemon, publish a file using ccnput and retrieve this data using ccnget command, all command are on a single node:
+This simulation launches a ccnd daemon, publishes a file using ccnput and retrieves this data using ccnget command, all commands are on a single node:
 
 ::
 
-  $ . ....../ns-3-dce/utils/setenv.sh
-  $ cd ...../ns-3-dce/example/ccnx
+  $ . ./ns-3-dce/utils/setenv.sh
+  $ cd ./ns-3-dce/example/ccnx
   $ ./run-ccnx-simple.sh 
 
-This script end with opening an emacs displaying the output of the simulation command and the output of the simulated process ie: ccnd, ccnget and ccnput.
-The stdout of ccnget should be named : files-0/var/log/53514/stdout and it must contains the 8 first Ko of the CCNX README file, this is the file published by ccnget.
+This script ends with opening an emacs displaying the output of the simulation command and the output of the simulated process ie: ccnd, ccnget and ccnput.
+The stdout of ccnget should be named : files-0/var/log/53514/stdout and it must contains the 8 first Ko of the CCNX README file, this is the file published by ccnput.
 
-Sample CCND LINEAR MULTIPLE
-###########################
+Example CCND LINEAR MULTIPLE
+############################
 
-This simulation use multiple nodes placed in a line, each node are linked 2 by 2 by a point to point link, each node holds a ccnd daemon, the first node put a file (with ccnput), and the last node fetch this file (with ccnget). Also each node minus the first one forward interrests starting with /NODE0 to its predecessor.
+This simulation uses multiple nodes placed in a line, each node are linked 2 by 2 by a point to point link, each node holds a ccnd daemon, the first node put a file (with ccnput), and the last node fetch this file (with ccnget). Also each node minus the first one forward interrests starting with /NODE0 to its predecessor.
 
   .. image:: images/ccnd-linear-multiple-1.png
 
@@ -359,8 +372,8 @@ now if we use UDP :
 
 In this case the first get take about 1 second. The difference between UDP and TCP is due to fact that in TCP mode it occurs 199 TCP connections. Notice also that in this configuration there is no UDP packet lost, but it is possible to ask NS3 to simulate some sort of packet lost behavior.
 
-Sample VLC Player
-#################
+Example VLC Player
+##################
 
 This demonstration show how to watch video using VLC CCN and NS3.
 
@@ -382,20 +395,23 @@ You should ensure that the executable named *tap-creator* is owned by *root* and
 Overview
 ========
 
-In this sample we use other exe than *ccnd*:
- 1. *ccn_repo* is a CCN repository used to serve the Video file
- 2. *vlc* the well known media player
- 3. *ccnputfile* used to fill the repository with our Video file
+In this example we use other exe than *ccnd*:
+
+1. *ccn_repo* is a CCN repository used to serve the Video file
+2. *vlc* the well known media player
+3. *ccnputfile* used to fill the repository with our Video file
 
 The two first exe are not usable under DCE:
- 1. *ccn_repo* is a java program and DCE do not yet supports Java,
- 2. *vlc* use a graphical interface and DCE do not supports this kind of application.
+
+1. *ccn_repo* is a java program and DCE do not yet supports Java,
+2. *vlc* use a graphical interface and DCE do not supports this kind of application.
 
 So the parts *cnn_repo* and *vlc* will be launched normally outside of DCE environnement.
 We will also use 3 *ccnd*:
- 1. the first *ccnd* will be launched normally outside DCE, it will be the server for *vlc* player , it will use the standard CCNx port ie 9596.
- 2. the second *ccnd* will be launched inside DCE listening port 2000.
- 3. the third *ccnd* will be launched normally outside DCE listening port 3000 
+
+1. the first *ccnd* will be launched normally outside DCE, it will be the server for *vlc* player ,it will use the standard CCNx port ie 9596.
+2. the second *ccnd* will be launched inside DCE listening port 2000.
+3. the third *ccnd* will be launched normally outside DCE listening port 3000 
 
 then we install ccn routes like this : first *ccnd* forward every interests to second *ccnd* and second *ccnd* forward every interests to third one.
 
@@ -449,9 +465,11 @@ Run :
 
 If all is right you should see a *vlc* window playing the video, then after 600 seconds the script stops itself
 if you interrupt the script before you should terminate real the processes ie:
- 1. 2 instances of *ccnd*
- 2. 1 *ccn_repo*
- 3. and 1 *dce-tap-vlc*
+
+1. 2 instances of *ccnd*
+2. 1 *ccn_repo*
+3. and 1 *dce-tap-vlc*
+
 you may also delete ccnd sockets files like */tmp/.ccnd.sock* and */tmp/.ccnd.sock.3000*
 
 Note that if you replay the video (url: ccnx:///VIDEO/bunny.ts) the content should be cached in first *ccnd* so in this case 
