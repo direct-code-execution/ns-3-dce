@@ -470,7 +470,7 @@ RouteMessage::RouteMessage ()
   m_attributeTypes[RT_A_IIF] = U32;
   m_attributeTypes[RT_A_OIF] = U32;
   m_attributeTypes[RT_A_GATEWAY] = ADDRESS;
-  m_attributeTypes[RT_A_PRIORITY] = U8;
+  m_attributeTypes[RT_A_PRIORITY] = U32;
   m_attributeTypes[RT_A_PREFSRC] = ADDRESS;
   m_attributeTypes[RT_A_METRICS] = UNSPEC;
   //others default value UNSPEC

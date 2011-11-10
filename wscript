@@ -311,7 +311,9 @@ def build(bld):
         'model/wait-queue.cc',
         'model/file-usage.cc',
         'model/dce-poll.cc',
+        'model/ipv4-dce-routing.cc',
         # helper.
+        'helper/ipv4-dce-routing-helper.cc',
         'helper/dce-manager-helper.cc',
         'helper/dce-application-helper.cc',
         'helper/quagga-helper.cc',
@@ -323,6 +325,7 @@ def build(bld):
         'model/socket-fd-factory.h',
         'model/loader-factory.h',
         'model/dce-application.h',
+        'model/ipv4-dce-routing.h',
         'helper/dce-manager-helper.h',
         'helper/dce-application-helper.h',
         'helper/quagga-helper.h',

@@ -59,6 +59,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
+#include <sys/dir.h>
 #include <sys/ioctl.h>
 #include <sys/io.h>
 #include <sys/mman.h>

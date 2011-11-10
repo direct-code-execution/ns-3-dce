@@ -150,7 +150,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-string", 0, "", false },
       {  "test-netdb", 3600, "", true },
       {  "test-env", 0, "", false }, 
-      /*        {  "test-cond", 0, "", false},  */
+      {  "test-cond", 0, "", false}, 
       {  "test-timer-fd", 0, "", false}, 
       {  "test-stdlib", 0, "", false},  
       {  "test-select", 3600, "", true }, 

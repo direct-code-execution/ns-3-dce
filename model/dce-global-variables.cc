@@ -6,7 +6,7 @@
 
 using namespace ns3;
 
-void dce_global_variables_setup (struct SimuGlobalVariables *variables)
+void dce_global_variables_setup (struct DceGlobalVariables *variables)
 {
   struct Process *process = Current ()->process;
   if (process->pstdin != 0)
@@ -28,4 +28,6 @@ void dce_global_variables_setup (struct SimuGlobalVariables *variables)
   process->poptind = variables->poptind; 
   process->popterr = variables->popterr;
   process->poptopt = variables->poptopt;
+
+  *variables->pprogname = process->originalProgname;
 }

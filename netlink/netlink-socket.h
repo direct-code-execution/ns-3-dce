@@ -37,6 +37,7 @@ namespace ns3 {
 class Node;
 class Packet;
 class NetlinkSocketAddress;
+class Ipv4DceRouting;
 
 /**
 * \brief A NetlinkSocket is  used  to transfer information 
@@ -93,18 +94,33 @@ public:
   virtual bool SetAllowBroadcast (bool allowBroadcast);
   virtual bool GetAllowBroadcast () const;
 
-  uint32_t GetSrcPid (void) const;
-  uint32_t GetSrcGroups (void)const;
-  uint32_t GetDstPid (void) const;
-  uint32_t GetDstGroups (void)const;
-  int32_t NotifyIfAddrMessage (Ipv6Interface* interface, Ipv6Address addr, int cmd);
-  int32_t NotifyIfLinkMessage (Address address, uint16_t type, uint8_t family);
+  uint32_t GetPid (void) const;
+  uint32_t GetGroups (void)const;
+
+  static const uint32_t m_kernelPid = 0; // NS3 pretends to be kernel 
+
+  /**
+   * \brief Notify subscribed applications about interface info change 
+   *
+   * This notification is send upon Up and Down calls to Ipv4 protocol
+   * stack. What it does is simply dumping on the wire the current
+   * interface info with or without UP & RUNNING flags.
+   *
+   */
+  int32_t NotifyIfLinkMessage (uint32_t interface_num);
+
+  /**
+   * \brief Notify subscribed applications about interface address
+   * changes (new IP address or removal of IP address)
+   */
+  // int32_t NotifyIfAddrMessage (uint32_t interface_num);
+  
   //  int32_t NotifyRouteMessage(Ojbect route, uint16_t type, uint8_t family);
 
 private:
   int DoBind (const NetlinkSocketAddress &address);
   virtual void DoDispose (void);
-  void ForwardUp (Ptr<Packet> p, NetlinkSocketAddress &address);
+  void ForwardUp (Ptr<Packet> p, const NetlinkSocketAddress &address);
 
 
 
@@ -125,19 +141,18 @@ private:
   /**
   * \brief unicast an message to user
   * \param nlmsg the netlink message to transmit
-  * \param pid the netlink pid of destination socket
   * \param nonbloack always true
   */
   int32_t SendMessageUnicast (const MultipartNetlinkMessage &nlmsg, 
-                              uint32_t pid, int32_t nonblock);
+                              int32_t nonblock);
   /**
   * \brief spread message to netlink group user
   * \param nlmsg the netlink message to transmit
-  * \param pid the netlink pid of the kernel, always 0
   * \param group multicast group id
+  * \param node ?
   */
   static int32_t SendMessageBroadcast (const MultipartNetlinkMessage &nlmsg, 
-                                       uint32_t pid, uint32_t group, Ptr<Node> node);
+                                       uint32_t group, Ptr<Node> node);
 
   /**
   * these functions below are for NETLINK_ROUTE protocol, it handle the netlink 
@@ -156,14 +171,28 @@ private:
   /**
   * \returns 0 if dumping operation is OK, < 0 for an error.
   */ 
-  int32_t DumpNetlinkRouteMessage (const NetlinkMessage &nlmsg, 
-                                   uint16_t type, uint8_t family);
-  MultipartNetlinkMessage BuildInterfaceAddressDumpMessage (uint32_t pid,
-                                                            uint32_t seq, uint8_t family);
-  MultipartNetlinkMessage BuildInterfaceInfoDumpMessage (uint32_t pid,
-                                                         uint32_t seq, uint8_t family);
-  MultipartNetlinkMessage BuildRouteDumpMessage (uint32_t pid,
-                                                 uint32_t seq, uint8_t family);
+  int32_t
+  DumpNetlinkRouteMessage (const NetlinkMessage &nlmsg, 
+                           uint16_t type, uint8_t family);
+
+  MultipartNetlinkMessage
+  BuildInterfaceAddressDumpMessages ();
+  
+  /**
+   * \brief Build an InterfaceInfo message corresponding to n-th interface
+   */
+  NetlinkMessage
+  BuildInterfaceInfoDumpMessage (uint32_t interface_num);
+
+  /**
+   * \brief Build a multipart netlink message consisting of several
+   * (possibly zero) InterfaceInfo dump messages
+   */
+  MultipartNetlinkMessage
+  BuildInterfaceInfoDumpMessages ();
+
+  MultipartNetlinkMessage
+  BuildRouteDumpMessages ();
 
   /**
   * \returns 0 if doing operation(ADD/DEL/GET) is OK, < 0 for an error.
@@ -181,6 +210,9 @@ private:
   Address ConvertFrom (uint8_t family, const Address &address);
 
   Ptr<Node> m_node;
+  Ptr<Ipv4DceRouting> m_ipv4Routing;
+  // Ptr<Ipv6DceRouting> m_ipv6Routing; //not implemented yet
+  
   enum SocketErrno m_errno;
   bool m_shutdownSend;
   bool m_shutdownRecv;
@@ -191,10 +223,8 @@ private:
   // Socket options (attributes)
   uint32_t m_rcvBufSize;
 
-  uint32_t m_srcPid;
-  uint32_t m_srcGroups;
-  uint32_t m_dstPid;
-  uint32_t m_dstGroups;
+  uint32_t m_Pid;
+  uint32_t m_Groups;
   Callback<void, Ipv4Address,uint8_t,uint8_t,uint8_t,uint32_t> m_icmpCallback;
 };
 

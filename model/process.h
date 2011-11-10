@@ -148,6 +148,8 @@ struct Process
   char **originalEnvp;
   char **originalArgv;
   int originalArgc;
+  char *originalProgname; // some programs use it instead argv[0]
+  
   // pointers to the global variables present in the libc loader 
   // in the corresponding process.
   FILE **pstdin;

@@ -8,11 +8,13 @@
 
 extern Libc g_libc; // this is initialized in libc.c
 
+extern char *__progname;
+
 extern "C" {
 
 void setup_global_variables ()
 {
-  struct SimuGlobalVariables globals;
+  struct DceGlobalVariables globals;
   globals.pstdin = &stdin;
   globals.pstdout = &stdout;
   globals.pstderr = &stderr;
@@ -21,8 +23,9 @@ void setup_global_variables ()
   globals.popterr = &opterr;
   globals.poptind = &optind;
   globals.poptopt = &optopt;
+  globals.pprogname = &__progname;
 
-  typedef void (*dce_global_variables_setup_t) (struct SimuGlobalVariables *);
+  typedef void (*dce_global_variables_setup_t) (struct DceGlobalVariables *);
   ((dce_global_variables_setup_t)g_libc.dce_global_variables_setup_fn) (&globals);
 }
 

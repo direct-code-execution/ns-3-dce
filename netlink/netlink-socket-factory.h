@@ -23,6 +23,7 @@
 #define NETLINK_SOCKET_FACTORY_H
 
 #include "ns3/socket-factory.h"
+#include <set>
 
 namespace ns3 {
 
@@ -45,6 +46,8 @@ public:
    * \return a pointer to the created socket
    */
   virtual Ptr<Socket> CreateSocket (void);
+
+  std::multiset<uint32_t> m_pidsList; // to prevent PID reuse (unique per node)
 };
 
 } // namespace ns3

@@ -12,8 +12,11 @@ int optind = 0, opterr = 0, optopt = 0;
 const char *_libc_intl_domainname = "libc";
 char **__environ = 0;
 int h_errno;
+char *__progname = 0;
 
 #define weak_alias(name, aliasname) \
   extern __typeof (name) aliasname __attribute__ ((weak, alias (#name)))
+
+weak_alias(__progname, __progname_full);
 
 weak_alias(__environ,environ);
