@@ -1,0 +1,133 @@
+From a2f453f5b56049c64b9953187b9f7b39e6b6883c Mon Sep 17 00:00:00 2001
+From: Alexander Afanasyev <alexander.afanasyev@ucla.edu>
+Date: Tue, 11 Oct 2011 17:24:05 -0700
+Subject: [PATCH 1/2] Replace references to m_recvpktinfo with method call
+ IsRecvPktInfo()
+
+The same method call is now used in the DCE code.
+---
+ src/internet/model/ipv4-l3-protocol.cc     |    2 --
+ src/internet/model/ipv4-raw-socket-impl.cc |    2 +-
+ src/internet/model/ipv6-raw-socket-impl.cc |    2 +-
+ src/internet/model/udp-socket-impl.cc      |    2 +-
+ src/network/model/socket.cc                |   10 ++++++++--
+ src/network/model/socket.h                 |   12 +++++++++++-
+ 6 files changed, 22 insertions(+), 8 deletions(-)
+
+diff --git a/src/internet/model/ipv4-l3-protocol.cc b/src/internet/model/ipv4-l3-protocol.cc
+index 69659ac..4d1fb2d 100644
+--- a/src/internet/model/ipv4-l3-protocol.cc
++++ b/src/internet/model/ipv4-l3-protocol.cc
+@@ -505,8 +505,6 @@ Ipv4L3Protocol::Receive ( Ptr<NetDevice> device, Ptr<const Packet> p, uint16_t p
+       NS_LOG_WARN ("No route found for forwarding packet.  Drop.");
+       m_dropTrace (ipHeader, packet, DROP_NO_ROUTE, m_node->GetObject<Ipv4> (), interface);
+     }
+-
+-
+ }
+ 
+ Ptr<Icmpv4L4Protocol> 
+diff --git a/src/internet/model/ipv4-raw-socket-impl.cc b/src/internet/model/ipv4-raw-socket-impl.cc
+index bcc26e8..e1cb88e 100644
+--- a/src/internet/model/ipv4-raw-socket-impl.cc
++++ b/src/internet/model/ipv4-raw-socket-impl.cc
+@@ -313,7 +313,7 @@ Ipv4RawSocketImpl::ForwardUp (Ptr<const Packet> p, Ipv4Header ipHeader, Ptr<Ipv4
+     {
+       Ptr<Packet> copy = p->Copy ();
+       // Should check via getsockopt ()..
+-      if (this->m_recvpktinfo)
++      if (IsRecvPktInfo ())
+         {
+           Ipv4PacketInfoTag tag;
+           copy->RemovePacketTag (tag);
+diff --git a/src/internet/model/ipv6-raw-socket-impl.cc b/src/internet/model/ipv6-raw-socket-impl.cc
+index 9d519e8..b514475 100644
+--- a/src/internet/model/ipv6-raw-socket-impl.cc
++++ b/src/internet/model/ipv6-raw-socket-impl.cc
+@@ -336,7 +336,7 @@ bool Ipv6RawSocketImpl::ForwardUp (Ptr<const Packet> p, Ipv6Header hdr, Ptr<NetD
+         }
+ 
+       // Should check via getsockopt ()..
+-      if (this->m_recvpktinfo)
++      if (IsRecvPktInfo ())
+         {
+           Ipv6PacketInfoTag tag;
+           copy->RemovePacketTag (tag);
+diff --git a/src/internet/model/udp-socket-impl.cc b/src/internet/model/udp-socket-impl.cc
+index 6160faa..77c7d73 100644
+--- a/src/internet/model/udp-socket-impl.cc
++++ b/src/internet/model/udp-socket-impl.cc
+@@ -630,7 +630,7 @@ UdpSocketImpl::ForwardUp (Ptr<Packet> packet, Ipv4Header header, uint16_t port,
+     }
+ 
+   // Should check via getsockopt ()..
+-  if (this->m_recvpktinfo)
++  if (IsRecvPktInfo ())
+     {
+       Ipv4PacketInfoTag tag;
+       packet->RemovePacketTag (tag);
+diff --git a/src/network/model/socket.cc b/src/network/model/socket.cc
+index 84927a3..07c2285 100644
+--- a/src/network/model/socket.cc
++++ b/src/network/model/socket.cc
+@@ -34,7 +34,7 @@ namespace ns3 {
+ Socket::Socket (void)
+ {
+   m_boundnetdevice = 0;
+-  m_recvpktinfo = false;
++  m_recvPktInfo = false;
+   NS_LOG_FUNCTION_NOARGS ();
+ }
+ 
+@@ -332,7 +332,13 @@ void
+ Socket::SetRecvPktInfo (bool flag)
+ {
+   NS_LOG_FUNCTION_NOARGS ();
+-  m_recvpktinfo = flag;
++  m_recvPktInfo = flag;
++}
++
++bool Socket::IsRecvPktInfo () const
++{
++  NS_LOG_FUNCTION_NOARGS ();
++  return m_recvPktInfo;
+ }
+ 
+ /***************************************************************
+diff --git a/src/network/model/socket.h b/src/network/model/socket.h
+index 76131dd..bd42ade 100644
+--- a/src/network/model/socket.h
++++ b/src/network/model/socket.h
+@@ -589,10 +589,20 @@ public:
+    * For IP_PKTINFO/IP6_PKTINFO. This method is only usable for 
+    * Raw socket and Datagram Socket. Not supported for Stream socket.
+    *
++   * Method doesn't make distinction between IPv4 and IPv6. If it is enabled,
++   * it is enabled for all types of sockets that supports packet information
++   *
+    * \param flag Enable/Disable receive information
+    * \returns nothing
+    */
+   void SetRecvPktInfo (bool flag);
++
++  /**
++   * \brief Get status indicating whether enable/disable packet information to socket
++   *
++   * \returns True if packet information should be sent to socket
++   */
++  bool IsRecvPktInfo () const;
+  
+ protected:
+   void NotifyConnectionSucceeded (void);
+@@ -606,7 +616,7 @@ protected:
+   void NotifyDataRecv (void);
+   virtual void DoDispose (void);
+   Ptr<NetDevice> m_boundnetdevice;
+-  bool m_recvpktinfo;
++  bool m_recvPktInfo;
+ private:
+   Callback<void, Ptr<Socket> >                   m_connectionSucceeded;
+   Callback<void, Ptr<Socket> >                   m_connectionFailed;
+-- 
+1.7.7.2
+
