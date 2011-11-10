@@ -1,3 +1,22 @@
+/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+/*
+ * Copyright (c) 2006,2007 INRIA
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation;
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
+ */
 #include "process.h"
 #include "dce-manager.h"
 #include "utils.h"
@@ -11,9 +30,16 @@
 #include "ns3/packet-socket.h"
 #include "ns3/point-to-point-net-device.h"
 #include "ns3/mac48-address.h"
+#include "ns3/boolean.h"
+#include "ns3/node.h"
+#include "ns3/ipv4.h"
+#include "ns3/ipv6.h"
+#include "ns3/ipv4-packet-info-tag.h"
+#include "ns3/ipv6-packet-info-tag.h"
 #include "cmsg.h"
 #include <errno.h>
 #include <netinet/in.h>
+#include <netinet/ip.h>
 #include <linux/types.h>
 #include <linux/errqueue.h>
 #include <arpa/inet.h>
@@ -140,7 +166,7 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
     }
   else
     {
-      msg->msg_controllen = 0;
+      // msg->msg_controllen = 0; // why???
     }
 
   if (!WaitRecvDoSignal (flags & MSG_DONTWAIT))
@@ -200,6 +226,50 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
   else
     {
       Ns3AddressToPosixAddress (from, (struct sockaddr*)msg->msg_name, &msg->msg_namelen);
+
+      if (msg->msg_controllen > 0)
+        {
+          Cmsg cmsg = Cmsg (msg);
+          if (m_socket->IsRecvPktInfo ())
+            {
+              NS_LOG_DEBUG ("RecvPktInfo requested");
+
+              Ptr<Node> node = current->process->manager->GetObject<Node> ();
+              
+              Ipv4PacketInfoTag ipv4Tag;
+              bool isTagPresent = packet->PeekPacketTag (ipv4Tag);
+              if (isTagPresent)
+                {
+                  struct in_pktinfo pkt;
+                  Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> ();
+                  pkt.ipi_ifindex = ipv4->GetInterfaceForDevice (node->GetDevice (ipv4Tag.GetRecvIf ()));
+                  if (msg->msg_name)
+                    {
+                      memcpy (&pkt.ipi_addr, msg->msg_name, sizeof (pkt.ipi_addr));
+                    }
+                  cmsg.Add (SOL_IP, IP_PKTINFO, sizeof (struct in_pktinfo), (const uint8_t *)&pkt);
+                  
+                  NS_LOG_DEBUG ("ipv4 tag, iface: " <<  pkt.ipi_ifindex );
+                }
+
+              Ipv6PacketInfoTag ipv6Tag;
+              isTagPresent = packet->PeekPacketTag (ipv6Tag);
+              if (isTagPresent)
+                {
+                  struct in6_pktinfo pkt6;
+                  Ptr<Ipv6> ipv6 = node->GetObject<Ipv6> ();
+                  pkt6.ipi6_ifindex = ipv6->GetInterfaceForDevice (node->GetDevice (ipv6Tag.GetRecvIf ()));
+                  if (msg->msg_name)
+                    {
+                      memcpy (&pkt6.ipi6_addr, msg->msg_name, sizeof (pkt6.ipi6_addr));
+                    }
+                  cmsg.Add (SOL_IPV6, IPV6_PKTINFO, sizeof (struct in6_pktinfo), (const uint8_t *)&pkt6);
+                }
+              
+            }
+          cmsg.Finish ();
+        }
+      
       // XXX: we ignore MSG_TRUNC for the return value.
       NS_ASSERT (packet->GetSize ()  <= count);
       l = packet->CopyData (buf, count);
@@ -216,12 +286,36 @@ UnixDatagramSocketFd::DoSendmsg (const struct msghdr *msg, int flags)
   NS_LOG_FUNCTION (this << current);
   NS_ASSERT (current != 0);
 
+  BooleanValue isIpHeaderIncluded (false);
+  m_socket->GetAttributeFailSafe ("IpHeaderInclude", isIpHeaderIncluded);
+  
   ssize_t retval = 0;
+  Ipv4Header ipHeader;
   for (uint32_t i = 0; i < msg->msg_iovlen; ++i)
     {
       uint8_t *buf = (uint8_t *)msg->msg_iov[i].iov_base;
       uint32_t len = msg->msg_iov[i].iov_len;
+
+      if (isIpHeaderIncluded && i == 0)
+        {
+          struct ip *iph = (struct ip *)buf;
+          NS_ASSERT_MSG (m_socket->GetInstanceTypeId () == TypeId::LookupByName ("ns3::Ipv4RawSocketImpl"),
+                         "IsIpHdrIncl==TRUE make sense only for Ipv4RawSocketImpl sockets");
+		  
+          ipHeader.SetSource (Ipv4Address (htonl (iph->ip_src.s_addr)));
+          ipHeader.SetDestination (Ipv4Address (htonl (iph->ip_dst.s_addr)));
+          ipHeader.SetProtocol (iph->ip_p);
+          ipHeader.SetPayloadSize (ntohs (iph->ip_len) - 20);
+          ipHeader.SetTtl (iph->ip_ttl);
+          continue;
+        }
+	  
       Ptr<Packet> packet = Create<Packet> (buf, len);
+      if (isIpHeaderIncluded)
+        {
+          packet->AddHeader (ipHeader);
+        }
+	  
       int result;
       if (msg->msg_name != 0 && msg->msg_namelen != 0)
         {

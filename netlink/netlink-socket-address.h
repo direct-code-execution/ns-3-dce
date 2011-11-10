@@ -65,6 +65,7 @@ private:
 
 };
 
+std::ostream & operator<< (std::ostream &, const NetlinkSocketAddress &);
 
 } // namespace ns3
 

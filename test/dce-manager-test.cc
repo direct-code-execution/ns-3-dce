@@ -150,7 +150,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-string", 0, "", false },
       {  "test-netdb", 3600, "", true },
       {  "test-env", 0, "", false }, 
-      /*  {  "test-cond", 0, "", false}, */
+      /*        {  "test-cond", 0, "", false},  */
       {  "test-timer-fd", 0, "", false}, 
       {  "test-stdlib", 0, "", false},  
       {  "test-select", 3600, "", true }, 
@@ -160,9 +160,9 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-local-socket", 0, "", false }, 
       {  "test-poll", 3200, "", true }, 
       {  "test-tcp-socket", 320, "", true }, 
-      {  "test-exec", 0, "" , false},  /*
+      {  "test-exec", 0, "" , false},  
       {  "test-raw-socket", 320, "", true },
-      {  "test-iperf", 0, "" , false},*/ 
+      {  "test-iperf", 0, "" , false}, 
   };
 
   // Prepare directories and files for test-stdio

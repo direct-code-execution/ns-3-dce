@@ -9,7 +9,7 @@
 
 namespace ns3 {
 
-class DceManagerHelper : public ObjectBase
+class DceManagerHelper : public Object
 {
 public:
   static TypeId GetTypeId (void);

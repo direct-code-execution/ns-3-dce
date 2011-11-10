@@ -1,3 +1,22 @@
+/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+/*
+ * Copyright (c) 2006,2007 INRIA
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation;
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
+ */
 #ifndef UNIX_SOCKET_FD_H
 #define UNIX_SOCKET_FD_H
 
@@ -71,6 +90,9 @@ protected:
   Time GetSendTimeout (void);
   bool IsRecvErr (void) const;
   bool IsRecvTtl (void) const;
+  // bool IsRecvPktInfo (void) const;
+  // bool IsRecvPktInfo6 (void) const;
+  // bool IsIpHdrIncl (void) const;
 
   Ptr<Socket> m_socket;
   void ChangeSocket (Ptr<Socket> socket);
@@ -86,6 +108,14 @@ private:
   int m_recvttl;
   int m_recverr;
   int m_statusFlags;
+  // int m_recvpktinfo;
+  // int m_recvpktinfo6;
+  // int m_iphdrincl;
+  // int m_sockchecksum;
+  // int m_multicastloop;
+  // int m_unicasthops;
+  // int m_multicasthops;
+  // int m_recvhoplimit;
 };
 
 } // namespace ns3

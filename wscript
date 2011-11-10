@@ -24,7 +24,8 @@ def search_file(files):
 def configure(conf):
     ns3waf.check_modules(conf, ['core', 'network', 'internet'], mandatory = True)
     ns3waf.check_modules(conf, ['point-to-point', 'tap-bridge', 'netanim'], mandatory = False)
-    ns3waf.check_modules(conf, ['wifi', 'point-to-point', 'csma', 'mobility' ], mandatory = False)
+    ns3waf.check_modules(conf, ['wifi', 'point-to-point', 'csma', 'mobility'], mandatory = False)
+    ns3waf.check_modules(conf, ['point-to-point-layout'], mandatory = False)
     conf.check_tool('compiler_cc')
     conf.check(header_name='stdint.h', define_name='HAVE_STDINT_H', mandatory=False)
     conf.check(header_name='inttypes.h', define_name='HAVE_INTTYPES_H', mandatory=False)
@@ -222,6 +223,10 @@ def build_dce_examples(module):
                        target='bin/dce-iperf',
                        source=['example/dce-iperf.cc', 'example/ccnx/misc-tools.cc'])
                         
+    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'point-to-point-layout'],
+                       target='bin/dce-zebra-simple',
+                       source=['example/dce-zebra-simple.cc'])
+
 def build_dce_kernel_examples(module):
     module.add_example(needed = ['core', 'network', 'dce'], 
                        target='bin/dce-linux-simple',
@@ -309,6 +314,7 @@ def build(bld):
         # helper.
         'helper/dce-manager-helper.cc',
         'helper/dce-application-helper.cc',
+        'helper/quagga-helper.cc',
         ]
     module_headers = [
         'model/dce-manager.h',
@@ -319,6 +325,7 @@ def build(bld):
         'model/dce-application.h',
         'helper/dce-manager-helper.h',
         'helper/dce-application-helper.h',
+        'helper/quagga-helper.h',
         ]
     module_source = module_source + kernel_source
     module_headers = module_headers + kernel_headers

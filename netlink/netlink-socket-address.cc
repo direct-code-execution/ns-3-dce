@@ -118,4 +118,11 @@ uint8_t NetlinkSocketAddress::GetType (void)
   return type;
 }
 
+
+std::ostream & operator<< (std::ostream &os, const NetlinkSocketAddress &address)
+{
+  os << "pid: " << address.GetProcessID () << ", group: " << address.GetGroupsMask ();
+  return os;
+}
+
 } // namespace ns3

@@ -365,8 +365,10 @@ NetlinkSocket::SendTo (Ptr<Packet> p, uint32_t flags, const Address &toAddress)
   ad = NetlinkSocketAddress::ConvertFrom (toAddress);
   m_dstPid = ad.GetProcessID();
   m_dstGroups = ad.GetGroupsMask();
-  NS_LOG_INFO ("send netlink message to pid = " << m_dstPid << ", groups = " << m_dstGroups);
-  NS_LOG_DEBUG (Simulator::Now ().GetSeconds () << " Sending netlink message from " << m_node->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ());
+  NS_LOG_INFO ("send netlink message to pid = " << ad);
+  NS_LOG_DEBUG ("At " << Simulator::Now ().GetSeconds () <<
+                "s sending netlink message from node " << m_node->GetId ());
+                // m_node->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ());
 
   //Ptr<NetlinkSocket>kernel_socket = GetNetlinkSocketByAddress(ad);
   //kernel_socket->m_receivedData.push_back(p);
@@ -408,7 +410,11 @@ NetlinkSocket::SendTo (Ptr<Packet> p, uint32_t flags, const Address &toAddress)
     }
 
   NotifyDataSent (packet_len);
-  NS_LOG_INFO ("netlink socket kernel error " << -m_errno);
+  if (m_errno != 0)
+    {
+      NS_LOG_INFO ("netlink socket kernel error " << -m_errno);
+    }
+  
   return packet_len;
 }
 
@@ -540,7 +546,7 @@ NetlinkSocket::SendAckMessage (const NetlinkMessage&nlmsg, int32_t err)
 }
 
 int32_t
-NetlinkSocket::HandleMessage (const NetlinkMessage&nlmsg)
+NetlinkSocket::HandleMessage (const NetlinkMessage &nlmsg)
 {
   NS_LOG_FUNCTION (this);
   uint16_t type = nlmsg.GetMsgType ();
@@ -790,7 +796,7 @@ NetlinkSocket::BuildInterfaceAddressDumpMessage (uint32_t pid, uint32_t seq, uin
 MultipartNetlinkMessage
 NetlinkSocket::BuildInterfaceInfoDumpMessage (uint32_t pid, uint32_t seq, uint8_t family)
 {
-  NS_LOG_FUNCTION (this << pid << seq <<family);
+  NS_LOG_FUNCTION (this << pid << seq << (int)family);
   MultipartNetlinkMessage nlmsg_dump;
   for (uint32_t i = 0; i < m_node->GetNDevices (); i ++)
     {
