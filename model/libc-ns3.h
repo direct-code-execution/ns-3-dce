@@ -26,6 +26,10 @@
 #define NATIVE_WITH_ALIAS NATIVE
 #endif
 
+#ifndef NATIVE_WITH_ALIAS2
+#define NATIVE_WITH_ALIAS2(name,internal) NATIVE_WITH_ALIAS(name)
+#endif
+
 #ifndef DCE_WITH_ALIAS
 #define DCE_WITH_ALIAS DCE
 #endif
@@ -89,6 +93,9 @@ NATIVE (strncat)
 NATIVE (strcmp)
 NATIVE (strncmp)
 NATIVE (strlen)
+NATIVE (strcspn)
+NATIVE (strspn)
+NATIVE (strnlen)
 // because C++ defines both const and non-const functions
 NATIVE_EXPLICIT (strchr, char* (*) (char *, int))
 NATIVE_EXPLICIT (strrchr, char * (*) (char *, int))
@@ -299,7 +306,7 @@ NATIVE (__ctype_tolower_loc)
 DCE    (pthread_create)
 DCE    (pthread_exit)
 DCE    (pthread_self)
-DCE    (pthread_once)
+DCE_WITH_ALIAS    (pthread_once)
 DCE    (pthread_getspecific)
 DCE    (pthread_setspecific)
 DCE    (pthread_key_create)
@@ -406,15 +413,25 @@ NATIVE (getgrnam)
 // sys/resource.h
 NATIVE (getrusage) // not sure if native call will give stats about the requested process..
 
+// syslog.h
 DCE    (openlog)
 DCE    (closelog)
 DCE    (setlogmask)
 DCE    (syslog)
 DCE    (vsyslog)
 
+// unistd.h
+NATIVE (sysconf)
+
+// this is wrong. clock should be changed to DCE implementation
+//DCE    (__vdso_clock_gettime)
+NATIVE_WITH_ALIAS2 (clock_gettime, __vdso_clock_gettime)
+
+
 #undef DCE
 #undef NATIVE
 #undef NATIVE_WITH_ALIAS
+#undef NATIVE_WITH_ALIAS2
 #undef NATIVE_EXPLICIT
 #undef DCE_WITH_ALIAS
 #undef DCE_WITH_ALIAS2

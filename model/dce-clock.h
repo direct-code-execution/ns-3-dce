@@ -1,11 +1,11 @@
-#ifndef SIMU_CLOCK_H
-#define SIMU_CLOCK_H
+#ifndef DCE_CLOCK_H
+#define DCE_CLOCK_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define SIMU_CLOCKS_PER_SEC (1000000)
+#define DCE_CLOCKS_PER_SEC (1000000)
 
 typedef int dce_clock_t;
 
@@ -16,4 +16,4 @@ dce_clock_t dce_clock (void);
 }
 #endif
 
-#endif /* SIMU_CLOCK_H */
+#endif /* DCE_CLOCK_H */

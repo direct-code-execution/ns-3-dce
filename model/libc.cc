@@ -15,6 +15,7 @@ extern "C" {
 // \see http://tigcc.ticalc.org/doc/gnuexts.html#SEC67___builtin_apply_args
 #define NATIVE DCE
 #define NATIVE_WITH_ALIAS DCE_WITH_ALIAS
+#define NATIVE_WITH_ALIAS2 DCE_WITH_ALIAS2
 
 #define GCC_BUILTIN_APPLY(export_symbol, func_to_call)					\
 	void export_symbol (...) {											\

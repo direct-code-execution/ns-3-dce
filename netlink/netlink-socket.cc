@@ -48,7 +48,7 @@
 #include <linux/if.h>
 #include <errno.h>
 
-NS_LOG_COMPONENT_DEFINE ("NetlinkSocket");
+NS_LOG_COMPONENT_DEFINE ("DceNetlinkSocket");
 
 namespace ns3 {
 

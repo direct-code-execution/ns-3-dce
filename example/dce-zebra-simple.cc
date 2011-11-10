@@ -64,6 +64,11 @@ int main (int argc, char *argv[])
 
   Config::Connect ("/NodeList/*/$ns3::DceManager/Exit", MakeCallback (&procExit));
 
+  // Trace routing tables 
+  Ipv4StaticRoutingHelper g;
+  Ptr<OutputStreamWrapper> routingStream = Create<OutputStreamWrapper> ("routes.log", std::ios::out);
+  g.PrintRoutingTableAllEvery (Seconds (10), routingStream);
+
   Simulator::Stop (Seconds(160.0));
   Simulator::Run ();
   Simulator::Destroy ();
