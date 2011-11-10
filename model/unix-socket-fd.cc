@@ -13,6 +13,7 @@
 #include "ns3/uinteger.h"
 #include "ns3/boolean.h"
 #include "ns3/simulator.h"
+#include "ns3/netlink-socket-address.h"
 #include <fcntl.h>
 #include <errno.h>
 #include <linux/icmp.h> // need ICMP_FILTER
@@ -480,6 +481,14 @@ UnixSocketFd::PosixAddressToNs3Address (const struct sockaddr *my_addr, socklen_
       InetSocketAddress inet = InetSocketAddress (ipv4, port);
       return inet;
     }
+  else if (my_addr->sa_family == AF_NETLINK)
+    {
+      const struct sockaddr_nl *addr = (const struct sockaddr_nl *)my_addr;
+      //user space netlink socket has a nozero process id
+      uint32_t pid = addr->nl_pid ? addr->nl_pid : getpid ();
+      NetlinkSocketAddress nladdress = NetlinkSocketAddress (pid, addr->nl_groups);
+      return nladdress;
+    }
   NS_ASSERT (false);
   return Address ();
 }
@@ -503,6 +512,17 @@ UnixSocketFd::Ns3AddressToPosixAddress (const Address& nsaddr,
       inet_addr->sin_port = htons (ns_inetaddr.GetPort ());
       inet_addr->sin_addr.s_addr = htonl (ns_inetaddr.GetIpv4 ().Get ());
       *addrlen = sizeof(struct sockaddr_in);
+    }
+  else if (NetlinkSocketAddress::IsMatchingType(nsaddr))
+    {
+      NetlinkSocketAddress ns_nladdr = NetlinkSocketAddress::ConvertFrom (nsaddr);
+      NS_ASSERT (*addrlen >= sizeof (struct sockaddr_nl));
+      struct sockaddr_nl *nl_addr = (struct sockaddr_nl *)addr;
+      nl_addr->nl_family = AF_NETLINK;
+      nl_addr->nl_pid = ns_nladdr.GetProcessID ();
+      nl_addr->nl_groups = ns_nladdr.GetGroupsMask ();
+      *addrlen = sizeof (struct sockaddr_nl);
+      return 0;
     }
   else
     {
@@ -725,6 +745,16 @@ UnixSocketFd::Ns3AddressToDeviceIndependantPhysicalLayerAddress (const Address& 
       NS_ASSERT (false);
     }
   return 0;
+}
+int
+UnixSocketFd::Ftruncate (off_t length)
+{
+  Thread *current = Current ();
+  NS_ASSERT (current != 0);
+  NS_LOG_FUNCTION (this << current << length);
+
+  current->err = EINVAL;
+  return -1;
 }
 
 } // namespace ns3

@@ -280,9 +280,11 @@ ElfCache::GetDepId (std::string depname) const
         {
           depname = overriden.to;
         }
+      NS_LOG_DEBUG( "from: " << overriden.from << ", to: " << overriden.to );
     }
   for (std::vector<struct ElfCachedFile>::const_iterator i = m_files.begin (); i != m_files.end (); ++i)
     {
+      NS_LOG_DEBUG( "cache: " << i->basename );
       if (depname == i->basename)
         {
           return i->id;

@@ -15,7 +15,9 @@ int dce_getaddrinfo (const char *node, const char *service,
 void dce_freeaddrinfo (struct addrinfo *res);
 const char *dce_gai_strerror (int errcode);
 int dce_getnameinfo (const struct sockaddr *sa, socklen_t salen, char *host,
-                     socklen_t hostlen, char *serv, socklen_t servlen, int flags);
+                       socklen_t hostlen, char *serv, socklen_t servlen, unsigned int flags);
+
+void dce_herror(const char *string);
 
 #ifdef __cplusplus
 }

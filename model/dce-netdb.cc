@@ -9,7 +9,7 @@
 #include "process.h"
 #include "errno.h"
 
-NS_LOG_COMPONENT_DEFINE ("SimuNetDb");
+NS_LOG_COMPONENT_DEFINE ("DceNetdb");
 
 using namespace ns3;
 
@@ -117,7 +117,7 @@ const char *dce_gai_strerror (int errcode)
   return ::gai_strerror (errcode);
 }
 int dce_getnameinfo (const struct sockaddr *sa, socklen_t salen, char *host,
-                     socklen_t hostlen, char *serv, socklen_t servlen, int flags)
+                       socklen_t hostlen, char *serv, socklen_t servlen, unsigned int flags)
 {
   NS_LOG_FUNCTION ( Current () );
 
@@ -179,4 +179,12 @@ int dce_getnameinfo (const struct sockaddr *sa, socklen_t salen, char *host,
     }
 
   return 0; // XXX : cheater
+}
+
+void dce_herror(const char *string)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
+  NS_ASSERT (Current () != 0);
+
+  fprintf (*Current ()->process->pstderr, "%s : %s\n", string, "ERROR");
 }

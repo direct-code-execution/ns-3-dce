@@ -301,6 +301,22 @@ UnixFileFdBase::HangupReceived (void) const
 {
   return false;
 }
+
+int
+UnixFileFdBase::Ftruncate (off_t length)
+{
+  Thread *current = Current ();
+  NS_ASSERT (current != 0);
+  NS_LOG_FUNCTION (this << current << length);
+	
+  int retval = ::ftruncate (m_realFd, length);
+  if (retval == -1)
+    {
+      current->err = errno;
+    }
+  return retval;  
+}
+	
 UnixFileFd::UnixFileFd (int realFd)
   : UnixFileFdBase (realFd)
 {}
@@ -491,4 +507,5 @@ UnixRandomFd::Fxstat64 (int ver, struct ::stat64 *buf)
   close (tmpFd);
   return retval;
 }
+
 } // namespace ns3

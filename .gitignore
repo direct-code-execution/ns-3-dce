@@ -1,0 +1,6 @@
+\#*\#
+*~
+.lock-wafbuild
+.waf*
+build/
+ns3waf/__init__.pyc

@@ -83,7 +83,8 @@ def build_netlink(bld):
         'netlink/netlink-message-route.cc',
         ]
     module_headers = [
-        'netlink/netlink-socket-factory.h'
+        'netlink/netlink-socket-factory.h',
+        'netlink/netlink-socket-address.h',
         ]
     module = ns3waf.create_module(bld, 
                                   name='netlink',
@@ -251,7 +252,7 @@ def build(bld):
 	    'model/dce-application.cc',
         'model/dce.cc',
         'model/dce-signal.cc',
-        'model/libc-dce.c',
+        'model/libc-dce.cc',
         'model/utils.cc',
         'model/unix-fd.cc',
         'model/unix-file-fd.cc',
@@ -272,6 +273,7 @@ def build(bld):
         'model/dce-env.cc',
         'model/dce-pthread-cond.cc',
         'model/dce-timerfd.cc',
+        'model/dce-time.cc',
         'model/dce-stat.cc',
         'model/dce-global-variables.cc',
         'model/cmsg.cc',
@@ -313,7 +315,7 @@ def build(bld):
         'model/task-manager.h',
         'model/socket-fd-factory.h',
         'model/loader-factory.h',
-	    'model/dce-application.h',
+        'model/dce-application.h',
         'helper/dce-manager-helper.h',
         'helper/dce-application-helper.h',
         ]
@@ -348,7 +350,7 @@ def build(bld):
 
     # The very small libc used to replace the glibc
     # and forward to the dce_* code
-    bld.shlib(source = ['model/libc.c', 'model/libc-global-variables.c'],
+    bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc', 'model/libc-global-variables.cc'],
               target='lib/c-ns3', cflags=['-g'],
               defines=['LIBSETUP=libc_setup'],
               linkflags=['-nostdlib', 
@@ -357,7 +359,7 @@ def build(bld):
 
     # The very small libpthread used to replace the glibc
     # and forward to the dce_* code
-    bld.shlib(source = ['model/libc.c'],
+    bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc'],
               target='lib/pthread-ns3', cflags=['-g'],
               defines=['LIBSETUP=libpthread_setup'],
               linkflags=['-nostdlib', '-lc',

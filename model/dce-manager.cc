@@ -115,15 +115,13 @@ DceManager::DoDispose (void)
 struct ::Libc *
 DceManager::GetLibc (void)
 {
-  static bool initialized = false;
-  static struct ::Libc libc;
-  if (initialized)
+  static struct ::Libc *libc = 0;
+  if (libc != 0)
     {
-      return &libc;
+      return libc;
     }
-  initialized = true;
   libc_dce (&libc);
-  return &libc;
+  return libc;
 }
 
 void

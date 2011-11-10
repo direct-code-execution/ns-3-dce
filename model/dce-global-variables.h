@@ -1,8 +1,6 @@
 #ifndef SIMU_GLOBAL_VARIABLES_H
 #define SIMU_GLOBAL_VARIABLES_H
 
-#include <stdio.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -14,6 +12,10 @@ struct SimuGlobalVariables
   FILE **pstdout;
   FILE **pstderr;
   char ***penvp;
+  char **poptarg;
+  int *poptind;
+  int *popterr;
+  int *poptopt;
 };
 
 void dce_global_variables_setup (struct SimuGlobalVariables *variables);

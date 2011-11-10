@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "dce-global-variables.h"
 #include "process.h"
 #include "utils.h"
@@ -22,5 +23,9 @@ void dce_global_variables_setup (struct SimuGlobalVariables *variables)
   *process->pstdout = dce_fdopen (1, "a"); // Append in order to not erase content while doing an exec
   *process->pstderr = dce_fdopen (2, "a"); // Append in order to not erase content while doing an exec
   *process->penvp = process->originalEnvp;
-}
 
+  process->poptarg = variables->poptarg;
+  process->poptind = variables->poptind; 
+  process->popterr = variables->popterr;
+  process->poptopt = variables->poptopt;
+}

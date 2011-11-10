@@ -19,3 +19,10 @@ char *dce_strndup (const char *s, size_t n)
   return str;
 }
 
+char *dce___strcpy_chk (char *__restrict __dest,
+						const char *__restrict __src,
+						size_t __destlen)
+{
+  /// \todo Do actual checking
+  strcpy (__dest, __src); 
+}

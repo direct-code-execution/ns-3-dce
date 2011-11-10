@@ -1,3 +1,4 @@
+#include <sys/stat.h>
 #include "sys/dce-stat.h"
 #include "utils.h"
 #include "process.h"
@@ -10,7 +11,7 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("SimuStat");
 
-int dce_xstat (int ver, const char *path, struct stat *buf)
+int dce___xstat (int ver, const char *path, struct stat *buf)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << path << buf);
@@ -28,7 +29,7 @@ int dce_xstat (int ver, const char *path, struct stat *buf)
     }
   return retval;
 }
-int dce_xstat64 (int ver, const char *path, struct stat64 *buf)
+int dce___xstat64 (int ver, const char *path, struct stat64 *buf)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << path << buf);
@@ -46,7 +47,7 @@ int dce_xstat64 (int ver, const char *path, struct stat64 *buf)
     }
   return retval;
 }
-int dce_fxstat (int ver, int fd, struct stat *buf)
+int dce___fxstat (int ver, int fd, struct stat *buf)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd);
@@ -54,7 +55,7 @@ int dce_fxstat (int ver, int fd, struct stat *buf)
 
   OPENED_FD_METHOD(int, Fxstat (ver, buf) )
 }
-int dce_fxstat64 (int ver, int fd, struct stat64 *buf)
+int dce___fxstat64 (int ver, int fd, struct stat64 *buf)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd);
@@ -62,7 +63,7 @@ int dce_fxstat64 (int ver, int fd, struct stat64 *buf)
 
   OPENED_FD_METHOD(int, Fxstat64 (ver, buf) )
 }
-int dce_lxstat (int ver, const char *pathname, struct stat *buf)
+int dce___lxstat (int ver, const char *pathname, struct stat *buf)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << pathname << buf);
@@ -80,7 +81,7 @@ int dce_lxstat (int ver, const char *pathname, struct stat *buf)
     }
   return retval;
 }
-int dce_lxstat64 (int ver, const char *pathname, struct stat64 *buf)
+int dce___lxstat64 (int ver, const char *pathname, struct stat64 *buf)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << pathname << buf);
@@ -100,9 +101,9 @@ int dce_lxstat64 (int ver, const char *pathname, struct stat64 *buf)
 }
 int dce_fstat (int fd, struct stat *buf)
 {
-  return dce_fxstat (_STAT_VER, fd, buf);
+  return dce___fxstat (_STAT_VER, fd, buf);
 }
 int dce_fstat64 (int fd, struct stat64 *buf)
 {
-  return dce_fxstat64 (_STAT_VER, fd, buf);
+  return dce___fxstat64 (_STAT_VER, fd, buf);
 }

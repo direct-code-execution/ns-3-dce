@@ -76,7 +76,7 @@ void dce_exit (int status)
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << status);
   NS_ASSERT (current != 0);
   CleanupPthreadKeys ();
-  dce__cxa_finalize (0);
+  dce___cxa_finalize (0);
   dce_fflush (0);
   current->process->exitValue = __W_EXITCODE ( status,  WTERMSIG ( current->process->exitValue ) );
   current->task->SetSwitchNotifier (0, 0);

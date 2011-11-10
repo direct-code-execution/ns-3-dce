@@ -437,14 +437,63 @@ int dce_fileno (FILE *stream)
   return status;
 }
 
-int dce_vfprintf (FILE *stream, const char *format, va_list ap)
+// stdio.h
+int dce_printf(const char *format, ...)
 {
-  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream << format);
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << format);
   NS_ASSERT (Current () != 0);
-  // Note: I don't believe that this function sets errno
-  int status = vfprintf (stream, format, ap);
+
+  va_list vl;
+  va_start (vl, format);
+  int status = vfprintf (*Current ()->process->pstdout, format, vl);
+  va_end (vl);
   return status;
 }
+// stdarg.h
+int dce_vprintf(const char *format, va_list ap)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << format);
+  NS_ASSERT (Current () != 0);
+  // Note: I don't believe that this function sets errno
+  int status = vfprintf (*Current ()->process->pstdout, format, ap);
+  return status;
+}
+
+int dce_getchar (void)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
+  NS_ASSERT (Current () != 0);
+  return fgetc (*Current ()->process->pstdin);
+}
+
+int dce__IO_getc (FILE *stream)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
+  NS_ASSERT (Current () != 0);
+  return fgetc (stream);
+}
+
+int dce_putchar (int __c)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << (char)__c);
+  NS_ASSERT (Current () != 0);
+  return fputc (__c, *Current ()->process->pstdout);
+}
+
+int dce__IO_putc (int __c, FILE *__stream)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << (char)__c);
+  NS_ASSERT (Current () != 0);
+  return fputc (__c, __stream);
+}
+
+int dce_puts (const char *__s)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << __s);
+  NS_ASSERT (Current () != 0);
+  return fputs (__s, *Current ()->process->pstdout);
+}
+
 int dce_fputc (int c, FILE *stream)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << c << stream);
@@ -558,6 +607,21 @@ int dce_setvbuf (FILE *stream, char *buf, int mode, size_t size)
   return status;
 }
 
+void dce_setbuf(FILE *stream, char *buf)
+{
+  dce_setvbuf (stream, buf, buf ? _IOFBF : _IONBF, BUFSIZ);
+}
+
+void dce_setbuffer(FILE *stream, char *buf, size_t size)
+{
+  dce_setvbuf (stream, buf, buf ? _IOFBF : _IONBF, size);
+}
+
+void dce_setlinebuf(FILE *stream)
+{
+  dce_setvbuf (stream, (char *) NULL, _IOLBF, 0);
+}
+
 int dce_remove (const char *pathname)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << pathname);
@@ -575,4 +639,59 @@ int dce_remove (const char *pathname)
       current->err = errno;
     }
   return status;
+}
+
+void dce_perror(const char *s)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
+  NS_ASSERT (Current () != 0);
+
+  fprintf (*Current ()->process->pstderr, "%s: %s\n", s, strerror (*__errno_location ()));
+}
+
+int dce___printf_chk (int __flag, __const char *__restrict __format, ...)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
+  NS_ASSERT (Current () != 0);
+  
+  va_list ap;
+  va_start (ap, __format);
+  int retval = vfprintf (*Current ()->process->pstdout, __format, ap);
+  va_end (ap);
+  return retval;
+}
+
+int dce___vfprintf_chk (FILE *__restrict __stream, int __flag,
+						__const char *__restrict __format, _G_va_list __ap)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
+  NS_ASSERT (Current () != 0);
+
+  return vfprintf (__stream, __format, __ap);
+}
+
+int dce___fprintf_chk (FILE *__restrict __stream, int __flag,
+					   __const char *__restrict __format, ...)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
+  NS_ASSERT (Current () != 0);
+
+  va_list ap;
+  va_start (ap, __format);
+  int retval = vfprintf (__stream, __format, ap);
+  va_end (ap);
+  return retval;
+}
+
+int dce___snprintf_chk (char *__restrict __s, size_t __n, int __flag,
+						size_t __slen, __const char *__restrict __format, ...)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
+  NS_ASSERT (Current () != 0);
+
+  va_list ap;
+  va_start (ap, __format);
+  int retval = vsnprintf (__s, __n, __format, ap);
+  va_end (ap);
+  return retval;
 }

@@ -19,11 +19,9 @@ int dce_usleep (useconds_t usec);
 pid_t dce_getpid (void);
 pid_t dce_getppid (void);
 int dce_pause (void);
-int dce_getopt_r (int argc, char * const argv[], const char *optstring, 
-                  char **poptarg, int *poptind, int *popterr, int *poptopt);
-int dce_getopt_long_r (int argc, char * const argv[], const char *optstring, 
-                       const struct option *longopts, int *longindex,
-                       char **poptarg, int *poptind, int *popterr, int *poptopt);
+int dce_getopt (int argc, char * const argv[], const char *optstringt);
+int dce_getopt_long (int argc, char * const argv[], const char *optstring, 
+					 const struct option *longopts, int *longindex);
 uid_t dce_getuid (void);
 uid_t dce_geteuid (void);
 int dce_setuid (uid_t uid);
@@ -51,12 +49,15 @@ int dce_unlink (const char *pathname);
 int dce_rmdir (const char *pathname);
 pid_t dce_fork (void);
 int dce_execv (const char *path, char *const argv[]);
-int dce_execl (const char *path, const char *arg, va_list ap);
+int dce_execl (const char *path, const char *arg, ...);
 int dce_execve (const char *filename, char *const argv[], char *const envp[]);
-int dce_execlp (const char *file, const char *arg, va_list ap);
+int dce_execlp (const char *file, const char *arg, ...);
 int dce_execvp (const char *file, char *const argv[]);
-int dce_execle (const char *path, const char *arg, va_list ap);
+int dce_execle (const char *path, const char *arg, ...);
 
+int dce_truncate (const char *path, off_t length);
+int dce_ftruncate (int fd, off_t length);
+	
 #ifdef __cplusplus
 }
 #endif

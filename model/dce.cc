@@ -11,12 +11,10 @@
 #include "dce-stdio.h"
 #include "dce-stdarg.h"
 #include "dce-stdlib.h"
+#include "dce-locale.h"
 #include "sys/dce-ioctl.h"
 #include "dce-sched.h"
 #include "arpa/dce-inet.h"
-#include "ns3/node.h"
-#include "ns3/log.h"
-#include "ns3/simulator.h"
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
@@ -24,16 +22,18 @@
 #include <fcntl.h>
 #include "dce-random.h"
 #include "net/dce-if.h"
+#include "ns3/node.h"
+#include "ns3/log.h"
+#include "ns3/simulator.h"
 #include "ns3/names.h"
 #include "ns3/random-variable.h"
 #include "ns3/ipv4-l3-protocol.h"
 
-
-NS_LOG_COMPONENT_DEFINE ("Simu");
+NS_LOG_COMPONENT_DEFINE ("Dce");
 
 using namespace ns3;
 
-int *dce_get_errno (void)
+int *dce___errno_location (void)
 {
   GET_CURRENT_NOLOG ();
   return &current->err;
@@ -250,7 +250,7 @@ int dce_kill (pid_t pid, int sig)
   return 0;
 }
 
-int dce_abort ()
+void dce_abort ()
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current);
@@ -258,8 +258,6 @@ int dce_abort ()
   UtilsSendSignal ( Current ()->process, SIGABRT);
   // If we are still alive force the exitation
   dce_exit (-2);
-
-  return 0;
 }
 
 int dce_pause (void)
@@ -279,17 +277,6 @@ int dce_gettimeofday (struct timeval *tv, struct timezone *tz)
   NS_ASSERT (tz == 0);
   *tv = UtilsTimeToTimeval (UtilsSimulationTimeToTime (Now ()));
   return 0;
-}
-time_t dce_time (time_t *t)
-{
-  NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
-  NS_ASSERT (Current () != 0);
-  time_t time = (time_t)UtilsSimulationTimeToTime (Now ()).GetSeconds ();
-  if (t != 0)
-    {
-      *t = time;
-    }
-  return time;
 }
 int dce_nanosleep (const struct timespec *req, struct timespec *rem) {
   Thread *current = Current ();
@@ -428,16 +415,12 @@ const char *dce_inet_ntop (int af, const void *src,
     }
   return retval;
 }
-
-int dce_getopt_r (int argc, char * const argv[], const char *optstring, 
-                  char **poptarg, int *poptind, int *popterr, int *poptopt)
+int dce_getopt (int argc, char * const argv[], const char *optstring)
 {
-  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << argc << argv << optstring << poptarg << 
-                   poptind << popterr << poptopt);
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << argc << argv << optstring);
   NS_ASSERT (Current () != 0);
-  NS_LOG_DEBUG ("optind=" << *poptind << 
-                " opterr=" << *popterr <<
-                " optopt=" << *poptopt);
+  Process *process = Current ()->process;
+
   /* The following is pretty evil but it all comes down to the fact
    * that the libc does not export getopt_internal_r which is really the
    * function we want to call here.
@@ -446,28 +429,29 @@ int dce_getopt_r (int argc, char * const argv[], const char *optstring,
   int optindsaved = optind;
   int opterrsaved = opterr;
   int optoptsaved = optopt;
-  optarg = *poptarg;
-  optind = *poptind;
-  opterr = *popterr;
-  optopt = *poptopt;
+  optarg = *process->poptarg;
+  optind = *process->poptind;
+  opterr = *process->popterr;
+  optopt = *process->poptopt;
   int retval = getopt (argc, argv, optstring);
-  *poptarg = optarg;
-  *poptind = optind;
-  *popterr = opterr;
-  *poptopt = optopt;
+  *process->poptarg = optarg;
+  *process->poptind = optind;
+  *process->popterr = opterr;
+  *process->poptopt = optopt;
   optarg = optargsaved;
   optind = optindsaved;
   opterr = opterrsaved;
   optopt = optoptsaved;
   return retval;
 }
-int dce_getopt_long_r (int argc, char * const argv[], const char *optstring, 
-                       const struct option *longopts, int *longindex,
-                       char **poptarg, int *poptind, int *popterr, int *poptopt)
+int dce_getopt_long (int argc, char * const argv[], const char *optstring, 
+					 const struct option *longopts, int *longindex)
 {
   NS_LOG_FUNCTION (Current () << "node" << UtilsGetNodeId () << argc << argv << optstring << 
                    longopts << longindex);
   NS_ASSERT (Current () != 0);
+  Process *process = Current ()->process;
+  
   /* The following is pretty evil but it all comes down to the fact
    * that the libc does not export getopt_internal_r which is really the
    * function we want to call here.
@@ -476,15 +460,15 @@ int dce_getopt_long_r (int argc, char * const argv[], const char *optstring,
   int optindsaved = optind;
   int opterrsaved = opterr;
   int optoptsaved = optopt;
-  optarg = *poptarg;
-  optind = *poptind;
-  opterr = *popterr;
-  optopt = *poptopt;
+  optarg = *process->poptarg;
+  optind = *process->poptind;
+  opterr = *process->popterr;
+  optopt = *process->poptopt;
   int retval = getopt_long (argc, argv, optstring, longopts, longindex);
-  *poptarg = optarg;
-  *poptind = optind;
-  *popterr = opterr;
-  *poptopt = optopt;
+  *process->poptarg = optarg;
+  *process->poptind = optind;
+  *process->popterr = opterr;
+  *process->poptopt = optopt;
   optarg = optargsaved;
   optind = optindsaved;
   opterr = opterrsaved;
@@ -559,8 +543,8 @@ int dce_setitimer (int which, const struct itimerval *value,
 char *dce_getcwd (char *buf, size_t size)
 {
   Thread *current = Current ();
-  NS_LOG_FUNCTION (current << UtilsGetNodeId () << buf << size);
   NS_ASSERT (current != 0);
+  NS_LOG_FUNCTION (current << UtilsGetNodeId ());
   uint32_t cwd_size = current->process->cwd.size ();
   if ((buf != 0 && size < cwd_size + 1)
       || (buf == 0 && size != 0 && size < cwd_size + 1))
@@ -674,8 +658,11 @@ int dce_execv (const char *path, char *const argv[])
 
   return thread->process->manager->Execve (fileName.c_str (), argv, *(thread->process->penvp) );
 }
-int dce_execl (const char *path, const char *arg, va_list ap)
+int dce_execl (const char *path, const char *arg, ...)
 {
+  va_list ap;
+  va_start (ap, arg);
+
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << path);
 
@@ -690,7 +677,7 @@ int dce_execl (const char *path, const char *arg, va_list ap)
   int nb = 1;
 
   va_list cp;
-  va_copy (cp, ap );
+  va_copy (cp, ap);
   char *p =  0;
   do {
       p = va_arg (cp, char *);
@@ -727,8 +714,11 @@ int dce_execve (const char *path, char *const argv[], char *const envp[])
   return thread->process->manager->Execve (fileName.c_str (), argv, envp );
 }
 
-int dce_execlp (const char *file, const char *arg, va_list ap)
+int dce_execlp (const char *file, const char *arg, ...)
 {
+  va_list ap;
+  va_start (ap, arg);
+
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << file);
   std::string fileName = FindExecFile ("/", std::string (getenv ("PATH")) + std::string (getenv ("LD_LIBRARY_PATH")),
@@ -741,7 +731,7 @@ int dce_execlp (const char *file, const char *arg, va_list ap)
 
   int nb = 1;
   va_list cp;
-  va_copy (cp, ap );
+  va_copy (cp, ap);
   char *p =  0;
   do {
       p = va_arg (cp, char *);
@@ -778,8 +768,11 @@ int dce_execvp (const char *file, char *const argv[])
 
   return thread->process->manager->Execve (fileName.c_str (), argv, *(thread->process->penvp) );
 }
-int dce_execle (const char *path, const char *arg, va_list ap)
+int dce_execle (const char *path, const char *arg, ...)
 {
+  va_list ap;
+  va_start (ap, arg);
+
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << path);
   std::string fileName = FindExecFile ("/", "", path, getuid (), getgid (), &(thread->err) );
@@ -790,7 +783,7 @@ int dce_execle (const char *path, const char *arg, va_list ap)
     }
   int nb = 1;
   va_list cp;
-  va_copy (cp, ap );
+  va_copy (cp, ap);
   char *p =  0;
   do {
       p = va_arg (cp, char *);
@@ -812,4 +805,10 @@ int dce_execle (const char *path, const char *arg, va_list ap)
   dce_free (argv);
 
   return retval;
+}
+
+char *dce_setlocale (int category, const char *locale)
+{
+  static char loc[] = "";
+  return loc;
 }

@@ -63,9 +63,28 @@ NS_LOG_COMPONENT_DEFINE ("SimuFd");
 
 
 using namespace ns3;
-
-int dce_open (const char *path, int flags, mode_t mode)
+int dce_open64 (const char *path, int flags, ...)
 {
+  va_list vl;
+  va_start (vl, flags);
+  // hope this trick actually works...
+  int status = dce_open (path, flags, vl);
+  va_end (vl);
+
+  return status;
+}
+
+int dce_open (const char *path, int flags, ...)
+{
+  va_list vl;
+  va_start (vl, flags);
+
+  mode_t mode = 0;
+  if (flags & O_CREAT)
+    {
+      mode = va_arg (vl, mode_t);
+    }
+  va_end (vl);  
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << path << flags);
   NS_ASSERT (current != 0);
@@ -237,8 +256,13 @@ ssize_t dce_sendmsg (int fd, const struct msghdr *msg, int flags)
   OPENED_FD_METHOD (ssize_t, Sendmsg  (msg, flags) )
 }
 
-int dce_ioctl (int fd, int request, char *argp)
+int dce_ioctl (int fd, long unsigned int request, ...)
 {
+  va_list vl;
+  va_start (vl, request);
+  char *argp = va_arg (vl, char*);
+  va_end (vl);
+
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << request << argp);
   NS_ASSERT (current != 0);
@@ -513,6 +537,12 @@ int dce_dup2 (int oldfd, int newfd)
 
   return newfd;
 }
+void *dce_mmap (void *addr, size_t length, int prot, int flags,
+		int fd, off_t offset)
+{
+  return dce_mmap64 (addr, length, prot, flags, fd, offset);
+}
+
 void *dce_mmap64 (void *start, size_t length, int prot, int flags,
                   int fd, off64_t offset)
 {
@@ -548,8 +578,13 @@ off64_t dce_lseek64 (int fd, off64_t offset, int whence)
 
   OPENED_FD_METHOD (int, Lseek (offset, whence) )
 }
-int dce_fcntl (int fd, int cmd, unsigned long arg)
+int dce_fcntl(int fd, int cmd, ... /*unsigned long arg*/)
 {
+  va_list vl;
+  va_start (vl, cmd);
+  unsigned long arg = va_arg (vl, unsigned long);
+  va_end (vl);
+
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << fd << cmd << arg);
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
@@ -558,4 +593,37 @@ int dce_fcntl (int fd, int cmd, unsigned long arg)
   OPENED_FD_METHOD (int, Fcntl (cmd, arg) )
 }
 
+int dce_truncate (const char *path, off_t length)
+{
+  Thread *current = Current ();
+  NS_ASSERT (current != 0);
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << path << length);
 
+  int fd = dce_open (path, O_WRONLY, 0);
+  if (fd == -1)
+	{
+	  current->err = errno;
+	  return -1;
+	}
+
+  return dce_ftruncate (fd, length);
+}
+
+int dce_ftruncate (int fd, off_t length)
+{
+  Thread *current = Current ();
+  NS_ASSERT (current != 0);
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << length);
+  /*
+  int index = UtilsSearchOpenFd (fildes);
+  if (index == -1)
+    {
+      current->err = EBADF;
+      return -1;
+    }
+  UnixFd *unixFd = current->process->openFiles[index].second;
+  int retval = unixFd->Ftruncate (length);
+  return retval;
+  */ 
+  OPENED_FD_METHOD (int, Ftruncate (length) )  
+}

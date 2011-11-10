@@ -13,9 +13,9 @@ NS_LOG_COMPONENT_DEFINE ("SimuWait");
 
 using namespace ns3;
 
-pid_t dce_wait (int *status)
+pid_t dce_wait (void *status)
 {
-  return dce_waitpid (-1, status, 0);
+  return dce_waitpid (-1, (int*)status, 0);
 }
 
 pid_t dce_waitpid (pid_t pid, int *status, int options)

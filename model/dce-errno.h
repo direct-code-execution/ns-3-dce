@@ -7,9 +7,9 @@
 extern "C" {
 #endif
 
-#define dce_errno (*dce_get_errno ())
+#define dce_errno (*dce___errno_location ())
 
-int *dce_get_errno (void);
+int *dce___errno_location (void);
 
 #ifdef __cplusplus
 }

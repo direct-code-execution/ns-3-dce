@@ -45,6 +45,7 @@ public:
                        const struct itimerspec *new_value,
                        struct itimerspec *old_value) = 0;
   virtual int Gettime (struct itimerspec *cur_value) const = 0;
+  virtual int Ftruncate (off_t length) = 0;
 
 
   // Return true if a select on this fd should return POLLHUP

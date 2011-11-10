@@ -296,4 +296,16 @@ UnixTimerFd::Poll (PollTable* ptable)
 
   return ret;
 }
+
+int
+UnixTimerFd::Ftruncate (off_t length)
+{
+  Thread *current = Current ();
+  NS_ASSERT (current != 0);
+  NS_LOG_FUNCTION (this << current << length);
+
+  current->err = EINVAL;
+  return -1;
+}
+
 } // namespace ns3

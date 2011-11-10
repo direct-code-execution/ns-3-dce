@@ -6,7 +6,7 @@
 extern "C" {
 #endif
 
-pid_t dce_wait (int *status);
+pid_t dce_wait (void *status);
 pid_t dce_waitpid (pid_t pid, int *status, int options);
 
 

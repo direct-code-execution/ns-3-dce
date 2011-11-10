@@ -48,6 +48,7 @@ public:
                        const struct itimerspec *new_value,
                        struct itimerspec *old_value);
   virtual int Gettime (struct itimerspec *cur_value) const;
+  virtual int Ftruncate (off_t length);
   // CanRecv and CanSend return true only if a following Read or Write will not block,
   // so a remote closed socket should return true because read or write will not block but will fail.
   virtual bool CanRecv (void) const = 0;
