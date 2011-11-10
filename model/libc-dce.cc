@@ -40,6 +40,7 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <getopt.h>
+#include <grp.h>
 #include <ifaddrs.h>
 #include <sys/uio.h>
 #include <libgen.h>
@@ -62,11 +63,13 @@
 #include <sys/timerfd.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/resource.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/utsname.h>
 #include <sys/wait.h>
 #include <pthread.h>
+#include <pwd.h>
 #include <time.h>
 #include <unistd.h>
 #include <wchar.h>

@@ -205,6 +205,7 @@ DCE    (setresgid)
 NATIVE (inet_aton)
 NATIVE (inet_ntoa)
 DCE    (inet_ntop)
+NATIVE (inet_pton)
 NATIVE (inet_network)
 NATIVE (inet_makeaddr)
 NATIVE (inet_lnaof)
@@ -342,6 +343,16 @@ DCE    (freeaddrinfo)
 DCE    (gai_strerror)
 DCE    (herror)
 NATIVE (hstrerror) // this could be replaced by DCE call
+NATIVE (getprotoent)
+NATIVE (getprotobyname)
+NATIVE (getprotobynumber)
+NATIVE (setprotoent)
+NATIVE (endprotoent)
+NATIVE (getservent)
+NATIVE (getservbyname)
+NATIVE (getservbyport)
+NATIVE (setservent)
+NATIVE (endservent)
 
 DCE    (getenv)
 DCE    (putenv)
@@ -385,6 +396,15 @@ NATIVE (__xpg_basename)
 
 DCE    (truncate)
 DCE    (ftruncate)
+
+// pwd.h
+NATIVE (getpwnam)
+// grp.h
+NATIVE (getgrnam)
+
+// sys/resource.h
+NATIVE (getrusage) // not sure if native call will give stats about the requested process..
+
 
 #undef DCE
 #undef NATIVE
