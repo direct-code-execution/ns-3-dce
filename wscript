@@ -275,6 +275,7 @@ def build(bld):
         'model/dce-timerfd.cc',
         'model/dce-time.cc',
         'model/dce-stat.cc',
+        'model/dce-syslog.cc',
         'model/dce-global-variables.cc',
         'model/cmsg.cc',
         'model/waiter.cc',

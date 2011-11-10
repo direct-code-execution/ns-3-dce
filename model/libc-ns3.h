@@ -80,6 +80,7 @@ NATIVE (memset)
 NATIVE (memcpy)
 NATIVE (memcmp)
 NATIVE (memmove)
+NATIVE_EXPLICIT (memchr, void * (*) (void *, int, size_t))
 NATIVE (strcpy)
 DCE    (__strcpy_chk)
 NATIVE (strncpy)
@@ -89,8 +90,8 @@ NATIVE (strcmp)
 NATIVE (strncmp)
 NATIVE (strlen)
 // because C++ defines both const and non-const functions
-NATIVE_EXPLICIT (strchr, const char* (*) (const char *, int))
-NATIVE_EXPLICIT (strrchr, const char * (*) (const char *, int))
+NATIVE_EXPLICIT (strchr, char* (*) (char *, int))
+NATIVE_EXPLICIT (strrchr, char * (*) (char *, int))
 NATIVE (strcasecmp)
 NATIVE (strncasecmp)
 
@@ -373,8 +374,8 @@ DCE    (fork)
 NATIVE (qsort)
 DCE    (umask)
 DCE    (abort)
-NATIVE_EXPLICIT (index, const char * (*) (const char *, int))
-NATIVE_EXPLICIT (rindex, const char * (*) (const char *, int))
+NATIVE_EXPLICIT (index, char * (*) (char *, int))
+NATIVE_EXPLICIT (rindex, char * (*) (char *, int))
 NATIVE (strtok)
 NATIVE (strtok_r)
 DCE    (getnameinfo)
@@ -405,6 +406,11 @@ NATIVE (getgrnam)
 // sys/resource.h
 NATIVE (getrusage) // not sure if native call will give stats about the requested process..
 
+DCE    (openlog)
+DCE    (closelog)
+DCE    (setlogmask)
+DCE    (syslog)
+DCE    (vsyslog)
 
 #undef DCE
 #undef NATIVE

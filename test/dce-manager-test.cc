@@ -134,7 +134,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
     bool useNet;
   } testPair;
 
-  const testPair tests[] = {
+  const testPair tests[] = { 
       { "test-empty", 0, "", false},
       {  "test-sleep", 0, "", false },
       {  "test-pthread", 0, "", false},
@@ -149,20 +149,20 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-stdio", 0, "/etc/passwd",false},
       {  "test-string", 0, "", false },
       {  "test-netdb", 3600, "", true },
-      {  "test-env", 0, "", false },
-      {  "test-cond", 0, "", false},
-      {  "test-timer-fd", 0, "", false},
-      {  "test-stdlib", 0, "", false},
-      {  "test-select", 3600, "", true },
-      {  "test-nanosleep", 0, "", false},
+      {  "test-env", 0, "", false }, 
+      /*  {  "test-cond", 0, "", false}, */
+      {  "test-timer-fd", 0, "", false}, 
+      {  "test-stdlib", 0, "", false},  
+      {  "test-select", 3600, "", true }, 
+      {  "test-nanosleep", 0, "", false},  
       {  "test-random", 0, "", false },
-      {  "test-fork", 0, "", false },
-      {  "test-local-socket", 0, "", false },
-      {  "test-poll", 3200, "", true },
-      {  "test-tcp-socket", 320, "", true },
-      {  "test-exec", 0, "" , false},
+      {  "test-fork", 0, "", false }, 
+      {  "test-local-socket", 0, "", false }, 
+      {  "test-poll", 3200, "", true }, 
+      {  "test-tcp-socket", 320, "", true }, 
+      {  "test-exec", 0, "" , false},  /*
       {  "test-raw-socket", 320, "", true },
-      {  "test-iperf", 0, "" , false},
+      {  "test-iperf", 0, "" , false},*/ 
   };
 
   // Prepare directories and files for test-stdio

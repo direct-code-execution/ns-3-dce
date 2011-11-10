@@ -158,6 +158,7 @@ struct Process
   int *poptind;
   int *popterr;
   int *poptopt;
+  FILE *syslog; // instead of real syslog, everything is written to a file /var/log/<pid>/syslog
   struct tm struct_tm;
   char asctime_result[      3+1+ 3+1+20+1+20+1+20+1+20+1+20+1 + 1]; // definition is stolen from glibc
   uint32_t nodeId; // NS3 NODE ID

@@ -35,6 +35,7 @@
 #include "dce-wait.h"
 #include "dce-locale.h"
 #include "net/dce-if.h"
+#include "dce-syslog.h"
 
 #include <arpa/inet.h>
 #include <ctype.h>
@@ -57,6 +58,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <syslog.h>
 #include <sys/ioctl.h>
 #include <sys/io.h>
 #include <sys/mman.h>
