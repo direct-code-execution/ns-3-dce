@@ -79,13 +79,21 @@ ElfDependencies::GatherDependencies (std::string fullname) const
   while (true)
     {
       std::string::size_type dep_start = lddOutput.find_first_not_of (" \t", cur);
+      std::string::size_type next_line = lddOutput.find ("\n", cur);
       std::string::size_type dep_end = lddOutput.find (" ", dep_start);
       std::string::size_type full_start = lddOutput.find_first_of (">", dep_end);
+
       full_start = lddOutput.find_first_not_of (" \t", full_start + 1);
       std::string::size_type full_end = lddOutput.find_first_of (" \n", full_start);
-      NS_LOG_DEBUG ("dep_start=" << (int)dep_start << " dep_end=" << (int)dep_end << " full_start=" << (int)full_start << " full_end=" << (int)full_end);
+      NS_LOG_DEBUG ("dep_start=" << (int)dep_start << " dep_end=" << (int)dep_end
+          << " full_start=" << (int)full_start << " full_end=" << (int)full_end
+          << " next_line=" << (int)next_line << " cur=" << (int)cur );
       if (dep_start != std::string::npos &&
 	  full_start != std::string::npos &&
+	  next_line != std::string::npos &&
+	  dep_start < next_line &&
+	  dep_end < next_line &&
+	  full_start <= next_line &&
 	  full_start > dep_start)
 	{
 	  std::string depname = lddOutput.substr (dep_start, dep_end - dep_start);
@@ -111,7 +119,14 @@ ElfDependencies::GatherDependencies (std::string fullname) const
 	}
       else
 	{
-	  break;
+          if (next_line == std::string::npos)
+            {
+              break;
+            }
+          else
+            {
+              full_start = next_line - 1;
+            }
 	}
     next:
       cur = lddOutput.find_first_of ("\n", full_start);
