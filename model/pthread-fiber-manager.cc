@@ -60,17 +60,6 @@ public:
     unsigned long v = (unsigned long) address;
     m_min = std::min (v, m_min);
     m_max = std::max (v, m_max);
-
-    if (GetSize () > 10000000 )
-      {
-        // TEMPOFUR
-        while (true);
-      }
-    if ( 256 == m_max )
-      {
-        // TEMPOFUR
-        while (true);
-      }
   }
   void *GetStart (void) const
   {
@@ -83,16 +72,6 @@ public:
     int size = getpagesize ();
     unsigned long start = m_min - (m_min % size);
     unsigned long end = ((m_max % size) == 0) ? m_max : (m_max+(size-(m_max %size)));
-
-    // TEMPOFUR
-    size_t taille =  end - start;
-
-    if (taille > 10000000 )
-      {
-        // TEMPOFUR
-        while (true);
-      }
-
     return end - start;
   }
 private:

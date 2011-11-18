@@ -491,7 +491,10 @@ int dce_puts (const char *__s)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << __s);
   NS_ASSERT (Current () != 0);
-  return fputs (__s, *Current ()->process->pstdout);
+  int ret = fputs (__s, *Current ()->process->pstdout);
+  if (ret < 0) return ret;
+  fputc ('\n', *Current ()->process->pstdout);
+  return ret;
 }
 
 int dce_fputc (int c, FILE *stream)
