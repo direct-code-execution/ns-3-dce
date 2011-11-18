@@ -20,3 +20,32 @@ int dce_uname (struct utsname *buf)
 
   return nodeContext->UName (buf);
 }
+
+int dce_gethostname (char *name, size_t len)
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () );
+  NS_ASSERT (current != 0);
+
+  if (!name)
+    {
+      current->err = EFAULT;
+      return 1;
+    }
+  if (len <= 0)
+    {
+      current->err = EINVAL;
+      return 1;
+    }
+
+  struct utsname tmp;
+
+  dce_uname (&tmp);
+
+  size_t sl = strlen (tmp.nodename);
+
+  memset (name, 0, len);
+  memcpy (name, &tmp.nodename, std::min(sl, len));
+
+  return 0;
+}

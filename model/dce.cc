@@ -608,6 +608,7 @@ int dce_chdir (const char *path)
       current->err = errno;
       return -1;
     }
+  ::close (retval);
   current->process->cwd = UtilsGetVirtualFilePath (path);
   return 0;
 }

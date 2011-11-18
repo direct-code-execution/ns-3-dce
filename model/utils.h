@@ -65,13 +65,13 @@ bool CheckFdExists (Process* const p, int const fd, bool const opened);
   if ( current->process->openFiles.end () == it ) \
   { \
       current->err = EBADF; \
-      return errCode; \
+      return (rettype) errCode; \
     } \
     FileUsage *fu = it->second; \
     if (fu->IsClosed ()) \
     { \
         current->err = EBADF; \
-        return errCode; \
+        return (rettype) errCode; \
       } \
     UnixFd *unixFd =  fu->GetFileInc (); \
     rettype retval = unixFd->args; \

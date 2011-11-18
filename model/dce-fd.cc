@@ -30,6 +30,7 @@
 #include "ns3-socket-fd-factory.h"
 #include "file-usage.h"
 #include "dce-stdlib.h"
+#include "pipe-fd.h"
 
 NS_LOG_COMPONENT_DEFINE ("SimuFd");
 
@@ -222,6 +223,14 @@ int dce_isatty (int fd)
   NS_ASSERT (current != 0);
 
   OPENED_FD_METHOD(int, Isatty () );
+}
+char* dce_ttyname (int fd)
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd);
+  NS_ASSERT (current != 0);
+
+  OPENED_FD_METHOD(char*, Ttyname () );
 }
 ssize_t dce_send (int fd, const void *buf, size_t len, int flags)
 {
@@ -627,3 +636,61 @@ int dce_ftruncate (int fd, off_t length)
   */ 
   OPENED_FD_METHOD (int, Ftruncate (length) )  
 }
+int dce_pipe(int pipefd[2])
+{
+  Thread *current = Current ();
+  NS_ASSERT (current != 0);
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () );
+
+  if (0 == pipefd)
+    {
+      current->err = EFAULT;
+      return -1;
+    }
+  int fdRead =  UtilsAllocateFd ();
+  if (fdRead == -1)
+    {
+      current->err = EMFILE;
+      return -1;
+    }
+  PipeFd *reader = new PipeFd ();
+
+  if (!reader)
+    {
+      current->err = EMFILE;
+      return -1;
+    }
+  current->process->openFiles[fdRead] = new FileUsage (fdRead, reader);
+
+  int fdWrite =  UtilsAllocateFd ();
+  if (fdWrite == -1)
+    {
+      delete current->process->openFiles[fdRead];
+      current->process->openFiles[fdRead] = 0;
+      delete reader;
+      current->err = EMFILE;
+      return -1;
+    }
+
+  PipeFd *writer = new PipeFd (reader);
+
+  if (!writer)
+    {
+      delete current->process->openFiles[fdRead];
+      current->process->openFiles[fdRead] = 0;
+      delete reader;
+      current->err = EMFILE;
+      return -1;
+    }
+  current->process->openFiles[fdWrite] = new FileUsage (fdWrite, writer);
+
+//  writer->m_peer = reader;
+  reader->IncFdCount();
+  writer->IncFdCount();
+
+  pipefd [0] = fdRead;
+  pipefd [1] = fdWrite;
+
+  return 0;
+}
+

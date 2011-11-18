@@ -61,5 +61,9 @@ UnixFd::GetFdCount (void) const
 {
   return m_fdCount;
 }
-
+char *
+UnixFd::Ttyname (void)
+{
+  return 0;
+}
 } // namespace ns3

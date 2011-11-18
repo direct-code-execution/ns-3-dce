@@ -14,10 +14,20 @@ static void test_fork (void)
   int parent = 1;
   g_static = 1;
   g_global = 1;
+
+  char * toto = strdup ("tintin");
+  char * houla = (char*)42;
+
+  printf( "Before Fork toto: %lx %s \nhoula %lx\n", toto, toto, houla);
+
   pid_t pid = fork ();
+
+
+
   if (pid == 0)
     {
       // child.
+      printf( "CHILD toto: %lx %s \nhoula %lx\n", toto, toto, houla);
       printf ("I am the child ! \n");
       TEST_ASSERT_EQUAL (parent, 1);
       TEST_ASSERT_EQUAL (g_static, 1);
@@ -34,6 +44,7 @@ static void test_fork (void)
     }
   else
     {
+      printf( "FATHER toto: %lx %s \nhoula %lx\n", toto, toto, houla);
       printf ("I am the father, my son pid is %d\n", pid);
       TEST_ASSERT_EQUAL (parent, 1);
       TEST_ASSERT_EQUAL (g_static, 1);
@@ -164,9 +175,21 @@ void big_fork_exec (int prof)
           printf ("fork failed errno:%d, prof=%d\n", errno, prof);
           return;
         }
+      char buffer[1024];
+
+      sprintf(buffer,"The Father have a prof of:%d !", prof);
+
+      char *copy = strdup (buffer);
+
       if (pid)
         {
           int st = 0;
+
+          printf ("Father %lx %s\n", copy,copy);
+
+          sprintf(copy,"changed string !");
+
+          free (copy);
 
           pid_t w =  waitpid ( pid, &st, 0);
           printf ("Child pid:%d %d\n", pid, w);
@@ -189,7 +212,10 @@ void big_fork_exec (int prof)
 
           static char* const args[] = { "build/bin/test-fork", arg , 0 };
 
-          printf ("Before exec ! \n");
+          sleep (1);
+
+          printf ("Before exec ! %s %lx \n", copy, copy);
+          free (copy);
 
           int ret = execv ("build/bin/test-fork", args);
 
@@ -208,6 +234,8 @@ int main (int argc, char *argv[])
   if (argc == 1)
     {
       test_fork ();
+
+      exit (0);
 
       pid_t w = wait (0);
 

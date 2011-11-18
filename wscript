@@ -152,7 +152,9 @@ def build_dce_tests(module, kern):
              ['test-exec-target-1', []],
              ['test-raw-socket', []],
              ['test-fork-fd', []],
-             ['test-iperf', []]
+             ['test-iperf', []],
+             ['test-name', []],
+             ['test-pipe', []]
              ]
     for name,uselib in tests:
         module.add_test(**dce_kw(target='bin/' + name, source = ['test/' + name + '.cc'],
@@ -222,11 +224,15 @@ def build_dce_examples(module):
     module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
                        target='bin/dce-iperf',
                        source=['example/dce-iperf.cc', 'example/ccnx/misc-tools.cc'])
-                        
+    
     module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'point-to-point-layout'],
                        target='bin/dce-zebra-simple',
                        source=['example/dce-zebra-simple.cc'])
 
+    module.add_example(needed = ['core', 'internet', 'dce' ], 
+                       target='bin/dce-bash-simple',
+                       source=['example/bash/dce-bash-simple.cc'])
+                                                
 def build_dce_kernel_examples(module):
     module.add_example(needed = ['core', 'network', 'dce'], 
                        target='bin/dce-linux-simple',
@@ -312,6 +318,10 @@ def build(bld):
         'model/file-usage.cc',
         'model/dce-poll.cc',
         'model/ipv4-dce-routing.cc',
+        'model/dce-credentials.cc',
+        'model/dce-pwd.cc',
+        'model/pipe-fd.cc',
+        'model/fifo-buffer.cc',
         # helper.
         'helper/ipv4-dce-routing-helper.cc',
         'helper/dce-manager-helper.cc',

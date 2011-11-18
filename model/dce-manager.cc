@@ -264,6 +264,7 @@ DceManager::CreateProcess (std::string name, std::string stdinfilename, std::vec
   process->exitValue = 0;
   process->name = name;
   process->ppid = 0;
+  process->pgid = 0;
   process->pid = pid ? pid : AllocatePid ();
   process->manager = this;
   sigemptyset (&process->pendingSignals);
@@ -469,6 +470,7 @@ DceManager::Clone (Thread *thread)
   clone->exitValue = 0;
   clone->name = thread->process->name;
   clone->ppid = thread->process->pid;
+  clone->pgid = thread->process->pgid;
   clone->pid = AllocatePid ();
   thread->process->children.insert (clone->pid);
   // dup each file descriptor.

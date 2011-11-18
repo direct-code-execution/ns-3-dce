@@ -3,6 +3,7 @@
 
 #include <sys/types.h>
 #include <stdarg.h>
+#include <unistd.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,6 +35,7 @@ int dce_setresuid (uid_t ruid, uid_t euid, uid_t suid);
 int dce_setresgid (gid_t rgid, gid_t egid, gid_t sgid);
 
 int dce_isatty (int desc);
+char* dce_ttyname (int fd);
 char *dce_getcwd (char *buf, size_t size);
 char *dce_getwd (char *buf);
 char *dce_get_current_dir_name (void);
@@ -58,6 +60,18 @@ int dce_execle (const char *path, const char *arg, ...);
 int dce_truncate (const char *path, off_t length);
 int dce_ftruncate (int fd, off_t length);
 	
+void *dce_sbrk(intptr_t increment);
+int dce_getpagesize(void);
+
+gid_t dce_getgid(void);
+gid_t dce_getegid(void);
+pid_t dce_getpgrp(void);
+
+int dce_euidaccess(const char *pathname, int mode);
+int dce_eaccess(const char *pathname, int mode);
+
+int dce_pipe(int pipefd[2]);
+
 #ifdef __cplusplus
 }
 #endif

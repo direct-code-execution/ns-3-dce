@@ -4,6 +4,7 @@
 #include "ns3/log.h"
 #include "ns3/assert.h"
 #include <vector>
+#include <errno.h>
 
 NS_LOG_COMPONENT_DEFINE ("SimuSignal");
 
@@ -95,5 +96,56 @@ int dce_sigaction (int signum, const struct sigaction *act,
       sigemptyset (&oldact->sa_mask);
     }
 
+  return 0;
+}
+int dce_sigprocmask(int how, const sigset_t *set, sigset_t *oldset)
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << how );
+  NS_ASSERT (current != 0);
+
+  if (0 != oldset)
+    {
+      *oldset = current->signalMask;
+    }
+
+  switch (how)
+  {
+    case SIG_BLOCK:
+      {
+        if (set)
+          {
+            sigorset(&current->signalMask, &current->signalMask, set);
+          }
+      } break;
+
+    case SIG_UNBLOCK:
+      {
+        if (set)
+          {
+            for (int s = SIGINT; s <= SIGRTMAX ; s++)
+              {
+                if (sigismember (set, s))
+                  {
+                    sigdelset (&current->signalMask, s);
+                  }
+              }
+          }
+      } break;
+
+    case SIG_SETMASK:
+      {
+        if (set)
+          {
+            current->signalMask = *set;
+          }
+      } break;
+
+    default:
+      {
+        current->err = EINVAL;
+        return -1;
+      }
+  }
   return 0;
 }

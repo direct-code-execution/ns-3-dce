@@ -36,6 +36,7 @@
 #include "dce-locale.h"
 #include "net/dce-if.h"
 #include "dce-syslog.h"
+#include "dce-pwd.h"
 
 #include <arpa/inet.h>
 #include <ctype.h>
@@ -53,6 +54,7 @@
 #include <semaphore.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdio_ext.h>
 #include <stddef.h>
 #include <stdarg.h>
 #include <stdint.h>
@@ -79,6 +81,10 @@
 #include <wctype.h>
 #include <xlocale.h>
 #include <errno.h>
+#include <setjmp.h>
+#include <libintl.h>
+#include <pwd.h>
+#include <inttypes.h>
 
 extern void __cxa_finalize (void *d);
 extern int __cxa_atexit (void (*func) (void *), void *arg, void *d);
@@ -130,7 +136,6 @@ void libc_dce (struct Libc **libc)
 
 #define NATIVE_EXPLICIT(name, type)				\
   (*libc)->name ## _fn = (func_t)((type)name);
-
 #include "libc-ns3.h"
 }
 

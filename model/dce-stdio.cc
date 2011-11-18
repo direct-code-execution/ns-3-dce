@@ -595,7 +595,7 @@ void dce_rewind (FILE *stream)
 }
 int dce_setvbuf (FILE *stream, char *buf, int mode, size_t size)
 {
-  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream << ((NULL==buf) ? "" : buf) << mode << size);
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream << ((void*)buf) << mode << size);
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
   int status = setvbuf (stream, buf, mode, size);
@@ -694,4 +694,10 @@ int dce___snprintf_chk (char *__restrict __s, size_t __n, int __flag,
   int retval = vsnprintf (__s, __n, __format, ap);
   va_end (ap);
   return retval;
+}
+void dce___fpurge (FILE *stream)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream);
+  NS_ASSERT (Current () != 0);
+ __fpurge (stream);
 }

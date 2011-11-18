@@ -134,7 +134,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
     bool useNet;
   } testPair;
 
-  const testPair tests[] = { 
+  const testPair tests[] = {
       { "test-empty", 0, "", false},
       {  "test-sleep", 0, "", false },
       {  "test-pthread", 0, "", false},
@@ -162,7 +162,9 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-tcp-socket", 320, "", true }, 
       {  "test-exec", 0, "" , false},  
       {  "test-raw-socket", 320, "", true },
-      {  "test-iperf", 0, "" , false}, 
+      {  "test-iperf", 0, "" , false},
+      {  "test-name", 0, "" , false},
+      {  "test-pipe", 0, "" , false},
   };
 
   // Prepare directories and files for test-stdio

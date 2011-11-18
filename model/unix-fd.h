@@ -24,6 +24,7 @@ public:
   virtual ssize_t Recvmsg (struct msghdr *msg, int flags) = 0;
   virtual ssize_t Sendmsg (const struct msghdr *msg, int flags) = 0;
   virtual bool Isatty (void) const = 0;
+  virtual char *Ttyname (void);
   virtual int Setsockopt (int level, int optname,
                           const void *optval, socklen_t optlen) = 0;
   virtual int Getsockopt (int level, int optname,

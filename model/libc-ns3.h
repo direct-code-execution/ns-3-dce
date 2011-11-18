@@ -407,7 +407,7 @@ DCE    (truncate)
 DCE    (ftruncate)
 
 // pwd.h
-NATIVE (getpwnam)
+//NATIVE (getpwnam)
 // grp.h
 NATIVE (getgrnam)
 
@@ -423,11 +423,52 @@ DCE    (vsyslog)
 
 // unistd.h
 NATIVE (sysconf)
+DCE (ttyname)
+DCE (sbrk)
+DCE (getpagesize)
+DCE (getgid)
+DCE (getegid)
+DCE (gethostname)
+DCE (getpgrp)
+DCE (lseek)
+DCE (euidaccess)
+DCE (eaccess)
+DCE (pipe)
+NATIVE (pathconf)
 
 // this is wrong. clock should be changed to DCE implementation
 //DCE    (__vdso_clock_gettime)
 NATIVE_WITH_ALIAS2 (clock_gettime, __vdso_clock_gettime)
 
+// setjmp.h
+NATIVE (__sigsetjmp)
+NATIVE (siglongjmp)
+
+// libintl.h
+NATIVE (bindtextdomain)
+NATIVE (textdomain)
+NATIVE (gettext)
+
+// signal.h
+DCE (sigprocmask)
+
+// stdlib.h
+NATIVE (__ctype_get_mb_cur_max)
+
+// pwd.h
+DCE (getpwnam)
+DCE (getpwuid)
+DCE (endpwent)
+
+// wchar.h
+NATIVE (mbrlen)
+
+// stdio.h
+DCE (__fpurge)
+
+// inttypes.h
+NATIVE (strtoimax)
+NATIVE (strtoumax)
 
 #undef DCE
 #undef NATIVE

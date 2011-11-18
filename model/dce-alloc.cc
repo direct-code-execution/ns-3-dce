@@ -1,4 +1,5 @@
 #include "dce-stdlib.h"
+#include "dce-unistd.h"
 #include "utils.h"
 #include "process.h"
 #include "kingsley-alloc.h"
@@ -63,4 +64,13 @@ void *dce_realloc (void *ptr, size_t size)
   memcpy (buffer, &size, sizeof (size_t));
   buffer += sizeof (size_t);
   return buffer;
+}
+void *dce_sbrk(intptr_t increment)
+{
+  if ( 0  == increment ) return (void*)-1;
+  return dce_calloc (1, increment);
+}
+int dce_getpagesize(void)
+{
+  return sysconf(_SC_PAGESIZE);
 }

@@ -2,6 +2,7 @@
 #define SIMU_STDIO_H
 
 #include <stdio.h>
+#include <stdio_ext.h>
 
 
 #ifdef __cplusplus
@@ -61,7 +62,8 @@ int dce___fprintf_chk (FILE *__restrict __stream, int __flag,
 int dce___snprintf_chk (char *__restrict __s, size_t __n, int __flag,
 						size_t __slen, __const char *__restrict __format, ...);
 
-	
+void dce___fpurge (FILE *stream);
+
 #ifdef __cplusplus
 }
 #endif

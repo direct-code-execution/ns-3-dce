@@ -118,6 +118,7 @@ struct Process
   gid_t sgid;
   uint16_t ppid;
   uint16_t pid;
+  uint16_t pgid;
   std::string name;
   std::string stdinFilename;
   // Key is the fd
