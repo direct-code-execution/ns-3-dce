@@ -511,8 +511,9 @@ int dce_dup (int oldfd)
       return -1;
     }
 
-  UnixFd *unixFd = current->process->openFiles[fd]->GetFile ();
+  UnixFd *unixFd = current->process->openFiles[oldfd]->GetFile ();
   unixFd->IncFdCount ();
+  unixFd->Ref ();
   current->process->openFiles[fd] = new FileUsage (fd, unixFd);
 
   return fd;
@@ -528,21 +529,23 @@ int dce_dup2 (int oldfd, int newfd)
       return -1;
     }
 
-  std::map<int,FileUsage *>::iterator it = current->process->openFiles.find (newfd);
-
-  if (it != current->process->openFiles.end ())
-    {
-      dce_close (newfd);
-    }
-  it = current->process->openFiles.find (newfd);
+  std::map<int,FileUsage *>::iterator it = current->process->openFiles.find (oldfd);
   if (it != current->process->openFiles.end ())
     {
       current->err = EBADF;
       return -1;
     }
+
+  it = current->process->openFiles.find (newfd);
+  if (it != current->process->openFiles.end ())
+    {
+      dce_close (newfd);
+    }
+
   UnixFd *unixFd = current->process->openFiles[oldfd]->GetFile ();
   unixFd->IncFdCount ();
-  current->process->openFiles[oldfd] = new FileUsage (newfd, unixFd);
+  unixFd->Ref ();
+  current->process->openFiles[newfd] = new FileUsage (newfd, unixFd);
 
   return newfd;
 }

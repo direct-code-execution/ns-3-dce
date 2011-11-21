@@ -638,7 +638,7 @@ DceManager::DeleteThread (struct Thread *thread)
 void
 DceManager::DeleteProcess (struct Process *process, ProcessEndCause type)
 {
-  NS_LOG_FUNCTION (this << process << "pid " << process->pid << "ppid" << process->ppid);
+  NS_LOG_FUNCTION (this << process << "pid" << std::dec << process->pid << "ppid" << process->ppid);
 
   // Remove Threads Waiters
   struct Thread *tmp;

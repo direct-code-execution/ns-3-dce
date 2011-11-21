@@ -224,6 +224,74 @@ void big_fork_exec (int prof)
     }
 }
 
+void
+first_test (void)
+{
+  pid_t pid = fork ();
+  char c;
+
+  if ( -1 == pid )
+    {
+      printf ("fork failed errno:%d\n", errno);
+      return;
+    }
+  int nfsd = 1;
+  fd_set r;
+  int n = 0;
+  struct timeval tv;
+
+  tv.tv_sec  = 1;
+  tv.tv_usec = 0;
+
+  FD_ZERO(&r);
+  FD_SET(0, &r);
+
+  if (pid)
+    {
+      printf ("Fork father\n");
+      n = select (nfsd, &r, NULL, NULL, &tv);
+      printf ("sel: %d\n",n);
+
+
+      sleep (5);
+    }
+  else
+    {
+      printf ("Fork child\n");
+      n = select (nfsd, &r, NULL, NULL, &tv);
+      printf ("sel: %d\n",n);
+
+      sleep (6);
+
+      exit (0);
+
+    }
+}
+
+void test_fork_simple ()
+{
+  int pid = fork ();
+  int fd[2];
+
+  pipe (fd);
+
+  if (!pid)
+    {
+      close (fd[0]);
+      exit (127);
+    }
+  else
+    {
+      close (fd[1]);
+      int st;
+
+      st = read (fd[0], &st, sizeof (st));
+      printf ("read -> %d\n",st);
+      st = waitpid (pid , &st, 0);
+    }
+}
+
+
 int main (int argc, char *argv[])
 {
   printf ("main argc=%d\n",argc);
@@ -233,6 +301,10 @@ int main (int argc, char *argv[])
     }
   if (argc == 1)
     {
+      test_fork_simple ();
+
+      first_test ();
+
       test_fork ();
 
       exit (0);

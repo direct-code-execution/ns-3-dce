@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include "test-macros.h"
 
 static void test_fopen (void)
@@ -313,6 +317,53 @@ void test_stdin (void)
 
 }
 
+void test_dup (void)
+{
+  int fd = 0;
+  int first = 0;
+  int last = 0;
+  fd = dup (1);
+
+  while (fd > 0)
+    {
+      last = fd;
+        if (!first) first = fd;
+
+       char line[1024];
+
+       int l = sprintf (line, "%d\n", fd);
+
+       write (fd, line , l);
+
+       fd = dup (fd);
+    }
+  fd = last;
+  while (fd >= first)
+    {
+      close (fd);
+      fd --;
+    }
+
+}
+
+void simple_dup (void)
+{
+  int fd = open ("/tmp/hello",  O_RDWR|O_CREAT, 0644);
+  char line[1024];
+
+  int l = sprintf (line, "Hello Fd %d\n", fd);
+  write (fd, line , l);
+
+  int fd2 = dup (fd);
+
+  l = sprintf (line, "Hello fd %d\n", fd2);
+  write (fd2, line , l);
+
+  close (fd);
+  close (fd2);
+
+}
+
 int main (int argc, char *argv[])
 {
   test_fopen ();
@@ -323,7 +374,8 @@ int main (int argc, char *argv[])
   test_buf ();
   test_formatted_io ();
   test_stdin ();
-
+  test_dup ();
+  simple_dup ();
   // Should be last because it closes all open streams, including stdout et al.
   test_fcloseall ();
   return 0;

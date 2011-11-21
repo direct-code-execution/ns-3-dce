@@ -156,7 +156,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-select", 3600, "", true }, 
       {  "test-nanosleep", 0, "", false},  
       {  "test-random", 0, "", false },
-      {  "test-fork", 0, "", false }, 
+      {  "test-fork", 0, "", false },
       {  "test-local-socket", 0, "", false }, 
       {  "test-poll", 3200, "", true }, 
       {  "test-tcp-socket", 320, "", true }, 

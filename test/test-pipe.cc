@@ -276,6 +276,83 @@ test5 ()
   status = pthread_join (thread, NULL);
 }
 
+void
+eat_stack (int fd, int pid)
+{
+  int tot = 0;
+  int n;
+  char line[MAXLINE*100];
+
+
+
+  for (int j = 0; j < 20 ; j++ )
+    {
+      if ( (n = write(fd, line, MAXLINE)) < 0)
+        err_sys("write error to pipe");
+      printf ("test6 write:%d\n",n);
+      sleep (1);
+      tot += n;
+    }
+
+  close(fd);   /* close write end of pipe for reader */
+
+
+  printf ("test6 father end %d.\n", tot);
+}
+
+void
+test6 ()
+{
+  int tot = 0;
+  int n;
+  int fd[2];
+  pid_t pid;
+  char line[MAXLINE];
+
+  for (int i = 0; i < MAXLINE ; i++)
+    {
+      line [i] = 'a' + ( i % 26 );
+    }
+
+  if (pipe(fd) < 0)
+    err_sys("pipe error");
+
+  if ((pid = fork()) < 0) {
+      err_sys("fork error");
+  } else if (pid <= 0) {
+      close(fd[0]);           /* close read end */
+      eat_stack (fd[1], pid);
+
+      for (int i = 0 ; i < 10 ; i++)
+        {
+          sleep (1);
+        }
+      printf ("Hello\n");
+      exit (0);
+
+  } else {
+      /* child */
+      close(fd[1]);   /* close write end */
+      while ( ( n = read (fd[0], line, MAXLINE)) > 0)
+        {
+          printf ("test6 read:%d\n",n);
+          sleep (1);
+          tot+=n;
+        };
+      close (fd[0]);
+      printf ("test6 child end %d.\n", tot);
+
+      for (int i = 0 ; i < 10 ; i++)
+        {
+          sleep (1);
+        }
+
+      if (waitpid(pid, NULL, 0) < 0)
+        err_sys("waitpid error");
+  }
+}
+
+
 int
 main (int c, char *v)
 {
@@ -284,6 +361,7 @@ main (int c, char *v)
   test3 ();
   test4 ();
   test5 ();
+  test6 ();
 
   return 0;
 }

@@ -137,7 +137,12 @@ void TaskManager::DoDispose (void)
 
               if ( 0 != gDisposingThreadContext)
                 {
-                  dce_fflush (0);
+                  Process *p = it->second;
+                  for (std::vector<FILE *>::const_iterator i = p->openStreams.begin ();
+                       i != p->openStreams.end (); ++i)
+                    {
+                      int status = fflush (*i);
+                    }
                 }
               gDisposingThreadContext = 0;
             }
