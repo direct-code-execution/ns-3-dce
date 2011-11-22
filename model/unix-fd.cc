@@ -66,4 +66,9 @@ UnixFd::Ttyname (void)
 {
   return 0;
 }
+int
+UnixFd::GetRealFd (void) const
+{
+  return -1;
+}
 } // namespace ns3

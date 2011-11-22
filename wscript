@@ -154,7 +154,8 @@ def build_dce_tests(module, kern):
              ['test-fork-fd', []],
              ['test-iperf', []],
              ['test-name', []],
-             ['test-pipe', []]
+             ['test-pipe', []],
+             ['test-dirent', []]
              ]
     for name,uselib in tests:
         module.add_test(**dce_kw(target='bin/' + name, source = ['test/' + name + '.cc'],
@@ -322,6 +323,7 @@ def build(bld):
         'model/dce-pwd.cc',
         'model/pipe-fd.cc',
         'model/fifo-buffer.cc',
+        'model/dce-dirent.cc',
         # helper.
         'helper/ipv4-dce-routing-helper.cc',
         'helper/dce-manager-helper.cc',

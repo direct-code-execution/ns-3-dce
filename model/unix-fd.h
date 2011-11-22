@@ -47,7 +47,7 @@ public:
                        struct itimerspec *old_value) = 0;
   virtual int Gettime (struct itimerspec *cur_value) const = 0;
   virtual int Ftruncate (off_t length) = 0;
-
+  virtual int GetRealFd (void) const;
 
   // Return true if a select on this fd should return POLLHUP
   virtual bool HangupReceived (void) const = 0;

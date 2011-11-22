@@ -26,6 +26,7 @@
 #include <list>
 #include <set>
 #include <stdio.h>
+#include <dirent.h>
 #include "ns3/callback.h"
 #include "ns3/event-id.h"
 #include "ns3/nstime.h"
@@ -124,6 +125,7 @@ struct Process
   // Key is the fd
   std::map<int,FileUsage *> openFiles;
   std::vector<FILE *> openStreams;
+  std::vector<DIR *> openDirs;
   std::vector<SignalHandler> signalHandlers;
   std::vector<Thread *> threads;
   std::vector<Mutex *> mutexes;

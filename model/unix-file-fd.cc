@@ -316,7 +316,12 @@ UnixFileFdBase::Ftruncate (off_t length)
     }
   return retval;  
 }
-	
+int
+UnixFileFdBase::GetRealFd (void) const
+{
+  return m_realFd;
+}
+
 UnixFileFd::UnixFileFd (int realFd)
   : UnixFileFdBase (realFd)
 {}
@@ -507,5 +512,4 @@ UnixRandomFd::Fxstat64 (int ver, struct ::stat64 *buf)
   close (tmpFd);
   return retval;
 }
-
 } // namespace ns3

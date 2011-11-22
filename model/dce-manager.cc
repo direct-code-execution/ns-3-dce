@@ -44,6 +44,8 @@
 #include "file-usage.h"
 #include "wait-queue.h"
 #include "waiter.h"
+#include "dce-dirent.h"
+
 #include <errno.h>
 #include <dlfcn.h>
 #include <arpa/inet.h>
@@ -687,6 +689,13 @@ DceManager::DeleteProcess (struct Process *process, ProcessEndCause type)
       dce_fclose_unconditional (process->openStreams[i]);
     }
   process->openStreams.clear ();
+
+  // Close all DIR opened
+  for (uint32_t i =  0; i < process->openDirs.size (); i++)
+    {
+      dce_internalClosedir (process->openDirs[i], 0);
+    }
+  process->openDirs.clear ();
 
   if (!process->finished.IsNull ())
     {

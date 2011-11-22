@@ -37,6 +37,7 @@
 #include "net/dce-if.h"
 #include "dce-syslog.h"
 #include "dce-pwd.h"
+#include "dce-dirent.h"
 
 #include <arpa/inet.h>
 #include <ctype.h>

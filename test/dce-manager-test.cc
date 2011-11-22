@@ -165,6 +165,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-iperf", 0, "" , false},
       {  "test-name", 0, "" , false},
       {  "test-pipe", 0, "" , false},
+      {  "test-dirent", 0, "" , false},
   };
 
   // Prepare directories and files for test-stdio

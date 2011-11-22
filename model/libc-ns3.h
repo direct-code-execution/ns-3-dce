@@ -470,6 +470,18 @@ DCE (__fpurge)
 NATIVE (strtoimax)
 NATIVE (strtoumax)
 
+// dirent.h
+DCE (opendir)
+DCE (fdopendir)
+DCE (readdir)
+DCE (readdir_r)
+DCE (closedir)
+DCE (dirfd)
+DCE (rewinddir)
+DCE (scandir)
+NATIVE (alphasort)
+NATIVE (versionsort)
+
 #undef DCE
 #undef NATIVE
 #undef NATIVE_WITH_ALIAS

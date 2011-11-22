@@ -172,7 +172,7 @@ void mode_setup (FILE *file, int fd, const char *mode)
     }
 }
 
-}
+} // namespace
 
 FILE *dce_fdopen (int fildes, const char *mode)
 {

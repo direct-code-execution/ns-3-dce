@@ -529,17 +529,22 @@ int dce_dup2 (int oldfd, int newfd)
       return -1;
     }
 
-  std::map<int,FileUsage *>::iterator it = current->process->openFiles.find (oldfd);
-  if (it != current->process->openFiles.end ())
+  if (oldfd == newfd)
+    {
+      return newfd;
+    }
+  if (CheckFdExists (current->process, newfd, true ))
+    {
+      if (dce_close (newfd))
+        {
+          current->err = EBADF;
+          return -1;
+        }
+    }
+  if (CheckFdExists (current->process, newfd, false))
     {
       current->err = EBADF;
       return -1;
-    }
-
-  it = current->process->openFiles.find (newfd);
-  if (it != current->process->openFiles.end ())
-    {
-      dce_close (newfd);
     }
 
   UnixFd *unixFd = current->process->openFiles[oldfd]->GetFile ();
@@ -602,6 +607,16 @@ int dce_fcntl(int fd, int cmd, ... /*unsigned long arg*/)
   Thread *current = Current ();
   // XXX: we should handle specially some fcntl commands.
   // For example, FD_DUP, etc.
+
+  switch (cmd)
+  {
+    case F_DUPFD:
+      {
+        return dce_dup (fd);
+      }
+  }
+
+
   OPENED_FD_METHOD (int, Fcntl (cmd, arg) )
 }
 
