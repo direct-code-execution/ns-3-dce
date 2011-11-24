@@ -243,10 +243,13 @@ int UtilsAllocateFd (void)
   Thread *current = Current ();
   NS_LOG_FUNCTION (current);
   NS_ASSERT (current != 0);
+  std::map<int,FileUsage *>::iterator end = current->process->openFiles.end ();
+  std::map<int,FileUsage *>::iterator it = end;
 
   for (int fd = 0; fd < MAX_FDS; fd++)
     {
-      if (current->process->openFiles[fd] == 0)
+      it = current->process->openFiles.find (fd);
+      if (it == end)
         {
           NS_LOG_DEBUG ("Allocated fd=" << fd);
           return fd;

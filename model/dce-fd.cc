@@ -193,11 +193,6 @@ int dce_close (int fd)
 
   FileUsage *fu = current->process->openFiles[fd];
 
-  if (!fu)
-    {
-      current->err = EBADF;
-      return -1;
-    }
   if ( fu->GetFile () && (1 == fu->GetFile ()->GetFdCount () )  )
     {
       // If only one process point to file we can really close it
@@ -286,6 +281,7 @@ ssize_t dce_write (int fd, const void *buf, size_t count)
 
   OPENED_FD_METHOD (int, Write (buf, count) )
 }
+
 ssize_t dce_writev (int fd, const struct iovec *iov, int iovcnt)
 {
   Thread *current = Current ();
@@ -684,7 +680,7 @@ int dce_pipe(int pipefd[2])
   if (fdWrite == -1)
     {
       delete current->process->openFiles[fdRead];
-      current->process->openFiles[fdRead] = 0;
+      current->process->openFiles.erase (fdRead);
       delete reader;
       current->err = EMFILE;
       return -1;
@@ -695,7 +691,7 @@ int dce_pipe(int pipefd[2])
   if (!writer)
     {
       delete current->process->openFiles[fdRead];
-      current->process->openFiles[fdRead] = 0;
+      current->process->openFiles.erase (fdRead);
       delete reader;
       current->err = EMFILE;
       return -1;

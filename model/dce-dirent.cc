@@ -266,18 +266,26 @@ int dce_scandir (const char *dirp, struct dirent ***namelist,
     {
       // Realloc !
       struct dirent **res = 0;
+      size_t direntMiniSize = 0;
+
       if (namelist)
         {
           res = (struct dirent **) dce_malloc (sizeof (struct dirent *) * ret);
         }
+      {
+        struct dirent tmp;
+        direntMiniSize = sizeof (tmp.d_ino) + sizeof (tmp.d_off)
+            + sizeof (tmp.d_reclen) +sizeof (tmp.d_type);
+      }
       for (int i = 0; i < ret ; i++)
         {
           struct dirent *src =  nl [i];
           struct dirent *copy = 0;
           if (namelist)
             {
-              copy = (struct dirent *) dce_malloc (sizeof (struct dirent));
-              memcpy (copy , src, sizeof (struct dirent));
+              size_t direntSize = direntMiniSize + _D_ALLOC_NAMLEN (src);
+              copy = (struct dirent *) dce_malloc (direntSize);
+              memcpy (copy , src, direntSize);
               res [i] = copy;
             }
           free (src);

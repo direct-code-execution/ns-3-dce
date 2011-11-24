@@ -1168,6 +1168,16 @@ DceManager::Execve (const char *path, char *const argv[], char *const envp[])
       return -1;
     }
 
+  while (!openStreams.empty ())
+    {
+      FILE *f = openStreams.back ();
+      openStreams.pop_back ();
+      if (f)
+        {
+          dce_fclose_onexec (f);
+        }
+    }
+
   // save old threads.
   std::vector<Thread *> Oldthreads = process->threads;
   process->threads.clear ();
@@ -1261,15 +1271,7 @@ DceManager::Execve (const char *path, char *const argv[], char *const envp[])
         }
     }
 
-  while (!openStreams.empty ())
-    {
-      FILE *f = openStreams.back ();
-      openStreams.pop_back ();
-      if (f)
-        {
-          dce_fclose_onexec (f);
-        }
-    }
+
   line = "EXEC SUCCESS";
   AppendStatusFile (process->pid, process->nodeId, line);
   TaskManager::Current ()->Exit ();

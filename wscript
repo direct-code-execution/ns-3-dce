@@ -351,6 +351,7 @@ def build(bld):
                                   use=uselib,
                                   includes=kernel_includes,
                                   lib=['dl'])
+#                                  lib=['dl','efence'])
     build_dce_tests(module, bld.env['KERNEL_STACK'])
     build_dce_examples(module)
 
