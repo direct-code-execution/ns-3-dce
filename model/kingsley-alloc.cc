@@ -46,6 +46,12 @@ KingsleyAlloc::~KingsleyAlloc ()
           // cloned once so, we need to free our local
           // buffer.
           free (i->copy);
+
+          if ( i->copy == i->mmap->current )
+            {
+              // Current must be nullify because we the next switch of context do not need to save our heap.
+              i->mmap->current = 0;
+            }
           i->copy = 0;
         }
       i->mmap->refcount--;
@@ -63,6 +69,7 @@ KingsleyAlloc::~KingsleyAlloc ()
 void
 KingsleyAlloc::Dispose ()
 {
+  NS_LOG_FUNCTION (this);
   for (std::list<struct KingsleyAlloc::MmapChunk>::iterator i = m_chunks.begin ();
        i != m_chunks.end (); ++i)
     {
@@ -151,8 +158,8 @@ KingsleyAlloc::MmapAlloc (uint32_t size)
   chunk.copy = 0;// no clone yet, no copy yet.
 
   m_chunks.push_front (chunk);
-  NS_LOG_DEBUG ("mmap alloced=" << size << " at=" << (void*)chunk.copy);
-  MARK_UNDEFINED (chunk.copy, size);
+  NS_LOG_DEBUG ("mmap alloced=" << size << " at=" << (void*)mmap_struct->buffer);
+  MARK_UNDEFINED (mmap_struct->buffer, size);
 }
 
 uint8_t *

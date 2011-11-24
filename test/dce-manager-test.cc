@@ -8,6 +8,7 @@
 #include "ns3/dce-module.h"
 #include <sys/stat.h>
 #include <sys/types.h>
+//#include <mcheck.h>
 
 static std::string g_testError;
 
@@ -39,6 +40,7 @@ DceManagerTestCase::DceManagerTestCase (std::string filename, Time maxDuration, 
   : TestCase ("Check that process \"" + filename + "\" completes correctly."),
     m_filename (filename), m_stdinFilename ( stdin), m_maxDuration ( maxDuration ), m_useKernel (useK), m_useNet (useNet)
 {
+//  mtrace ();
 }
 void
 DceManagerTestCase::Finished (int *pstatus, uint16_t pid, int status)
@@ -152,15 +154,15 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-env", 0, "", false }, 
       {  "test-cond", 0, "", false}, 
       {  "test-timer-fd", 0, "", false}, 
-      {  "test-stdlib", 0, "", false},  
-      {  "test-select", 3600, "", true }, 
+      {  "test-stdlib", 0, "", false},
+      {  "test-fork", 0, "", false },
+      {  "test-select", 3600, "", true },
       {  "test-nanosleep", 0, "", false},  
       {  "test-random", 0, "", false },
-      {  "test-fork", 0, "", false },
-      {  "test-local-socket", 0, "", false }, 
-      {  "test-poll", 3200, "", true }, 
-      {  "test-tcp-socket", 320, "", true }, 
-      {  "test-exec", 0, "" , false},  
+      {  "test-local-socket", 0, "", false },
+      {  "test-poll", 3200, "", true },
+      {  "test-tcp-socket", 320, "", true },
+      {  "test-exec", 0, "" , false},
       {  "test-raw-socket", 320, "", true },
       {  "test-iperf", 0, "" , false},
       {  "test-name", 0, "" , false},

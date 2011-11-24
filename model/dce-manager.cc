@@ -761,7 +761,7 @@ DceManager::DeleteProcess (struct Process *process, ProcessEndCause type)
 
       for (it = children.begin (); it != children.end (); it++ )
         {
-          Process *child = m_processes [*it];
+          Process *child = SearchProcess (*it);
 
           if (child)
             {
@@ -843,7 +843,7 @@ DceManager::SearchProcess (uint16_t pid)
 
   if ( it !=  m_processes.end ())
     {
-      return m_processes [pid];
+      return it->second;
     }
   return 0;
 }
@@ -924,9 +924,9 @@ void
 DceManager::ChildFinished (uint16_t pid)
 {
   // Get pid process.
-  Process *child = m_processes [pid];
+  Process *child = SearchProcess (pid);
   NS_ASSERT (child);
-  Process *p =  m_processes [child->ppid];
+  Process *p = SearchProcess (child->ppid);
   NS_ASSERT (p);
   WakeupChildWaiters (p);
   if ( !true ) // IF WAIT DONE !
@@ -961,8 +961,7 @@ void
 DceManager::FinishChild (uint16_t pid)
 {
   // A wait success on this proc
-  Process *child = m_processes [pid];
-
+  Process *child = SearchProcess (pid);
   if (child)
     {
       m_processes.erase (pid);
@@ -1228,7 +1227,7 @@ DceManager::Execve (const char *path, char *const argv[], char *const envp[])
     }
   threads.clear ();
   Oldthreads.clear ();
-
+  process->alloc->Dispose ();
   delete process->alloc;
   process->alloc = new KingsleyAlloc ();
 

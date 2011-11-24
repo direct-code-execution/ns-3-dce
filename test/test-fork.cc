@@ -307,8 +307,6 @@ int main (int argc, char *argv[])
 
       test_fork ();
 
-      exit (0);
-
       pid_t w = wait (0);
 
       test_wait_fork ();
