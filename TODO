@@ -29,3 +29,11 @@ ___
       
 Tuto : noter qu'il faut partir d'une version clean genre un nouveau repertoire ! 
 
+---
+
+exec tester utiliser d'abord le path virtuel 
+
+message d'erreur qd l'exe n'est pas bien compilé .
+
+
+

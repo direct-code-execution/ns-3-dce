@@ -4,6 +4,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#define _GNU_SOURCE
+#include <errno.h>
 
 #include "test-macros.h"
 
@@ -363,9 +365,12 @@ void simple_dup (void)
   close (fd2);
 
 }
+extern char *__progname;
+
 
 int main (int argc, char *argv[])
 {
+  printf ("ProgName: %s %s %s \n", __progname, program_invocation_name, program_invocation_short_name );
   test_fopen ();
   test_freadwrite ();
   test_freopen ();

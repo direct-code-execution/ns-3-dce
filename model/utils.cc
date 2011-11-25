@@ -342,6 +342,15 @@ FindExecFile (std::string root, std::string envPath, std::string fileName, uid_t
 
   if ( idx >= 0 )  // fileName contain a '/'
     {
+      NS_LOG_DEBUG ("TEMPOFUR  FindExecFile " << UtilsGetRealFilePath ( fileName ) );
+      std::string vFile = UtilsGetRealFilePath ( fileName );
+      if ( 0 == ::stat ( vFile.c_str () , &st) )
+        {
+          if (((uid) && CheckExeMode ( &st, uid, gid )) || (!uid))
+            {
+              return vFile;
+            }
+        }
       if ( 0 == ::stat (fileName.c_str (), &st) )
         {
           if (((uid) && CheckExeMode ( &st, uid, gid )) || (!uid))

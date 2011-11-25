@@ -30,4 +30,20 @@ void dce_global_variables_setup (struct DceGlobalVariables *variables)
   process->poptopt = variables->poptopt;
 
   *variables->pprogname = process->originalProgname;
+  *variables->pprogram_invocation_name = process->originalProgname;
+  char *crsr = process->originalProgname;
+  char *slash = crsr;
+  while (*crsr)
+    {
+      if (*crsr == '/')
+        {
+          crsr++;
+          slash = crsr;
+        }
+      else
+        {
+          crsr++;
+        }
+    }
+  *variables->pprogram_invocation_short_name = slash;
 }

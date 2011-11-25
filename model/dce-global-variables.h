@@ -36,6 +36,8 @@ struct DceGlobalVariables
   int *popterr;
   int *poptopt;
   char **pprogname;
+  char **pprogram_invocation_name;
+  char **pprogram_invocation_short_name;
 };
 
 void dce_global_variables_setup (struct DceGlobalVariables *variables);

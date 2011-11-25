@@ -63,6 +63,7 @@ int dce___snprintf_chk (char *__restrict __s, size_t __n, int __flag,
 						size_t __slen, __const char *__restrict __format, ...);
 
 void dce___fpurge (FILE *stream);
+size_t dce___fpending(FILE *stream);
 
 #ifdef __cplusplus
 }

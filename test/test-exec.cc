@@ -142,9 +142,10 @@ int last_test ()
   printf ("Last test.\n");
   return 0;
 }
-
+extern char *__progname;
 int main (int c, char **v)
 {
+  printf ("ProgName: %s %s %s \n", __progname, program_invocation_name, program_invocation_short_name );
   printf ("%s: argc=%d", v[0], c);
   if ( c == 1)
     {

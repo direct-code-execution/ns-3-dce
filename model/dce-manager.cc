@@ -1137,12 +1137,15 @@ DceManager::Execve (const char *path, char *const argv[], char *const envp[])
   FILE **pstdout = process->pstdout;
   FILE **pstderr = process->pstderr;
   char ***penvp = process->penvp;
+  char *originalProgname = process->originalProgname;
+
   std::vector<FILE *> openStreams = process->openStreams;
   process->openStreams.clear ();
   process->pstdin = 0;
   process->pstdout = 0;
   process->pstderr = 0;
   process->penvp = 0;
+  process->originalProgname = pTemp.originalProgname;
 
   void *main = LoadMain (pTemp.loader, std::string (path), &pTemp, err);
 
@@ -1153,6 +1156,7 @@ DceManager::Execve (const char *path, char *const argv[], char *const envp[])
       process->pstderr = pstderr;
       process->penvp = penvp;
       process->openStreams = openStreams;
+      process->originalProgname = originalProgname;
       delete  pTemp.loader;
       pTemp.loader = 0;
       // delete all extra buffers

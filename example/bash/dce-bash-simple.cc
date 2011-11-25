@@ -31,6 +31,8 @@ int main (int argc, char *argv[])
 
   mkdir ("files-0", 0700);
   mkdir ("files-0/tmp", 0700);
+  mkdir ("files-0/home", 0700);
+  mkdir ("files-0/home/dce", 0700);
 
   FILE *script = fopen("files-0/tmp/script.sh", "w");
 
@@ -43,6 +45,8 @@ int main (int argc, char *argv[])
 
   dce.SetBinary ("sh");
   dce.SetStackSize (1<<20);
+  dce.AddEnvironment ("PATH","/bin");
+  dce.AddEnvironment ("HOME","/home/dce");
 //  dce.SetStdinFile ("/tmp/script.sh");
   dce.SetStdinFile ("/tmp/ccnd-init-keystore-helper");
   apps = dce.Install (nodes.Get (0));

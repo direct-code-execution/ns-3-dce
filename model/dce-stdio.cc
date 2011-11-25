@@ -704,3 +704,10 @@ void dce___fpurge (FILE *stream)
   NS_ASSERT (Current () != 0);
  __fpurge (stream);
 }
+size_t dce___fpending(FILE *stream)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
+  NS_ASSERT (Current () != 0);
+  size_t ret = __fpending (stream);
+  return ret;
+}
