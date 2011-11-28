@@ -198,7 +198,8 @@ FILE *dce_fdopen (int fildes, const char *mode)
   close (file->_fileno);
   file->_fileno = fildes;
   current->process->openStreams.push_back (file);
-  mode_setup (file, fildes, mode);
+  dce_fseek (file, dce_lseek(fildes, 0, SEEK_CUR), SEEK_SET);
+
   return file;
 }
 
