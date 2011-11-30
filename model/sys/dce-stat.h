@@ -12,7 +12,8 @@ int dce___lxstat (int ver, const char *pathname, struct stat *buf);
 int dce___xstat64 (int ver, const char *path, struct stat64 *buf);
 int dce___fxstat64 (int ver, int fd, struct stat64 *buf);
 int dce___lxstat64 (int ver, const char *pathname, struct stat64 *buf);
-
+int dce___fxstatat (int ver, int fd, const char *filename,
+                    struct stat *buf, int flag);
 int dce_fstat (int fd, struct stat *buf);
 int dce_fstat64 (int fd, struct stat64 *buf);
 

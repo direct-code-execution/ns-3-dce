@@ -35,9 +35,14 @@ int main (int argc, char *argv[])
   mkdir ("files-0/home/dce", 0700);
 
   FILE *script = fopen("files-0/tmp/script.sh", "w");
+//                  12345678901234567890 123456 7890123456789012345
+  fprintf (script, "echo BEFORE $LINENO\nuname\necho AFTER: $LINENO");
+  //  fprintf (script, "cat <$0\necho $$\necho $LINENO\necho Hello NS3..\nexit 0\n" );
+  /*
 
   fprintf (script, "cd /tmp\necho Hello NS3 Virtual Machine\nwhich echo\necho $PATH $PWD\n");
   fprintf (script, "ls /tmp\ncd /tmp\nccnd-init-keystore-helper /tmp\n");
+  */
   fclose (script);
 
   DceApplicationHelper dce;
@@ -47,7 +52,7 @@ int main (int argc, char *argv[])
   dce.SetStackSize (1<<20);
   dce.AddEnvironment ("PATH","/bin");
   dce.AddEnvironment ("HOME","/home/dce");
-//  dce.SetStdinFile ("/tmp/script.sh");
+ // dce.SetStdinFile ("/tmp/script.sh");
   dce.SetStdinFile ("/tmp/ccnd-init-keystore-helper");
   apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds (4.0));

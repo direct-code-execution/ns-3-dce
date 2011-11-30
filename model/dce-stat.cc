@@ -1,4 +1,5 @@
 #include <sys/stat.h>
+#include <fcntl.h>
 #include "sys/dce-stat.h"
 #include "utils.h"
 #include "process.h"
@@ -99,6 +100,7 @@ int dce___lxstat64 (int ver, const char *pathname, struct stat64 *buf)
     }
   return retval;
 }
+
 int dce_fstat (int fd, struct stat *buf)
 {
   return dce___fxstat (_STAT_VER, fd, buf);

@@ -145,6 +145,23 @@ int dce_unlink_real (const char *pathname)
   DEFINE_FORWARDER_PATH (unlink, pathname);
 }
 
+void unlink_notify (std::string fullpath)
+{
+  NS_LOG_FUNCTION ( "UNLINK FULL PATH " << fullpath );
+
+  Ptr<SocketFdFactory> factory = Current ()->process->manager->GetObject<LocalSocketFdFactory> ();
+
+  if ( 0 != factory )
+    {
+      factory->UnlinkNotify (fullpath);
+    }
+  factory = Current ()->process->manager->GetObject<SocketFdFactory> ();
+  if ( 0 != factory )
+    {
+      factory->UnlinkNotify (fullpath);
+    }
+}
+
 int dce_unlink (const char *pathname)
 {
   NS_LOG_FUNCTION ( pathname );
@@ -153,17 +170,8 @@ int dce_unlink (const char *pathname)
   if (0 == ret)
     {
       std::string fullpath = UtilsGetRealFilePath (pathname);
-      Ptr<SocketFdFactory> factory = Current ()->process->manager->GetObject<LocalSocketFdFactory> ();
 
-      if ( 0 != factory )
-        {
-          factory->UnlinkNotify (fullpath);
-        }
-      factory = Current ()->process->manager->GetObject<SocketFdFactory> ();
-      if ( 0 != factory )
-        {
-          factory->UnlinkNotify (fullpath);
-        }
+      unlink_notify (fullpath);
     }
 
   return ret;

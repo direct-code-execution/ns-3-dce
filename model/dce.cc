@@ -614,8 +614,25 @@ int dce_chdir (const char *path)
 }
 int dce_fchdir (int fd)
 {
-  //XXX that one is not super trivial to implement.
-  // this fd is coming from the function dirfd
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (current << UtilsGetNodeId ());
+  NS_ASSERT (current != 0);
+  int realFd = getRealFd (fd, current);
+
+  if (realFd < 0)
+    {
+      current->err = EBADF;
+      return -1;
+    }
+  std::string p = PathOfFd (realFd);
+
+  if ( 0 == p.length() )
+    {
+      current->err = EBADF;
+      return -1;
+    }
+  std::string base = UtilsGetRealFilePath ("/");
+  current->process->cwd = std::string (p, base.length() - 1 );
   return 0;
 }
 

@@ -57,6 +57,8 @@ std::string FindExecFile (std::string root, std::string envPath, std::string fil
 std::list<std::string> Split (std::string input, std::string sep);
 void FdDecUsage (int fd);
 bool CheckFdExists (Process* const p, int const fd, bool const opened);
+int getRealFd (int fd, Thread *current);
+std::string PathOfFd (int fd);
 
 #define MAX_FDS 1024
 

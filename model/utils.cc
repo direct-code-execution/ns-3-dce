@@ -25,7 +25,7 @@ uint32_t UtilsGetNodeId (void)
 static std::string UtilsGetRealFilePath (uint32_t node)
 {
   std::ostringstream oss;
-  oss << "files-" << node;
+  oss << get_current_dir_name() << "/files-" << node;
   return oss.str ();
 }
 static std::string UtilsGetRealFilePath (void)
@@ -414,5 +414,36 @@ CheckFdExists (Process* const p, int const fd, bool const opened)
     }
 
   return false;
+}
+int getRealFd (int fd, Thread *current)
+{
+  std::map<int,FileUsage *>::iterator it = current->process->openFiles.find (fd);
+  if ( current->process->openFiles.end () == it )
+    {
+      return -1;
+    }
+  FileUsage *fu = it->second;
+  if (fu->IsClosed ())
+    {
+      return -1;
+    }
+  return fu->GetFile ()->GetRealFd ();
+}
+std::string PathOfFd (int fd)
+{
+  char proc[50];
+  char direc[PATH_MAX+1];
+
+  sprintf (proc, "/proc/self/fd/%d", fd);
+
+  memset (direc, 0, PATH_MAX+1);
+
+  ssize_t r = readlink(proc, direc, sizeof(direc) - 1);
+
+  if (r >= 0)
+    {
+      return std::string (direc);
+    }
+  return std::string ("");
 }
 } // namespace ns3

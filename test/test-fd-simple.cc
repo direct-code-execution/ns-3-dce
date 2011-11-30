@@ -90,6 +90,28 @@ static void test_stat (void)
   // close
   status = close (fd);
   TEST_ASSERT_EQUAL (status, 0);
+
+  status = fstatat( 42, "/etc/passwd", &st, 0);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  status = fstatat( 42, "passwd", &st, 0);
+  TEST_ASSERT_EQUAL (status, -1);
+  TEST_ASSERT_EQUAL (errno, EBADF);
+
+  fd = open ("/etc/passwd", O_RDONLY, 0);
+  TEST_ASSERT (fd > 0);
+  status = fstatat( fd, "passwd", &st, 0);
+  TEST_ASSERT_EQUAL (status, -1);
+  TEST_ASSERT_EQUAL (errno, ENOTDIR);
+  status = close (fd);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  fd = open ("/etc", O_RDONLY, 0);
+  TEST_ASSERT (fd > 0);
+  status = fstatat( fd, "passwd", &st, 0);
+  TEST_ASSERT_EQUAL (status, 0);
+  status = close (fd);
+  TEST_ASSERT_EQUAL (status, 0);
 }
 
 static void test_exists (void)
@@ -346,6 +368,55 @@ static void test_chdir (void)
   TEST_ASSERT_EQUAL (status, 0);
 }
 
+void test_unlinkat ()
+{
+  // create file /tmp/U
+  int fd = open ("/tmp/U", O_CREAT | O_TRUNC | O_RDWR, S_IRWXU);
+  TEST_ASSERT_UNEQUAL (fd, -1);
+
+  // Open directory
+  int fddir = open ("/tmp", O_RDONLY, 0);
+  TEST_ASSERT (fddir > 0);
+
+  // Delete file /tmp/U
+  int status = unlinkat (fddir, "U", 0);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  // Verify non existance of file /tmp/U
+  int fd2 = open ("/tmp/U", O_RDONLY);
+  TEST_ASSERT_EQUAL (fd2, -1);
+  TEST_ASSERT_EQUAL (errno, ENOENT);
+
+  status = close (fd);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  // Re try using CWD
+  // cd to /tmp
+  status = chdir ("/tmp");
+  TEST_ASSERT_EQUAL (status, 0);
+  status = fchdir (fddir);
+  TEST_ASSERT_EQUAL (status, 0);
+  status = close (fddir);
+  TEST_ASSERT_EQUAL (status, 0);
+  // create file /tmp/U
+  fd = open ("U", O_CREAT | O_TRUNC | O_RDWR, S_IRWXU);
+  TEST_ASSERT_UNEQUAL (fd, -1);
+  // Delete file /tmp/U
+  status = unlinkat (AT_FDCWD, "U", 0);
+  TEST_ASSERT_EQUAL (status, 0);
+  status = close (fd);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  // Retry with absolute path
+  fd = open ("/tmp/U", O_CREAT | O_TRUNC | O_RDWR, S_IRWXU);
+  TEST_ASSERT_UNEQUAL (fd, -1);
+  // Delete file /tmp/U
+  status = unlinkat (42, "/tmp/U", 0);
+  TEST_ASSERT_EQUAL (status, 0);
+  status = close (fd);
+  TEST_ASSERT_EQUAL (status, 0);
+}
+
 void test_file_usage ()
 {
   int fd = open ("F", O_CREAT | O_TRUNC | O_RDWR, S_IRWXU);
@@ -367,5 +438,7 @@ int main (int argc, char *argv[])
   test_read_write ();
   test_cwd ();
   test_chdir ();
+  test_unlinkat ();
+
   return 0;
 }

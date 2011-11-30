@@ -230,6 +230,7 @@ DCE    (__fxstat)
 DCE    (__xstat64)
 DCE    (__lxstat64)
 DCE    (__fxstat64)
+DCE    (__fxstatat)
 DCE    (dup)
 DCE    (dup2)
 DCE    (open)
@@ -484,6 +485,9 @@ DCE (rewinddir)
 DCE (scandir)
 NATIVE (alphasort)
 NATIVE (versionsort)
+
+// fcntl.h
+DCE (unlinkat)
 
 #undef DCE
 #undef NATIVE

@@ -324,6 +324,7 @@ def build(bld):
         'model/pipe-fd.cc',
         'model/fifo-buffer.cc',
         'model/dce-dirent.cc',
+        'model/dce-at.cc',
         # helper.
         'helper/ipv4-dce-routing-helper.cc',
         'helper/dce-manager-helper.cc',

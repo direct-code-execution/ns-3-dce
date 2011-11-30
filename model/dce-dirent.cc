@@ -61,20 +61,7 @@ remove_dir (DIR *d, Thread *current)
       NS_FATAL_ERROR ("invalid DIR * closed=" << d);
     }
 }
-int getReadFd (int fd, Thread *current)
-{
-  std::map<int,FileUsage *>::iterator it = current->process->openFiles.find (fd);
-  if ( current->process->openFiles.end () == it )
-    {
-      return -1;
-    }
-  FileUsage *fu = it->second;
-  if (fu->IsClosed ())
-    {
-      return -1;
-    }
-  return fu->GetFile ()->GetRealFd ();
-}
+
 int dce_internalClosedir (DIR *dirp, struct Thread *cur)
 {
   struct my__dirstream *ds = (struct my__dirstream * ) dirp;
@@ -88,7 +75,7 @@ int dce_internalClosedir (DIR *dirp, struct Thread *cur)
           cur->err = EBADF;
           return -1;
         }
-      int realFd = getReadFd (-saveFd, cur);
+      int realFd = getRealFd (-saveFd, cur);
       if (realFd < 0)
         {
           ds->fd = saveFd;
@@ -172,7 +159,7 @@ struct dirent *dce_readdir (DIR *dirp)
       current->err = EBADF;
       return 0;
     }
-  int realFd = getReadFd (-saveFd, current);
+  int realFd = getRealFd (-saveFd, current);
   if (realFd < 0)
     {
       ds->fd = saveFd;
@@ -199,7 +186,7 @@ int dce_readdir_r (DIR *dirp, struct dirent *entry, struct dirent **result)
       current->err = EBADF;
       return -1;
     }
-  int realFd = getReadFd (-saveFd, current);
+  int realFd = getRealFd (-saveFd, current);
   if (realFd < 0)
     {
       ds->fd = saveFd;
@@ -239,7 +226,7 @@ void dce_rewinddir (DIR *dirp)
     {
       return;
     }
-  int realFd = getReadFd (-saveFd, current);
+  int realFd = getRealFd (-saveFd, current);
   if (realFd < 0)
     {
       ds->fd = saveFd;
