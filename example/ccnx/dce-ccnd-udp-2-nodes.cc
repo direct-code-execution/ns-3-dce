@@ -224,9 +224,7 @@ int main (int argc, char *argv[])
   setPos (nodes.Get (1), 50,10, 0);
 
   // Create the animation object and configure for specified output
-  AnimationInterface anim;
-
-  anim.SetOutputFile (animFile);
+  AnimationInterface anim (animFile, false);
 
   anim.StartAnimation ();
 

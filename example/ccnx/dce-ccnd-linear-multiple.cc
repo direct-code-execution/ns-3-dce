@@ -264,11 +264,8 @@ int main (int argc, char *argv[])
   apps = dce.Install (nodes.Get (nNodes - 1));
   apps.Start (Seconds (3500.0));
 
-
   // Create the animation object and configure for specified output
-  AnimationInterface anim;
-
-  anim.SetOutputFile (animFile);
+  AnimationInterface anim (animFile, false);
 
   anim.StartAnimation ();
 

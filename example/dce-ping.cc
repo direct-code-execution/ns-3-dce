@@ -107,9 +107,7 @@ int main (int argc, char *argv[])
 
   // Create the animation object and configure for specified output
 
-  AnimationInterface anim;
-
-  anim.SetOutputFile (animFile);
+  AnimationInterface anim (animFile, false);
 
   anim.StartAnimation ();
 
