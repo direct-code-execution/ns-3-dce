@@ -4,6 +4,10 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <poll.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
+
 #include "test-macros.h"
 
 // Test ExecV with an invalid path then with a valid one.
@@ -135,6 +139,21 @@ int test7 ()
   return ret;
 }
 
+int test8 ()
+{
+  int fd = open ("Script8", O_CREAT|O_WRONLY, 0755);
+  FILE *f = fdopen (fd, "w");
+
+  TEST_ASSERT_UNEQUAL (f, 0);
+
+  fprintf (f,"#!/bin/sh\n");
+  fprintf (f,"build/bin/test-exec 9\n" );
+  fclose (f);
+
+  int ret = execv  ("./Script8", 0);
+  TEST_ASSERT ( false ); // Must not be reached
+  return ret;
+}
 int last_test ()
 {
   TEST_ASSERT_EQUAL ( strcmp ("TEST6", getenv ("CALLER")), 0 );
@@ -162,6 +181,7 @@ int main (int c, char **v)
     case 5: return test5 ();
     case 6: return test6 ();
     case 7: return test7 ();
+    case 8: return test8 ();
 
     default: return last_test ();
     }

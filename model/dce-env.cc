@@ -17,7 +17,7 @@ char *dce_getenv (const char *name)
   int namelen = strlen (name);
   char ***penvp = current->process->penvp;
   char **cur;
-  for (cur = *penvp; *cur != 0; cur++)
+  for (cur = *penvp; cur != 0 &&  *cur != 0; cur++)
     {
       char *equal = strchr (*cur, '=');
       if (equal == 0)

@@ -59,7 +59,8 @@ void FdDecUsage (int fd);
 bool CheckFdExists (Process* const p, int const fd, bool const opened);
 int getRealFd (int fd, Thread *current);
 std::string PathOfFd (int fd);
-
+bool CheckShellScript (std::string fileName,
+    std::ostringstream &shellName, std::ostringstream &optionalArg);
 #define MAX_FDS 1024
 
 #define OPENED_FD_METHOD_ERR( errCode, rettype, args ) \

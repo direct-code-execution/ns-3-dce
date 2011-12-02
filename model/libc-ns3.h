@@ -61,7 +61,7 @@ DCE    (__cxa_atexit)
 //NATIVE (__gxx_personality_v0)
 
 DCE    (setlocale)
-
+NATIVE (strcoll)
 NATIVE_WITH_ALIAS (newlocale)
 NATIVE_WITH_ALIAS (uselocale)
 
@@ -82,6 +82,7 @@ DCE    (write)
 DCE    (writev)
 NATIVE (memset)
 NATIVE (memcpy)
+NATIVE (bcopy)
 NATIVE (memcmp)
 NATIVE (memmove)
 NATIVE_EXPLICIT (memchr, void * (*) (void *, int, size_t))
@@ -146,6 +147,7 @@ DCE    (fclose)
 DCE_WITH_ALIAS2 (fflush,fflush_unlocked)
 DCE    (fcloseall)
 DCE    (fopen)
+DCE    (fopen64)
 DCE    (freopen)
 DCE    (fdopen)
 
@@ -488,6 +490,9 @@ NATIVE (versionsort)
 
 // fcntl.h
 DCE (unlinkat)
+
+// unistd.h
+NATIVE (getdtablesize)
 
 #undef DCE
 #undef NATIVE

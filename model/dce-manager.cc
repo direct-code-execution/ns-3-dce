@@ -1114,7 +1114,34 @@ DceManager::Execve (const char *path, char *const argv[], char *const envp[])
     {
       return -1;
     }
-  SetArgv (&pTemp, path, CopyArgs(argv) );
+  std::ostringstream interpreter, optArgs;
+  std::string filename = std::string (path);
+  if (CheckShellScript (path, interpreter, optArgs))
+    {
+      std::vector<std::string> args, lasts = CopyArgs(argv);
+      std::string opt = optArgs.str ();
+      std::string shell = interpreter.str ();
+
+      if (opt.length() > 0)
+        {
+          args.push_back (opt);
+        }
+      args.push_back (filename);
+
+      if (lasts.size () > 0)
+      args.insert(args.end(), lasts.begin(), lasts.end());
+
+      SetArgv (&pTemp, shell.c_str (), args);
+      filename = shell.c_str ();
+
+
+
+
+    }
+  else
+    {
+      SetArgv (&pTemp, path, CopyArgs(argv) );
+    }
   SetEnvp (&pTemp, envs);
   envs.clear ();
 
@@ -1147,7 +1174,7 @@ DceManager::Execve (const char *path, char *const argv[], char *const envp[])
   process->penvp = 0;
   process->originalProgname = pTemp.originalProgname;
 
-  void *main = LoadMain (pTemp.loader, std::string (path), &pTemp, err);
+  void *main = LoadMain (pTemp.loader, filename, &pTemp, err);
 
   if (!main)
     {

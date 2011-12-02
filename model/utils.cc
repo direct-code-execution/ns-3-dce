@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <string.h>
 #include <list>
+#include <fcntl.h>
 #include "file-usage.h"
 
 NS_LOG_COMPONENT_DEFINE ("ProcessUtils");
@@ -445,5 +446,72 @@ std::string PathOfFd (int fd)
       return std::string (direc);
     }
   return std::string ("");
+}
+bool
+CheckShellScript (std::string fileName,
+    std::ostringstream &shellName, std::ostringstream &optionalArg)
+{
+  int fd = open (fileName.c_str (), O_RDONLY);
+
+  if (fd < 0)
+    {
+      return false;
+    }
+  //A maximum line length of 127 characters is allowed for the first line in a #! executable shell script.
+  char firstLine[128];
+  ssize_t lg = read (fd, firstLine, 127);
+  close (fd);
+  if ( (lg <= 2) || ( '#' != firstLine [0] ) || ( '!'!= firstLine [1] ))
+    {
+      return false;
+    }
+  ssize_t crsr = 2;
+  firstLine [lg] = 0;
+  while (' '==firstLine [crsr])
+    {
+      crsr++;
+      if (crsr >= lg)
+        {
+          return false;
+        }
+    }
+  ssize_t startShellName = crsr;
+  crsr++;
+  while ( firstLine [crsr] && (' ' != firstLine [crsr]) && ( '\n' !=  firstLine [crsr] ) )
+    {
+      crsr++;
+      if (crsr >= lg)
+        {
+          break;
+        }
+    }
+  ssize_t endShellName = crsr;
+  ssize_t lShellName = endShellName - startShellName;
+  if (lShellName <= 0 )
+    {
+      return false;
+    }
+  shellName << std::string (firstLine + startShellName, lShellName);
+  if (crsr >= lg)
+    {
+      return true;
+    }
+  ssize_t startOpt = crsr;
+  while (firstLine[crsr]&&('\n'!=  firstLine [crsr]))
+    {
+      crsr++;
+      if (crsr >= lg)
+        {
+          break;
+        }
+    }
+  ssize_t lOpt = crsr - startOpt;
+  if (lOpt <= 0)
+    {
+      return true;
+    }
+  optionalArg << std::string (firstLine + startOpt, lOpt);
+
+  return true;
 }
 } // namespace ns3

@@ -203,7 +203,30 @@ FILE *dce_fdopen (int fildes, const char *mode)
   return file;
 }
 
-
+FILE *dce_fopen64 (const char *path, const char *mode)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << path << mode);
+  NS_ASSERT (Current () != 0);
+  Thread *current = Current ();
+  if (!mode_valid (mode))
+    {
+      current->err = EINVAL;
+      return 0;
+    }
+  int fd = dce_open (path, mode_posix_flags (mode)|O_LARGEFILE , 0666 & ~(current->process->uMask) );
+  if (fd == -1)
+    {
+      current->err = errno;
+      return 0;
+    }
+  FILE *file = dce_fdopen (fd, mode);
+  if (file == 0)
+    {
+      return 0;
+    }
+  mode_setup (file, fd, mode);
+  return file;
+}
 FILE *dce_fopen (const char *path, const char *mode)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << path << mode);

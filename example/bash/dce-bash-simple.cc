@@ -50,10 +50,12 @@ int main (int argc, char *argv[])
 
   dce.SetBinary ("sh");
   dce.SetStackSize (1<<20);
-  dce.AddEnvironment ("PATH","/bin");
+  dce.AddEnvironment ("PATH","/bin:/user/furbani/home/local/bin/");
   dce.AddEnvironment ("HOME","/home/dce");
  // dce.SetStdinFile ("/tmp/script.sh");
-  dce.SetStdinFile ("/tmp/ccnd-init-keystore-helper");
+ // dce.SetStdinFile ("/tmp/ccnd-init-keystore-helper");
+  dce.AddArgument("/tmp/ccnd-init-keystore-helper");
+  dce.AddArgument("urbanos");
   apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds (4.0));
 
