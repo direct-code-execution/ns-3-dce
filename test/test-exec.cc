@@ -181,7 +181,7 @@ int main (int c, char **v)
     case 5: return test5 ();
     case 6: return test6 ();
     case 7: return test7 ();
-    case 8: return test8 ();
+//    case 8: return test8 ();
 
     default: return last_test ();
     }
