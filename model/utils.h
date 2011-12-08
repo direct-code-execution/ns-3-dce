@@ -61,6 +61,8 @@ int getRealFd (int fd, Thread *current);
 std::string PathOfFd (int fd);
 bool CheckShellScript (std::string fileName,
     std::ostringstream &shellName, std::ostringstream &optionalArg);
+char *seek_env (const char *name, char **array);
+
 #define MAX_FDS 1024
 
 #define OPENED_FD_METHOD_ERR( errCode, rettype, args ) \

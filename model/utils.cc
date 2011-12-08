@@ -26,7 +26,7 @@ uint32_t UtilsGetNodeId (void)
 static std::string UtilsGetRealFilePath (uint32_t node)
 {
   std::ostringstream oss;
-  oss << get_current_dir_name() << "/files-" << node;
+  oss << "files-" << node;
   return oss.str ();
 }
 static std::string UtilsGetRealFilePath (void)
@@ -513,5 +513,24 @@ CheckShellScript (std::string fileName,
   optionalArg << std::string (firstLine + startOpt, lOpt);
 
   return true;
+}
+char *seek_env (const char *name, char **array)
+{
+  int namelen = strlen (name);
+  char **cur;
+  for (cur = array; cur != 0 &&  *cur != 0; cur++)
+    {
+      char *equal = strchr (*cur, '=');
+      if (equal == 0)
+        {
+          continue;
+        }
+      if (strncmp (*cur, name, namelen) != 0)
+        {
+          continue;
+        }
+      return equal+1;
+    }
+  return 0;
 }
 } // namespace ns3

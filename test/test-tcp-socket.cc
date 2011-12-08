@@ -1363,19 +1363,15 @@ main (int argc, char *argv[])
   readBuffer = (char *)malloc ( BUFF_LEN );
   sendBuffer = (char *)malloc ( BUFF_LEN );
 
-//  goto C15;
-
-  goto C3;
-
   launch (client1, server1);
   launch (client2, server2);
 C3:
-  launch (client3, server3); // NS3 failed : tcp stack bug like bug 907
+ // launch (client3, server3); // NS3 failed : tcp stack bug like bug 907 or 1167
   // the server defer close because it is waiting for : Stop sending if we need to wait for a larger Tx window
   // But it is never came ....
   // The client is blocked in read ....
   launch (client4, server4);
-  // failed because bug of NS3 TCP V4 STACK   launch (client5, server5);
+  launch (client5, server5);
   launch (client6, server6);
 C8:
   launch (client8, server8);
@@ -1387,7 +1383,7 @@ C8:
   launch (client13, server13);
   launch (client14, server14);
 C15:
-  launch (client15, server15); // Valgrind crash ?
+ // TODO DEBUG   launch (client15, server15); // Valgrind crash ?
 
   printf ("That's All Folks ....\n \n " );
   fflush (stdout);

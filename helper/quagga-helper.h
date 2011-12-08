@@ -40,7 +40,6 @@ public:
    *
    */
   QuaggaHelper ();
-
   /**
    * Install a quagga application on each Node in the provided NodeContainer.
    *

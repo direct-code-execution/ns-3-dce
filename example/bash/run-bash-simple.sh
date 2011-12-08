@@ -8,7 +8,7 @@ cp ccnd-init-keystore-helper files-0/tmp
 echo \010\043\103\375\327\237\152\351\155 >files-0/p
 #mkdir -p files-0/bin
 #cp $SHELL_BIN files-0/bin
-cp -r $HOME/bin_dce files-0/bin
+cp -r $HOME/dce_root/bin files-0/bin
 mkdir -p files-0/$OPENSSL
 cp -r $OPENSSL files-0/$OPENSSL/..
 EXE=dce-bash-simple

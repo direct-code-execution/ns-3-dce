@@ -24,12 +24,16 @@ public:
 			std::string n0 = "", const AttributeValue &v0 = EmptyAttributeValue ());
   void SetAttribute (std::string n1, const AttributeValue &v1);
   void Install (NodeContainer nodes);
+  // Path used by simulated methods 'execvp' and 'execlp'
+  void SetVirtualPath (std::string p);
+  std::string GetVirtualPath () const;
 private:
   ObjectFactory m_loaderFactory;
   ObjectFactory m_schedulerFactory;
   ObjectFactory m_taskManagerFactory;
   ObjectFactory m_managerFactory;
   ObjectFactory m_networkStackFactory;
+  std::string m_virtualPath;
 };
 
 } // namespace ns3

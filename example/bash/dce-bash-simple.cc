@@ -27,6 +27,7 @@ int main (int argc, char *argv[])
   stack.Install (nodes);
 
   DceManagerHelper dceManager;
+  //dceManager.SetVirtualPath ("/bin:/user/furbani/home/local/bin/");
   dceManager.Install (nodes);
 
   mkdir ("files-0", 0700);
@@ -48,7 +49,7 @@ int main (int argc, char *argv[])
   DceApplicationHelper dce;
   ApplicationContainer apps;
 
-  dce.SetBinary ("sh");
+  dce.SetBinary ("/bin/sh");
   dce.SetStackSize (1<<20);
   dce.AddEnvironment ("PATH","/bin:/user/furbani/home/local/bin/");
   dce.AddEnvironment ("HOME","/home/dce");

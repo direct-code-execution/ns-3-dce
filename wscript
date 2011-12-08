@@ -158,7 +158,7 @@ def build_dce_tests(module, kern):
              ['test-dirent', []]
              ]
     for name,uselib in tests:
-        module.add_test(**dce_kw(target='bin/' + name, source = ['test/' + name + '.cc'],
+        module.add_test(**dce_kw(target='bin_dce/' + name, source = ['test/' + name + '.cc'],
                                  use = uselib + ['lib/test']))
 
 def build_dce_examples(module):
@@ -325,6 +325,7 @@ def build(bld):
         'model/fifo-buffer.cc',
         'model/dce-dirent.cc',
         'model/dce-at.cc',
+        'model/exec-utils.cc',
         # helper.
         'helper/ipv4-dce-routing-helper.cc',
         'helper/dce-manager-helper.cc',

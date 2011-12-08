@@ -48,7 +48,7 @@ public:
     m_egress_if = new std::vector<std::string> ();
     m_haflag_if = new std::vector<std::string> ();
   }
-  ~QuaggaConfig ()
+  virtual ~QuaggaConfig ()
   {
   }
 

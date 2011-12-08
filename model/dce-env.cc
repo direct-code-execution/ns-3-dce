@@ -14,23 +14,8 @@ char *dce_getenv (const char *name)
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << name);
   NS_ASSERT (Current () != 0);
   struct Thread *current = Current ();
-  int namelen = strlen (name);
   char ***penvp = current->process->penvp;
-  char **cur;
-  for (cur = *penvp; cur != 0 &&  *cur != 0; cur++)
-    {
-      char *equal = strchr (*cur, '=');
-      if (equal == 0)
-        {
-          continue;
-        }
-      if (strncmp (*cur, name, namelen) != 0)
-        {
-          continue;
-        }
-      return equal+1;
-    }
-  return 0;
+  return seek_env (name, *penvp);
 }
 int dce_putenv (char *string)
 {

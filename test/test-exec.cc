@@ -19,7 +19,7 @@ int test1 ()
   TEST_ASSERT_EQUAL (errno,  ENOENT);
 
   setenv ("CALLER", "TEST1", 1);
-  ret = execv ("build/bin/test-exec", args);
+  ret = execv ("/bin_dce/test-exec", args);
   TEST_ASSERT ( false ); // Must not be reached
 
   return ret;
@@ -48,7 +48,7 @@ int test3 ()
   TEST_ASSERT_EQUAL (ret, -1);
   TEST_ASSERT_EQUAL (errno,  ENOENT);
 
-  ret = execl ("build/bin/test-exec", "build/bin/test-exec", "4", 0);
+  ret = execl ("/bin_dce/test-exec", "/bin_dce/test-exec", "4", 0);
   TEST_ASSERT ( false ); // Must not be reached
 
   return ret;
@@ -69,7 +69,7 @@ int test4 ()
   {
     char * args[] = { "build/bin/test-exec", "5", 0 };
 
-    ret = execve ("build/bin/test-exec", args, env);
+    ret = execve ("/bin_dce/test-exec", args, env);
     TEST_ASSERT ( false ); // Must not be reached
   }
 
@@ -84,7 +84,7 @@ int test5 ()
   TEST_ASSERT_EQUAL (ret, -1);
   TEST_ASSERT_EQUAL (errno,  ENOENT);
 
-  ret = execlp ("build/bin/test-exec", "build/bin/test-exec", "6", 0);
+  ret = execlp ("test-exec", "test-exec", "6", 0);
   TEST_ASSERT ( false ); // Must not be reached
 
   return ret;
@@ -99,7 +99,7 @@ int test6 ()
   TEST_ASSERT_EQUAL (ret, -1);
   TEST_ASSERT_EQUAL (errno,  ENOENT);
 
-  ret = execle ("build/bin/test-exec", "build/bin/test-exec", "7", (char*)0, env );
+  ret = execle ("/bin_dce/test-exec", "/bin_dce/test-exec", "7", (char*)0, env );
   printf ("execle -> %d, errno=%d\n", ret, errno);
   TEST_ASSERT ( false ); // Must not be reached
 
@@ -133,7 +133,7 @@ int test7 ()
       // try to join after the thread exits.
       status = pthread_create (&thread, NULL, &thread_test7, 0);
     }
-  int ret = execl ("build/bin/test-exec", "build/bin/test-exec", "8", 0);
+  int ret = execl ("/bin_dce/test-exec", "/bin_dce/test-exec", "8", 0);
   TEST_ASSERT ( false ); // Must not be reached
 
   return ret;
@@ -143,15 +143,20 @@ int test8 ()
 {
   int fd = open ("Script8", O_CREAT|O_WRONLY, 0755);
   FILE *f = fdopen (fd, "w");
+  char *argv[] = { 0 };
+  char *envp[] = {  0 };
 
   TEST_ASSERT_UNEQUAL (f, 0);
 
   fprintf (f,"#!/bin/sh\n");
-  fprintf (f,"build/bin/test-exec 9\n" );
+  fprintf (f,"CALLER=TEST6\n");
+  fprintf (f,"export CALLER\n");
+  fprintf (f,"/bin_dce/test-exec 9\n" );
   fclose (f);
 
-  int ret = execv  ("./Script8", 0);
+  int ret = execve  ("Script8", argv, envp);
   TEST_ASSERT ( false ); // Must not be reached
+
   return ret;
 }
 int last_test ()
@@ -181,7 +186,9 @@ int main (int c, char **v)
     case 5: return test5 ();
     case 6: return test6 ();
     case 7: return test7 ();
-//    case 8: return test8 ();
+    // TEST 8 Disabled because this test need a sh recompiled for DCE which is not
+    // part of the DCE distribution for now.
+   // case 8: return test8 ();
 
     default: return last_test ();
     }

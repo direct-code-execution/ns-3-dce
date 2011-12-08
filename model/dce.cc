@@ -1,6 +1,7 @@
 #include "dce-manager.h"
 #include "process.h"
 #include "utils.h"
+#include "exec-utils.h"
 #include "dce-errno.h"
 #include "dce-signal.h"
 #include "dce-netdb.h"
@@ -631,8 +632,8 @@ int dce_fchdir (int fd)
       current->err = EBADF;
       return -1;
     }
-  std::string base = UtilsGetRealFilePath ("/");
-  current->process->cwd = std::string (p, base.length() - 1 );
+  std::string base =  std::string(get_current_dir_name()) + "/" +  UtilsGetRealFilePath ("/");
+  current->process->cwd =  UtilsGetVirtualFilePath (std::string (p, base.length() - 1 ));
   return 0;
 }
 
@@ -666,7 +667,7 @@ int dce_execv (const char *path, char *const argv[])
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << path);
 
-  std::string fileName = FindExecFile ("/", "", path, getuid (), getgid (), &(thread->err) );
+  std::string  fileName = SearchExecFile ( path, getuid (), getgid (), &(thread->err) );
 
   if  ( 0 == fileName.length () )
     {
@@ -674,7 +675,7 @@ int dce_execv (const char *path, char *const argv[])
       return -1;
     }
 
-  return thread->process->manager->Execve (fileName.c_str (), argv, *(thread->process->penvp) );
+  return thread->process->manager->Execve (fileName.c_str (), path, argv, *(thread->process->penvp) );
 }
 int dce_execl (const char *path, const char *arg, ...)
 {
@@ -684,7 +685,7 @@ int dce_execl (const char *path, const char *arg, ...)
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << path);
 
-  std::string fileName = FindExecFile ("/", "", path, getuid (), getgid (), &(thread->err) );
+  std::string fileName = SearchExecFile ( path, getuid (), getgid (), &(thread->err) );
 
   if  ( 0 == fileName.length () )
     {
@@ -711,7 +712,7 @@ int dce_execl (const char *path, const char *arg, ...)
       argv[nb++] = p = va_arg (ap, char *);
     } while ( p );
 
-  int retval = thread->process->manager->Execve (fileName.c_str (), (char* const*) argv, *(thread->process->penvp) );
+  int retval = thread->process->manager->Execve (fileName.c_str (), path, (char* const*) argv, *(thread->process->penvp) );
 
   dce_free (argv);
 
@@ -721,7 +722,8 @@ int dce_execve (const char *path, char *const argv[], char *const envp[])
 {
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << path);
-  std::string fileName = FindExecFile ("/", "", path, getuid (), getgid (), &(thread->err) );
+
+  std::string fileName = SearchExecFile ( path, getuid (), getgid (), &(thread->err) );
 
   if  ( 0 == fileName.length () )
     {
@@ -729,7 +731,7 @@ int dce_execve (const char *path, char *const argv[], char *const envp[])
       return -1;
     }
 
-  return thread->process->manager->Execve (fileName.c_str (), argv, envp );
+  return thread->process->manager->Execve (fileName.c_str (), path, argv, envp );
 }
 
 int dce_execlp (const char *file, const char *arg, ...)
@@ -739,8 +741,17 @@ int dce_execlp (const char *file, const char *arg, ...)
 
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << file);
-  std::string fileName = FindExecFile ("/", std::string (getenv ("PATH")) + std::string (getenv ("LD_LIBRARY_PATH")),
-                                       file, getuid (), getgid (), &(thread->err) );
+
+  std::string vpath = "";
+  char *pvpath= seek_env ("PATH", *thread->process->penvp );
+  if (pvpath)
+    {
+      vpath = std::string (pvpath);
+    }
+  std::string fileName = file;
+
+  fileName = SearchExecFile ( fileName, vpath, getuid (), getgid (), &(thread->err) );
+
   if  ( 0 == fileName.length () )
     {
       // Errno setted by FindExecFile
@@ -765,7 +776,7 @@ int dce_execlp (const char *file, const char *arg, ...)
       argv[nb++] = p = va_arg (ap, char *);
     } while ( p );
 
-  int retval = thread->process->manager->Execve (fileName.c_str (), (char* const*) argv, *(thread->process->penvp) );
+  int retval = thread->process->manager->Execve (fileName.c_str (), file, (char* const*) argv, *(thread->process->penvp) );
 
   dce_free (argv);
 
@@ -775,16 +786,22 @@ int dce_execvp (const char *file, char *const argv[])
 {
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << file);
-  std::string fileName = FindExecFile ("/", std::string (getenv ("PATH")) + std::string (getenv ("LD_LIBRARY_PATH")),
-                                       file, getuid (), getgid (), &(thread->err) );
 
+  std::string vpath = "";
+  char *pvpath= seek_env ("PATH", *thread->process->penvp );
+  if (pvpath)
+    {
+      vpath = std::string (pvpath);
+    }
+  std::string fileName = file;
+  fileName = SearchExecFile ( fileName, vpath, getuid (), getgid (), &(thread->err) );
   if  ( 0 == fileName.length () )
     {
       // Errno setted by FindExecFile
       return -1;
     }
 
-  return thread->process->manager->Execve (fileName.c_str (), argv, *(thread->process->penvp) );
+  return thread->process->manager->Execve (fileName.c_str (), file, argv, *(thread->process->penvp) );
 }
 int dce_execle (const char *path, const char *arg, ...)
 {
@@ -793,7 +810,8 @@ int dce_execle (const char *path, const char *arg, ...)
 
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << path);
-  std::string fileName = FindExecFile ("/", "", path, getuid (), getgid (), &(thread->err) );
+  std::string fileName = SearchExecFile ( path,  getuid (), getgid (), &(thread->err) );
+
   if  ( 0 == fileName.length () )
     {
       // Errno setted by FindExecFile
@@ -818,7 +836,8 @@ int dce_execle (const char *path, const char *arg, ...)
       argv[nb++] = p = va_arg (ap, char *);
     } while ( p );
 
-  int retval = thread->process->manager->Execve (fileName.c_str (), (char* const*) argv, (char* const*) envp );
+  int retval = thread->process->manager->Execve (fileName.c_str (), path,
+      (char* const*) argv, (char* const*) envp );
 
   dce_free (argv);
 

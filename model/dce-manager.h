@@ -111,7 +111,10 @@ public:
   uint16_t Clone (Thread *thread);
   std::map<uint16_t, Process *> GetProcs ();
   static void AppendStatusFile (uint16_t pid, uint32_t nodeId, std::string &line);
-  int Execve (const char *path, char *const argv[], char *const envp[]);
+  int Execve (const char *path, const char *argv0, char *const argv[], char *const envp[]);
+  // Path used by simulated methods 'execvp' and 'execlp'
+  void SetVirtualPath (std::string p);
+  std::string GetVirtualPath () const;
 
 private:
   // inherited from Object.
@@ -119,6 +122,7 @@ private:
 
   struct Process *CreateProcess (std::string name, std::string stdinfilename, std::vector<std::string> args,
                                  std::vector<std::pair<std::string,std::string> > envs, int pid);
+  static int (*PrepareDoStartProcess(Thread *current))(int, char **);
   static void DoStartProcess (void *context);
   bool CheckProcessContext (void) const;
   uint16_t AllocatePid (void);
@@ -148,6 +152,7 @@ private:
   TracedCallback<uint16_t, int> m_processExit;
   // If true close stderr and stdout between writes .
   bool m_minimizeFiles;
+  std::string m_virtualPath;
 };
 
 } // namespace ns3

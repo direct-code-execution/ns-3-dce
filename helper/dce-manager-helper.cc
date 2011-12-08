@@ -44,6 +44,7 @@ DceManagerHelper::DceManagerHelper ()
   m_schedulerFactory.SetTypeId ("ns3::RrTaskScheduler");
   m_managerFactory.SetTypeId ("ns3::DceManager");
   m_networkStackFactory.SetTypeId ("ns3::Ns3SocketFdFactory");
+  m_virtualPath ="";
 }
 void 
 DceManagerHelper::SetScheduler (std::string type, 
@@ -96,7 +97,17 @@ DceManagerHelper::Install (NodeContainer nodes)
       node->AggregateObject (networkStack);
       node->AggregateObject (CreateObject<LocalSocketFdFactory> ());
       manager->AggregateObject(CreateObject<DceNodeContext> () );
+      manager->SetVirtualPath (GetVirtualPath());
     }
 }
-
+void
+DceManagerHelper::SetVirtualPath (std::string p)
+{
+  m_virtualPath = p;
+}
+std::string
+DceManagerHelper::GetVirtualPath () const
+{
+  return m_virtualPath;
+}
 } // namespace ns3

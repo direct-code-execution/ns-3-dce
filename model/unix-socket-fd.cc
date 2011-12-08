@@ -827,8 +827,6 @@ UnixSocketFd::Gettime (struct itimerspec *cur_value) const
 void
 UnixSocketFd::ClearSocket (void)
 {
-  NS_LOG_FUNCTION (this << Current () );
-
   if ( m_socket )
     {
       Callback<void, Ptr< Socket > > nil = MakeNullCallback<void, Ptr<Socket> > ();

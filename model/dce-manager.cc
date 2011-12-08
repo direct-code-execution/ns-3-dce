@@ -45,6 +45,7 @@
 #include "wait-queue.h"
 #include "waiter.h"
 #include "dce-dirent.h"
+#include "exec-utils.h"
 
 #include <errno.h>
 #include <dlfcn.h>
@@ -163,13 +164,17 @@ DceManager::CreatePidFile (struct Thread *current, std::string filename)
   int fd = dce_creat (s.c_str (), S_IWUSR | S_IRUSR);
   return fd;
 }
-
-void
-DceManager::DoStartProcess (void *context)
+int
+(*DceManager::PrepareDoStartProcess(Thread *current))(int, char **)
 {
+  // Note : this preparing process is out of method DoStartProcess in order to
+  //        free all local variable in particular the std library ones before the main execution
+  //        because main call will reset allocation counters of std library then we must not free std::string
+  //        after the main call !
+  int retval = -1;
+  int err = 0;
+  int (*main)(int, char **) = 0;
   struct ::Libc *libc = GetLibc ();
-
-  Thread *current = (Thread *)context;
   UnixFd *unixFd = 0;
 
   if ( current->process->stdinFilename.length () > 0 )
@@ -211,22 +216,36 @@ DceManager::DoStartProcess (void *context)
 
   fd = CreatePidFile (current, "status");
   NS_ASSERT (fd == 3);
-  std::ostringstream oss;
-  oss << "Start Time: " << GetTimeStamp () << std::endl;
-  std::string tmp = oss.str ();
-  const char *str = tmp.c_str ();
-  dce_write (fd, str, strlen (str));
-  dce_close (fd);
-  int err = 0;
-  int (*main)(int, char **);
+  {
+    std::ostringstream oss;
+    oss << "Start Time: " << GetTimeStamp () << std::endl;
+    std::string tmp = oss.str ();
+    const char *str = tmp.c_str ();
+    dce_write (fd, str, strlen (str));
+    dce_close (fd);
+  }
+  std::string vpath = "";
+  char *pvpath= seek_env ("PATH", current->process->originalEnvp);
+  if (pvpath)
+    {
+      vpath = std::string (pvpath);
+    }
+  int errNo = 0;
+  std::string exeFullPath = SearchExecFile (current->process->originalArgv[0], vpath, getuid (), getgid (), &errNo);
+
+  if (exeFullPath.length() <= 0)
+    {
+      std::string line = "Exe not found !";
+      AppendStatusFile (current->process->pid, current->process->nodeId, line);
+      dce_exit (-1);
+      return 0;
+    }
 
   main = (int (*)(int, char **)) LoadMain (current->process->loader,
-      std::string (current->process->originalArgv[0]),
+      exeFullPath,
       current->process,
       err);
 
-  StartProcessDebugHook ();
-  int retval = -1;
   if (!main)
     {
       std::string line = "No main found in exe !";
@@ -234,6 +253,22 @@ DceManager::DoStartProcess (void *context)
     }
   else
     {
+      std::string  line = "Starting: " + exeFullPath;
+      AppendStatusFile (current->process->pid, current->process->nodeId, line);
+    }
+
+  return main;
+}
+void
+DceManager::DoStartProcess (void *context)
+{
+  Thread *current = (Thread *)context;
+  int (*main)(int, char **) = PrepareDoStartProcess (current);
+  int retval = 127;
+
+  if (main)
+    {
+      StartProcessDebugHook ();
       retval = main (current->process->originalArgc, current->process->originalArgv);
     }
   dce_exit (retval);
@@ -1103,7 +1138,7 @@ DceManager::SetDefaultSigHandler (std::vector<SignalHandler> &signalHandlers)
   signalHandlers.push_back (handler);
 }
 int
-DceManager::Execve (const char *path, char *const argv[], char *const envp[])
+DceManager::Execve (const char *path, const char *argv0, char *const argv[], char *const envp[])
 {
   Process pTemp = { 0 } ;
   Process *process = Current ()->process;
@@ -1126,17 +1161,26 @@ DceManager::Execve (const char *path, char *const argv[], char *const envp[])
         {
           args.push_back (opt);
         }
-      args.push_back (filename);
+      args.push_back (argv0);
 
       if (lasts.size () > 0)
-      args.insert(args.end(), lasts.begin(), lasts.end());
+        {
+          args.insert(args.end(), lasts.begin(), lasts.end());
+        }
 
-      SetArgv (&pTemp, shell.c_str (), args);
-      filename = shell.c_str ();
+      SetArgv (&pTemp, argv0, args);
 
-
-
-
+      std::string vpath = "";
+      char *pvpath= seek_env ("PATH", *process->penvp );
+      if (pvpath)
+        {
+          vpath = std::string (pvpath);
+        }
+      filename = SearchExecFile ( shell, vpath, getuid (), getgid (), &( Current ()->err) );
+      if (filename.length() <= 0)
+        {
+          return -1;
+        }
     }
   else
     {
@@ -1302,12 +1346,20 @@ DceManager::Execve (const char *path, char *const argv[], char *const envp[])
         }
     }
 
-
   line = "EXEC SUCCESS";
   AppendStatusFile (process->pid, process->nodeId, line);
   TaskManager::Current ()->Exit ();
   // NEVER REACHED
   return -1;
 }
-
+void
+DceManager::SetVirtualPath (std::string p)
+{
+  m_virtualPath = p;
+}
+std::string
+DceManager::GetVirtualPath () const
+{
+  return m_virtualPath;
+}
 } // namespace ns3
