@@ -55,13 +55,15 @@ then
 	./configure
 	LDFLAGS=-pie make CCOPTS='-fpic -D_GNU_SOURCE -O0 -U_FORTIFY_SOURCE'
 	cd ../ns-3-dce
-	ln -s ../ns-3-linux/libnet-next-2.6.so
+	mkdir -p build/bin_dce
+	cd  build/bin_dce
+	ln -s ../../../ns-3-linux/libnet-next-2.6.so
 #	ln -s ../iproute2-2.6.33/ip/ip
-	ln -s ../iproute2-2.6.38/ip/ip
-	cd example/ccnx
-	ln -s ../../libnet-next-2.6.so
-	ln -s ../../ip
-	cd ../../..
+	ln -s ../../../iproute2-2.6.38/ip/ip
+	cd ../../example/ccnx
+	ln -s ../../build/bin_dce/libnet-next-2.6.so
+#	ln -s ../../ip
+	cd ../..
 fi
 cd ns-3-dce/
 if [ "YES" == "$USE_KERNEL" ]

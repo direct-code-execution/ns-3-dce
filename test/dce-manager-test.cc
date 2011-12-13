@@ -61,7 +61,7 @@ DceManagerTestCase::DoRun (void)
           dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("libnet-next-2.6.so"));
           dceManager.Install (nodes);
 
-          dce.SetBinary ("./ip");
+          dce.SetBinary ("ip");
           dce.SetStackSize (1<<16);
           dce.ResetArguments ();
           dce.ParseArguments ("-f inet addr add local 127.0.0.1/8 scope host dev lo");
@@ -163,7 +163,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-poll", 3200, "", true },
       {  "test-tcp-socket", 320, "", true },
       {  "test-exec", 0, "" , false},
-      {  "test-raw-socket", 320, "", true },
+      /* {  "test-raw-socket", 320, "", true },*/
       {  "test-iperf", 0, "" , false},
       {  "test-name", 0, "" , false},
       {  "test-pipe", 0, "" , false},

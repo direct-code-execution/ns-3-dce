@@ -213,5 +213,13 @@ LinuxSocketFd::Poll (PollTable* ptable)
 {
   return m_factory->Poll (m_socket, ptable);
 }
-
+int
+LinuxSocketFd::Ftruncate (off_t length)
+{
+  NS_LOG_FUNCTION (this << Current () );
+  NS_ASSERT (Current () != 0);
+  Thread *current = Current ();
+  current->err = EINVAL;
+  return -1;
+}
 } // namespace ns3

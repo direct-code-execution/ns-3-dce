@@ -51,8 +51,10 @@ public:
   virtual bool HangupReceived (void) const;
 
   virtual int Poll (PollTable* ptable);
+  virtual int Ftruncate (off_t length);
 
   void PollEvent (int flag);
+
 
 private:
   Ptr<LinuxSocketFdFactory> m_factory;

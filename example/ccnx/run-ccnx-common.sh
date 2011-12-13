@@ -52,5 +52,5 @@ install_user_keystore ()
     mkdir -p files-$nodeid/$VIRTUAL_USER_KEYSTORE/.ccnx
     cp $CCNX_KEY_PATH/.ccnx_keystore files-$nodeid/$VIRTUAL_USER_KEYSTORE/.ccnx/
 }
-
+export DCE_PATH=$DCE_PATH:$CCNX_PATH/bin
 export PATH=$CCNX_PATH/bin:$PATH

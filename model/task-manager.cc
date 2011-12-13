@@ -194,6 +194,10 @@ static void SwitchNotifEatSignal (void)
       return;
     }
   Thread *current = Current ();
+  if (0 == current)
+    {
+      return;
+    }
   UtilsDoSignal () ;
 }
 Task *
