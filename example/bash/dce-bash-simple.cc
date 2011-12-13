@@ -49,9 +49,11 @@ int main (int argc, char *argv[])
   DceApplicationHelper dce;
   ApplicationContainer apps;
 
+//  dce.SetBinary ("/bin/sh not here");
+//  dce.SetBinary ("/libtest.so"); // TEMPOFUR
   dce.SetBinary ("/bin/sh");
   dce.SetStackSize (1<<20);
-  dce.AddEnvironment ("PATH","/bin:/user/furbani/home/local/bin/");
+  dce.AddEnvironment ("PATH","/bin:/usr/local/ssl/bin");
   dce.AddEnvironment ("HOME","/home/dce");
  // dce.SetStdinFile ("/tmp/script.sh");
  // dce.SetStdinFile ("/tmp/ccnd-init-keystore-helper");

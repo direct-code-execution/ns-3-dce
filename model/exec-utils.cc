@@ -432,4 +432,23 @@ SearchExecFile (std::string file, uid_t uid, gid_t gid, int *errNo)
 
   return SearchFile (file, vroot,  cwd, altRoots, &userData, CheckFileExe );
 }
+// Search using only a real path within a real environment variable
+std::string
+SearchExecFile (std::string envVar, std::string file, int *errNo)
+{
+  char *c = getenv (envVar.c_str ());
+  std::string dcepath = "";
+  struct ExeCriteria userData;
+
+  if (c)
+    {
+      dcepath = c;
+    }
+  userData.uid = 0;
+  userData.gid = 0;
+  userData.errNo = 0;
+
+  return SearchFile (file, "", "", dcepath, "", "", &userData, CheckFileExe );
+}
+
 }

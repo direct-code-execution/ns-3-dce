@@ -235,8 +235,11 @@ int
 
   if (exeFullPath.length() <= 0)
     {
-      std::string line = "Exe not found !";
+      std::string line = "Executable '";
+      line += current->process->originalArgv[0];
+      line += "' not found !";
       AppendStatusFile (current->process->pid, current->process->nodeId, line);
+      NS_ASSERT_MSG ( exeFullPath.length() > 0, line.c_str ());
       dce_exit (-1);
       return 0;
     }
@@ -248,8 +251,11 @@ int
 
   if (!main)
     {
-      std::string line = "No main found in exe !";
+      std::string line = "No main method found in executable file '";
+      line += exeFullPath;
+      line += "'.";
       AppendStatusFile (current->process->pid, current->process->nodeId, line);
+      NS_ASSERT_MSG ( !main , line.c_str ());
     }
   else
     {

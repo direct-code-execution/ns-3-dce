@@ -55,6 +55,7 @@ then
 	./configure
 	LDFLAGS=-pie make CCOPTS='-fpic -D_GNU_SOURCE -O0 -U_FORTIFY_SOURCE'
 	cd ../ns-3-dce
+	ln -s ../ns-3-linux/libnet-next-2.6.so
 	mkdir -p build/bin_dce
 	cd  build/bin_dce
 	ln -s ../../../ns-3-linux/libnet-next-2.6.so

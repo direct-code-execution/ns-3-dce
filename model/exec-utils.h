@@ -140,6 +140,9 @@ std::string SearchExecFile (std::string file, std::string vpath, uid_t uid, gid_
 // Without PATH only Real or Virtual root
 std::string SearchExecFile (std::string file, uid_t uid, gid_t gid, int *errNo);
 
+// Search using only a path within an environment variable
+std::string SearchExecFile (std::string env, std::string file, int *errNo);
+
 
 }
 

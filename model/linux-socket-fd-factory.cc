@@ -18,6 +18,7 @@
 #include "ns3/simulator.h"
 #include "ns3/mac48-address.h"
 #include "ns3/packet.h"
+#include "exec-utils.h"
 #include <dlfcn.h>
 #include <string.h>
 #include <stdio.h>
@@ -485,7 +486,8 @@ LinuxSocketFdFactory::Set (std::string path, std::string value)
 void
 LinuxSocketFdFactory::InitializeStack (void)
 {
-  void *handle = m_loader->Load (m_library, RTLD_LOCAL);
+  std::string filePath = SearchExecFile ( "DCE_PATH", m_library, 0 );
+  void *handle = m_loader->Load (filePath, RTLD_LOCAL);
   void *symbol = m_loader->Lookup (handle, "sim_init");
   SimInit init = (SimInit) symbol;
   if (init == 0)
