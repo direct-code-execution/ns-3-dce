@@ -1,6 +1,12 @@
 #!/bin/bash
 # this script checkout NS3 and DCE sources, and build them.
 USE_KERNEL=NO
+if [ `which patch 2>/dev/null` ]; then
+  echo "patch exists."
+else
+  echo "Please, install patch command line tool."
+  exit 1
+fi
 cd `dirname $BASH_SOURCE`/../..
 SAVE_PATH=$PATH
 SAVE_LDLP=$LD_LIBRARY_PATH
