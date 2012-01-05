@@ -237,7 +237,7 @@ int
     {
       std::string line = "Executable '";
       line += current->process->originalArgv[0];
-      line += "' not found !";
+      line += "' not found !  Please check your DCE_PATH and DCE_ROOT environment variables.";
       AppendStatusFile (current->process->pid, current->process->nodeId, line);
       NS_ASSERT_MSG ( exeFullPath.length() > 0, line.c_str ());
       dce_exit (-1);

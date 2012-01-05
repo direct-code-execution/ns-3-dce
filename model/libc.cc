@@ -17,16 +17,28 @@ extern "C" {
 #define NATIVE_WITH_ALIAS DCE_WITH_ALIAS
 #define NATIVE_WITH_ALIAS2 DCE_WITH_ALIAS2
 
-#define GCC_BUILTIN_APPLY(export_symbol, func_to_call)					\
-	void export_symbol (...) {											\
-		void *args =  __builtin_apply_args();							\
+#define GCC_BUILTIN_APPLY(export_symbol, func_to_call) \
+  void export_symbol (...) {\
+  void *args =  __builtin_apply_args();\
 		void *result = __builtin_apply( g_libc.func_to_call ## _fn, args, 256 ); \
-		__builtin_return (result);										\
-	}
+		__builtin_return (result);\
+  }
+
+#define GCC_BUILTIN_APPLYT(rtype, export_symbol, func_to_call) \
+  rtype export_symbol (...) {\
+  void *args =  __builtin_apply_args();\
+                void *result = __builtin_apply( (void(*)(...)) g_libc.func_to_call ## _fn, args, 256 ); \
+                __builtin_return (result);\
+  }
+
 
 #define DCE(name)								\
 	GCC_BUILTIN_APPLY(name,name)
-	
+
+#define DCET(rtype,name)                                                               \
+        GCC_BUILTIN_APPLYT(rtype,name,name)
+
+
 #define DCE_WITH_ALIAS(name)					\
 	GCC_BUILTIN_APPLY(__ ## name,name)			\
 	weak_alias(__ ## name, name);
@@ -42,7 +54,7 @@ extern "C" {
 // and getc functions anyway.
 #undef putc
 #undef getc
-	
+
 #include "libc-ns3.h" // do the work
 
 // weak_alias (strtol, __strtol_internal);

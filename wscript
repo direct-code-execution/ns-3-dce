@@ -172,9 +172,10 @@ def build_dce_examples(module):
                     ['unix-client', []],
                     ['udp-echo-server', []],
                     ['udp-echo-client', []],
+#                    ['little-cout', []],
                     ]
     for name,lib in dce_examples:
-        module.add_example(**dce_kw(target = 'bin/' + name, 
+        module.add_example(**dce_kw(target = 'bin_dce/' + name, 
                                     source = ['example/' + name + '.cc'],
                                     lib = lib))
 
@@ -233,7 +234,14 @@ def build_dce_examples(module):
     module.add_example(needed = ['core', 'internet', 'dce' ], 
                        target='bin/dce-bash-simple',
                        source=['example/bash/dce-bash-simple.cc'])
-                                                
+                       
+#    module.add_example(needed = ['core', 'internet', 'dce', 'csma' ], 
+#                       target='bin/dce-udp-multicast',
+#                       source=['example/dce-udp-multicast.cc'])
+#    module.add_example(needed = ['core', 'dce', ], 
+#                       target='bin/dce-cout-bug',
+#                       source=['example/dce-cout-bug.cc'])
+                                                                
 def build_dce_kernel_examples(module):
     module.add_example(needed = ['core', 'network', 'dce'], 
                        target='bin/dce-linux-simple',

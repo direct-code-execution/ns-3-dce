@@ -487,6 +487,14 @@ void
 LinuxSocketFdFactory::InitializeStack (void)
 {
   std::string filePath = SearchExecFile ( "DCE_PATH", m_library, 0 );
+  if (filePath.length() <= 0)
+    {
+      std::string line = "Stack file '";
+      line += m_library;
+      line += "' not found ! Please check your DCE_PATH environment variable.";
+      NS_ASSERT_MSG ( filePath.length() > 0, line.c_str ());
+      return ;
+    }
   void *handle = m_loader->Load (filePath, RTLD_LOCAL);
   void *symbol = m_loader->Lookup (handle, "sim_init");
   SimInit init = (SimInit) symbol;

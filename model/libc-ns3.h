@@ -58,7 +58,7 @@ DCE    (atexit)
 DCE    (__cxa_finalize)
 DCE    (__cxa_atexit)
 // Not sure where it is defined and implemented
-//NATIVE (__gxx_personality_v0)
+NATIVE (__gxx_personality_v0)
 
 DCE    (setlocale)
 NATIVE (strcoll)
@@ -280,10 +280,10 @@ NATIVE (sigaddset)
 NATIVE (sigdelset)
 NATIVE (sigismember)
 DCE_WITH_ALIAS2(strtol, __strtol_internal)
-DCE    (strtoll)
+DCET    (long long int, strtoll)
 DCE    (strtoul)
 DCE    (strtoull)
-DCE    (strtod)
+DCET   (double, strtod)
 DCE    (getcwd)
 DCE    (getwd)
 DCE    (get_current_dir_name)
@@ -495,6 +495,7 @@ DCE (unlinkat)
 NATIVE (getdtablesize)
 
 #undef DCE
+#undef DCET
 #undef NATIVE
 #undef NATIVE_WITH_ALIAS
 #undef NATIVE_WITH_ALIAS2

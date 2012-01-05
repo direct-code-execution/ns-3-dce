@@ -90,6 +90,12 @@
 
 extern void __cxa_finalize (void *d);
 extern int __cxa_atexit (void (*func) (void *), void *arg, void *d);
+
+extern int (*__gxx_personality_v0) (int a, int b,
+                                    unsigned c,
+                                    struct _Unwind_Exception *d,
+                                    struct _Unwind_Context *e);
+
 // extern int __gxx_personality_v0 (int a, int b,
 // 								 unsigned c, struct _Unwind_Exception *d, struct _Unwind_Context *e);
 // extern int __xpg_strerror_r (int __errnum, char *__buf, size_t __buflen);
@@ -130,16 +136,16 @@ void libc_dce (struct Libc **libc)
 {
   *libc = new Libc;
 
-#define DCE(name)												\
-  (*libc)->name ## _fn = (func_t)(__typeof(&name))dce_ ## name;
+#define DCE(name) (*libc)->name ## _fn = (func_t)(__typeof(&name))dce_ ## name;
+#define DCET(rtype,name) DCE(name)
 
 #define NATIVE(name)							\
   (*libc)->name ## _fn = (func_t)name;
 
 #define NATIVE_EXPLICIT(name, type)				\
   (*libc)->name ## _fn = (func_t)((type)name);
+
 #include "libc-ns3.h"
 }
-
 } // extern "C"
 
