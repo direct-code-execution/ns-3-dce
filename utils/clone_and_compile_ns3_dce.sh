@@ -21,7 +21,7 @@ then
  	hg clone http://code.nsnam.org/furbani/ns-3-linux
 fi	
 echo clone ns-3-dev
-hg clone http://code.nsnam.org/ns-3-dev -r 027aae146ae2
+hg clone http://code.nsnam.org/ns-3-dev -r ab2af491785a
 mkdir build
 cd ns-3-dev
 patch -p1 <../ns-3-dce/utils/packet-socket-upgrade-exp.patch
