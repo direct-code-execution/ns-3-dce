@@ -46,6 +46,8 @@ def configure(conf):
     libc = search_file ([
             '/lib64/libc.so.6',
             '/lib/libc.so.6',
+            '/lib/x86_64-linux-gnu/libc.so.6',
+            '/lib/i386-linux-gnu/libc.so.6',
             ])
     if libc is None:
         conf.fatal('not found')
@@ -57,6 +59,8 @@ def configure(conf):
     libpthread = search_file ([
             '/lib64/libpthread.so.0',
             '/lib/libpthread.so.0',
+            '/lib/x86_64-linux-gnu/libpthread.so.0',
+            '/lib/i386-linux-gnu/libpthread.so.0',
             ])
     if libpthread is None:
         conf.fatal('not found')
