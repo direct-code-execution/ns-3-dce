@@ -27,16 +27,41 @@
 #                      =================
 #                       CSMA LAN 10.0.0
 # 
-. run-ccnx-common.sh
-EXE=dce-tap-udp-echo
-if [ "" == "$GDB" ]
+cd `dirname $BASH_SOURCE`/../../
+BASEDCE=$PWD
+cd example/ccnx
+if [ -x $BASEDCE/build/bin/dce-tap-udp-echo ]
 then
-    $NS3_BIN/$EXE 2>&1 | tee -a output.txt & 
+   NS3SCRIPT=$BASEDCE/build/bin/dce-tap-udp-echo 
 else
-    $GDB $NS3_BIN/$EXE 
+	echo dce-tap-udp-echo not found !
+	exit 1
 fi
+if [ -x $BASEDCE/build/bin_dce/udp-echo-client ]
+then
+	THECLIENT=$BASEDCE/build/bin_dce/udp-echo-client
+else
+	echo udp-echo-client not found
+	exit 2
+fi
+echo Running DCE/NS-3 Script : dce-tap-udp-echo
+$NS3SCRIPT &
+echo sleep one second
 sleep 1
-$NS3_BIN/udp-echo-client 10.0.0.2 "Hello NS3" >client_out.txt
-sleep 1
-emacs client_out.txt output.txt  files-*/var/log/*/* &
-
+echo
+echo About to run udp client 
+echo
+$THECLIENT 10.0.0.2 "Hello NS3"
+echo
+echo Client exit code : $?
+echo 
+if [ -f files-1/var/log/39770/stdout ]
+then
+	echo NS-3 stdout of udp-echo-server '>>>'
+	cat files-1/var/log/39770/stdout 
+	echo '<<<'
+	exit 0
+else
+	echo NS-3 stdout of udp-echo-server not found should be in file 'files-1/var/log/39770/stdout'
+	exit 3
+fi 

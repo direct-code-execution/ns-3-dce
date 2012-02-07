@@ -41,6 +41,17 @@ using namespace ns3;
 //
 NS_LOG_COMPONENT_DEFINE ("CcndInLine");
 
+void
+CreateReadme ()
+{
+  std::ofstream osf("/tmp/README", std::fstream::trunc);
+
+  osf << "The wanted data is here :)" ;
+
+  osf.close ();
+}
+
+
 int main (int argc, char *argv[])
 {
   //
@@ -48,7 +59,7 @@ int main (int argc, char *argv[])
   //
   uint32_t nNodes = 8;
   bool useTcp = 0;
-  std::string animFile = "NetAnim.tr";
+  std::string animFile = "NetAnimLinear.xml";
   bool useKernel = 0;
 
   CommandLine cmd;
@@ -61,12 +72,13 @@ int main (int argc, char *argv[])
 
   NodeContainer nodes;
   nodes.Create (nNodes);
+  CreateReadme ();
 
   PointToPointHelper pointToPoint;
   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("1000Mbps"));
   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
   pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
-  pointToPoint.SetChannelAttribute ("Delay", StringValue ("20ms"));
+
 
   Ipv4AddressHelper address;
   address.SetBase ("10.0.0.0", "255.255.255.0");
@@ -130,16 +142,14 @@ int main (int argc, char *argv[])
     }
   dceManager.Install (nodes);
 
-
-
-  DceApplicationHelper dce;
+  CcnClientHelper dce;
   ApplicationContainer apps;
 
   // Install ccnd on each node
   // And place in a spiral
   float angle = 20;
   float deltaR = 1.3;
-  float startR = 10;
+  float startR = 1280;
   float currentAngle = 360;
   float maxX = 0;
   float maxY = 0;
@@ -198,6 +208,15 @@ int main (int argc, char *argv[])
 
       apps = dce.Install (nodes.Get (n));
       apps.Start (Seconds (0.2));
+
+      // Stop ccnd before end of simu.
+      dce.ResetArguments();
+      dce.ResetEnvironment();
+      dce.SetBinary ("ccndsmoketest");
+      dce.SetStdinFile ("");
+      dce.AddArgument ("kill");
+      apps = dce.Install (nodes.Get (n));
+      apps.Start (Seconds (3599));
     }
 
   for (int n=0; n < nNodes ; n++)
@@ -207,7 +226,7 @@ int main (int argc, char *argv[])
           dce.SetBinary ("ccndc");
           dce.ResetArguments();
           dce.ResetEnvironment();
-          dce.AddEnvironment("HOME", "/home/furbani");
+          dce.AddEnvironment("HOME", "/root");
           dce.AddArgument ("-v");
           dce.AddArgument ("add");
           dce.AddArgument ("/NODE0");
@@ -222,13 +241,14 @@ int main (int argc, char *argv[])
   // Publish a file using NODE number 0 : ccnput /NODE0/LeReadme </tmp/README
   dce.ResetArguments();
   dce.ResetEnvironment();
-  dce.AddEnvironment("HOME", "/home/furbani");
+  dce.AddEnvironment("HOME", "/root");
   dce.SetBinary ("ccnput");
   dce.SetStdinFile ("/tmp/README");
+  dce.AddFile ("/tmp/README","/tmp/README");
   dce.AddArgument ("-x" );
   dce.AddArgument ("3540" );
   dce.AddArgument ("/NODE0/LeReadme");
-  dce.AddEnvironment("HOME", "/home/furbani");
+  dce.AddEnvironment("HOME", "/root");
 
   apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds ( (( 20.0 + nNodes ) / 100 ) + 0.5 ) ) ;
@@ -239,7 +259,7 @@ int main (int argc, char *argv[])
   // ccnget -c -a /NODE0/LeReadme
   dce.ResetArguments();
   dce.ResetEnvironment();
-  dce.AddEnvironment("HOME", "/home/furbani");
+  dce.AddEnvironment("HOME", "/root");
   dce.AddEnvironment("CCN_LINGER", "3540"); // 1 little hour or less
   dce.SetBinary ("ccnget"); // First get can take 105s when ccnd daemons are linked with tcp, with 500 nodes.
   dce.SetStdinFile ("");
@@ -253,7 +273,7 @@ int main (int argc, char *argv[])
   // The second get is very fast but not furious :) because of cache usage the data is already in the local node !
   dce.ResetArguments();
   dce.ResetEnvironment();
-  dce.AddEnvironment("HOME", "/home/furbani");
+  dce.AddEnvironment("HOME", "/root");
   dce.AddEnvironment("CCN_LINGER", "1");
   dce.SetBinary ("ccnget");
   dce.SetStdinFile ("");
@@ -265,7 +285,7 @@ int main (int argc, char *argv[])
   apps.Start (Seconds (3500.0));
 
   // Create the animation object and configure for specified output
-  AnimationInterface anim (animFile, false);
+  AnimationInterface anim (animFile);
 
   anim.StartAnimation ();
 

@@ -28,6 +28,24 @@
 
 using namespace ns3;
 
+void
+CreateFiles ()
+{
+  std::ofstream osf("/tmp/README", std::fstream::trunc);
+
+  osf << "The wanted data is here :)" ;
+  osf.close ();
+
+  std::ofstream osf2("/tmp/100", std::fstream::trunc);
+
+  for (int i=1; i <= 100; i++)
+    {
+      osf2 << i << std::endl;
+    }
+  osf2.close ();
+}
+
+
 int main (int argc, char *argv[])
 {
   int i = 0;
@@ -47,13 +65,15 @@ int main (int argc, char *argv[])
   NodeContainer nodes;
   nodes.Create (1);
 
+  CreateFiles ();
+
   InternetStackHelper stack;
   stack.Install (nodes);
 
   DceManagerHelper dceManager;
   dceManager.Install (nodes);
 
-  DceApplicationHelper dce;
+  CcnClientHelper dce;
   ApplicationContainer apps, putter, getter;
 
   dce.SetStackSize (1<<20);
@@ -83,8 +103,9 @@ int main (int argc, char *argv[])
   dce.ResetEnvironment();
   dce.SetBinary ("ccnsendchunks");
   dce.SetStdinFile ("/tmp/100");
+  dce.AddFile ("/tmp/100","/tmp/100");
   dce.AddArgument ("ccnx:/test_short_stuff/42");
-  dce.AddEnvironment("HOME", "/home/furbani");
+  dce.AddEnvironment("HOME", "/root");
 
   putter = dce.Install (nodes.Get (0));
   putter.Start (Seconds (1.1));
@@ -95,7 +116,7 @@ int main (int argc, char *argv[])
   dce.SetBinary ("ccncatchunks");
   dce.SetStdinFile ("");
   dce.AddArgument ("ccnx:/test_short_stuff/42");
-  dce.AddEnvironment("HOME", "/home/furbani");
+  dce.AddEnvironment("HOME", "/root");
 
   getter = dce.Install (nodes.Get (0));
   getter.Start (Seconds (1.2));
@@ -105,7 +126,7 @@ int main (int argc, char *argv[])
   dce.ResetEnvironment();
   dce.SetBinary ("ccndumpnames");
   dce.SetStdinFile ("");
-  dce.AddEnvironment("HOME", "/home/furbani");
+  dce.AddEnvironment("HOME", "/root");
 
   getter = dce.Install (nodes.Get (0));
   getter.Start (Seconds (1.3));
@@ -115,7 +136,7 @@ int main (int argc, char *argv[])
   dce.ResetEnvironment();
   dce.SetBinary ("ccnls");
   dce.SetStdinFile ("");
-  dce.AddEnvironment("HOME", "/home/furbani");
+  dce.AddEnvironment("HOME", "/root");
   dce.AddArgument ("/test_short_stuff/");
 
   getter = dce.Install (nodes.Get (0));
@@ -126,7 +147,7 @@ int main (int argc, char *argv[])
   dce.ResetEnvironment();
   dce.SetBinary ("ccnrm");
   dce.SetStdinFile ("");
-  dce.AddEnvironment("HOME", "/home/furbani");
+  dce.AddEnvironment("HOME", "/root");
   dce.AddArgument ("/test_short_stuff/");
 
   getter = dce.Install (nodes.Get (0));
@@ -137,7 +158,8 @@ int main (int argc, char *argv[])
   dce.ResetEnvironment();
   dce.SetBinary ("ccnseqwriter");
   dce.SetStdinFile ("/tmp/README");
-  dce.AddEnvironment("HOME", "/home/furbani");
+  dce.AddFile ("/tmp/README", "/tmp/README");
+  dce.AddEnvironment("HOME", "/root");
   dce.AddArgument ("/test-seq-writer/");
 
   getter = dce.Install (nodes.Get (0));
@@ -148,7 +170,7 @@ int main (int argc, char *argv[])
   dce.ResetEnvironment();
   dce.SetBinary ("ccncat");
   dce.SetStdinFile ("");
-  dce.AddEnvironment("HOME", "/home/furbani");
+  dce.AddEnvironment("HOME", "/root");
   dce.AddArgument ("/test-seq-writer/");
 
   getter = dce.Install (nodes.Get (0));
@@ -159,11 +181,21 @@ int main (int argc, char *argv[])
   dce.ResetEnvironment();
   dce.SetBinary ("ccnslurp");
   dce.SetStdinFile ("");
-  dce.AddEnvironment("HOME", "/home/furbani");
+  dce.AddEnvironment("HOME", "/root");
   dce.AddArgument ("/");
 
   getter = dce.Install (nodes.Get (0));
   getter.Start (Seconds (1.65));
+
+  // Stop ccnd before simu end.
+  dce.ResetArguments();
+  dce.ResetEnvironment();
+  dce.SetBinary ("ccndsmoketest");
+  dce.SetStdinFile ("");
+  dce.AddArgument ("kill");
+  apps = dce.Install (nodes.Get (0));
+  apps.Start (Seconds (19.9));
+
 
   Simulator::Stop (Seconds(20.0));
   Simulator::Run ();

@@ -73,47 +73,122 @@
 ##
 ##
 ##############################################################################
-. run-ccnx-common.sh
 ## File to watch with VLC
 VIDEOFILE=big_buck_bunny_240p_mpeg4.ts
 # TRANSPORT : Use tcp or udp
-TRANSPORT=udp
-echo init keystores
-for i in 1
+TRANSPORT=tcp
+cd `dirname $BASH_SOURCE`/../../
+BASEDCE=$PWD
+cd example/ccnx
+PATH=$PATH:$DCE_PATH
+for i in ccndstop  ping sleep ccndstart ccndc  ccnput ccnget
 do
-    install_ccnd_keystore $i
-    install_user_keystore $i
-    mkdir -p files-$i/tmp
+which $i >/dev/null
+if [ 1 == $? ]
+then
+	echo $i not found !
+	echo perhaps you forget to set DCE environment variables via setenv.sh ?
+	exit 1
+fi
 done
-
-echo launching read ccnd and clients ...
-$CCNX_PATH/bin/ccndstop
+if [ ! -f $VIDEOFILE ]
+then
+	echo Video file not found : $VIDEOFILE ?
+	exit 2
+fi
+if [ -x $BASEDCE/build/bin/dce-tap-vlc ]
+then
+    NS3SCRIPT=$BASEDCE/build/bin/dce-tap-vlc
+else
+	echo dce-tap-vlc not found !
+	exit 1
+fi
+echo Stop ccnd daemon
+echo
+ccndstop
+echo
 EXE=dce-tap-vlc
 if [ "" == "$GDB" ]
 then
     echo Start NS3 first to create TAP device and 10.0.0.1 the corresponding network address
-    $NS3_BIN/$EXE --transport=$TRANSPORT 2>&1 | tee -a output.txt &
+    echo
+    $NS3SCRIPT --transport=$TRANSPORT 2>&1 | tee -a output.txt &
+    echo
+    echo Sleep 1s.
+    echo
     sleep 1
-    CCND_DEBUG=-1 CCND_LOG=ccnd_log.txt $CCNX_PATH/bin/ccndstart
+    echo
+    echo Start real ccnd daemon
+    echo
+    CCND_DEBUG=-1 CCND_LOG=ccnd_log.txt ccndstart
+    echo
+    echo Sleep 1s.
+    echo
     sleep 1
-	CCN_LOCAL_PORT=3000 CCND_DEBUG=-1 CCND_LOG=ccnd_log_3.txt $CCNX_PATH/bin/ccndstart
-    sleep 1  
-    CCN_LOCAL_PORT=3000 $CCNX_PATH/bin/ccn_repo REPOSITORY_CCN
+    echo
+    echo Start real ccnd daemon using port 3000
+    echo
+	CCN_LOCAL_PORT=3000 CCND_DEBUG=-1 CCND_LOG=ccnd_log_3.txt ccndstart
+	echo
+    echo Sleep 1s.
+    echo
+    sleep 1 
+    echo 
+    echo Start ccn repo
+    echo
+    CCN_LOCAL_PORT=3000 ccn_repo REPOSITORY_CCN
+    echo
+    echo Sleep 1s.
+    echo    
     sleep 1
-    $CCNX_PATH/bin/ccndc add / $TRANSPORT 10.0.0.2 2000
+    echo
+    echo Forward route: ccndc add / $TRANSPORT 10.0.0.2 2000
+    echo
+    ccndc add / $TRANSPORT 10.0.0.2 2000
+    echo
+    echo Sleep 1s.
+    echo        
     sleep 1
-    CCN_LOCAL_PORT=3000 $CCNX_PATH/bin/ccnputfile ccnx:///VIDEO/bunny.ts $VIDEOFILE
-    sleep 1
+    echo
+    echo use ccnpufile to publish video
+    echo
+    CCN_LOCAL_PORT=3000 ccnputfile ccnx:///VIDEO/bunny.ts $VIDEOFILE
+    echo
+    echo Sleep 6s.
+    echo        
+    sleep 6
+    echo
+    echo launch VLC...
+    echo
     vlc ccnx:///VIDEO/bunny.ts >vlc_output.txt 2>&1 &
+    echo
+    echo Sleep 10m.
+    echo        
     sleep 600 
+    echo
 else
     $GDB $NS3_BIN/$EXE
 fi
-$CCNX_PATH/bin/ccndstop
+echo stop ccnd
+echo
+ccndstop
+echo Sleep 1s.
+echo        
 sleep 1
-CCN_LOCAL_PORT=3000 $CCNX_PATH/bin/ccn_repo stopall
+echo
+echo stop repo
+echo
+CCN_LOCAL_PORT=3000 ccn_repo stopall
+echo        
+echo Sleep 1s.
+echo
 sleep 1
-CCN_LOCAL_PORT=3000 $CCNX_PATH/bin/ccndstop
+echo stop ccnd 3000
+echo
+CCN_LOCAL_PORT=3000 ccndstop
+echo Sleep 1s.
+echo
 sleep 1
-emacs output.txt  files-*/var/log/*/* &
+echo
+
 

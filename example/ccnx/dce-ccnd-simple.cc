@@ -5,6 +5,16 @@
 
 using namespace ns3;
 
+void
+CreateReadme ()
+{
+  std::ofstream osf("/tmp/README", std::fstream::trunc);
+
+  osf << "The wanted data is here :)" ;
+
+  osf.close ();
+}
+
 int main (int argc, char *argv[])
 {
   CommandLine cmd;
@@ -19,7 +29,7 @@ int main (int argc, char *argv[])
   DceManagerHelper dceManager;
   dceManager.Install (nodes);
 
-  DceApplicationHelper dce;
+  CcnClientHelper dce; 
   ApplicationContainer apps, putter, getter;
 
   dce.SetStackSize (1<<20);
@@ -41,18 +51,20 @@ int main (int argc, char *argv[])
   dce.AddEnvironment("CCND_KEYSTORE_DIRECTORY", "");
 
   apps = dce.Install (nodes.Get (0));
-  apps.Start (Seconds (4.0));
+  apps.Start (Seconds (0.0));
 
   dce.ResetArguments();
 //  dce.ResetEnvironment();
   dce.SetBinary ("ccnput");
   dce.SetStdinFile ("/tmp/README");
+  dce.AddFile ("/tmp/README", "/tmp/README");
   dce.AddArgument ("ccnx:/LeReadme");
-  dce.AddEnvironment("HOME", "/home/furbani");
+  dce.AddEnvironment("HOME", "/root");
 
   putter = dce.Install (nodes.Get (0));
-  putter.Start (Seconds (5.0));
-
+  putter.Start (Seconds (1.0));
+  
+  CreateReadme ();
   dce.ResetArguments();
 //  dce.ResetEnvironment();
   dce.SetBinary ("ccnget");
@@ -61,8 +73,16 @@ int main (int argc, char *argv[])
   dce.AddArgument ("ccnx:/LeReadme");
 
   getter = dce.Install (nodes.Get (0));
-  getter.Start (Seconds (6.0));
+  getter.Start (Seconds (2.0));
 
+  // Stop ccnd
+  dce.ResetArguments();
+  dce.ResetEnvironment();
+  dce.SetBinary ("ccndsmoketest");
+  dce.SetStdinFile ("");
+  dce.AddArgument ("kill");
+  apps = dce.Install (nodes.Get (0));
+  apps.Start (Seconds (59.0));
 
   Simulator::Stop (Seconds(60.0));
   Simulator::Run ();

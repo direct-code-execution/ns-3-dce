@@ -8,3 +8,6 @@
 ^files-
 ^.waf-
 ^.lock-
+^ccnx-0.4.2
+^doc/build
+^NetAnim

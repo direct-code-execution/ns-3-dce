@@ -150,7 +150,7 @@ main( int argc, char *argv[] )
   tapBridge.SetAttribute ("DeviceName", StringValue (tapName));
   tapBridge.Install (nodes.Get (0), devices.Get (0));
 
-  DceApplicationHelper dce;
+  CcnClientHelper dce;
   ApplicationContainer apps;
 
   dce.SetStackSize (1<<20);
@@ -174,14 +174,14 @@ main( int argc, char *argv[] )
   dce.AddEnvironment("CCND_LISTEN_ON", "10.0.0.2");
 
   apps = dce.Install (nodes.Get (1));
-  apps.Start (Seconds (1.0));
+  apps.Start (Seconds (0.0));
 
   // Forward interrest to real world !
   dce.SetBinary ("ccndc");
   dce.ResetArguments();
   dce.ResetEnvironment();
   dce.AddEnvironment("CCND_DEBUG", "-1"); // FULL TRACES
-  dce.AddEnvironment("HOME", "/home/furbani");
+  dce.AddEnvironment("HOME", "/root");
   dce.AddEnvironment("CCN_LOCAL_PORT", "2000");
   dce.AddArgument ("-v");
   dce.AddArgument ("add");
@@ -191,7 +191,7 @@ main( int argc, char *argv[] )
   dce.AddArgument ("3000");
 
   apps = dce.Install (nodes.Get (1));
-  apps.Start (Seconds (3));
+  apps.Start (Seconds (10));
 
   Simulator::Stop (Seconds (600.0));
   Simulator::Run ();

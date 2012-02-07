@@ -140,7 +140,7 @@ def _check_win32(conf):
 def _check_dependencies(conf, required, mandatory):
     found = []
     for module in required:
-        retval = conf.check_cfg(package = 'libns3-%s' % module.lower(),
+        retval = conf.check_cfg(package = 'libns3-dev-%s-debug' % module.lower(),
                                 args='--cflags --libs', mandatory=mandatory,
                                 msg="Checking for ns3-%s" % module.lower(),
                                 uselib_store='NS3_%s' % module.upper())
@@ -394,7 +394,7 @@ def _build_pkgconfig(bld, name, use):
     def run(task):
         _generate_pcfile(bld, name, use, bld.env['PREFIX'], task.outputs[0].abspath())
         return 0
-    target = os.path.join('lib', 'pkgconfig', 'libns3-%s.pc' % name)
+    target = os.path.join('lib', 'pkgconfig', 'libns3-dev-%s-debug.pc' % name)
     bld(rule=run, target=target, always=True)
     bld.install_files(os.path.join('${PREFIX}', 'lib', 'pkgconfig'), [target])
 

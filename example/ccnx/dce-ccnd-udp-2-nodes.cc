@@ -11,6 +11,25 @@
 using namespace ns3;
 
 
+void
+CreateFiles ()
+{
+  std::ofstream osf("/tmp/README", std::fstream::trunc);
+  osf << "The wanted data is here :)" ;
+  osf.close ();
+
+  std::ofstream osf2("/tmp/getSlash.txt", std::fstream::trunc);
+  osf2 << "GET / ";
+  osf2.close (); 
+
+  std::ofstream osf3("/tmp/ccnd1.conf", std::fstream::trunc);
+  osf3 << "add ccnx:/ udp 10.1.1.1 9695" << std::endl;
+  osf3.close (); 
+
+  std::ofstream osf4("/tmp/ccnd0.conf", std::fstream::trunc);
+  osf4 << "add ccnx:/ udp 10.1.1.2 9695" << std::endl;
+  osf4.close (); 
+}
 
 
 // ===========================================================================
@@ -34,7 +53,7 @@ using namespace ns3;
 // ===========================================================================
 int main (int argc, char *argv[])
 {
-  std::string animFile = "NetAnim.tr";
+  std::string animFile = "NetAnim.xml";
   bool useKernel = 0;
   CommandLine cmd;
   cmd.AddValue ("kernel", "Use kernel linux IP stack.", useKernel);
@@ -43,10 +62,12 @@ int main (int argc, char *argv[])
   NodeContainer nodes;
   nodes.Create (2);
 
+  CreateFiles ();
+
   PointToPointHelper pointToPoint;
   //pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("1000Mbps"));
-  pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
-  pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
+  pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("1Mbps"));
+  pointToPoint.SetChannelAttribute ("Delay", StringValue ("1ms"));
 
   NetDeviceContainer devices;
   devices = pointToPoint.Install (nodes);
@@ -82,7 +103,7 @@ int main (int argc, char *argv[])
   //  Names::Add ("NODE_Zero", nodes.Get (0));
   Names::Add ("NODE_One", nodes.Get (1));
 
-  DceApplicationHelper dce;
+  CcnClientHelper dce;
   ApplicationContainer apps, putter, getter;
 
   dce.SetStackSize (1<<20);
@@ -111,9 +132,10 @@ int main (int argc, char *argv[])
   dce.SetBinary ("ccndc");
   dce.ResetArguments();
   dce.ResetEnvironment();
-  dce.AddEnvironment("HOME", "/home/furbani");  // USE TO FIND keystore under $HOME/.ccnx/.ccnx_keystore
+  dce.AddEnvironment("HOME", "/root");  // USE TO FIND keystore under $HOME/.ccnx/.ccnx_keystore
   dce.AddArgument ("-f");
   dce.AddArgument ("/tmp/ccnd0.conf");
+  dce.AddFile ("/tmp/ccnd0.conf","/tmp/ccnd0.conf");
 
   apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds (2.0));
@@ -142,9 +164,10 @@ int main (int argc, char *argv[])
   dce.SetBinary ("ccndc");
   dce.ResetArguments();
   dce.ResetEnvironment();
-  dce.AddEnvironment("HOME", "/home/furbani");
+  dce.AddEnvironment("HOME", "/root");
   dce.AddArgument ("-f");
   dce.AddArgument ("/tmp/ccnd1.conf");
+  dce.AddFile ("/tmp/ccnd1.conf","/tmp/ccnd1.conf");
 
   apps = dce.Install (nodes.Get (1));
   apps.Start (Seconds (2.0));
@@ -154,8 +177,9 @@ int main (int argc, char *argv[])
   dce.ResetEnvironment();
   dce.SetBinary ("ccnput");
   dce.SetStdinFile ("/tmp/README");
+  dce.AddFile ("/tmp/README", "/tmp/README");
   dce.AddArgument ("ccnx:/LeReadme");
-  dce.AddEnvironment("HOME", "/home/furbani");
+  dce.AddEnvironment("HOME", "/root");
 
   putter = dce.Install (nodes.Get (0));
   putter.Start (Seconds (3.0));
@@ -167,7 +191,7 @@ int main (int argc, char *argv[])
   dce.SetStdinFile ("");
   dce.AddArgument ("-c");
   dce.AddArgument ("ccnx:/LeReadme");
-  dce.AddEnvironment("HOME", "/home/furbani");
+  dce.AddEnvironment("HOME", "/root");
 
   getter = dce.Install (nodes.Get (1));
   getter.Start (Seconds (4.0));
@@ -184,6 +208,7 @@ int main (int argc, char *argv[])
   dce.AddArgument ("1000");
   dce.AddArgument ("recv");
   dce.AddArgument ("recv");
+  dce.AddFile ("/tmp/getSlash.txt","/tmp/getSlash.txt");
 
   apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds (5.0));
@@ -198,6 +223,7 @@ int main (int argc, char *argv[])
   dce.AddArgument ("/tmp/getSlash.txt");
   dce.AddArgument ("recv");
   dce.AddArgument ("recv");
+  dce.AddFile ("/tmp/getSlash.txt","/tmp/getSlash.txt");
 
   apps = dce.Install (nodes.Get (1));
   apps.Start (Seconds (6.0));
@@ -224,7 +250,7 @@ int main (int argc, char *argv[])
   setPos (nodes.Get (1), 50,10, 0);
 
   // Create the animation object and configure for specified output
-  AnimationInterface anim (animFile, false);
+  AnimationInterface anim (animFile);
 
   anim.StartAnimation ();
 

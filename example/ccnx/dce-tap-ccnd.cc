@@ -82,6 +82,17 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("TapCCND");
 
+void
+CreateReadme ()
+{
+  std::ofstream osf("/tmp/README", std::fstream::trunc);
+
+  osf << "The wanted data is here :)" ;
+
+  osf.close ();
+}
+
+
 int 
 main( int argc, char *argv[] )
 {
@@ -120,7 +131,9 @@ main( int argc, char *argv[] )
   tapBridge.SetAttribute ("DeviceName", StringValue (tapName));
   tapBridge.Install (nodes.Get (0), devices.Get (0));
 
-  DceApplicationHelper dce;
+  CreateReadme ();
+
+  CcnClientHelper dce;
   ApplicationContainer apps;
 
   dce.SetStackSize (1<<20);
@@ -146,15 +159,25 @@ main( int argc, char *argv[] )
   apps = dce.Install (nodes.Get (1));
   apps.Start (Seconds (1.0));
 
+  // Stop ccnd before simu end.
+  dce.ResetArguments();
+  dce.ResetEnvironment();
+  dce.SetBinary ("ccndsmoketest");
+  dce.SetStdinFile ("");
+  dce.AddArgument ("kill");
+  apps = dce.Install (nodes.Get (1));
+  apps.Start (Seconds (9.0));
+
   // Publish file
   dce.SetBinary ("ccnput");
   dce.ResetArguments();
   dce.ResetEnvironment();
   dce.AddEnvironment("CCND_DEBUG", "-1"); // FULL TRACES
-  dce.AddEnvironment("HOME", "/home/furbani");
+  dce.AddEnvironment("HOME", "/root");
   dce.AddEnvironment("CCN_LOCAL_PORT", "2000");
   dce.AddArgument ("/NS3WORLD/README");
   dce.SetStdinFile ("/tmp/README");
+  dce.AddFile ("/tmp/README","/tmp/README");
 
   apps = dce.Install (nodes.Get (1));
   apps.Start (Seconds (2));
@@ -164,7 +187,7 @@ main( int argc, char *argv[] )
   dce.ResetArguments();
   dce.ResetEnvironment();
   dce.AddEnvironment("CCND_DEBUG", "-1"); // FULL TRACES
-  dce.AddEnvironment("HOME", "/home/furbani");
+  dce.AddEnvironment("HOME", "/root");
   dce.AddEnvironment("CCN_LOCAL_PORT", "2000");
   dce.AddArgument ("-v");
   dce.AddArgument ("add");
@@ -181,7 +204,7 @@ main( int argc, char *argv[] )
   dce.ResetArguments();
   dce.ResetEnvironment();
   dce.AddEnvironment("CCN_LOCAL_PORT", "2000");
-  dce.AddEnvironment("HOME", "/home/furbani");
+  dce.AddEnvironment("HOME", "/root");
   dce.AddArgument ("-c");
   dce.AddArgument ("/REALWORLD/README");
 

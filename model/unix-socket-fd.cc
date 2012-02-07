@@ -43,6 +43,7 @@
 #include <linux/if_arp.h>
 #include <linux/netlink.h>
 #include <poll.h>
+#include <linux/netlink.h>
 
 NS_LOG_COMPONENT_DEFINE ("UnixSocketFd");
 

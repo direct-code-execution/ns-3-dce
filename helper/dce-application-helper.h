@@ -32,7 +32,7 @@ public:
   void ResetArguments (void);
   void AddEnvironment (std::string name, std::string value);
   void ResetEnvironment (void);
-  ApplicationContainer Install (NodeContainer c);
+  virtual ApplicationContainer Install (NodeContainer c);
   void SetFinishedCallback (Callback<void,uint16_t,int> cb);
 
 private:

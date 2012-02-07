@@ -39,35 +39,76 @@
 #
 #  then the local machine do also a ccnget to retrieve a file from within NS3.
 #
-. run-ccnx-common.sh
-echo init keystores
-for i in 1
+cd `dirname $BASH_SOURCE`/../../
+BASEDCE=$PWD
+cd example/ccnx
+PATH=$PATH:$DCE_PATH
+for i in ccndstop  ping sleep ccndstart ccndc  ccnput ccnget
 do
-    install_ccnd_keystore $i
-    install_user_keystore $i
-    mkdir -p files-$i/tmp
-done
-echo setting test file
-cp README files-1/tmp
-echo launching read ccnd and clients ...
-$CCNX_PATH/bin/ccndstop
-EXE=dce-tap-ccnd
-if [ "" == "$GDB" ]
+which $i >/dev/null
+if [ 1 == $? ]
 then
-    $NS3_BIN/$EXE 2>&1 | tee -a output.txt &
-    sleep 1
-    ping -c 1 10.0.0.2 &
-    CCND_DEBUG=-1 CCND_LOG=ccnd_log.txt $CCNX_PATH/bin/ccndstart
-    sleep 1
-    $CCNX_PATH/bin/ccndc add /NS3WORLD tcp 10.0.0.2 2000
-    sleep 1
-    $CCNX_PATH/bin/ccnput /REALWORLD/README < README &
-    sleep 1
-   	$CCNX_PATH/bin/ccnget -c /NS3WORLD/README >ccnget_result.txt 2>&1
-    sleep 6
-else
-    $GDB $NS3_BIN/$EXE
+	echo $i not found !
+	echo perhaps you forget to set DCE environment variables via setenv.sh ?
+	exit 1
 fi
-$CCNX_PATH/bin/ccndstop
-emacs output.txt  files-*/var/log/*/* &
+done
+if [ -x $BASEDCE/build/bin/dce-tap-ccnd ]
+then
+    NS3SCRIPT=$BASEDCE/build/bin/dce-tap-ccnd 
+else
+	echo dce-tap-ccnd not found !
+	exit 1
+fi
+echo Stopping ccnd daemon
+echo
+ccndstop
+echo
+echo Launch NS-3 script : dce-tap-ccnd
+echo
+$NS3SCRIPT &
+echo
+echo Sleep 1s.
+sleep 1
+echo
+echo ping -c 1 10.0.0.2
+ping -c 1 10.0.0.2 &
+echo
+echo Launch real ccnd daemon 
+echo
+CCND_DEBUG=-1 CCND_LOG=ccnd_log.txt ccndstart
+echo
+echo Sleep 1s.
+sleep 1
+echo
+echo Setting interrest forward route : ccndc add /NS3WORLD tcp 10.0.0.2 2000
+echo
+ccndc add /NS3WORLD tcp 10.0.0.2 2000
+echo
+echo Sleep 1s.
+sleep 1
+echo
+echo 'Publish a file' : ccnput /REALWORLD/README < README &
+echo
+ccnput /REALWORLD/README < README &
+echo
+echo Sleep 1s.
+sleep 1
+echo
+echo 'Getting a file' : ccnget -c /NS3WORLD/README >ccnget_result.txt 2>&1
+echo
+ccnget -c /NS3WORLD/README >ccnget_result.txt 2>&1
+echo
+echo Sleep 6s.
+sleep 6
+echo
+echo Stopping ccnd daemon
+echo
+ccndstop
+echo
+echo done
+echo you may type 
+echo more $PWD'/files-1/var/log/*/*' 
+echo in order to look at NS-3 results files.
+
 

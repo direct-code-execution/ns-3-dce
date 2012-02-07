@@ -10,6 +10,7 @@
 
 int main (int argc, char *argv[])
 {
+  std::cout << "Server: starting" << std::endl;
   int sock;
   sock = socket (PF_INET, SOCK_DGRAM, 0);
   if (sock == -1)
@@ -47,6 +48,8 @@ int main (int argc, char *argv[])
   std::cout << "did read all buffers" << std::endl;
 
   close (sock);
+
+  sleep (10);
 
   return 0;
 }
