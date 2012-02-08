@@ -177,11 +177,12 @@ def build_dce_examples(module):
                     ['unix-client', []],
                     ['udp-echo-server', []],
                     ['udp-echo-client', []],
+#                    ['little-cout', []],
                     ]
     for name,lib in dce_examples:
         module.add_example(**dce_kw(target = 'bin_dce/' + name, 
                                     source = ['example/' + name + '.cc'],
-                                    lib = lib ))
+                                    lib = lib))
 
     module.add_example(needed = ['core', 'internet', 'dce'], 
                        target='bin/dce-tcp-simple',
@@ -238,28 +239,16 @@ def build_dce_examples(module):
     module.add_example(needed = ['core', 'internet', 'dce' ], 
                        target='bin/dce-bash-simple',
                        source=['example/bash/dce-bash-simple.cc'])
-                       
-    module.add_example(needed = ['core', 'internet', 'dce', 'csma' ], 
-                       target='bin/dce-udp-multicast',
-                       source=['example/dce-udp-multicast.cc'])
-
-    module.add_example(needed = ['core', 'dce', ], 
-                       target='bin/dce-cout-bug',
-                       source=['example/dce-cout-bug.cc'])
-          
-    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
-                       target='bin/dce-ccn-damien',
-                       source=['example/ccnx/dce-ccn-damien.cc', 'example/ccnx/misc-tools.cc'])
 
     module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
                        target='bin/dce-ccn-cache',
-                       source=['example/ccnx/dce-ccn-cache.cc', 'example/ccnx/misc-tools.cc'],
-                       linkflags=['-Wl,--no-as-needed'] 
-                       )
-
-    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
-                       target='bin/dce-ccn-cache2',
-                       source=['example/ccnx/dce-ccn-cache2.cc', 'example/ccnx/misc-tools.cc'])
+                       source=['example/ccnx/dce-ccn-cache.cc', 'example/ccnx/misc-tools.cc'])
+#    module.add_example(needed = ['core', 'internet', 'dce', 'csma' ], 
+#                       target='bin/dce-udp-multicast',
+#                       source=['example/dce-udp-multicast.cc'])
+#    module.add_example(needed = ['core', 'dce', ], 
+#                       target='bin/dce-cout-bug',
+#                       source=['example/dce-cout-bug.cc'])
                                                                 
 def build_dce_kernel_examples(module):
     module.add_example(needed = ['core', 'network', 'dce'], 

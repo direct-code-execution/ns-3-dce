@@ -397,13 +397,14 @@ Without any argument this sample create 4 nodes, then you should look at the res
 CCNx examples
 #############
 
-Under example/ccnx there is more realistics examples using the implementation of an experimental protocol named CCN. In this examples we use the `PARC  <http://www.parc.com>`_ implementation named `CCNx <http://www.ccnx.org>`_ (c) in its early version 0.4.0.
+Under example/ccnx there is more realistics examples using the implementation of an experimental protocol named CCN. In this examples we use the `PARC  <http://www.parc.com>`_ implementation named `CCNx <http://www.ccnx.org>`_ (c) in its early version 0.4.2.
   
 CCNx setup
 ==========
 
 In order to run ccnx binaries you must compile them with some required compilator and linker parameters.
-The principe here is to obtain Position Independent Executable. To obtain this type of exe you should use the gcc -fPIC when compiling sources, and the option -pie when linking your exe.
+The principe here is to obtain Position Independent Executable. 
+To obtain this type of exe you should use the gcc -fPIC when compiling sources, and the option -pie when linking your exe.
 For CNNx we notice that (under linux) its configure script sets by default the -fPIC option, you can check it in the generated file named conf.mk under directory ccnx.0.4.0/csrc:
 ::
 
@@ -418,7 +419,35 @@ Then you should start the make like this:
 
   $ make MORE_LDLIBS=-pie
 
-Then you must verify that your ccnx runs well, to do this read the README file, then try to launch a ccnd daemon and retrieve a file using the commands ccnget and ccnput. This verification is MANDATORY to create the key files used by ccnx to sign and verify exchanged data, the key files can not be produced by NS3/DCE so we should copy them in simulation environnement before doing the simulations as explained in the next chapter.
+You should also install the ccn binaries in a directory present in the DCE_PATH environment variable, by default after you execute the DCE *setenv.sh* script your should have a DCE_PATH env. var like this :
+
+::
+
+  $ echo $DCE_PATH
+  /where/is/ns-3-dce/build/bin_dce:/where/is/ns-3-dce/build/bin:/where/is/ns-3-dce/../build/bin
+
+CCNx installation example
++++++++++++++++++++++++++
+
+::
+
+  $ cd /where/is/ns-3-dce/
+  $ wget http://www.ccnx.org/releases/ccnx-0.4.2.tar.gz
+  $ tar zxf ccnx-0.4.2.tar.gz && cd ccnx-0.4.2
+  $ INSTALL_BASE=$PWD/../build ./configure
+  $ make MORE_LDLIBS=-pie && make install
+ 
+CCNx simple test in real world 
+++++++++++++++++++++++++++++++
+
+Before use it within DCE we will do a little test in real world.
+
+::
+ 
+  $ cd /where/is/ns-3-dce/bin
+  $ ls -l ccnd
+  
+
 
 Simulation script setup
 =======================
