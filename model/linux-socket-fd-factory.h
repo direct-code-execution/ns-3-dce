@@ -11,6 +11,7 @@
 #include <utility>
 #include <stdarg.h>
 #include <stdio.h>
+#include "linux/types.h"
 
 extern "C" {
 struct SimExported;
@@ -83,7 +84,7 @@ private:
   static void *Memcpy (struct SimKernel *kernel, void *dst, const void *src, unsigned long size);
   static void *Memset (struct SimKernel *kernel, void *dst, char value, unsigned long size);
   static unsigned long Random (struct SimKernel *kernel);
-  static void *EventScheduleNs (struct SimKernel *kernel, unsigned long ns, void (*fn)(void *context), void *context,
+  static void *EventScheduleNs (struct SimKernel *kernel, __u64 ns, void (*fn)(void *context), void *context,
                                 void (*pre_fn)(void));
   static void EventCancel (struct SimKernel *kernel, void *ev);
   static struct SimTask *TaskStart (struct SimKernel *kernel, void (*callback)(void *), void *context);

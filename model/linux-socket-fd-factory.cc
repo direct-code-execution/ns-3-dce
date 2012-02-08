@@ -173,7 +173,7 @@ LinuxSocketFdFactory::EventTrampoline (void (*fn)(void *context),
   m_loader->NotifyEndExecute ();
 }
 void *
-LinuxSocketFdFactory::EventScheduleNs (struct SimKernel *kernel, unsigned long ns, void (*fn)(void *context), void *context,
+LinuxSocketFdFactory::EventScheduleNs (struct SimKernel *kernel, __u64 ns, void (*fn)(void *context), void *context,
                                        void (*pre_fn)(void))
 {
   LinuxSocketFdFactory *self = (LinuxSocketFdFactory *)kernel;
