@@ -391,8 +391,6 @@ Without any argument this sample create 4 nodes, then you should look at the res
    2010/01/01 00:00:42 ZEBRA: RTM_NEWROUTE ipv4 unicast proto Zebra
    .....
 
-
-
          
 CCNx examples
 #############
@@ -440,46 +438,96 @@ CCNx installation example
 CCNx simple test in real world 
 ++++++++++++++++++++++++++++++
 
-Before use it within DCE we will do a little test in real world.
+Before using it within DCE we will do a little test in real world.  For this we will start the ccnd daemon, publish a file, and request the file, then you end up stopping the ccnd daemon.
 
 ::
  
-  $ cd /where/is/ns-3-dce/bin
+  $ source /where/is/ns-3-dce/utils/setenv.sh
+  $ pwd
+  /where/is/ns-3-dce/  
+  $ cd build/bin
   $ ls -l ccnd
-  
+  -rwxr-xr-x 1 furbani planete 426969 Feb  7 15:54 ccnd
+  $ ./ccndstart
+  1328704870.766811 ccnd[5211]: CCND_DEBUG=1 CCND_CAP=50000
+  1328704870.766964 ccnd[5211]: listening on /tmp/.ccnd.sock
+  1328704870.767043 ccnd[5211]: accepting ipv4 datagrams on fd 4 rcvbuf 126976
+  1328704870.767068 ccnd[5211]: accepting ipv4 connections on fd 5
+  1328704870.767122 ccnd[5211]: accepting ipv6 datagrams on fd 6 rcvbuf 126976
+  1328704870.767152 ccnd[5211]: accepting ipv6 connections on fd 7
+  1328704870.812268 ccnd[5211]: accepted client fd=8 id=6
+  1328704870.812322 ccnd[5211]: shutdown client fd=8 id=6
+  1328704870.812332 ccnd[5211]: recycling face id 6 (slot 6)
+  $ echo HELLO >file
+  $ ./ccnput /H <file &
+  $ ./ccnget -c /H
+  HELLO
+  [1]+  Done                    ./ccnput /H < file
+  $ ./ccndstop
 
+Before running the CCN daemon within DCE we make a final verification, we use readelf tool to verify that ccnd executable is of type **DYN**:
 
-Simulation script setup
-=======================
+::
 
-To launch the ccnx simulation you must change some path in a script shell used to setup the virtual tree content of the nodes of the simulation.
-This script shell is under example/ccnx directory, it is named run-ccnx-common.sh:
-
-+-----------------------+---------------------------------------------------+--------------------------+
-| Variable name         | Description                                       | Example                  |  
-+-----------------------+---------------------------------------------------+--------------------------+
-| CCNX_PATH             | Where to find the ccnx sources and executables    | $HOME/dev/ccnx-0.4.0/    |
-+-----------------------+---------------------------------------------------+--------------------------+
-| CCNX_KEY_PATH         | Path to keystore used by ccn commands like ccnget | $HOME/.ccnx              |
-+-----------------------+---------------------------------------------------+--------------------------+
-| CCND_REAL_KEYSTORE    | Path to keystore used by ccnd daemon              | /var/tmp/.ccnx-user15019 |
-+-----------------------+---------------------------------------------------+--------------------------+
-| VIRTUAL_USER_KEYSTORE | Path to NS3 keystore used by ccn commands         | /home/furbani            |
-+-----------------------+---------------------------------------------------+--------------------------+
+  $ readelf -h ccnd
+  ELF Header:
+  Magic:   7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00 
+  Class:                             ELF64
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              DYN (Shared object file)
+  Machine:                           Advanced Micro Devices X86-64
+  Version:                           0x1
+  Entry point address:               0x31d0
+  Start of program headers:          64 (bytes into file)
+  Start of section headers:          395872 (bytes into file)
+  Flags:                             0x0
+  Size of this header:               64 (bytes)
+  Size of program headers:           56 (bytes)
+  Number of program headers:         8
+  Size of section headers:           64 (bytes)
+  Number of section headers:         39
+  Section header string table index: 36
 
 Example CCNX-SIMPLE
 ###################
 
-This simulation launches a ccnd daemon, publishes a file using ccnput and retrieves this data using ccnget command, all commands are on a single node:
+This simulation launches a *ccnd* daemon, publishes a file using *ccnput* and retrieves this data using *ccnget* command, all commands are on a single node:
 
 ::
 
   $ . ./ns-3-dce/utils/setenv.sh
-  $ cd ./ns-3-dce/example/ccnx
-  $ ./run-ccnx-simple.sh 
+  $ ./build/bin/dce-ccnd-simple
 
-This script ends with opening an emacs displaying the output of the simulation command and the output of the simulated process ie: ccnd, ccnget and ccnput.
-The stdout of ccnget should be named : files-0/var/log/53514/stdout and it must contains the 8 first Ko of the CCNX README file, this is the file published by ccnput.
+Verify the status of execution:
+
+::
+
+  $ cat files-0/var/log/*/status
+  Start Time: NS3 Time:          0s (                   +0.0ns) , REAL Time: 1328707904
+        Time: NS3 Time:          0s (                   +0.0ns) , REAL Time: 1328707904 --> Starting: /user/furbani/home/dev/dce/dev/ns-3-dce/build/bin/ccnd
+        Time: NS3 Time:         59s (         +59001000000.0ns) , REAL Time: 1328707905 --> Exit (0)
+  Start Time: NS3 Time:          1s (          +1000000000.0ns) , REAL Time: 1328707904
+        Time: NS3 Time:          1s (          +1000000000.0ns) , REAL Time: 1328707904 --> Starting: /user/furbani/home/dev/dce/dev/ns-3-dce/build/bin/ccnput
+        Time: NS3 Time:          2s (          +2001000000.0ns) , REAL Time: 1328707905 --> Exit (0)
+  Start Time: NS3 Time:          2s (          +2000000000.0ns) , REAL Time: 1328707905
+        Time: NS3 Time:          2s (          +2000000000.0ns) , REAL Time: 1328707905 --> Starting: /user/furbani/home/dev/dce/dev/ns-3-dce/build/bin/ccnget
+        Time: NS3 Time:          2s (          +2002000000.0ns) , REAL Time: 1328707905 --> Exit (0)
+  Start Time: NS3 Time:         59s (         +59000000000.0ns) , REAL Time: 1328707905
+        Time: NS3 Time:         59s (         +59000000000.0ns) , REAL Time: 1328707905 --> Starting: /user/furbani/home/dev/dce/dev/ns-3-dce/build/bin/ccndsmoketest
+        Time: NS3 Time:         59s (         +59001000000.0ns) , REAL Time: 1328707905 --> Exit (0)
+
+Verify the output of the command *ccnget*:
+
+::
+
+  $ cat files-0/var/log/53514/stdout
+  The wanted data is here :)
+
+
+
 
 Example CCND LINEAR MULTIPLE
 ############################
@@ -488,35 +536,44 @@ This simulation uses multiple nodes placed in a line, each node are linked 2 by 
 
   .. image:: images/ccnd-linear-multiple-1.png
 
-The launch script run-ccnd-linear-multiple.sh offer 3 options:
+The launch script dce-ccnd-linear-multiple offer 3 options:
 
- 1. NNODES allows to choose the Number of Nodes,
- 2. USE-TCP allows to use TCP or if not UDP to connect the ccnd deamons (via forwarding interrest).
- 3. KERN allows to use Linux IP Stack (only working in advanced mode) instead of NS3 one.
+::
+
+  $ ./build/bin/dce-ccnd-linear-multiple --PrintHelp
+  --PrintHelp: Print this help message.
+  --PrintGroups: Print the list of groups.
+  --PrintTypeIds: Print all TypeIds.
+  --PrintGroup=[group]: Print all TypeIds of group.
+  --PrintAttributes=[typeid]: Print all attributes of typeid.
+  --PrintGlobals: Print the list of globals.
+  User Arguments:
+      --nNodes: Number of nodes to place in the line
+      --tcp: Use TCP to link ccnd daemons.
+      --kernel: Use kernel linux IP stack.
+
+
+ 1. nNodes allows to choose the Number of Nodes,
+ 2. tcp allows to use TCP or if not UDP to connect the ccnd deamons (via forwarding interrest).
+ 3. kernel allows to use Linux IP Stack (only working in advanced mode) instead of NS3 one.
 
 for example with 200 nodes and TCP transport you should see this in the first ccnget output command:
 
 ::
 
-  $ cat files-199/var/log/30918/stdout
-  Si tu peux lire ca ca marche !
-  ...
-  Si tu peux lire ca ca marche !
+  $ ./build/bin/dce-ccnd-linear-multiple --nNodes=200 --tcp=1 --kernel=0
+  $ cat files-199/var/log/30916/status
+  Start Time: NS3 Time:          2s (          +2700000000.0ns) , REAL Time: 1328710217
+        Time: NS3 Time:          2s (          +2700000000.0ns) , REAL Time: 1328710217 --> Starting: /user/furbani/home/dev/dce/dev/ns-3-dce/build/bin/ccnget
+        Time: NS3 Time:          4s (          +4399711801.0ns) , REAL Time: 1328710218 --> Exit (0)
+  $ cat files-199/var/log/30916/stdout
+  The wanted data is here :)[
 
-  $ cat files-199/var/log/30918/status
-  Start Time: NS3 Time:          2s (          +2700000000.0ns) , REAL Time: 1314977630
-        Time: NS3 Time:         11s (         +11890668601.0ns) , REAL Time: 1314977632 --> Exit (0)
- 
-You can see that the first get take about 9 seconds,
+You can see that the first get take about 1.6 seconds.
+This example produce also a netanim file named *NetAnimLinear.xml* that you can use with the  `NetAnim <http://www.nsnam.org/wiki/index.php/NetAnim>`_ tool in order to visualize packets moving through the Network:
 
-now if we use UDP :
+  .. image:: images/netanim-1.png
 
-::
-
-  $ cat files-199/var/log/30918/status
-
-
-In this case the first get take about 1 second. The difference between UDP and TCP is due to fact that in TCP mode it occurs 199 TCP connections. Notice also that in this configuration there is no UDP packet lost, but it is possible to ask NS3 to simulate some sort of packet lost behavior.
 
 Example VLC Player
 ##################

@@ -24,7 +24,7 @@ int main (int argc, char *argv[])
 
   DceApplicationHelper dce;
   ApplicationContainer apps;
-  dce.SetBinary ("./ip");
+  dce.SetBinary ("ip");
   dce.SetStackSize (1<<16);
   int st;
   dce.SetFinishedCallback (MakeBoundCallback ( &finished, &st ) );
