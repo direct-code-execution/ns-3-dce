@@ -17,7 +17,10 @@ CreateReadme ()
 
 int main (int argc, char *argv[])
 {
+  int ccnxVersion = 4;
   CommandLine cmd;
+  cmd.AddValue ("cv", "Ccnx version 4 for 0.4.x variantes and 5 for 0.5.x variantes, default: 4",
+      ccnxVersion);
   cmd.Parse (argc, argv);
 
   NodeContainer nodes;
@@ -55,7 +58,7 @@ int main (int argc, char *argv[])
 
   dce.ResetArguments();
 //  dce.ResetEnvironment();
-  dce.SetBinary ("ccnput");
+  dce.SetBinary ((ccnxVersion==4)?"ccnput":"ccnpoke");
   dce.SetStdinFile ("/tmp/README");
   dce.AddFile ("/tmp/README", "/tmp/README");
   dce.AddArgument ("ccnx:/LeReadme");
@@ -67,7 +70,7 @@ int main (int argc, char *argv[])
   CreateReadme ();
   dce.ResetArguments();
 //  dce.ResetEnvironment();
-  dce.SetBinary ("ccnget");
+  dce.SetBinary ((ccnxVersion==4)?"ccnget":"ccnpeek");
   dce.SetStdinFile ("");
   dce.AddArgument ("-c");
   dce.AddArgument ("ccnx:/LeReadme");

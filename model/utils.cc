@@ -265,8 +265,10 @@ void UtilsAdvanceTime (Thread *current)
 
   if (now == current->lastTime)
     {
-      NS_LOG_DEBUG ("UtilsAdvanceTime current thread wait 1ms.");
-      current->process->manager->Wait (Time ( MilliSeconds (1) ) );
+//      NS_LOG_DEBUG ("UtilsAdvanceTime current thread wait 1ms.");
+      //current->process->manager->Wait (Time ( MilliSeconds (1) ) );
+      NS_LOG_DEBUG ("UtilsAdvanceTime current thread wait 1µs.");
+      current->process->manager->Wait (Time ( MicroSeconds (1) ) );
     }
 
   current->lastTime = Now ();

@@ -20,6 +20,7 @@ NS_LOG_COMPONENT_DEFINE ("CcnCache");
 std::vector<int> GetNodes;
 int middleNode = 0;
 bool onlySomeNodes = true;
+int ccnxVersion = 4;
 
 std::string GetAddress (int level, int index)
 {
@@ -188,7 +189,7 @@ void InstallGetters (NodeContainer nodes )
               dce.ResetArguments();
               dce.ResetEnvironment();
               dce.AddEnvironment("HOME", "/root");
-              dce.SetBinary ("ccnget");
+              dce.SetBinary ((ccnxVersion==4)?"ccnget":"ccnpeek");
               dce.SetStdinFile ("");
               dce.AddArgument ("-c");
               dce.AddArgument ("/A");
@@ -241,9 +242,13 @@ main (int argc, char *argv[])
   cmd.AddValue ("radius", "Radius default 2000.", radius);
   cmd.AddValue ("NN", "Toggle, if true return the number of nodes for this parameters.", nn);
   cmd.AddValue ("some", "Toggle, if true only some nodes do ccnget ", onlySomeNodes);
+  cmd.AddValue ("cv", "Ccnx version 4 for 0.4.x variantes and 5 for 0.5.x variantes, default: 4",
+      ccnxVersion);
   cmd.Parse (argc, argv);
 
   NS_ASSERT_MSG (radius >= 2, "Radius must be greater or equal to 2.");
+  NS_ASSERT_MSG ( (4 == ccnxVersion) || (5 == ccnxVersion),
+      "Ccnx version must be equal to 4 or 5");
 
   int NodeNumber = 0;
   int power = 0;
@@ -321,7 +326,7 @@ main (int argc, char *argv[])
   dce.ResetArguments();
   dce.ResetEnvironment();
 
-  dce.SetBinary ("ccnput");
+  dce.SetBinary ((ccnxVersion==4)?"ccnput":"ccnpoke");
   dce.SetStdinFile ("/tmp/README");
   dce.AddFile ("/tmp/README", "/tmp/README");
 

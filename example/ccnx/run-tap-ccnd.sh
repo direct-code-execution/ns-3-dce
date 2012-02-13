@@ -39,11 +39,12 @@
 #
 #  then the local machine do also a ccnget to retrieve a file from within NS3.
 #
+CV=5
 cd `dirname $BASH_SOURCE`/../../
 BASEDCE=$PWD
 cd example/ccnx
 PATH=$PATH:$DCE_PATH
-for i in ccndstop  ping sleep ccndstart ccndc  ccnput ccnget
+for i in ccndstop  ping sleep ccndstart ccndc ccnput ccnget
 do
 which $i >/dev/null
 if [ 1 == $? ]
@@ -55,7 +56,7 @@ fi
 done
 if [ -x $BASEDCE/build/bin/dce-tap-ccnd ]
 then
-    NS3SCRIPT=$BASEDCE/build/bin/dce-tap-ccnd 
+    NS3SCRIPT="$BASEDCE/build/bin/dce-tap-ccnd --cv=$CV"
 else
 	echo dce-tap-ccnd not found !
 	exit 1

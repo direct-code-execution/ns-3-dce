@@ -98,11 +98,15 @@ main( int argc, char *argv[] )
 {
   std::string mode = "ConfigureLocal";
   std::string tapName = "thetap";
+  int ccnxVersion = 4;
 
   CommandLine cmd;
   cmd.AddValue ("mode", "Mode setting of TapBridge", mode);
   cmd.AddValue ("tapName", "Name of the OS tap device", tapName);
+  cmd.AddValue ("cv", "Ccnx version 4 for 0.4.x variantes and 5 for 0.5.x variantes, default: 4",
+      ccnxVersion);
   cmd.Parse (argc, argv);
+
   LogComponentEnable("TapCCND", LOG_LEVEL_INFO);
 
   GlobalValue::Bind ("SimulatorImplementationType", StringValue ("ns3::RealtimeSimulatorImpl"));
@@ -169,7 +173,7 @@ main( int argc, char *argv[] )
   apps.Start (Seconds (9.0));
 
   // Publish file
-  dce.SetBinary ("ccnput");
+  dce.SetBinary ((ccnxVersion==4)?"ccnput":"ccnpoke");
   dce.ResetArguments();
   dce.ResetEnvironment();
   dce.AddEnvironment("CCND_DEBUG", "-1"); // FULL TRACES
@@ -200,7 +204,7 @@ main( int argc, char *argv[] )
 
 
   // Retrieve a file
-  dce.SetBinary ("ccnget");
+  dce.SetBinary ((ccnxVersion==4)?"ccnget":"ccnpeek");
   dce.ResetArguments();
   dce.ResetEnvironment();
   dce.AddEnvironment("CCN_LOCAL_PORT", "2000");

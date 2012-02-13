@@ -55,8 +55,12 @@ int main (int argc, char *argv[])
 {
   std::string animFile = "NetAnim.xml";
   bool useKernel = 0;
+  int ccnxVersion = 4;
+
   CommandLine cmd;
   cmd.AddValue ("kernel", "Use kernel linux IP stack.", useKernel);
+  cmd.AddValue ("cv", "Ccnx version 4 for 0.4.x variantes and 5 for 0.5.x variantes, default: 4",
+      ccnxVersion);
   cmd.Parse (argc, argv);
 
   NodeContainer nodes;
@@ -175,7 +179,7 @@ int main (int argc, char *argv[])
   // put a file somewhere on the Internet !
   dce.ResetArguments();
   dce.ResetEnvironment();
-  dce.SetBinary ("ccnput");
+  dce.SetBinary ((ccnxVersion==4)?"ccnput":"ccnpoke");
   dce.SetStdinFile ("/tmp/README");
   dce.AddFile ("/tmp/README", "/tmp/README");
   dce.AddArgument ("ccnx:/LeReadme");
@@ -187,7 +191,7 @@ int main (int argc, char *argv[])
   // Try to retrieve the file !
   dce.ResetArguments();
   dce.ResetEnvironment();
-  dce.SetBinary ("ccnget");
+  dce.SetBinary ((ccnxVersion==4)?"ccnget":"ccnpeek");
   dce.SetStdinFile ("");
   dce.AddArgument ("-c");
   dce.AddArgument ("ccnx:/LeReadme");
