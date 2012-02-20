@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "exec-utils.h"
 #include "dce-errno.h"
+#include "dce-libc-private.h"
 #include "dce-signal.h"
 #include "dce-netdb.h"
 #include "dce-unistd.h"

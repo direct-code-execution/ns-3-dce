@@ -19,6 +19,7 @@
 #include "dce-stdio.h"
 #include "dce-stdarg.h"
 #include "dce-errno.h"
+#include "dce-libc-private.h"
 #include "dce-fcntl.h"
 #include "dce-sched.h"
 #include "dce-poll.h"
