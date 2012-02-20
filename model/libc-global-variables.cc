@@ -12,6 +12,8 @@ int optind = 0, opterr = 0, optopt = 0;
 const char *_libc_intl_domainname = "libc";
 char **__environ = 0;
 int h_errno;
+__thread int errno;
+__thread struct __res_state *__resp;
 char *__progname = 0;
 char *dce_proginvname = 0;
 char *dce_proginvnameshort = 0;

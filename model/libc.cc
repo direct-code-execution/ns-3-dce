@@ -109,4 +109,16 @@ void LIBSETUP (const struct Libc *fn)
   setup_global_variables ();
 }
 
+#ifdef HAVE_GETCPUFEATURES
+// Below there is an exception implementation: because the libm of glibc2.14 call  __get_cpu_features during dlopen,
+// and during dlopen of libm  DCE do not have yet called lib_setup so there we implement __get_cpu_features
+// directly without using the global g_libc variable, we can do it only if our implementation of the method
+// do not interract with any ressouces of DCE or NS3 and do no call any other libc methods ...
+struct cpu_features;
+extern const struct cpu_features *dce___get_cpu_features (void);
+const struct cpu_features *__get_cpu_features (void)
+{
+  return dce___get_cpu_features ();
+}
+#endif
 } // extern "C"

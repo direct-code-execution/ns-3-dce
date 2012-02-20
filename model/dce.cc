@@ -849,3 +849,13 @@ char *dce_setlocale (int category, const char *locale)
   static char loc[] = "";
   return loc;
 }
+#ifdef HAVE_GETCPUFEATURES
+extern "C"
+{
+  extern const struct cpu_features *__get_cpu_features (void);
+}
+const struct cpu_features *dce___get_cpu_features (void)
+{
+  return __get_cpu_features ();
+}
+#endif // HAVE_GETCPUFEATURES
