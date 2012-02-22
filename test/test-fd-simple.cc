@@ -426,6 +426,25 @@ void test_file_usage ()
   TEST_ASSERT_EQUAL (status, 0);
 }
 
+static void test_pread_pwrite (void)
+{
+  int fd = open ("P", O_CREAT | O_TRUNC | O_RDWR, S_IRWXU);
+  TEST_ASSERT_UNEQUAL (fd, -1);
+  char buffer [1024];
+  memset (buffer, 'A', sizeof (buffer));
+  ssize_t w = pwrite (fd, buffer, sizeof (buffer), 0);
+  TEST_ASSERT_EQUAL (w, sizeof (buffer));
+  ssize_t p = lseek (fd, 0, SEEK_CUR);
+  w = pread (fd, buffer, sizeof (buffer)/2,  sizeof (buffer)/2);
+  TEST_ASSERT_EQUAL (w, sizeof (buffer)/2);
+  ssize_t p2 = lseek (fd, 0, SEEK_CUR);
+  TEST_ASSERT_EQUAL (p, p2);
+  int status = close (fd);
+  TEST_ASSERT_EQUAL (status, 0);
+  status = unlink ("P");
+  TEST_ASSERT_EQUAL (status, 0);
+}
+
 int main (int argc, char *argv[])
 {
   test_file_usage ();
@@ -440,6 +459,7 @@ int main (int argc, char *argv[])
   test_cwd ();
   test_chdir ();
   test_unlinkat ();
+  test_pread_pwrite ();
 
   return 0;
 }
