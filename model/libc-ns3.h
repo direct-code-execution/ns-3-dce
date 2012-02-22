@@ -494,6 +494,9 @@ DCE (unlinkat)
 // unistd.h
 NATIVE (getdtablesize)
 
+DCE (pread)
+DCE (pwrite)
+
 #undef DCE
 #undef DCET
 #undef NATIVE

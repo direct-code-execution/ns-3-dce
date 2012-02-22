@@ -715,4 +715,63 @@ int dce_pipe(int pipefd[2])
 
   return 0;
 }
+ssize_t dce_pread(int fd, void *buf, size_t count, off_t offset)
+{
+  Thread *current = Current ();
+  NS_ASSERT (current != 0);
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () );
 
+  off_t currentOffset = dce_lseek (fd, 0, SEEK_CUR);
+  if ( -1 == currentOffset )
+    {
+      return (ssize_t) -1;
+    }
+  off_t res = dce_lseek (fd, offset, SEEK_SET);
+  if (res != offset)
+    {
+      current->err = EINVAL;
+      return (ssize_t) -1;
+    }
+  ssize_t ret = dce_read (fd, buf, count);
+  if ( -1 == ret )
+    {
+      return ret;
+    }
+  // Return to original offset.
+  res = dce_lseek (fd, currentOffset, SEEK_SET);
+  if ( res != currentOffset )
+    {
+      return (ssize_t) -1;
+    }
+  return ret;
+}
+ssize_t dce_pwrite(int fd, const void *buf, size_t count, off_t offset)
+{
+  Thread *current = Current ();
+  NS_ASSERT (current != 0);
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () );
+
+  off_t currentOffset = dce_lseek (fd, 0, SEEK_CUR);
+  if ( -1 == currentOffset )
+    {
+      return (ssize_t) -1;
+    }
+  off_t res = dce_lseek (fd, offset, SEEK_SET);
+  if (res != offset)
+    {
+      current->err = EINVAL;
+      return (ssize_t) -1;
+    }
+  ssize_t ret = dce_write (fd, buf, count);
+  if ( -1 == ret )
+    {
+      return ret;
+    }
+  // Return to original offset.
+  res = dce_lseek (fd, currentOffset, SEEK_SET);
+  if ( res != currentOffset )
+    {
+      return (ssize_t) -1;
+    }
+  return ret;
+}
