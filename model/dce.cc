@@ -633,11 +633,10 @@ int dce_fchdir (int fd)
       current->err = EBADF;
       return -1;
     }
-  std::string base =  std::string(get_current_dir_name()) + "/" +  UtilsGetRealFilePath ("/");
+  std::string base = UtilsGetCurrentDirName () + "/" +  UtilsGetRealFilePath ("/");
   current->process->cwd =  UtilsGetVirtualFilePath (std::string (p, base.length() - 1 ));
   return 0;
 }
-
 unsigned dce_if_nametoindex (const char *ifname)
 {
   int index = 0;

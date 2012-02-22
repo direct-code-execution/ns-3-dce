@@ -60,7 +60,7 @@ int dce___fxstatat (int ver, int fd, const char *pathname, struct stat *buf, int
     }
   else
     {
-      std::string path = std::string( get_current_dir_name()) + "/" +  UtilsGetRealFilePath (pathname);
+      std::string path = UtilsGetCurrentDirName () + "/" +  UtilsGetRealFilePath (pathname);
       retval = ::__fxstatat (ver, fd, path.c_str (), buf, flag);
     }
   if (retval == -1)
@@ -106,7 +106,7 @@ int dce_unlinkat (int fd, const char *pathname, int flags)
     }
   else
     {
-      realpath = std::string(get_current_dir_name()) +"/"+ UtilsGetRealFilePath (pathname);
+      realpath = UtilsGetCurrentDirName () +"/"+ UtilsGetRealFilePath (pathname);
       retval = ::unlinkat (fd , realpath.c_str (), flags);
     }
   if (retval == -1)

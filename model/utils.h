@@ -62,6 +62,7 @@ std::string PathOfFd (int fd);
 bool CheckShellScript (std::string fileName,
     std::ostringstream &shellName, std::ostringstream &optionalArg);
 char *seek_env (const char *name, char **array);
+std::string UtilsGetCurrentDirName (void);
 
 #define MAX_FDS 1024
 

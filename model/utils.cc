@@ -535,4 +535,19 @@ char *seek_env (const char *name, char **array)
     }
   return 0;
 }
+std::string UtilsGetCurrentDirName (void)
+{
+  // DCE and NS3 never change the cwd.
+  static std::string pwd = "";
+  if (pwd.length () > 0)
+    {
+      return pwd;
+    }
+  char *thePwd = get_current_dir_name();
+  int fd = open (thePwd, O_RDONLY);
+  pwd = PathOfFd (fd);
+  close (fd);
+  free (thePwd);
+  return pwd;
+}
 } // namespace ns3
