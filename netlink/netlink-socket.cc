@@ -215,6 +215,12 @@ NetlinkSocket::Bind (void)
   return DoBind (address);
 }
 int
+NetlinkSocket::Bind6 (void)
+{
+  NS_LOG_FUNCTION_NOARGS ();
+  return -1;
+}
+int
 NetlinkSocket::Bind (const Address &address)
 { 
   NS_LOG_FUNCTION (this << address);

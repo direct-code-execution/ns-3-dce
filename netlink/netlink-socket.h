@@ -77,6 +77,7 @@ public:
   virtual Ptr<Node> GetNode (void) const;
   virtual int Bind (void);
   virtual int Bind (const Address & address);
+  virtual int Bind6 ();
   virtual int Close (void);
   virtual int ShutdownSend (void);
   virtual int ShutdownRecv (void);
