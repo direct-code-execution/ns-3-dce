@@ -497,6 +497,10 @@ NATIVE (getdtablesize)
 DCE (pread)
 DCE (pwrite)
 
+// ether.h
+NATIVE (ether_aton_r)
+
+
 #undef DCE
 #undef DCET
 #undef NATIVE
