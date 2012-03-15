@@ -21,12 +21,12 @@ then
  	hg clone http://code.nsnam.org/furbani/ns-3-linux
 fi	
 echo clone ns-3-dev
-hg clone http://code.nsnam.org/ns-3-dev -r 2778027c929c
+hg clone http://code.nsnam.org/ns-3-dev -r 49dadc40be43
 mkdir build
 cd ns-3-dev
 patch -p1 <../ns-3-dce/utils/packet-socket-upgrade-exp.patch
-patch -p1 <../ns-3-dce/utils/0001-Replace-references-to-m_recvpktinfo-with-method-call.patch
-patch -p1 <../ns-3-dce/utils/0002-A-new-templated-static-method-Ipv4RoutingHelper-GetR.patch
+#patch -p1 <../ns-3-dce/utils/0001-Replace-references-to-m_recvpktinfo-with-method-call.patch
+#patch -p1 <../ns-3-dce/utils/0002-A-new-templated-static-method-Ipv4RoutingHelper-GetR.patch
 ./waf configure --prefix=`pwd`/../build --enable-tests
 ./waf
 ./waf install

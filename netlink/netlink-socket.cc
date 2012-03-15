@@ -51,6 +51,7 @@
 #include <linux/if.h>
 #include <errno.h>
 #include "netlink-socket-factory.h"
+//#include "ns3/ipv4-list-routing.h"
 
 NS_LOG_COMPONENT_DEFINE ("DceNetlinkSocket");
 
@@ -270,7 +271,7 @@ NetlinkSocket::DoBind (const NetlinkSocketAddress &address)
   NS_ASSERT_MSG (ipv4 != 0, "Netlink Socket requires IPv4 stack to be installed on the node");
 
   // We only care about staticRouting for netlink support
-  m_ipv4Routing = Ipv4RoutingHelper::GetRouting (ipv4->GetRoutingProtocol (),
+  m_ipv4Routing = Ipv4DceRouting::GetRouting (ipv4->GetRoutingProtocol (),
                                                  (Ipv4DceRouting*)0);
   NS_ASSERT_MSG (m_ipv4Routing != 0,
                  "Netlink Socket requires Ipv4DceRouting to be installed on the node");

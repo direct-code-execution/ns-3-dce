@@ -104,6 +104,7 @@ void
 Ipv4DceRouting::SetIpv4 (Ptr<Ipv4> ipv4)
 {
   // do some other stuff
+  m_ipv4 = ipv4;
   m_netlink = CreateObject<NetlinkSocket> ();
   m_netlink->SetNode (ipv4->GetObject<Node> ());
   m_netlink->Bind (); // not really necessary to do this
