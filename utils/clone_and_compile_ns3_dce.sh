@@ -1,12 +1,24 @@
 #!/bin/bash
 # this script checkout NS3 and DCE sources, and build them.
 USE_KERNEL=NO
-if [ `which patch 2>/dev/null` ]; then
-  echo "patch exists."
-else
-  echo "Please, install patch command line tool."
-  exit 1
+args=("$@")
+NB=$#
+for (( i=0;i<$NB;i++)); do
+    if [ ${args[${i}]} = '-k' ]
+    then 
+       USE_KERNEL=YES
+    fi
+done 
+for i in patch hg make wget tar
+do
+which $i >/dev/null
+if [ 1 == $? ]
+then
+	echo $i not found !
+	echo "Please, install $i command line tool."
+	exit 1
 fi
+done
 cd `dirname $BASH_SOURCE`/../..
 SAVE_PATH=$PATH
 SAVE_LDLP=$LD_LIBRARY_PATH
@@ -25,8 +37,6 @@ hg clone http://code.nsnam.org/ns-3-dev -r 49dadc40be43
 mkdir build
 cd ns-3-dev
 patch -p1 <../ns-3-dce/utils/packet-socket-upgrade-exp.patch
-#patch -p1 <../ns-3-dce/utils/0001-Replace-references-to-m_recvpktinfo-with-method-call.patch
-#patch -p1 <../ns-3-dce/utils/0002-A-new-templated-static-method-Ipv4RoutingHelper-GetR.patch
 ./waf configure --prefix=`pwd`/../build --enable-tests
 ./waf
 ./waf install
@@ -41,7 +51,6 @@ cd ..
 if [ "YES" == "$USE_KERNEL" ]
 then
 	cd ns-3-linux/
-# 	git clone git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next-2.6.git net-next-2.6
  	git clone git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git net-next-2.6
 	make unpatch
 	make  setup
@@ -52,11 +61,8 @@ then
 	mv c2 config
 	make
 	cd ..
-#	wget http://devresources.linuxfoundation.org/dev/iproute2/download/iproute2-2.6.33.tar.bz2
 	wget http://www.linuxgrill.com/anonymous/iproute2/NEW-OSDL/iproute2-2.6.38.tar.bz2     
-#	tar jxf iproute2-2.6.33.tar.bz2
 	tar jxf iproute2-2.6.38.tar.bz2
-#	cd iproute2-2.6.33
 	cd iproute2-2.6.38
 	./configure
 	LDFLAGS=-pie make CCOPTS='-fpic -D_GNU_SOURCE -O0 -U_FORTIFY_SOURCE'
@@ -65,11 +71,9 @@ then
 	mkdir -p build/bin_dce
 	cd  build/bin_dce
 	ln -s ../../../ns-3-linux/libnet-next-2.6.so
-#	ln -s ../iproute2-2.6.33/ip/ip
 	ln -s ../../../iproute2-2.6.38/ip/ip
 	cd ../../example/ccnx
 	ln -s ../../build/bin_dce/libnet-next-2.6.so
-#	ln -s ../../ip
 	cd ../..
 fi
 cd ns-3-dce/
