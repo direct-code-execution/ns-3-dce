@@ -6,7 +6,7 @@
 #include "ns3/applications-module.h"
 #include "ns3/netanim-module.h"
 #include "ns3/constant-position-mobility-model.h"
-#include "ccnx/misc-tools.h"
+#include "../../example/ccnx/misc-tools.h"
 
 using namespace ns3;
 
@@ -25,13 +25,14 @@ using namespace ns3;
 //                5 Mbps, 1 ms
 //
 // Just a ping !
+// wget http://www.skbuff.net/iputils/iputils-s20101006.tar.bz2
 //
 //recompile iputils: edit Makefile: replace "CFLAGS=" with "CFLAGS+=" and run:
-//                   "make CFLAGS=-fPIC LDFLAGS=-pie"
+//                   "make CFLAGS=-fPIC LDFLAGS=-pie ping"
 // ===========================================================================
 int main (int argc, char *argv[])
 {
-  std::string animFile = "NetAnim.tr";
+  std::string animFile = "NetAnim.xml";
   bool useKernel = 0;
   CommandLine cmd;
   cmd.AddValue ("kernel", "Use kernel linux IP stack.", useKernel);
@@ -107,7 +108,7 @@ int main (int argc, char *argv[])
 
   // Create the animation object and configure for specified output
 
-  AnimationInterface anim (animFile, false);
+  AnimationInterface anim (animFile);
 
   anim.StartAnimation ();
 

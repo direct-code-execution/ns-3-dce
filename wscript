@@ -5,7 +5,7 @@ import Options
 import os.path
 import ns3waf
 import sys
-
+import types
 
 def options(opt):
     opt.tool_options('compiler_cc') 
@@ -77,6 +77,8 @@ def configure(conf):
                    includes=os.path.join(Options.options.kernel_stack, 'sim/include'))
       #  conf.check()
         conf.env['KERNEL_STACK'] = Options.options.kernel_stack
+
+    conf_myscripts(conf)
 
     ns3waf.print_feature_summary(conf)
 
@@ -225,9 +227,9 @@ def build_dce_examples(module):
                        target='bin/dce-tap-vlc',
                        source=['example/ccnx/dce-tap-vlc.cc'])       
     
-    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
-                       target='bin/dce-ping',
-                       source=['example/dce-ping.cc', 'example/ccnx/misc-tools.cc'])
+#    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
+#                       target='bin/dce-ping',
+#                       source=['example/dce-ping.cc', 'example/ccnx/misc-tools.cc'])
 
     module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
                        target='bin/dce-iperf',
@@ -244,6 +246,11 @@ def build_dce_examples(module):
     module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
                        target='bin/dce-ccn-cache',
                        source=['example/ccnx/dce-ccn-cache.cc', 'example/ccnx/misc-tools.cc'])
+                       
+#    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
+#                       target='bin/dce-xorp-simple',
+#                       source=['example/xorp/dce-xorp-simple.cc', 'example/ccnx/misc-tools.cc'])
+                                              
 #    module.add_example(needed = ['core', 'internet', 'dce', 'csma' ], 
 #                       target='bin/dce-udp-multicast',
 #                       source=['example/dce-udp-multicast.cc'])
@@ -260,7 +267,33 @@ def build_dce_kernel_examples(module):
                        target='bin/dce-linux',
                        source=['example/dce-linux.cc'])
 
+# Add a script to build system 
+def build_a_script(bld, name, needed = [], **kw):
+    external = [i for i in needed if not i == name]
+    if not ns3waf.modules_found(bld, external):
+    	return
+    kw['use'] = kw.get('use', []) + ns3waf.modules_uselib(bld, needed)
+    if 'features' not in kw:
+        kw['features'] = 'cxx cxxprogram'
+    bld(**kw)
 
+# Add directories under myscripts dir
+def add_myscripts(bld):
+    for dir in os.listdir('myscripts'):
+        if dir.startswith('.') or dir == 'CVS':
+            continue
+        if os.path.isdir(os.path.join('myscripts', dir)):
+             bld.add_subdirs(os.path.join('myscripts', dir))
+
+# Configure directories under myscripts dir
+def conf_myscripts(conf):
+    for dir in os.listdir('myscripts'):
+        if dir.startswith('.') or dir == 'CVS':
+            continue
+        if os.path.isdir(os.path.join('myscripts', dir)):
+             conf.recurse(os.path.join('myscripts', dir))
+
+	
 def build(bld):
     build_netlink(bld)
 
@@ -378,6 +411,10 @@ def build(bld):
 
     if bld.env['KERNEL_STACK']:
         build_dce_kernel_examples(module)
+    
+    bld.build_a_script = types.MethodType(build_a_script, bld)
+
+    add_myscripts(bld)
 
     bld.add_group('dce_version_files')
 

@@ -7,9 +7,10 @@ for (( i=0;i<$NB;i++)); do
     if [ ${args[${i}]} = '-k' ]
     then 
        USE_KERNEL=YES
+       WGET=wget
     fi
 done 
-for i in patch hg make wget tar
+for i in patch hg make $WGET tar
 do
 which $i >/dev/null
 if [ 1 == $? ]
