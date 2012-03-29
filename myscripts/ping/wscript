@@ -8,7 +8,7 @@ def configure(conf):
 def build(bld):
     bld.build_a_script('dce', needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim' ],
 				  target='bin/dce-ping',
-				  source=['dce-ping.cc', '../../example/ccnx/misc-tools.cc'],
+				  source=['dce-ping.cc', 'misc-tools.cc'],
 #				  linkflags=['-L/usr/local/lib'],
 #				  lib=['foolib']
 				  )
