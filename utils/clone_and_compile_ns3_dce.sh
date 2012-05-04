@@ -32,12 +32,13 @@ if [ "YES" == "$USE_KERNEL" ]
 then
 	echo clone ns-3-linux
  	hg clone http://code.nsnam.org/furbani/ns-3-linux
-fi	
+fi
 echo clone ns-3-dev
-hg clone http://code.nsnam.org/ns-3-dev -r 49dadc40be43
+hg clone http://code.nsnam.org/ns-3-dev -r 67c6b025f766
 mkdir build
 cd ns-3-dev
 patch -p1 <../ns-3-dce/utils/packet-socket-upgrade-exp.patch
+patch -p1 <../ns-3-dce/utils/remove-default-simulator-asserts.patch
 ./waf configure --prefix=`pwd`/../build --enable-tests
 ./waf
 ./waf install
