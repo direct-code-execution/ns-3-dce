@@ -393,8 +393,8 @@ LinuxSocketFdFactory::NotifyAddDeviceTask (Ptr<NetDevice> device)
   int flags = 0;
   //NS_ASSERT (!device->IsPointToPoint ());
   //NS_ASSERT (device->NeedsArp ());
-  NS_ASSERT (device->IsMulticast ());
-  NS_ASSERT (device->IsBroadcast ());
+  //NS_ASSERT (device->IsMulticast ());
+  //NS_ASSERT (device->IsBroadcast ());
   if (device->IsMulticast ())
     {
       flags |= SIM_DEV_MULTICAST;
