@@ -34,8 +34,12 @@ int main (int argc, char *argv[])
 {
   std::string animFile = "NetAnim.tr";
   bool useKernel = 0;
+  bool useUdp = 0;
+  std::string bandWidth = "1m";
   CommandLine cmd;
   cmd.AddValue ("kernel", "Use kernel linux IP stack.", useKernel);
+  cmd.AddValue ("udp", "Use UDP. Default false (0)", useUdp);
+  cmd.AddValue ("bw", "BandWidth. Default 1m.", bandWidth);
   cmd.Parse (argc, argv);
 
   NodeContainer nodes;
@@ -62,6 +66,7 @@ int main (int argc, char *argv[])
     }
 
   DceManagerHelper dceManager;
+  dceManager.SetTaskManagerAttribute( "FiberManagerType", StringValue ( "UcontextFiberManager" ) );
 
   if (useKernel)
     {
@@ -91,6 +96,12 @@ int main (int argc, char *argv[])
   dce.AddArgument ("1");
   dce.AddArgument ("--time");
   dce.AddArgument ("10");
+  if (useUdp)
+    {
+      dce.AddArgument ("-u");
+      dce.AddArgument ("-b");
+      dce.AddArgument (bandWidth);
+    }
 
   apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds (0.7));
@@ -103,8 +114,18 @@ int main (int argc, char *argv[])
   dce.AddArgument ("-s");
   dce.AddArgument ("-P");
   dce.AddArgument ("1");
+  if (useUdp)
+    {
+      dce.AddArgument ("-u");
+    }
 
   apps = dce.Install (nodes.Get (1));
+
+  pointToPoint.EnablePcapAll (useKernel?"iperf-kernel":"iperf-ns3", false);
+//  pointToPoint.EnablePcap("dev0", devices.Get(0), false, false);
+//  pointToPoint.EnablePcap("dev0", devices.Get(0), false, false);
+
+
   apps.Start (Seconds (0.6));
 
   setPos (nodes.Get (0), 1, 10, 0);
@@ -112,15 +133,14 @@ int main (int argc, char *argv[])
 
   // Create the animation object and configure for specified output
 
-  AnimationInterface anim (animFile, false);
+//  AnimationInterface anim (animFile, false);
 
-  anim.StartAnimation ();
-
+  //anim.StartAnimation ();
   Simulator::Stop (Seconds(40.0));
   Simulator::Run ();
   Simulator::Destroy ();
 
-  anim.StopAnimation ();
+//  anim.StopAnimation ();
 
   return 0;
 }

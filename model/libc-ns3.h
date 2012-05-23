@@ -287,7 +287,8 @@ DCE_WITH_ALIAS2 (feof,feof_unlocked)
 DCE_WITH_ALIAS2 (fileno,fileno_unlocked)
 DCE (perror)
 DCE (remove)
-NATIVE (sscanf)
+//NATIVE (sscanf)
+NATIVE_WITH_ALIAS2 (sscanf, __isoc99_sscanf)
 
 // STDARG.H
 DCE (vprintf)
