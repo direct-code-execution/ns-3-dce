@@ -10,6 +10,8 @@
 #include "ns3/string.h"
 #include "ns3/config.h"
 #include "dce-node-context.h"
+#include "ipv4-linux-address.h"
+#include "ipv4-linux-address-helper.h"
 //#include "ns3/attribute-list.h"
 
 namespace ns3 {
@@ -98,6 +100,16 @@ DceManagerHelper::Install (NodeContainer nodes)
       node->AggregateObject (CreateObject<LocalSocketFdFactory> ());
       manager->AggregateObject(CreateObject<DceNodeContext> () );
       manager->SetVirtualPath (GetVirtualPath());
+
+      TypeId b = TypeId::LookupByName ("ns3::LinuxSocketFdFactory");
+      TypeId c = m_networkStackFactory.GetTypeId();
+
+      if ( b == c )
+        {
+          Ptr<Ipv4LinuxAddressContainer> zadresses = node->GetObject<Ipv4LinuxAddressContainer> ();
+
+          zadresses->Install (node);
+        }
     }
 }
 void
