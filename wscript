@@ -231,7 +231,7 @@ def build_dce_examples(module):
 #                       target='bin/dce-ping',
 #                       source=['example/dce-ping.cc', 'example/ccnx/misc-tools.cc'])
 
-    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
+    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim', 'csma'], 
                        target='bin/dce-iperf',
                        source=['example/dce-iperf.cc', 'example/ccnx/misc-tools.cc'])
     
@@ -376,12 +376,14 @@ def build(bld):
         'model/dce-dirent.cc',
         'model/dce-at.cc',
         'model/exec-utils.cc',
+        'model/ipv4-linux-address.cc',
         # helper.
         'helper/ipv4-dce-routing-helper.cc',
         'helper/dce-manager-helper.cc',
         'helper/dce-application-helper.cc',
         'helper/quagga-helper.cc',
-        'helper/ccn-client-helper.cc'
+        'helper/ccn-client-helper.cc',
+        'helper/ipv4-linux-address-helper.cc'
         ]
     module_headers = [
         'model/dce-manager.h',
@@ -395,6 +397,7 @@ def build(bld):
         'helper/dce-application-helper.h',
         'helper/quagga-helper.h',
         'helper/ccn-client-helper.h',
+        'helper/ipv4-linux-address-helper.h'
         ]
     module_source = module_source + kernel_source
     module_headers = module_headers + kernel_headers
