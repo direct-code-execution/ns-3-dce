@@ -108,7 +108,10 @@ DceManagerHelper::Install (NodeContainer nodes)
         {
           Ptr<Ipv4LinuxAddressContainer> zadresses = node->GetObject<Ipv4LinuxAddressContainer> ();
 
-          zadresses->Install (node);
+          if (zadresses)
+            {
+              zadresses->Install (node);
+            }
         }
     }
 }
