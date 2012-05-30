@@ -101,10 +101,10 @@ DceManagerHelper::Install (NodeContainer nodes)
       manager->AggregateObject(CreateObject<DceNodeContext> () );
       manager->SetVirtualPath (GetVirtualPath());
 
-      TypeId b = TypeId::LookupByName ("ns3::LinuxSocketFdFactory");
+      TypeId b = TypeId::LookupByName ("ns3::Ns3SocketFdFactory");
       TypeId c = m_networkStackFactory.GetTypeId();
 
-      if ( b == c )
+      if ( b != c )
         {
           Ptr<Ipv4LinuxAddressContainer> zadresses = node->GetObject<Ipv4LinuxAddressContainer> ();
 

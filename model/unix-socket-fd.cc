@@ -665,6 +665,7 @@ UnixSocketFd::Ns3AddressToPosixAddress (const Address& nsaddr,
           return -1;
         }
       struct sockaddr_in *inet_addr = (struct sockaddr_in *)addr;
+      memset (inet_addr, 0, sizeof (struct sockaddr_in));
       inet_addr->sin_family = AF_INET;
       inet_addr->sin_port = htons (ns_inetaddr.GetPort ());
       inet_addr->sin_addr.s_addr = htonl (ns_inetaddr.GetIpv4 ().Get ());
