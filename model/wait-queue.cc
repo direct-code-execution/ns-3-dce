@@ -118,6 +118,7 @@ WaitPoint::WakeUpCallback ()
        */
       if (m_waitTask->task->IsBlocked ())
         {
+          // NS_ASSERT ( Simulator::GetContext () == m_waitTask->process->nodeId); TODO Fix this assert or Remove it :)
           m_waitTask->process->manager->Wakeup (m_waitTask);
         }
       else

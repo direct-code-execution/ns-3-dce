@@ -318,7 +318,7 @@ LinuxSocketFdFactory::RxFromDevice (Ptr<NetDevice> device, Ptr<const Packet> p,
     {
       return;
     }
-
+  m_loader->NotifyStartExecute (); // Restore the memory of the kernel before access it !
   struct SimDevicePacket packet = m_exported->dev_create_packet (dev, p->GetSize () + 14);
   p->CopyData (((unsigned char *)packet.buffer) + 14, p->GetSize ());
   struct ethhdr {
@@ -331,7 +331,6 @@ LinuxSocketFdFactory::RxFromDevice (Ptr<NetDevice> device, Ptr<const Packet> p,
   realFrom.CopyTo (hdr->h_source);
   realTo.CopyTo (hdr->h_dest);
   hdr->h_proto = ntohs (protocol);
-  m_loader->NotifyStartExecute ();
   m_exported->dev_rx (dev, packet);
   m_loader->NotifyEndExecute ();
 }
@@ -354,8 +353,10 @@ LinuxSocketFdFactory::NotifyDeviceStateChangeTask (Ptr<NetDevice> device)
   Mac48Address ad = Mac48Address::ConvertFrom (device->GetAddress ());
   uint8_t buffer[6];
   ad.CopyTo (buffer);
+  m_loader->NotifyStartExecute (); // Restore the memory of the kernel before access it !
   m_exported->dev_set_address (dev, buffer);
   m_exported->dev_set_mtu (dev, device->GetMtu ());
+  m_loader->NotifyEndExecute ();
 }
 
 void
@@ -403,8 +404,9 @@ LinuxSocketFdFactory::NotifyAddDeviceTask (Ptr<NetDevice> device)
     {
       flags |= SIM_DEV_BROADCAST;
     }
+  m_loader->NotifyStartExecute (); // Restore the memory of the kernel before access it !
   struct SimDevice *dev = m_exported->dev_create (PeekPointer (device), (enum SimDevFlags)flags);
-
+  m_loader->NotifyEndExecute ();
   Ptr<LinuxDeviceStateListener> listener = Create <LinuxDeviceStateListener> (device, this);
   m_listeners.push_back (listener);
   device->AddLinkChangeCallback (MakeCallback (&LinuxDeviceStateListener::NotifyDeviceStateChange, listener));
@@ -536,6 +538,7 @@ LinuxSocketFdFactory::InitializeStack (void)
       Set (op.first, op.second);
       m_earlySysfs.pop_front ();
     }
+  NS_LOG_FUNCTION (this << "m_exported " << m_exported);
 }
 
 void 
