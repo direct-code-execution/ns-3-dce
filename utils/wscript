@@ -1,16 +1,13 @@
 import os
 
+def configure(conf):
+	conf.load('compiler_c')
+	conf.load('compiler_cxx')
+
 def build(bld):
-    program = bld.new_task_gen('cc', 'program')
-    program.source = ['dce-runner.c']
-    program.name = 'dce-runner'
-    program.target = 'dce-runner'
-    program.env.append_value('CCFLAGS', '-fpic')
-    program.env.append_value('LINKFLAGS', '-ldl')
-    program.env.append_value('LINKFLAGS', '-pie')
-    linker = os.path.join ('build', bld.env.variant (), 'src', 
-                          'dce', 'vdl', 'ldso')
-    program.env.append_value('LINKFLAGS', '-Wl,--dynamic-linker=' + 
-                             os.path.abspath (linker))
+	linkerpath=os.path.abspath(os.path.join('..', 'elf-loader','ldso'))
+	bld.program(source='dce-runner.c', target='../../build/bin/dce-runner',
+	 cflags = [ '-fPIC'], linkflags  = ['-pie','-ldl','-Wl,--dynamic-linker=' + linkerpath ] )
+
 
 

@@ -14,7 +14,11 @@ def options(opt):
                    help=('Path to the prefix where the kernel wrapper headers are installed'),
                    default=None,
                    dest='kernel_stack', type="string")
-
+    opt.add_option('--enable-vdl-loader',
+                   help=('Enable the build of dce-runner.'),
+                   dest='enable_vdl_loader', action='store_true',
+                   default=False)               
+	
 def search_file(files):
     for f in files:
         if os.path.isfile (f):
@@ -79,9 +83,17 @@ def configure(conf):
         conf.env['KERNEL_STACK'] = Options.options.kernel_stack
 
     conf_myscripts(conf)
-
+    
+    # Decide if VDL
+    if Options.options.enable_vdl_loader:
+        # Tests were explicitly enabled. 
+        conf.env['ENABLE_VDL'] = True
+    	conf.recurse(os.path.join('utils'))
+    else:
+        # Tests were explicitly disabled. 
+        conf.env['ENABLE_VDL'] = False
     ns3waf.print_feature_summary(conf)
-
+    
 def build_netlink(bld):
     module_source = [
         'netlink/netlink-socket.cc',
@@ -450,3 +462,7 @@ def build(bld):
               linkflags=['-nostdlib', '-lc',
                          '-Wl,--version-script=' + os.path.join('model', 'libpthread.version'),
                          '-Wl,-soname=libpthread.so.0'])
+    if bld.env['ENABLE_VDL']:                     
+    	bld.add_subdirs(['utils'])
+    
+	

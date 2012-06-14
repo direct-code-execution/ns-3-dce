@@ -1,6 +1,8 @@
 #!/bin/bash
 # this script checkout NS3 and DCE sources, and build them.
 USE_KERNEL=NO
+USE_VDL=NO
+WAF_VDL=
 args=("$@")
 NB=$#
 for (( i=0;i<$NB;i++)); do
@@ -8,6 +10,10 @@ for (( i=0;i<$NB;i++)); do
     then 
        USE_KERNEL=YES
        WGET=wget
+    fi
+    if [ ${args[${i}]} = '-v' ]
+    then 
+       USE_VDL=YES
     fi
 done 
 for i in patch hg make $WGET tar
@@ -74,16 +80,26 @@ then
 	cd  build/bin_dce
 	ln -s ../../../ns-3-linux/libnet-next-2.6.so
 	ln -s ../../../iproute2-2.6.38/ip/ip
-	cd ../../example/ccnx
-	ln -s ../../build/bin_dce/libnet-next-2.6.so
+#	cd ../../example/ccnx
+#	ln -s ../../build/bin_dce/libnet-next-2.6.so
 	cd ../..
 fi
+if [ "YES" == "$USE_VDL" ]
+then
+	hg clone http://code.nsnam.org/mathieu/elf-loader/ -r d7ef4732dccc
+	cd elf-loader
+	make vdl-config.h
+	make
+	make test
+	cd ..
+	WAF_VDL="--enable-vdl-loader"
+fi	
 cd ns-3-dce/
 if [ "YES" == "$USE_KERNEL" ]
 then
     WAF_KERNEL=--enable-kernel-stack=`pwd`/../ns-3-linux
 fi
-./waf configure --prefix=`pwd`/../build --verbose $WAF_KERNEL
+./waf configure --prefix=`pwd`/../build --verbose $WAF_KERNEL $WAF_VDL
 ./waf
 ./waf install
 export LD_LIBRARY_PATH=$SAVE_LDLP:`pwd`/build/lib:`pwd`/build/bin:`pwd`/../build/lib
