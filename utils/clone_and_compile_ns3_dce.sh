@@ -91,6 +91,7 @@ then
 	make vdl-config.h
 	make
 	make test
+	cp libvdl.so ../build/lib
 	cd ..
 	WAF_VDL="--enable-vdl-loader"
 fi	
