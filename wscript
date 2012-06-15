@@ -464,5 +464,3 @@ def build(bld):
                          '-Wl,-soname=libpthread.so.0'])
     if bld.env['ENABLE_VDL']:                     
     	bld.add_subdirs(['utils'])
-    
-	
