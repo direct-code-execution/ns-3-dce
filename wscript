@@ -388,14 +388,14 @@ def build(bld):
         'model/dce-dirent.cc',
         'model/dce-at.cc',
         'model/exec-utils.cc',
-        'model/ipv4-linux-address.cc',
+        'model/linux/ipv4-linux.cc',
         # helper.
         'helper/ipv4-dce-routing-helper.cc',
         'helper/dce-manager-helper.cc',
         'helper/dce-application-helper.cc',
         'helper/quagga-helper.cc',
         'helper/ccn-client-helper.cc',
-        'helper/ipv4-linux-address-helper.cc'
+        'helper/linux-stack-helper.cc',
         ]
     module_headers = [
         'model/dce-manager.h',
@@ -405,11 +405,12 @@ def build(bld):
         'model/loader-factory.h',
         'model/dce-application.h',
         'model/ipv4-dce-routing.h',
+        'model/linux/ipv4-linux.h',
         'helper/dce-manager-helper.h',
         'helper/dce-application-helper.h',
         'helper/quagga-helper.h',
         'helper/ccn-client-helper.h',
-        'helper/ipv4-linux-address-helper.h'
+        'helper/linux-stack-helper.h'
         ]
     module_source = module_source + kernel_source
     module_headers = module_headers + kernel_headers

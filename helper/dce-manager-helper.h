@@ -5,6 +5,7 @@
 #include "ns3/attribute.h"
 #include "ns3/object-base.h"
 #include "ns3/node-container.h"
+#include "ns3/nstime.h"
 #include <string>
 
 namespace ns3 {
@@ -28,6 +29,11 @@ public:
   void SetVirtualPath (std::string p);
   std::string GetVirtualPath () const;
 private:
+  static void RunIp (Ptr<Node> node, Time at, std::string str);
+  static void AddAddress (Ptr<Node> node, Time at, std::string name, std::string address);
+  void AddRoutes (Ptr<Node> node, std::string r);
+  void AddRoute (Ptr<Node> node, std::string r);
+
   ObjectFactory m_loaderFactory;
   ObjectFactory m_schedulerFactory;
   ObjectFactory m_taskManagerFactory;
