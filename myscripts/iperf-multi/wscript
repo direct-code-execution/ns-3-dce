@@ -1,0 +1,15 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+import ns3waf
+
+def configure(conf):
+    ns3waf.check_modules(conf, ['core', 'internet', 'point-to-point', 'csma' ], mandatory = True)
+
+def build(bld):
+    bld.build_a_script('dce', needed = ['core', 'internet', 'dce', 'point-to-point', 'csma' ],
+				  target='bin/dce-iperf-multi',
+				  source=['dce-iperf-multi.cc'],
+#				  linkflags=['-L/usr/local/lib'],
+#				  lib=['foolib']
+				  )
+
