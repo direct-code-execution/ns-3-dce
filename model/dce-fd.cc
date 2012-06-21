@@ -345,12 +345,6 @@ int dce_socket (int domain, int type, int protocol)
 
   Ptr<SocketFdFactory>  factory = 0;
 
-  if ( domain == AF_INET6 )
-    {
-      current->err = EAFNOSUPPORT;
-      return -1;
-    }
-
   if (domain != AF_UNIX)
     {
       factory = manager->GetObject<SocketFdFactory> ();

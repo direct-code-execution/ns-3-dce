@@ -98,6 +98,29 @@ Ns3SocketFdFactory::CreateSocket (int domain, int type, int protocol)
         break;
         }
     }
+  else if (domain == PF_INET6)
+    {
+      switch (type) {
+        case SOCK_RAW: {
+        TypeId tid = TypeId::LookupByName ("ns3::Ipv6RawSocketFactory");
+        Ptr<SocketFactory> factory = GetObject<SocketFactory> (tid);
+        sock = factory->CreateSocket ();
+        sock->SetAttribute ("Protocol", UintegerValue (protocol));
+        socket = new UnixDatagramSocketFd (sock);
+          } break;
+        case SOCK_DGRAM: {
+          } break;
+        case SOCK_STREAM: {
+        TypeId tid = TypeId::LookupByName ("ns3::TcpSocketFactory");
+        Ptr<SocketFactory> factory = GetObject<SocketFactory> (tid);
+        sock = factory->CreateSocket ();
+        socket = new UnixStreamSocketFd (sock);
+          } break;
+        default:
+        NS_FATAL_ERROR ("missing socket type");
+        break;
+        }
+    }
   else if (domain == PF_NETLINK)
     {
       switch (type) {

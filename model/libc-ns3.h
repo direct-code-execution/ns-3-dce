@@ -469,7 +469,7 @@ NATIVE (textdomain)
 NATIVE (gettext)
 
 // PWD.H
-DCE (getpwnam)
+NATIVE (getpwnam)
 DCE (getpwuid)
 DCE (endpwent)
 

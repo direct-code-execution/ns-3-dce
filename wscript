@@ -175,7 +175,9 @@ def build_dce_tests(module, kern):
              ['test-iperf', []],
              ['test-name', []],
              ['test-pipe', []],
-             ['test-dirent', []]
+             ['test-dirent', []],
+             ['test-socket', []],
+             ['test-bug-multi-select', []],
              ]
     for name,uselib in tests:
         module.add_test(**dce_kw(target='bin_dce/' + name, source = ['test/' + name + '.cc'],
@@ -247,10 +249,6 @@ def build_dce_examples(module):
                        target='bin/dce-iperf',
                        source=['example/dce-iperf.cc', 'example/ccnx/misc-tools.cc'])
     
-    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'point-to-point-layout'],
-                       target='bin/dce-zebra-simple',
-                       source=['example/dce-zebra-simple.cc'])
-
     module.add_example(needed = ['core', 'internet', 'dce' ], 
                        target='bin/dce-bash-simple',
                        source=['example/bash/dce-bash-simple.cc'])
@@ -393,7 +391,6 @@ def build(bld):
         'helper/ipv4-dce-routing-helper.cc',
         'helper/dce-manager-helper.cc',
         'helper/dce-application-helper.cc',
-        'helper/quagga-helper.cc',
         'helper/ccn-client-helper.cc',
         'helper/linux-stack-helper.cc',
         ]
@@ -408,9 +405,9 @@ def build(bld):
         'model/linux/ipv4-linux.h',
         'helper/dce-manager-helper.h',
         'helper/dce-application-helper.h',
-        'helper/quagga-helper.h',
         'helper/ccn-client-helper.h',
-        'helper/linux-stack-helper.h'
+        'helper/linux-stack-helper.h',
+        'helper/ipv4-dce-routing-helper.h',
         ]
     module_source = module_source + kernel_source
     module_headers = module_headers + kernel_headers
@@ -464,4 +461,4 @@ def build(bld):
                          '-Wl,--version-script=' + os.path.join('model', 'libpthread.version'),
                          '-Wl,-soname=libpthread.so.0'])
     if bld.env['ENABLE_VDL']:                     
-    	bld.add_subdirs(['utils'])
+        bld.add_subdirs(['utils'])

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Set environnement for ns3 dce
-cd `dirname $BASH_SOURCE`/../
+cd `dirname ${BASH_SOURCE:-$0}`/../
 BASEDCE=$PWD
 cd ..
 BASE=$PWD

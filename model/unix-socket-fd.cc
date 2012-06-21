@@ -33,6 +33,7 @@
 #include "ns3/boolean.h"
 #include "ns3/simulator.h"
 #include "ns3/netlink-socket-address.h"
+#include "ns3/inet6-socket-address.h"
 #include <fcntl.h>
 #include <errno.h>
 #include <linux/icmp.h> // need ICMP_FILTER
@@ -634,6 +635,15 @@ UnixSocketFd::PosixAddressToNs3Address (const struct sockaddr *my_addr, socklen_
       InetSocketAddress inet = InetSocketAddress (ipv4, port);
       return inet;
     }
+  else if (my_addr->sa_family == AF_INET6)
+    {
+      const struct sockaddr_in6 *addr = (const struct sockaddr_in6 *)my_addr;
+      Ipv6Address ipv6;
+      ipv6.Set ((uint8_t *)addr->sin6_addr.s6_addr);
+      uint16_t port = ntohs (addr->sin6_port);
+      Inet6SocketAddress inet = Inet6SocketAddress (ipv6, port);
+      return inet;
+    }
   else if (my_addr->sa_family == AF_NETLINK)
     {
       const struct sockaddr_nl *addr = (const struct sockaddr_nl *)my_addr;
@@ -670,6 +680,19 @@ UnixSocketFd::Ns3AddressToPosixAddress (const Address& nsaddr,
       inet_addr->sin_port = htons (ns_inetaddr.GetPort ());
       inet_addr->sin_addr.s_addr = htonl (ns_inetaddr.GetIpv4 ().Get ());
       *addrlen = sizeof(struct sockaddr_in);
+    }
+  else if (Inet6SocketAddress::IsMatchingType (nsaddr))
+    {
+      Inet6SocketAddress ns_inetaddr = Inet6SocketAddress::ConvertFrom (nsaddr);
+      if (*addrlen < sizeof (struct sockaddr_in6))
+        {
+          return -1;
+        }
+      struct sockaddr_in6 *inet_addr = (struct sockaddr_in6 *)addr;
+      inet_addr->sin6_family = AF_INET;
+      inet_addr->sin6_port = htons (ns_inetaddr.GetPort ());
+      ns_inetaddr.GetIpv6 ().GetBytes (inet_addr->sin6_addr.s6_addr);
+      *addrlen = sizeof(struct sockaddr_in6);
     }
   else if (NetlinkSocketAddress::IsMatchingType(nsaddr))
     {

@@ -31,6 +31,8 @@ def build(bld):
     new_test(bld, 'test-netdb', '')
     new_test(bld, 'test-env', '')
     new_test(bld, 'test-cond', 'PTHREAD')
+    new_test(bld, 'test-socket', 'PTHREAD')
+    new_test(bld, 'test-bug-multi-select', 'PTHREAD')
     new_test(bld, 'test-timer-fd', '')
     new_test(bld, 'test-stdlib', '')
     new_test(bld, 'test-select', 'PTHREAD')

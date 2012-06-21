@@ -254,6 +254,10 @@ LinuxSocketFdFactory::TaskWakeup (struct SimKernel *kernel, struct SimTask *task
 {
   LinuxSocketFdFactory *self = (LinuxSocketFdFactory *)kernel;
   TaskManager *manager = TaskManager::Current ();
+  if (!manager) 
+    {
+      return 1;
+    }
   Task *other = (Task *)self->m_exported->task_get_private (task);
   bool isBlocked = other->IsBlocked ();
   manager->Wakeup (other);
@@ -403,6 +407,10 @@ LinuxSocketFdFactory::NotifyAddDeviceTask (Ptr<NetDevice> device)
   if (device->IsBroadcast ())
     {
       flags |= SIM_DEV_BROADCAST;
+    }
+  if (!device->NeedsArp ())
+    {
+      flags |= SIM_DEV_NOARP;
     }
   m_loader->NotifyStartExecute (); // Restore the memory of the kernel before access it !
   struct SimDevice *dev = m_exported->dev_create (PeekPointer (device), (enum SimDevFlags)flags);

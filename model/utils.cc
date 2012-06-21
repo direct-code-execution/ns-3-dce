@@ -191,6 +191,11 @@ UtilsSendSignal (Process *process, int signum)
 void UtilsDoSignal (void)
 {
   Thread *current = Current ();
+  if (!current)
+    {
+      return;
+    }
+
   // we try to check if we 
   // have pending signals and we deliver them if we have any.
   for (std::vector<SignalHandler>::iterator i = current->process->signalHandlers.begin (); 
