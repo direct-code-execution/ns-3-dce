@@ -6,6 +6,7 @@
 #include "ns3/string.h"
 #include "ns3/internet-stack-helper.h"
 #include "ns3/dce-module.h"
+#include "ns3/ipv4-dce-routing-helper.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 //#include <mcheck.h>
@@ -88,6 +89,8 @@ DceManagerTestCase::DoRun (void)
           dceManager.Install (nodes);
 
           InternetStackHelper stack;
+          Ipv4DceRoutingHelper ipv4RoutingHelper;
+          stack.SetRoutingHelper (ipv4RoutingHelper);
           stack.Install (nodes);
         }
     }
