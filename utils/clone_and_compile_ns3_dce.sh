@@ -40,7 +40,7 @@ then
  	hg clone http://code.nsnam.org/furbani/ns-3-linux
 fi
 echo clone ns-3-dev
-hg clone http://code.nsnam.org/ns-3-dev -r 67c6b025f766
+hg clone -r 67c6b025f766 http://code.nsnam.org/ns-3-dev
 mkdir build
 cd ns-3-dev
 patch -p1 <../ns-3-dce/utils/packet-socket-upgrade-exp.patch
@@ -86,7 +86,7 @@ then
 fi
 if [ "YES" == "$USE_VDL" ]
 then
-	hg clone http://code.nsnam.org/mathieu/elf-loader/ -r d7ef4732dccc
+	hg clone -r d7ef4732dccc http://code.nsnam.org/mathieu/elf-loader/
 	cd elf-loader
 	make vdl-config.h
 	make
