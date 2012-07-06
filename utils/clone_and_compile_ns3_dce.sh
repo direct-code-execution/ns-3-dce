@@ -43,6 +43,7 @@ echo clone ns-3-dev
 hg clone -r 67c6b025f766 http://code.nsnam.org/ns-3-dev
 mkdir build
 cd ns-3-dev
+hg revert -a
 patch -p1 <../ns-3-dce/utils/packet-socket-upgrade-exp.patch
 patch -p1 <../ns-3-dce/utils/remove-default-simulator-asserts.patch
 ./waf configure --prefix=`pwd`/../build --enable-tests
@@ -59,14 +60,6 @@ cd ..
 if [ "YES" == "$USE_KERNEL" ]
 then
 	cd ns-3-linux/
- 	git clone git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git net-next-2.6
-	make unpatch
-	make  setup
-	make defconfig
-	make config
-	sed s/CONFIG_PACKET=m/CONFIG_PACKET=y/ config >c2
-	rm config
-	mv c2 config
 	make
 	cd ..
 	wget http://www.linuxgrill.com/anonymous/iproute2/NEW-OSDL/iproute2-2.6.38.tar.bz2     
