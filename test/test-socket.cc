@@ -251,6 +251,7 @@ thread_recv (void *arg)
         {
           FD_SET (accept_sock, &readfd);
         }
+      memset (&wait, 0, sizeof (struct timeval));
       wait.tv_sec = 1;
 
       ret = select (FD_SETSIZE, &readfd, NULL, NULL, &wait);
