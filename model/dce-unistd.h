@@ -59,6 +59,7 @@ int dce_execle (const char *path, const char *arg, ...);
 
 int dce_truncate (const char *path, off_t length);
 int dce_ftruncate (int fd, off_t length);
+int dce_ftruncate64 (int fd, off_t length);
 	
 void *dce_sbrk(intptr_t increment);
 int dce_getpagesize(void);

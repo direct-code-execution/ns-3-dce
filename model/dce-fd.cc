@@ -652,6 +652,14 @@ int dce_ftruncate (int fd, off_t length)
   */ 
   OPENED_FD_METHOD (int, Ftruncate (length) )  
 }
+int dce_ftruncate64 (int fd, off_t length)
+{
+  Thread *current = Current ();
+  NS_ASSERT (current != 0);
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << length);
+  return dce_ftruncate (fd, length);
+}
+
 int dce_pipe(int pipefd[2])
 {
   Thread *current = Current ();
