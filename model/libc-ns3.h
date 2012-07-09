@@ -481,6 +481,13 @@ NATIVE (strtoumax)
 // NETINET/ETHER.H
 NATIVE (ether_aton_r)
 
+// SEARCH.H
+NATIVE (tsearch)
+NATIVE (tfind)
+NATIVE (tdelete)
+NATIVE (twalk)
+NATIVE (tdestroy)
+
 ///////////////////// END OF INVENTAIRE //////////////////////////////////////////////////
 
 // ctype.h

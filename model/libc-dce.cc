@@ -89,6 +89,7 @@
 #include <inttypes.h>
 #include <error.h>
 #include <netinet/ether.h>
+#include <search.h>
 
 extern void __cxa_finalize (void *d);
 extern int __cxa_atexit (void (*func) (void *), void *arg, void *d);

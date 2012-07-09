@@ -173,6 +173,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-dirent", 0, "" , false},
       {  "test-socket", 30, "" , true},
       {  "test-bug-multi-select", 30, "" , true},
+      {  "test-tsearch", 0, "" , false},
   };
 
   // Prepare directories and files for test-stdio
