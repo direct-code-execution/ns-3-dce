@@ -178,6 +178,7 @@ def build_dce_tests(module, kern):
              ['test-dirent', []],
              ['test-socket', []],
              ['test-bug-multi-select', []],
+             ['test-tsearch', []],
              ]
     for name,uselib in tests:
         module.add_test(**dce_kw(target='bin_dce/' + name, source = ['test/' + name + '.cc'],
