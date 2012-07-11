@@ -1096,6 +1096,22 @@ DceManager::LoadMain (Loader *ld, std::string filename, Process *proc, int &err)
           libpthread_setup = (void (*)(const struct Libc *))(symbol);
           libpthread_setup (libc);
 
+          h = ld->Load ("librt-ns3.so", RTLD_GLOBAL);
+          if (h == 0)
+            {
+              err = ENOMEM;
+              return 0;
+            }
+          symbol = ld->Lookup (h, "librt_setup");
+          if (symbol == 0)
+            {
+              NS_FATAL_ERROR ("This is not our fake librt !");
+            }
+          // construct librt now
+          void (*librt_setup)(const struct Libc *fn);
+          librt_setup = (void (*)(const struct Libc *))(symbol);
+          librt_setup (libc);
+
           // finally, call into 'main'.
           h = ld->Load (filename, RTLD_GLOBAL);
 

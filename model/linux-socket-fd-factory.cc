@@ -466,6 +466,7 @@ LinuxSocketFdFactory::GetSysFileList (void)
 void
 LinuxSocketFdFactory::SetTask (std::string path, std::string value)
 {
+  NS_LOG_FUNCTION (path << value);
   std::vector<std::pair<std::string,struct SimSysFile *> > files = GetSysFileList ();
   for (uint32_t i = 0; i < files.size (); i++)
     {
@@ -539,6 +540,7 @@ LinuxSocketFdFactory::InitializeStack (void)
                                                       this));
   Set (".net.ipv4.conf.all.forwarding", "1");
   Set (".net.ipv4.conf.all.log_martians", "1");
+  Set (".net.ipv6.conf.all.forwarding", "0");
 
   while (!m_earlySysfs.empty ())
     {

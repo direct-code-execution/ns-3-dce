@@ -43,9 +43,20 @@ test_select_null_null (void)
   struct timeval timeout =
   { 0, 0 };
   int nfds = select (timerfd + 1, &fds, NULL, NULL, &timeout);
-  close (timerfd);
   // no fds must be ready and select() should complete without errors
   TEST_ASSERT_EQUAL (nfds, 0);
+
+  timeout.tv_sec = 1;
+  timeout.tv_usec = 0;
+  // select(2): 
+  // Some  code  calls  select() with all three sets empty, nfds zero, and a
+  // non-NULL timeout as a fairly portable way to sleep with subsecond 
+  // precision.
+  nfds = select (0, &fds, NULL, NULL, &timeout);
+  // no fds must be ready and select() should complete without errors
+  TEST_ASSERT_EQUAL (nfds, 0);
+
+  close (timerfd);
 }
 
 static bool

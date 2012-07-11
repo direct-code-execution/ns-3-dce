@@ -1,6 +1,7 @@
 #include "dce-signal.h"
 #include "utils.h"
 #include "process.h"
+#include "dce-manager.h"
 #include "ns3/log.h"
 #include "ns3/assert.h"
 #include <vector>
@@ -97,6 +98,21 @@ int dce_sigaction (int signum, const struct sigaction *act,
     }
 
   return 0;
+}
+
+int dce_sigwait (const sigset_t *set, int *sig)
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << set << sig);
+  NS_ASSERT (current != 0);
+
+  int ret = 0;
+  // NEED TO WORK!!
+  // XXX: we need to add signal num notiifcation
+  current->process->manager->Wait ();
+  //  sigdelset (&current->pendingSignals, numnum);
+
+  return ret;
 }
 int dce_sigprocmask(int how, const sigset_t *set, sigset_t *oldset)
 {

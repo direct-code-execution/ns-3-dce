@@ -166,6 +166,7 @@ Ns3SocketFdFactory::CreateSocket (int domain, int type, int protocol)
   else
     {
       NS_FATAL_ERROR ("unsupported domain");
+      return 0;
     }
 
   return socket;

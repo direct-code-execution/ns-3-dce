@@ -7,6 +7,7 @@ extern "C" {
 #endif
 
 unsigned dce_if_nametoindex (const char *ifname);
+char *dce_if_indextoname (unsigned ifindex, char *ifname);
 
 
 #ifdef __cplusplus

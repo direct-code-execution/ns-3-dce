@@ -124,7 +124,7 @@ NATIVE (strnlen)
 NATIVE (strcspn)
 NATIVE (strspn)
 NATIVE_EXPLICIT (strchr, char* (*) (char *, int))
-NATIVE_EXPLICIT (strrchr, char * (*) (char *, int))
+NATIVE_EXPLICIT (strrchr, const char * (*) (const char *, int))
 NATIVE (strcasecmp)
 NATIVE (strncasecmp)
 DCE_WITH_ALIAS (strdup) // because C++ defines both const and non-const functions
@@ -149,6 +149,7 @@ NATIVE (htonl)
 NATIVE (htons)
 NATIVE (ntohl)
 NATIVE (ntohs)
+NATIVE (lockf)
 NATIVE (inet_aton)
 NATIVE (inet_addr)
 NATIVE (inet_network)
@@ -158,9 +159,11 @@ NATIVE (inet_lnaof)
 NATIVE (inet_netof)
 DCE (inet_ntop)
 NATIVE (inet_pton)
+NATIVE (inet6_opt_find)
 
 // SYS/SOCKET.H
 DCE (socket)
+DCE (socketpair)
 DCE (getsockname)
 DCE (getpeername)
 DCE (bind)
@@ -313,13 +316,16 @@ DCE_WITH_ALIAS2 (gmtime, localtime)
 NATIVE_WITH_ALIAS2 (gmtime_r, localtime_r)
 NATIVE (mktime)
 NATIVE (strftime)
-NATIVE_WITH_ALIAS2 (clock_gettime, __vdso_clock_gettime) // this is wrong. clock should be changed to DCE implementation
+//DCE_WITH_ALIAS2 (clock_gettime, __vdso_clock_gettime)
+DCE (clock_gettime)
 
 // SYS/TIME.H
 DCE (gettimeofday)
 DCE (time)
 DCE (setitimer)
 DCE (getitimer)
+
+DCE (sysinfo)
 
 // SYS/MAP.H
 DCE (mmap)
@@ -348,6 +354,7 @@ NATIVE (sigaddset)
 NATIVE (sigdelset)
 NATIVE (sigismember)
 DCE (sigprocmask)
+DCE    (sigwait)
 
 // PTHREAD.H
 DCE (pthread_create)
@@ -378,6 +385,13 @@ DCE (pthread_cond_timedwait)
 DCE (pthread_cond_wait)
 DCE (pthread_condattr_destroy)
 DCE (pthread_condattr_init)
+NATIVE (pthread_rwlock_init)
+NATIVE (pthread_rwlock_unlock)
+NATIVE (pthread_rwlock_wrlock)
+NATIVE (pthread_rwlock_rdlock)
+NATIVE (pthread_rwlock_destroy)
+NATIVE (pthread_setcancelstate)
+NATIVE (pthread_sigmask)
 
 // SEMAPHORE.H
 DCE (sem_init)
@@ -421,6 +435,7 @@ DCE (timerfd_gettime)
 
 // NET/IF.H
 DCE (if_nametoindex)
+DCE (if_indextoname)
 
 // DIRENT.H
 DCE (opendir)
@@ -480,6 +495,7 @@ NATIVE (strtoumax)
 
 // NETINET/ETHER.H
 NATIVE (ether_aton_r)
+NATIVE (ether_aton)
 
 // SEARCH.H
 NATIVE (tsearch)

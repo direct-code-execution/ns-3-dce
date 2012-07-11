@@ -74,6 +74,17 @@ def configure(conf):
         conf.end_msg(libpthread, True)
     conf.env['LIBPTHREAD_FILE'] = libpthread
 
+    conf.start_msg('Searching rt library')
+    librt = search_file ([
+            '/lib64/librt.so.1',
+            '/lib/librt.so.1',
+            ])
+    if librt is None:
+        conf.fatal('not found')
+    else:
+        conf.end_msg(librt, True)
+    conf.env['LIBRT_FILE'] = librt
+
     conf.find_program('readversiondef', var='READVERSIONDEF', mandatory=True)
 
     if Options.options.kernel_stack is not None and os.path.isdir(Options.options.kernel_stack):
@@ -130,7 +141,7 @@ def dce_kw(**kw):
     debug_dl = []
     d['cxxflags'] = d.get('cxxflags', []) + ['-fpie'] + mcmodel + nofortify
     d['cflags'] = d.get('cflags', []) + ['-fpie'] + mcmodel + nofortify
-    d['linkflags'] = d.get('linkflags', []) + ['-pie'] + debug_dl
+    d['linkflags'] = d.get('linkflags', []) + ['-pie'] + ['-lrt'] + debug_dl
     return d
 
 def build_dce_tests(module, kern):
@@ -179,6 +190,7 @@ def build_dce_tests(module, kern):
              ['test-socket', []],
              ['test-bug-multi-select', []],
              ['test-tsearch', []],
+             ['test-signal', []],
              ]
     for name,uselib in tests:
         module.add_test(**dce_kw(target='bin_dce/' + name, source = ['test/' + name + '.cc'],
@@ -442,6 +454,11 @@ def build(bld):
         rule='%s %s | cat ${SRC[0].abspath()} - > ${TGT}' %
         (bld.env['READVERSIONDEF'], bld.env['LIBPTHREAD_FILE']))
 
+    bld(source=['model/librt-ns3.version'],
+        target='model/librt.version',
+        rule='%s %s | cat ${SRC[0].abspath()} - > ${TGT}' %
+        (bld.env['READVERSIONDEF'], bld.env['LIBRT_FILE']))
+
     bld.add_group('dce_use_version_files')
 
     # The very small libc used to replace the glibc
@@ -461,5 +478,15 @@ def build(bld):
               linkflags=['-nostdlib', '-lc',
                          '-Wl,--version-script=' + os.path.join('model', 'libpthread.version'),
                          '-Wl,-soname=libpthread.so.0'])
+
+    # The very small librt used to replace the glibc
+    # and forward to the dce_* code
+    bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc'],
+              target='lib/rt-ns3', cflags=['-g'],
+              defines=['LIBSETUP=librt_setup'],
+              linkflags=['-nostdlib', '-lc',
+                         '-Wl,--version-script=' + os.path.join('model', 'librt.version'),
+                         '-Wl,-soname=librt.so.1'])
+
     if bld.env['ENABLE_VDL']:                     
         bld.add_subdirs(['utils'])

@@ -54,3 +54,12 @@ char *dce_asctime(const struct tm *tm)
 
   return asctime_r (tm, Current ()->process->asctime_result);
 }
+
+int dce_clock_gettime(clockid_t which_clock, struct timespec *tp)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
+  NS_ASSERT (Current () != 0);
+  NS_ASSERT (tp != 0);
+  *tp = UtilsTimeToTimespec (UtilsSimulationTimeToTime (Now ()));
+  return 0;
+}

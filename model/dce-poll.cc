@@ -180,7 +180,12 @@ int dce_select (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
         }
     }
   nfds = eventByFd.size ();
-  if (nfds == 0)
+
+  // select(2): 
+  // Some  code  calls  select() with all three sets empty, nfds zero, and a
+  // non-NULL timeout as a fairly portable way to sleep with subsecond 
+  // precision.
+  if (nfds == 0 && !timeout)
     {
       current->err = EINVAL;
       return -1;
