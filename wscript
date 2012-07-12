@@ -78,6 +78,8 @@ def configure(conf):
     librt = search_file ([
             '/lib64/librt.so.1',
             '/lib/librt.so.1',
+            '/lib/x86_64-linux-gnu/librt.so.0',
+            '/lib/i386-linux-gnu/librt.so.1',
             ])
     if librt is None:
         conf.fatal('not found')
