@@ -316,8 +316,7 @@ DCE_WITH_ALIAS2 (gmtime, localtime)
 NATIVE_WITH_ALIAS2 (gmtime_r, localtime_r)
 NATIVE (mktime)
 NATIVE (strftime)
-//DCE_WITH_ALIAS2 (clock_gettime, __vdso_clock_gettime)
-DCE (clock_gettime)
+DCE_EXPLICIT (clock_gettime, int, clockid_t, struct timespec *)
 
 // SYS/TIME.H
 DCE (gettimeofday)
@@ -367,8 +366,8 @@ DCE (pthread_key_create)
 DCE (pthread_key_delete)
 DCE (pthread_mutex_destroy)
 DCE (pthread_mutex_init)
-DCE (pthread_mutex_lock)
-DCE (pthread_mutex_unlock)
+DCE_EXPLICIT (pthread_mutex_lock, int, pthread_mutex_t *)
+DCE_EXPLICIT (pthread_mutex_unlock, int, pthread_mutex_t *)
 DCE (pthread_mutex_trylock)
 DCE (pthread_mutexattr_init)
 DCE (pthread_mutexattr_destroy)
@@ -381,8 +380,8 @@ DCE (pthread_cond_destroy)
 DCE (pthread_cond_init)
 DCE (pthread_cond_broadcast)
 DCE (pthread_cond_signal)
-DCE (pthread_cond_timedwait)
-DCE (pthread_cond_wait)
+DCE_EXPLICIT (pthread_cond_timedwait, int, pthread_cond_t*, pthread_mutex_t*, const struct timespec *)
+DCE_EXPLICIT (pthread_cond_wait, int, pthread_cond_t*, pthread_mutex_t*)
 DCE (pthread_condattr_destroy)
 DCE (pthread_condattr_init)
 NATIVE (pthread_rwlock_init)
@@ -537,6 +536,7 @@ NATIVE (__cmsg_nxthdr)
 
 #undef DCE
 #undef DCET
+#undef DCE_EXPLICIT
 #undef NATIVE
 #undef NATIVE_WITH_ALIAS
 #undef NATIVE_WITH_ALIAS2
