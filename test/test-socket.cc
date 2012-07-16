@@ -288,15 +288,15 @@ thread_recv (void *arg)
 
 void test_tcp (void)
 {
-  int sock, tx_sock;
+  int socks[2];
   const char buf[12] = "0123456789\0";
   static struct sockaddr_in dst;
   int ret;
   pthread_t thread;
 
   // TCP Sock
-  sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT_UNEQUAL (sock, -1);
+  ret = socketpair (AF_INET, SOCK_STREAM, 0, socks);
+  TEST_ASSERT_UNEQUAL (ret, -1);
 
   memset (&dst, 0, sizeof (dst));
   dst.sin_family = AF_INET;
@@ -304,27 +304,24 @@ void test_tcp (void)
   dst.sin_port = htons (30);
 
   // bind
-  ret = bind (sock, (struct sockaddr *)&dst, sizeof (dst));
+  ret = bind (socks[0], (struct sockaddr *)&dst, sizeof (dst));
   TEST_ASSERT_UNEQUAL (ret, -1);
 
   // listen
-  ret = listen (sock, 5);
+  ret = listen (socks[0], 5);
   TEST_ASSERT_UNEQUAL (ret, -1);
 
   // recv thread
   ret = pthread_create (&thread, NULL, 
                         &thread_recv,
-                        (void*)&sock);
+                        (void*)&socks[0]);
 
-  // tx sock
-  tx_sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT_UNEQUAL (tx_sock, -1);
   // connect
-  ret = connect (tx_sock, (struct sockaddr *)&dst, sizeof (dst));
+  ret = connect (socks[1], (struct sockaddr *)&dst, sizeof (dst));
   TEST_ASSERT_UNEQUAL (ret, -1);
 
   // send
-  ret = send (tx_sock, &buf, sizeof (buf), 0);
+  ret = send (socks[1], &buf, sizeof (buf), 0);
   TEST_ASSERT_EQUAL (ret, sizeof (buf));
   OUTPUT ("TCP send ret = " << ret);
 
@@ -332,10 +329,10 @@ void test_tcp (void)
   ret = pthread_join (thread, &return_value);
 
   // close
-  close (sock);
-  TEST_ASSERT_UNEQUAL (sock, -1);
-  close (tx_sock);
-  TEST_ASSERT_UNEQUAL (tx_sock, -1);
+  close (socks[0]);
+  TEST_ASSERT_UNEQUAL (socks[0], -1);
+  close (socks[1]);
+  TEST_ASSERT_UNEQUAL (socks[1], -1);
 }
 
 void test_netlink (void)

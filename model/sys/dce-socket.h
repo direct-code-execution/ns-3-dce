@@ -28,6 +28,7 @@ ssize_t dce_sendto(int s, const void *buf, size_t len, int flags,
 ssize_t dce_sendmsg(int s, const struct msghdr *msg, int flags);
 int dce_getsockname(int s, struct sockaddr *name, socklen_t *namelen);
 int dce_getpeername(int s, struct sockaddr *name, socklen_t *namelen);
+int dce_socketpair (int domain, int type, int protocol, int sv[2]);
 
 #ifdef __cplusplus
 }

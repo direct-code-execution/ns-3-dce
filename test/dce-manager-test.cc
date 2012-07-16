@@ -174,6 +174,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-socket", 30, "" , true},
       {  "test-bug-multi-select", 30, "" , true},
       {  "test-tsearch", 0, "" , false},
+      // XXX: not completely tested      {  "test-signal", 30, "" , false},
   };
 
   // Prepare directories and files for test-stdio

@@ -38,6 +38,38 @@ extern "C" {
 #define DCET(rtype,name)                                                               \
         GCC_BUILTIN_APPLYT(rtype,name,name)
 
+/* From gcc/testsuite/gcc.dg/cpp/vararg2.c */
+/* C99 __VA_ARGS__ versions */
+#define c99_count(...)    _c99_count1 ( , ##__VA_ARGS__)/* If only ## worked.*/
+#define _c99_count1(...)  _c99_count2 (__VA_ARGS__,10,9,8,7,6,5,4,3,2,1,0)
+#define _c99_count2(_,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,n,...) n
+
+#define FULL_ARGS_0()
+#define FULL_ARGS_1(X0)  X0 a0
+#define FULL_ARGS_2(X0,X1)  X0 a0, X1 a1
+#define FULL_ARGS_3(X0,X1,X2)  X0 a0, X1 a1, X2 a2
+#define FULL_ARGS_4(X0,X1,X2,X3)  X0 a0, X1 a1, X2 a2, X3 a3
+#define FULL_ARGS_5(X0,X1,X2,X3,X4)  X0 a0, X1 a1, X2 a2, X3 a3, X4 a4
+
+#define _ARGS_0()
+#define _ARGS_1(X0)  a0
+#define _ARGS_2(X0,X1)   a0, a1
+#define _ARGS_3(X0,X1,X2)  a0, a1, a2
+#define _ARGS_4(X0,X1,X2,X3)  a0, a1, a2, a3
+#define _ARGS_5(X0,X1,X2,X3,X4) a0, a1, a2, a3, a4
+
+#define CAT(a, ...) PRIMITIVE_CAT(a, __VA_ARGS__)
+#define PRIMITIVE_CAT(a, ...) a ## __VA_ARGS__
+  
+#define  FULL_ARGS(...) CAT(FULL_ARGS_,c99_count (__VA_ARGS__))(__VA_ARGS__)
+#define  ARGS(...) CAT(_ARGS_,c99_count (__VA_ARGS__))(__VA_ARGS__)
+
+
+#define DCE_EXPLICIT(name,rtype,...)                                    \
+  rtype name (FULL_ARGS(__VA_ARGS__))    \
+  {                                                             \
+    return g_libc.name ## _fn (ARGS(__VA_ARGS__));              \
+  }
 
 #define DCE_WITH_ALIAS(name)					\
 	GCC_BUILTIN_APPLY(__ ## name,name)			\

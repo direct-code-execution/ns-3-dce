@@ -22,6 +22,8 @@
 #include <getopt.h>
 #include <limits.h>
 #include <fcntl.h>
+#include <net/if.h>
+#include <sys/ioctl.h>
 #include "dce-random.h"
 #include "net/dce-if.h"
 #include "ns3/node.h"
@@ -30,6 +32,7 @@
 #include "ns3/names.h"
 #include "ns3/random-variable.h"
 #include "ns3/ipv4-l3-protocol.h"
+#include "socket-fd-factory.h"
 
 NS_LOG_COMPONENT_DEFINE ("Dce");
 
@@ -639,20 +642,60 @@ int dce_fchdir (int fd)
 }
 unsigned dce_if_nametoindex (const char *ifname)
 {
-  int index = 0;
-  Ptr<Node> node = Current ()->process->manager->GetObject<Node> ();
-  Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> ();
+  Thread *current = Current ();
+  Ptr<SocketFdFactory> factory = 0;
+  factory = current->process->manager->GetObject<SocketFdFactory> ();
 
-  for (uint32_t i = 0; i < node->GetNDevices (); ++i)
+  if (factory->GetInstanceTypeId () == TypeId::LookupByName ("ns3::LinuxSocketFdFactory"))
     {
-      Ptr<NetDevice> dev = node->GetDevice (i);
-      if (ifname == Names::FindName (dev))
+      struct ifreq ifr;
+      int fd = dce_socket (AF_INET, SOCK_DGRAM, 0);
+      if (fd < 0)
         {
-          index = ipv4->GetInterfaceForDevice (dev);
-          return index;
+          return 0;
         }
+
+      strncpy (ifr.ifr_name, ifname, sizeof (ifr.ifr_name));
+      if (dce_ioctl (fd, SIOCGIFINDEX, (char *)&ifr) < 0)
+        {
+          current->err = errno;
+          return -1;
+        }
+      return ifr.ifr_ifindex;
     }
-  return 0;
+  else
+    {
+      int index = 0;
+      Ptr<Node> node = Current ()->process->manager->GetObject<Node> ();
+      Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> ();
+
+      for (uint32_t i = 0; i < node->GetNDevices (); ++i)
+        {
+          Ptr<NetDevice> dev = node->GetDevice (i);
+          if (ifname == Names::FindName (dev))
+            {
+              index = ipv4->GetInterfaceForDevice (dev);
+              return index;
+            }
+        }
+      return 0;
+    }
+}
+char *dce_if_indextoname (unsigned ifindex, char *ifname)
+{
+  struct ifreq ifr;
+  int fd = dce_socket (AF_INET, SOCK_DGRAM, 0);
+  if (fd < 0)
+    {
+      return 0;
+    }
+
+  ifr.ifr_ifindex = ifindex;
+  if (dce_ioctl (fd, SIOCGIFNAME, (char *)&ifr) < 0)
+    {
+      return 0;
+    }
+  return strncpy (ifname, ifr.ifr_name, IFNAMSIZ);
 }
 pid_t dce_fork (void)
 {
@@ -848,6 +891,21 @@ char *dce_setlocale (int category, const char *locale)
 {
   static char loc[] = "";
   return loc;
+}
+int dce_sysinfo (struct sysinfo *info)
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (current << UtilsGetNodeId ());
+  NS_ASSERT (current != 0);
+  if (!info)
+    {
+      current->err = ENAMETOOLONG;
+      return -1;
+    }
+
+  info->uptime = (long)UtilsSimulationTimeToTime (Now ()).GetSeconds ();
+  // XXX
+  return 0;
 }
 #ifdef HAVE_GETCPUFEATURES
 extern "C"

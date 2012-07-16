@@ -372,11 +372,30 @@ int dce_socket (int domain, int type, int protocol)
       current->err = EMFILE;
       return -1;
     }
+  if (!socket)
+    return -1;
   socket->IncFdCount ();
   current->process->openFiles[fd] = new FileUsage (fd, socket);
 
   return fd;
 }
+int dce_socketpair (int domain, int type, int protocol, int sv[2])
+{
+  sv[0] = dce_socket (domain, type, protocol);
+  if (sv[0] < 0)
+    {
+      return -1;
+    }
+
+  sv[1] = dce_socket (domain, type, protocol);
+  if (sv[1] < 0)
+    {
+      return -1;
+    }
+
+  return 0;
+}
+
 int dce_bind (int fd, const struct sockaddr *my_addr, socklen_t addrlen)
 {
   Thread *current = Current ();

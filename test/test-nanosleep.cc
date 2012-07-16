@@ -4,7 +4,7 @@
 #include "test-macros.h"
 #include <sys/time.h>
 #include <signal.h>
-
+#include <sys/sysinfo.h>
 
 void sigresp (int) {return; }
 
@@ -25,6 +25,39 @@ int main (int argc, char *argv[])
     TEST_ASSERT_EQUAL (result, 0);
     TEST_ASSERT_EQUAL (end.tv_sec-start.tv_sec, 1);
     TEST_ASSERT_EQUAL (end.tv_usec-start.tv_usec, 5);
+  }
+
+  // Simple nanolseep() without interruption: clock_gettime () version
+  {
+    timespec req = {1, 5000};
+    timespec rem;
+
+    timespec start;
+    timespec end;
+
+    clock_gettime (CLOCK_REALTIME, &start);
+    int result = nanosleep (&req, &rem);
+    clock_gettime (CLOCK_REALTIME, &end);
+
+    TEST_ASSERT_EQUAL (result, 0);
+    TEST_ASSERT_EQUAL (end.tv_sec-start.tv_sec, 1);
+    TEST_ASSERT_EQUAL (end.tv_nsec-start.tv_nsec, 5000);
+  }
+
+  // Simple nanolseep() without interruption: sysinfo (): uptime version
+  {
+    timespec req = {1, 5000};
+    timespec rem;
+
+    struct sysinfo start;
+    struct sysinfo end;
+
+    sysinfo (&start);
+    int result = nanosleep (&req, &rem);
+    sysinfo (&end);
+
+    TEST_ASSERT_EQUAL (result, 0);
+    TEST_ASSERT_EQUAL (end.uptime - start.uptime, 1);
   }
 
   // Test with nanosleep() interrupted by SIGALRM fired by itimer
