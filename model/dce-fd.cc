@@ -358,6 +358,13 @@ int dce_socket (int domain, int type, int protocol)
         }
       factory = manager->GetObject<LocalSocketFdFactory> ();
     }
+  UnixFd *socket = factory->CreateSocket (domain, type, protocol);
+  if (!socket)
+    {
+
+      current->err = EINVAL;
+      return -1;
+    }
 
   int fd = UtilsAllocateFd ();
   if (fd == -1)
@@ -365,8 +372,6 @@ int dce_socket (int domain, int type, int protocol)
       current->err = EMFILE;
       return -1;
     }
-
-  UnixFd *socket = factory->CreateSocket (domain, type, protocol);
   socket->IncFdCount ();
   current->process->openFiles[fd] = new FileUsage (fd, socket);
 
