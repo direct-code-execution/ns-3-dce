@@ -54,7 +54,7 @@ pid_t dce_waitpid (pid_t pid, int *status, int options)
                       if ( !p->alloc && !p->loader )  // process zombie ?
                         {
                           pid_t id = p->pid;
-                          int exitCode = p->exitValue;
+                          int exitCode = p->timing.exitValue;
 
                           std::set<uint16_t>::iterator it = thread->process->children.find (id);
 

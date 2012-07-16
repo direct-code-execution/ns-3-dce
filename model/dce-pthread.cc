@@ -78,13 +78,17 @@ void dce_exit (int status)
   CleanupPthreadKeys ();
   dce___cxa_finalize (0);
   dce_fflush (0);
-  current->process->exitValue = __W_EXITCODE ( status,  WTERMSIG ( current->process->exitValue ) );
+  current->process->timing.exitValue = __W_EXITCODE ( status,  WTERMSIG ( current->process->timing.exitValue ) );
+  current->process->timing.ns3End = Now ().GetNanoSeconds();
+  current->process->timing.realEnd = time (0);
+
   current->task->SetSwitchNotifier (0, 0);
   current->process->loader->UnloadAll ();
 
   oss << "Exit (" << status << ")";
   line = oss.str ();
   DceManager::AppendStatusFile (current->process->pid, current->process->nodeId, line);
+  DceManager::AppendProcFile ( current->process );
 
   current->process->manager->DeleteProcess (current->process, DceManager::PEC_EXIT);
   TaskManager::Current ()->Exit ();

@@ -115,6 +115,7 @@ public:
   // Path used by simulated methods 'execvp' and 'execlp'
   void SetVirtualPath (std::string p);
   std::string GetVirtualPath () const;
+  static void AppendProcFile (Process *p);
 
 private:
   // inherited from Object.

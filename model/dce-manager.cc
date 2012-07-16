@@ -210,6 +210,11 @@ int
       char *cur = current->process->originalArgv[i];
       dce_write (fd, cur, strlen (cur));
       dce_write (fd, " ", 1);
+      current->process->timing.cmdLine += cur;
+      if (i < ( current->process->originalArgc -1 ))
+        {
+          current->process->timing.cmdLine += ' ';
+        }
     }
   dce_write (fd, "\n", 1);
   dce_close (fd);
@@ -304,7 +309,13 @@ DceManager::CreateProcess (std::string name, std::string stdinfilename, std::vec
   Ptr<LoaderFactory> loaderFactory = this->GetObject<LoaderFactory> ();
   process->loader = loaderFactory->Create (process->originalArgc, process->originalArgv,
                                            process->originalEnvp);
-  process->exitValue = 0;
+  process->timing.exitValue = 0;
+  process->timing.ns3Start = Now ().GetNanoSeconds();
+  process->timing.realStart = time (0);
+  process->timing.ns3End = 0;
+  process->timing.realEnd = 0;
+  process->timing.cmdLine = "";
+
   process->name = name;
   process->ppid = 0;
   process->pgid = 0;
@@ -510,7 +521,11 @@ DceManager::Clone (Thread *thread)
   clone->originalArgv = 0;
   clone->originalArgc = 0;
   clone->originalEnvp = 0;
-  clone->exitValue = 0;
+  clone->timing.exitValue = 0;
+  clone->timing.ns3Start = Now ().GetNanoSeconds();
+  clone->timing.realStart = time (0);
+  clone->timing.ns3End = 0;
+  clone->timing.realEnd = 0;
   clone->name = thread->process->name;
   clone->ppid = thread->process->pid;
   clone->pgid = thread->process->pgid;
@@ -740,7 +755,7 @@ DceManager::DeleteProcess (struct Process *process, ProcessEndCause type)
 
   if (!process->finished.IsNull ())
     {
-      process->finished (process->pid, process->exitValue);
+      process->finished (process->pid, process->timing.exitValue);
     }
   // stop itimer timers if there are any.
   process->itimer.Cancel ();
@@ -814,7 +829,7 @@ DceManager::DeleteProcess (struct Process *process, ProcessEndCause type)
                 }
             }
         }
-      m_processExit (process->pid, process->exitValue);
+      m_processExit (process->pid, process->timing.exitValue);
     }
   delete process->loader;
   process->loader = 0;
@@ -947,6 +962,40 @@ DceManager::AppendStatusFile (uint16_t pid, uint32_t nodeId,  std::string &line)
       oss.str ("");
       oss.clear ();
       oss << "      Time: " << GetTimeStamp () << " --> " << line << std::endl;
+      std::string wholeLine = oss.str ();
+      int l =  wholeLine.length ();
+      const char *str = wholeLine.c_str ();
+      ::write (fd, str, l);
+      ::close (fd);
+    }
+}
+void
+DceManager::AppendProcFile (Process *p)
+{
+  if (!p) return;
+  std::ostringstream oss;
+  int fd = ::open ("exitprocs", O_WRONLY | O_APPEND | O_CREAT , 0644 );
+
+  if (fd >= 0)
+    {
+      struct stat st;
+      if ( (!fstat( fd, &st)) && ( 0 == st.st_size) )
+        {
+          const char *header =  "NODE EXIT-CODE PID NS3-START-TIME NS3-END-TIME REAL-START-TIME REAL-END-TIME NS3-DURATION REAL-DURATION CMDLINE\n";
+
+          ::write (fd, header, strlen(header));
+        }
+
+      oss << p->nodeId
+          << ' ' << p->timing.exitValue
+          << ' ' << p->pid
+          << ' ' <<  p->timing.ns3Start
+          << ' ' <<  p->timing.ns3End
+          << ' ' <<  p->timing.realStart
+          << ' ' <<  p->timing.realEnd
+          << ' ' <<  ( (  p->timing.ns3End - p->timing.ns3Start  ) / (double) 1000000000 )
+          << ' ' <<  (  p->timing.realEnd - p->timing.realStart  )
+          << ' ' <<  p->timing.cmdLine  << std::endl;
       std::string wholeLine = oss.str ();
       int l =  wholeLine.length ();
       const char *str = wholeLine.c_str ();

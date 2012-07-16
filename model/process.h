@@ -109,6 +109,16 @@ struct AtExitHandler
   } value;
 };
 
+struct ProcessActivity
+{
+  int64_t ns3Start;
+  time_t realStart;
+  int64_t ns3End;
+  time_t realEnd;
+  int exitValue;
+  std::string cmdLine;
+};
+
 struct Process 
 {
   uid_t euid;
@@ -140,7 +150,6 @@ struct Process
   uint32_t nextSid;
   uint32_t nextCid;
   pthread_key_t nextThreadKey;
-  int exitValue;
   DceManager *manager;
   Loader *loader;
   void *mainHandle;
@@ -165,7 +174,7 @@ struct Process
   int *poptopt;
   FILE *syslog; // instead of real syslog, everything is written to a file /var/log/<pid>/syslog
   struct tm struct_tm;
-  char asctime_result[      3+1+ 3+1+20+1+20+1+20+1+20+1+20+1 + 1]; // definition is stolen from glibc
+  char asctime_result[ 3+1+3+1+20+1+20+1+20+1+20+1+20+1 + 1]; // definition is stolen from glibc
   uint32_t nodeId; // NS3 NODE ID
   uint8_t minimizeFiles; // If true close stderr and stdout between writes .
   // an array of memory buffers which must be freed upon process 
@@ -179,6 +188,7 @@ struct Process
   struct drand48_data seed48Current;
   // Current umask
   mode_t uMask;
+  struct ProcessActivity timing;
 };
 
 struct ThreadKeyValue

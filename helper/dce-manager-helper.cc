@@ -15,6 +15,10 @@
 #include "dce-application-helper.h"
 #include "ns3/ipv4-routing-protocol.h"
 #include "ns3/ipv4-global-routing.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <limits.h>
+#include <errno.h>
 
 NS_LOG_COMPONENT_DEFINE ("DceManagerHelper");
 
@@ -277,4 +281,188 @@ DceManagerHelper::AddRoute (Ptr<Node> node, std::string r)
       RunIp (node , NanoSeconds (3), oss.str ());
     }
 }
+
+std::vector<ProcStatus>
+DceManagerHelper::GetProcStatus (void)
+{
+  FILE *f = fopen("exitprocs","r");
+  std::vector<ProcStatus> res;
+
+  if (f)
+    {
+      char buffer[10 * 1024];
+
+      while ( (!feof(f)) && (fgets (buffer, sizeof(buffer),f)))
+        {
+          if ( 0 == strncmp (buffer, "NODE",4))
+            {
+              // SKIP First line
+            }
+          else
+            {
+              long int ret = 0;
+              char *crsr = buffer;
+              char *next = 0;
+
+              errno = 0;
+              ret = strtol (crsr, &next, 10);
+              if ( (ret == LONG_MIN) || (ret == LONG_MAX) || (ERANGE == errno) || ( next == crsr ))
+                {
+                  continue;
+                }
+              int node = (int) ret;
+              crsr = next; next = 0;
+
+              errno = 0;
+              ret = strtol (crsr, &next, 10);
+              if ( (ret == LONG_MIN) || (ret == LONG_MAX) || (ERANGE == errno) || ( next == crsr ))
+                {
+                  continue;
+                }
+              int exitcode = (int) ret;
+              crsr = next; next = 0;
+
+              errno = 0;
+              ret = strtol (crsr, &next, 10);
+              if ( (ret == LONG_MIN) || (ret == LONG_MAX) || (ERANGE == errno) || ( next == crsr ))
+                {
+                  continue;
+                }
+              int pid = (int) ret;
+              crsr = next; next = 0;
+
+              unsigned long long int ret2 = 0;
+              errno = 0;
+              ret2 = strtoll (crsr, &next, 10);
+              if ( (ret == LLONG_MIN) || (ret == LLONG_MAX) || (ERANGE == errno) || ( next == crsr ))
+                {
+                  continue;
+                }
+              int64_t nst = (int64_t) ret2;
+              crsr = next; next = 0;
+
+              errno = 0;
+              ret2 = strtoll (crsr, &next, 10);
+              if ( (ret == LLONG_MIN) || (ret == LLONG_MAX) || (ERANGE == errno) || ( next == crsr ))
+                {
+                  continue;
+                }
+              int64_t ned = (int64_t) ret2;
+              crsr = next; next = 0;
+
+              errno = 0;
+              ret = strtol (crsr, &next, 10);
+              if ( (ret == LONG_MIN) || (ret == LONG_MAX) || (ERANGE == errno) || ( next == crsr ))
+                {
+                  continue;
+                }
+              long rst = (long) ret;
+              crsr = next; next = 0;
+
+              errno = 0;
+              ret = strtol (crsr, &next, 10);
+              if ( (ret == LONG_MIN) || (ret == LONG_MAX) || (ERANGE == errno) || ( next == crsr ))
+                {
+                  continue;
+                }
+              long red = (long) ret;
+              crsr = next; next = 0;
+
+              double ret3;
+              errno = 0;
+              ret3 = strtod (crsr, &next);
+              if ( (ERANGE == errno) || ( next == crsr ))
+                {
+                  continue;
+                }
+              double dur3 = ret3;
+              crsr = next; next = 0;
+
+              errno = 0;
+              ret = strtol (crsr, &next, 10);
+              if ( (ret == LONG_MIN) || (ret == LONG_MAX) || (ERANGE == errno) || ( next == crsr ))
+                {
+                  continue;
+                }
+              long durr = (long) ret;
+              crsr = next; next = 0;
+
+              ProcStatus st (node , exitcode, pid, nst, ned , rst , red , dur3, durr, crsr+1 ) ;
+
+              res.push_back ( st );
+            }
+        }
+
+       fclose (f);
+    }
+
+  return res;
+}
+
+ProcStatus::ProcStatus (int n, int e, int p, int64_t ns, int64_t ne, long rs, long re, double nd, long rd, std::string cmd) :
+  m_node (n), m_exitCode (e), m_pid (p), m_ns3StartTime (ns), m_ns3EndTime (ne), m_realStartTime (rs), m_realEndTime (re),
+  m_ns3Duration (nd), m_realDuration (rd), m_cmdLine (cmd)
+{
+}
+
+int
+ProcStatus::GetNode (void) const
+{
+  return m_node;
+}
+
+int
+ProcStatus::GetExitCode (void) const
+{
+  return m_exitCode;
+}
+
+int
+ProcStatus::GetPid (void) const
+{
+  return m_pid;
+}
+
+int64_t
+ProcStatus::GetSimulatedStartTime (void) const
+{
+  return m_ns3StartTime;
+}
+
+int64_t ProcStatus::GetSimulatedEndTime (void) const
+{
+  return m_ns3EndTime;
+}
+
+long
+ProcStatus::GetRealStartTime (void) const
+{
+  return m_realStartTime;
+}
+
+/* Real End Time  */
+long
+ProcStatus::GetRealEndTime (void) const
+{
+  return m_realEndTime;
+}
+
+double
+ProcStatus::GetSimulatedDuration (void) const
+{
+  return m_ns3Duration;
+}
+
+long
+ProcStatus::GetRealDuration (void) const
+{
+  return m_realDuration;
+}
+
+std::string
+ProcStatus::GetCmdLine (void) const
+{
+  return m_cmdLine;
+}
+
 } // namespace ns3

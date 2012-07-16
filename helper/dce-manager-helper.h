@@ -10,6 +10,46 @@
 
 namespace ns3 {
 
+/* Container of information of a DCE finished process */
+class ProcStatus
+{
+public:
+  ProcStatus (int n, int e, int p, int64_t ns, int64_t ne, long rs, long re, double nd, long rd, std::string cmd);
+
+  /* node ID */
+  int GetNode (void) const;
+  /* exit code */
+  int GetExitCode (void) const;
+  /* Simulated pid */
+  int GetPid (void) const;
+  /* Start Time in Simulated Time the unit is nanoseconds */
+  int64_t GetSimulatedStartTime (void) const;
+  /* End Time in Simulated Time the unit is nanoseconds */
+  int64_t GetSimulatedEndTime (void) const;
+  /* Real Start Time (time_t) */
+  long GetRealStartTime (void) const;
+  /* Real End Time  */
+  long GetRealEndTime (void) const;
+  /* Simulated duration in seconds */
+  double GetSimulatedDuration (void) const;
+  /* real duration in seconds */
+  long GetRealDuration (void) const;
+  /* Command Line argv[] */
+  std::string GetCmdLine (void) const;
+
+private:
+   int m_node;
+   int m_exitCode;
+   int m_pid;
+   int64_t m_ns3StartTime;
+   int64_t m_ns3EndTime;
+   long m_realStartTime;
+   long m_realEndTime;
+   double m_ns3Duration;
+   long m_realDuration;
+   std::string m_cmdLine;
+};
+
 class DceManagerHelper : public Object
 {
 public:
@@ -28,6 +68,9 @@ public:
   // Path used by simulated methods 'execvp' and 'execlp'
   void SetVirtualPath (std::string p);
   std::string GetVirtualPath () const;
+  /* Return a Vector of Finished Process */
+  static std::vector<ProcStatus> GetProcStatus (void);
+
 private:
   static void RunIp (Ptr<Node> node, Time at, std::string str);
   static void AddAddress (Ptr<Node> node, Time at, std::string name, std::string address);
