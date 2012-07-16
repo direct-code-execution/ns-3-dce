@@ -5,6 +5,7 @@
 #include "ns3/csma-module.h"
 #include "ns3/wifi-module.h"
 #include "ns3/mobility-module.h"
+#include "ns3/internet-module.h"
 #include <fstream>
 
 using namespace ns3;
@@ -19,14 +20,6 @@ static void RunIp (Ptr<Node> node, Time at, std::string str)
   process.ParseArguments(str.c_str ());
   apps = process.Install (node);
   apps.Start (at);
-}
-
-static void AddAddress (Ptr<Node> node, Time at, const char *name, const std::string prefixAddr,
-                        int number, std::string suffixAddr)
-{
-  std::ostringstream oss;
-  oss << "-f inet addr add " << prefixAddr << number << suffixAddr << " dev " << name;
-  RunIp (node, at, oss.str ());
 }
 
 int main (int argc, char *argv[])
@@ -103,52 +96,56 @@ int main (int argc, char *argv[])
   }
 
   DceManagerHelper processManager;
- // processManager.SetLoader ("ns3::DlmLoaderFactory");
-  processManager.SetNetworkStack("ns3::LinuxSocketFdFactory",
-				 "Library", StringValue ("libnet-next-2.6.so"));
+  // processManager.SetLoader ("ns3::DlmLoaderFactory");
+  processManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("libnet-next-2.6.so"));
+  LinuxStackHelper stack;
+  stack.Install (nodes);
+
+  Ipv4AddressHelper address;
+  address.SetBase ("10.0.0.0", "255.255.255.0");
+  Ipv4InterfaceContainer interfaces = address.Assign (devices);
+
   processManager.Install (nodes);
+
 
   for (int n=0; n < 2; n++)
     {
-      AddAddress (nodes.Get (n), Seconds (0.1), "sim0", "10.0.0.", 2 + n, "/8" );
-      RunIp (nodes.Get (n), Seconds (0.11),
-          ( 'p' == linkType )? "link set sim0 up arp off":"link set sim0 up arp on");
       RunIp (nodes.Get (n), Seconds (0.2), "link show");
       RunIp (nodes.Get (n), Seconds (0.3), "route show table all");
       RunIp (nodes.Get (n), Seconds (0.4), "addr list");
     }
 
-    DceApplicationHelper process;
-    ApplicationContainer apps;
+  DceApplicationHelper process;
+  ApplicationContainer apps;
 
-    if (reliable)
-      {
-        process.SetBinary ("tcp-server");
-        process.ResetArguments ();
-        process.SetStackSize (1<<16);
-        apps = process.Install (nodes.Get (0));
-        apps.Start (Seconds (1.0));
+  if (reliable)
+    {
+      process.SetBinary ("tcp-server");
+      process.ResetArguments ();
+      process.SetStackSize (1<<16);
+      apps = process.Install (nodes.Get (0));
+      apps.Start (Seconds (1.0));
 
-        process.SetBinary ("tcp-client");
-        process.ResetArguments ();
-        process.ParseArguments ("10.0.0.2");
-        apps = process.Install (nodes.Get (1));
-        apps.Start (Seconds (1.5));
-      }
-    else
-      {
-        process.SetBinary ("udp-server");
-        process.ResetArguments ();
-        process.SetStackSize (1<<16);
-        apps = process.Install (nodes.Get (0));
-        apps.Start (Seconds (1.0));
+      process.SetBinary ("tcp-client");
+      process.ResetArguments ();
+      process.ParseArguments ("10.0.0.1");
+      apps = process.Install (nodes.Get (1));
+      apps.Start (Seconds (1.5));
+    }
+  else
+    {
+      process.SetBinary ("udp-server");
+      process.ResetArguments ();
+      process.SetStackSize (1<<16);
+      apps = process.Install (nodes.Get (0));
+      apps.Start (Seconds (1.0));
 
-        process.SetBinary ("udp-client");
-        process.ResetArguments ();
-        process.ParseArguments ("10.0.0.2");
-        apps = process.Install (nodes.Get (1));
-        apps.Start (Seconds (1.5));
-      }
+      process.SetBinary ("udp-client");
+      process.ResetArguments ();
+      process.ParseArguments ("10.0.0.1");
+      apps = process.Install (nodes.Get (1));
+      apps.Start (Seconds (1.5));
+    }
 
   Simulator::Stop (Seconds (2000000.0));
   Simulator::Run ();

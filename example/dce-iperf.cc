@@ -32,7 +32,6 @@ using namespace ns3;
 // ===========================================================================
 int main (int argc, char *argv[])
 {
-  std::string animFile = "NetAnim.tr";
   bool useKernel = 0;
   bool useUdp = 0;
   std::string bandWidth = "1m";
@@ -52,33 +51,28 @@ int main (int argc, char *argv[])
   NetDeviceContainer devices;
   devices = pointToPoint.Install (nodes);
 
+  DceManagerHelper dceManager;
+  dceManager.SetTaskManagerAttribute( "FiberManagerType", StringValue ( "UcontextFiberManager" ) );
+
   if (!useKernel)
     {
       InternetStackHelper stack;
       stack.Install (nodes);
-
-      Ipv4AddressHelper address;
-      address.SetBase ("10.1.1.0", "255.255.255.252");
-      Ipv4InterfaceContainer interfaces = address.Assign (devices);
-
-      // setup ip routes
-      Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
     }
-
-  DceManagerHelper dceManager;
-  dceManager.SetTaskManagerAttribute( "FiberManagerType", StringValue ( "UcontextFiberManager" ) );
-
-  if (useKernel)
+  else
     {
-      dceManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("libnet-next-2.6.so"));
-
-      AddAddress (nodes.Get (0), Seconds (0.1), "sim0", "10.1.1.1/8");
-      RunIp (nodes.Get (0), Seconds (0.2), "link set sim0 up arp off");
-
-      AddAddress (nodes.Get (1), Seconds (0.3), "sim0","10.1.1.2/8");
-      RunIp (nodes.Get (1), Seconds (0.4), "link set sim0 up arp off");
-
+      dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("libnet-next-2.6.so"));
+      LinuxStackHelper stack;
+      stack.Install (nodes);
     }
+
+  Ipv4AddressHelper address;
+  address.SetBase ("10.1.1.0", "255.255.255.252");
+  Ipv4InterfaceContainer interfaces = address.Assign (devices);
+
+  // setup ip routes
+  Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+
   dceManager.Install (nodes);
 
   DceApplicationHelper dce;
@@ -122,25 +116,15 @@ int main (int argc, char *argv[])
   apps = dce.Install (nodes.Get (1));
 
   pointToPoint.EnablePcapAll (useKernel?"iperf-kernel":"iperf-ns3", false);
-//  pointToPoint.EnablePcap("dev0", devices.Get(0), false, false);
-//  pointToPoint.EnablePcap("dev0", devices.Get(0), false, false);
-
 
   apps.Start (Seconds (0.6));
 
   setPos (nodes.Get (0), 1, 10, 0);
   setPos (nodes.Get (1), 50,10, 0);
 
-  // Create the animation object and configure for specified output
-
-//  AnimationInterface anim (animFile, false);
-
-  //anim.StartAnimation ();
   Simulator::Stop (Seconds(40.0));
   Simulator::Run ();
   Simulator::Destroy ();
-
-//  anim.StopAnimation ();
 
   return 0;
 }

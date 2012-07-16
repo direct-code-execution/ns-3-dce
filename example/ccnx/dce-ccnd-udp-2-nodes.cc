@@ -76,32 +76,27 @@ int main (int argc, char *argv[])
   NetDeviceContainer devices;
   devices = pointToPoint.Install (nodes);
 
+  DceManagerHelper dceManager;
+
   if (!useKernel)
     {
       InternetStackHelper stack;
       stack.Install (nodes);
-
-      Ipv4AddressHelper address;
-      address.SetBase ("10.1.1.0", "255.255.255.252");
-      Ipv4InterfaceContainer interfaces = address.Assign (devices);
-
-      // setup ip routes
-      Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
     }
-
-  DceManagerHelper dceManager;
-
-  if (useKernel)
+  else
     {
-      dceManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("libnet-next-2.6.so"));
-
-      AddAddress (nodes.Get (0), Seconds (0.1), "sim0", "10.1.1.1/8");
-      RunIp (nodes.Get (0), Seconds (0.2), "link set sim0 up arp off");
-
-      AddAddress (nodes.Get (1), Seconds (0.3), "sim0","10.1.1.2/8");
-      RunIp (nodes.Get (1), Seconds (0.4), "link set sim0 up arp off");
-
+      dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("libnet-next-2.6.so"));
+      LinuxStackHelper stack;
+      stack.Install (nodes);
     }
+
+  Ipv4AddressHelper address;
+  address.SetBase ("10.1.1.0", "255.255.255.252");
+  Ipv4InterfaceContainer interfaces = address.Assign (devices);
+
+  // setup ip routes
+  Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+
   dceManager.Install (nodes);
 
   //  Names::Add ("NODE_Zero", nodes.Get (0));
