@@ -103,6 +103,11 @@ public:
   /**
    * Do nothing
    */
+  virtual void SendWithHeader (Ptr<Packet> packet, Ipv4Header ipHeader, Ptr<Ipv4Route> route);
+
+  /**
+   * Do nothing
+   */
   virtual void Insert (Ptr<IpL4Protocol> protocol);
 
   /**
@@ -288,7 +293,22 @@ public:
    */
   virtual void SetForwarding (uint32_t interface, bool val);
 
-  static void InstallNode (Ptr<Node> node); // TEMPOFUR
+  /**
+   * Do nothing
+   */
+  virtual Ptr<IpL4Protocol> GetProtocol (int protocolNumber) const ;
+
+  /**
+   * Do nothing
+   */
+  virtual Ptr<Socket> CreateRawSocket (void);
+
+  /**
+   * Do nothing
+   */
+  virtual void DeleteRawSocket (Ptr<Socket> socket);
+
+  static void InstallNode (Ptr<Node> node);
 
 private:
   // Indirect the Ipv4 attributes through private pure virtual methods

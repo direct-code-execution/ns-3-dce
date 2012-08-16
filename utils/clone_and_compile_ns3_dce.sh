@@ -2,6 +2,7 @@
 # this script checkout NS3 and DCE sources, and build them.
 USE_KERNEL=NO
 USE_VDL=NO
+USE_MPI=NO
 WAF_VDL=
 args=("$@")
 NB=$#
@@ -14,6 +15,11 @@ for (( i=0;i<$NB;i++)); do
     if [ ${args[${i}]} = '-v' ]
     then 
        USE_VDL=YES
+    fi
+    if [ ${args[${i}]} = '-m' ]
+    then 
+       USE_MPI=YES
+       MPI_SWITCH=--enable-mpi
     fi
 done 
 for i in patch hg make $WGET tar
@@ -40,13 +46,13 @@ then
  	hg clone http://code.nsnam.org/furbani/ns-3-linux
 fi
 echo clone ns-3-dev
-hg clone -r 67c6b025f766 http://code.nsnam.org/ns-3-dev
+hg clone -r 7752dc4ce7e9 http://code.nsnam.org/ns-3-dev
 mkdir build
 cd ns-3-dev
 hg revert -a
 patch -p1 <../ns-3-dce/utils/packet-socket-upgrade-exp.patch
 patch -p1 <../ns-3-dce/utils/remove-default-simulator-asserts.patch
-./waf configure --prefix=`pwd`/../build --enable-tests
+./waf configure --prefix=`pwd`/../build --enable-tests $MPI_SWITCH
 ./waf
 ./waf install
 cd ..
@@ -93,7 +99,7 @@ if [ "YES" == "$USE_KERNEL" ]
 then
     WAF_KERNEL=--enable-kernel-stack=`pwd`/../ns-3-linux
 fi
-./waf configure --prefix=`pwd`/../build --verbose $WAF_KERNEL $WAF_VDL
+./waf configure --prefix=`pwd`/../build --verbose $WAF_KERNEL $WAF_VDL $MPI_SWITCH
 ./waf
 ./waf install
 export LD_LIBRARY_PATH=$SAVE_LDLP:`pwd`/build/lib:`pwd`/build/bin:`pwd`/../build/lib

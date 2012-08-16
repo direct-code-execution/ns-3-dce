@@ -123,6 +123,12 @@ Ipv4Linux::Send (Ptr<Packet> packet, Ipv4Address source,
 }
 
 void
+Ipv4Linux::SendWithHeader (Ptr<Packet> packet, Ipv4Header ipHeader, Ptr<Ipv4Route> route)
+{
+  NS_LOG_FUNCTION (this << "empty method.");
+}
+
+void
 Ipv4Linux::Insert (Ptr<IpL4Protocol> protocol)
 {
   NS_LOG_FUNCTION (this << "empty method.");
@@ -456,5 +462,26 @@ Ipv4Linux::GetInterface (uint32_t index) const
       return m_interfaces[index];
     }
   return 0;
+}
+
+Ptr<IpL4Protocol>
+Ipv4Linux::GetProtocol (int protocolNumber) const
+{
+  return 0;
+}
+
+Ptr<Socket>
+Ipv4Linux::CreateRawSocket (void)
+{
+  return 0;
+}
+
+/**
+ * Do nothing
+ */
+void
+Ipv4Linux::DeleteRawSocket (Ptr<Socket> socket)
+{
+
 }
 }
