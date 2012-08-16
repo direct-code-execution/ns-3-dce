@@ -8,6 +8,10 @@
 #include "ns3/constant-position-mobility-model.h"
 #include "misc-tools.h"
 
+#ifdef DCE_MPI
+#include "ns3/mpi-interface.h"
+#endif
+
 using namespace ns3;
 
 // ===========================================================================
@@ -32,6 +36,17 @@ using namespace ns3;
 // ===========================================================================
 int main (int argc, char *argv[])
 {
+  uint32_t systemId = 0;
+  uint32_t systemCount = 1;
+#ifdef DCE_MPI
+  // Distributed simulation setup
+  MpiInterface::Enable (&argc, &argv);
+  GlobalValue::Bind ("SimulatorImplementationType",
+      StringValue ("ns3::DistributedSimulatorImpl"));
+  systemId = MpiInterface::GetSystemId ();
+  systemCount = MpiInterface::GetSize ();
+#endif
+
   std::string animFile = "NetAnim.xml";
   bool useKernel = 0;
   CommandLine cmd;
@@ -39,7 +54,10 @@ int main (int argc, char *argv[])
   cmd.Parse (argc, argv);
 
   NodeContainer nodes;
-  nodes.Create (2);
+  Ptr<Node> node1 = CreateObject<Node> (0 % systemCount); // Create node1 with system id 0
+  Ptr<Node> node2 = CreateObject<Node> (1 % systemCount); // Create node2 with system id 1
+  nodes.Add (node1);
+  nodes.Add (node2);
 
   PointToPointHelper pointToPoint;
   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
@@ -81,27 +99,32 @@ int main (int argc, char *argv[])
 
   dce.SetStackSize (1<<20);
 
-  // Launch ping on node 0
-  dce.SetBinary ("ping");
-  dce.ResetArguments();
-  dce.ResetEnvironment();
-  dce.AddArgument ("-c 10");
-  dce.AddArgument ("-s 1000");
-  dce.AddArgument ("10.1.1.2");
+  if ( systemId == node1->GetSystemId () )
+    {
+      // Launch ping on node 0
+      dce.SetBinary ("ping");
+      dce.ResetArguments();
+      dce.ResetEnvironment();
+      dce.AddArgument ("-c 10");
+      dce.AddArgument ("-s 1000");
+      dce.AddArgument ("10.1.1.2");
 
-  apps = dce.Install (nodes.Get (0));
-  apps.Start (Seconds (1.0));
+      apps = dce.Install (node1);
+      apps.Start (Seconds (1.0));
+    }
+  if ( systemId == node2->GetSystemId ())
+    {
+      // Launch ping on node 1
+      dce.SetBinary ("ping");
+      dce.ResetArguments();
+      dce.ResetEnvironment();
+      dce.AddArgument ("-c 10");
+      dce.AddArgument ("-s 1000");
+      dce.AddArgument ("10.1.1.1");
 
-  // Launch ping on node 1
-  dce.SetBinary ("ping");
-  dce.ResetArguments();
-  dce.ResetEnvironment();
-  dce.AddArgument ("-c 10");
-  dce.AddArgument ("-s 1000");
-  dce.AddArgument ("10.1.1.1");
-
-  apps = dce.Install (nodes.Get (1));
-  apps.Start (Seconds (1.5));
+      apps = dce.Install (node2);
+      apps.Start (Seconds (1.5));
+    }
 
   setPos (nodes.Get (0), 1, 10, 0);
   setPos (nodes.Get (1), 50,10, 0);
@@ -116,7 +139,9 @@ int main (int argc, char *argv[])
   Simulator::Run ();
   Simulator::Destroy ();
 
-  anim.StopAnimation ();
+#ifdef DCE_MPI
+  MpiInterface::Disable ();
+#endif
 
   return 0;
 }

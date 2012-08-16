@@ -3,6 +3,9 @@
 #include "elf-cache.h"
 #include "elf-dependencies.h"
 #include "ns3/log.h"
+#ifdef DCE_MPI
+#include "ns3/mpi-interface.h"
+#endif
 #include <string.h>
 #include <dlfcn.h>
 #include <elf.h>
@@ -74,7 +77,11 @@ private:
 };
 
 SharedModules::SharedModules ()
-  : cache ("elf-cache", 0)
+#ifdef DCE_MPI
+: cache ("elf-cache", MpiInterface::GetSystemId ())
+#else
+: cache ("elf-cache", 0)
+#endif
 {}
 
 SharedModules::~SharedModules ()

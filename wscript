@@ -18,7 +18,11 @@ def options(opt):
                    help=('Enable the build of dce-runner.'),
                    dest='enable_vdl_loader', action='store_true',
                    default=False)               
-	
+    opt.add_option('--enable-mpi',
+                   help=('Enable MPI and distributed simulation support'),
+                   dest='enable_mpi', action='store_true',
+                   default=False)
+                   
 def search_file(files):
     for f in files:
         if os.path.isfile (f):
@@ -30,6 +34,7 @@ def configure(conf):
     ns3waf.check_modules(conf, ['point-to-point', 'tap-bridge', 'netanim'], mandatory = False)
     ns3waf.check_modules(conf, ['wifi', 'point-to-point', 'csma', 'mobility'], mandatory = False)
     ns3waf.check_modules(conf, ['point-to-point-layout'], mandatory = False)
+    ns3waf.check_modules(conf, ['mpi'], mandatory = False)
     conf.check_tool('compiler_cc')
     conf.check(header_name='stdint.h', define_name='HAVE_STDINT_H', mandatory=False)
     conf.check(header_name='inttypes.h', define_name='HAVE_INTTYPES_H', mandatory=False)
@@ -38,6 +43,10 @@ def configure(conf):
     conf.check(header_name='sys/stat.h', define_name='HAVE_SYS_STAT_H', mandatory=False)
     conf.check(header_name='dirent.h', define_name='HAVE_DIRENT_H', mandatory=False)
 
+    if Options.options.enable_mpi:
+         conf.env.append_value ('DEFINES', 'DCE_MPI=1')
+         conf.env['MPI'] = '1'
+         
     conf.env.prepend_value('LINKFLAGS', '-Wl,--no-as-needed')
     conf.env.append_value('LINKFLAGS', '-pthread')
     conf.check (lib='dl', mandatory = True)

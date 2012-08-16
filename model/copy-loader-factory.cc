@@ -2,6 +2,7 @@
 #include "elf-cache.h"
 #include "elf-dependencies.h"
 #include "ns3/log.h"
+#include "ns3/mpi-interface.h"
 
 NS_LOG_COMPONENT_DEFINE ("CopyLoaderFactory");
 
@@ -175,7 +176,12 @@ CopyLoaderFactory::Create (int argc, char **argv, char **envp)
 uint32_t
 CopyLoaderFactory::AllocateUid (void)
 {
+#ifdef DCE_MPI
+  // 2^16 processes maximum per different system id.
+  static uint32_t uid = MpiInterface::GetSystemId () * ( 1 << 16 );
+#else
   static uint32_t uid = 0;
+#endif
   uid++;
   return uid;
 }

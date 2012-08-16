@@ -1,0 +1,15 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+import ns3waf
+import Options
+
+def configure(conf):
+    ns3waf.check_modules(conf, ['core', 'internet', 'point-to-point', 'mpi'], mandatory = True)
+
+def build(bld):
+    if bld.env['MPI']:
+         bld.build_a_script('dce', needed = ['core', 'internet', 'dce', 'point-to-point', 'mpi'],
+		   		            target='bin/dce-mpi-udp',
+				            source=['dce-mpi-udp.cc'],				            
+				            )
+
