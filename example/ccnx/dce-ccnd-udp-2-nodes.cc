@@ -257,8 +257,6 @@ int main (int argc, char *argv[])
   Simulator::Run ();
   Simulator::Destroy ();
 
-  anim.StopAnimation ();
-
   return 0;
 }
 
