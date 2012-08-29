@@ -77,10 +77,8 @@ then
 	ln -s ../ns-3-linux/libnet-next-2.6.so
 	mkdir -p build/bin_dce
 	cd  build/bin_dce
-	ln -s ../../../ns-3-linux/libnet-next-2.6.so
+	ln -s ../../../ns-3-linux/libnet-next-2.6.so liblinux.so
 	ln -s ../../../iproute2-2.6.38/ip/ip
-#	cd ../../example/ccnx
-#	ln -s ../../build/bin_dce/libnet-next-2.6.so
 	cd ../..
 fi
 if [ "YES" == "$USE_VDL" ]
@@ -106,8 +104,3 @@ export LD_LIBRARY_PATH=$SAVE_LDLP:`pwd`/build/lib:`pwd`/build/bin:`pwd`/../build
 . utils/setenv.sh
 echo Launch NS3TEST-DCE
 ./build/bin/ns3test-dce --verbose
-
-
-
-
-

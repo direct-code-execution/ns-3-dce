@@ -7,6 +7,7 @@ FILE *stdin;
 FILE *stdout;
 FILE *stderr;
 const struct in6_addr in6addr_any = IN6ADDR_ANY_INIT;
+const struct in6_addr in6addr_loopback = IN6ADDR_LOOPBACK_INIT;
 char *optarg = 0;
 int optind = 0, opterr = 0, optopt = 0;
 const char *_libc_intl_domainname = "libc";

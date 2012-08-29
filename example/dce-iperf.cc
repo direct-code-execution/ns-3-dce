@@ -61,7 +61,7 @@ int main (int argc, char *argv[])
     }
   else
     {
-      dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("libnet-next-2.6.so"));
+      dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
       LinuxStackHelper stack;
       stack.Install (nodes);
     }

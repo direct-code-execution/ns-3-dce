@@ -83,7 +83,7 @@ int main (int argc, char *argv[])
 
   if (useKernel)
     {
-      dceManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("libnet-next-2.6.so"));
+      dceManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
 
       AddAddress (nodes.Get (0), Seconds (0.1), "sim0", "10.1.1.1/8");
       RunIp (nodes.Get (0), Seconds (0.2), "link set sim0 up arp off");

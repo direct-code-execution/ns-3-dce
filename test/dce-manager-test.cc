@@ -59,7 +59,7 @@ DceManagerTestCase::DoRun (void)
 
   if (m_useNet) {
       if (m_useKernel) {
-          dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("libnet-next-2.6.so"));
+          dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
           dceManager.Install (nodes);
 
           dce.SetBinary ("ip");

@@ -119,7 +119,7 @@ int main (int argc, char *argv[])
   DceManagerHelper dceManager;
   if (useKernel)
     {
-      dceManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("libnet-next-2.6.so"));
+      dceManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
     }
   dceManager.Install (nodes);
 

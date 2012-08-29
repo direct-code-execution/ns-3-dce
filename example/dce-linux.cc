@@ -97,7 +97,7 @@ int main (int argc, char *argv[])
 
   DceManagerHelper processManager;
   // processManager.SetLoader ("ns3::DlmLoaderFactory");
-  processManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("libnet-next-2.6.so"));
+  processManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
   LinuxStackHelper stack;
   stack.Install (nodes);
 
