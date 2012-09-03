@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <ctype.h>
 #include <time.h>
+#include <fnmatch.h>
 #include "sys/dce-socket.h"
 #include "dce-unistd.h"
 #include "dce-netdb.h"

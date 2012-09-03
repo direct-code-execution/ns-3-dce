@@ -54,7 +54,9 @@ UnixSocketFd::UnixSocketFd (Ptr<Socket> socket)
   : m_socket (socket),
     m_sendTimeout (Seconds (0.0)),
     m_recvTimeout (Seconds (0.0)),
-    m_statusFlags (0)
+    m_statusFlags (0),
+    m_peekedData (0),
+    m_fdFlags (0)
 {
   m_socket->SetAttributeFailSafe ("SndBufSize", UintegerValue (126976));
   m_socket->SetAttributeFailSafe ("RcvBufSize", UintegerValue (126976));
@@ -107,6 +109,15 @@ UnixSocketFd::Fcntl (int cmd, unsigned long arg)
       m_statusFlags = arg;
       return 0;
       break;
+
+    case F_GETFD:
+      return m_fdFlags;
+      break;
+    case F_SETFD:
+      m_fdFlags = arg;
+      return 0;
+      break;
+
     default:
       //XXX commands missing
       NS_FATAL_ERROR ("fcntl not implemented on socket");
@@ -951,4 +962,41 @@ UnixSocketFd::Ftruncate (off_t length)
   return -1;
 }
 
+void
+UnixSocketFd::AddPeekedData (const uint8_t *buf, uint32_t count, Address from)
+{
+  Ptr<Packet> p =  Create<Packet> (buf, count);
+  m_peekedAddress = from;
+  if (!m_peekedData)
+    {
+      m_peekedData = p;
+    }
+  else
+    {
+      m_peekedData->AddAtEnd (p);
+    }
+}
+
+void
+UnixSocketFd::AddPeekedData (Ptr<Packet> p)
+{
+  if (!m_peekedData)
+    {
+      m_peekedData = p;
+    }
+  else
+    {
+      m_peekedData->AddAtEnd (p);
+    }
+}
+bool
+UnixSocketFd::isPeekedData (void)
+{
+  return (  ( 0 != m_peekedData) && ( m_peekedData->GetSize () > 0 ) );
+}
+Address
+UnixSocketFd::GetPeekedFrom (void)
+{
+  return m_peekedAddress;
+}
 } // namespace ns3

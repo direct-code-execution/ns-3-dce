@@ -61,20 +61,27 @@ int dce_truncate (const char *path, off_t length);
 int dce_ftruncate (int fd, off_t length);
 int dce_ftruncate64 (int fd, off_t length);
 	
-void *dce_sbrk(intptr_t increment);
-int dce_getpagesize(void);
+void *dce_sbrk (intptr_t increment);
+int dce_getpagesize (void);
 
-gid_t dce_getgid(void);
-gid_t dce_getegid(void);
-pid_t dce_getpgrp(void);
+gid_t dce_getgid (void);
+gid_t dce_getegid (void);
+pid_t dce_getpgrp (void);
 
-int dce_euidaccess(const char *pathname, int mode);
-int dce_eaccess(const char *pathname, int mode);
+int dce_euidaccess (const char *pathname, int mode);
+int dce_eaccess (const char *pathname, int mode);
 
-int dce_pipe(int pipefd[2]);
+int dce_pipe (int pipefd[2]);
 
-ssize_t dce_pread(int fd, void *buf, size_t count, off_t offset);
-ssize_t dce_pwrite(int fd, const void *buf, size_t count, off_t offset);
+ssize_t dce_pread (int fd, void *buf, size_t count, off_t offset);
+ssize_t dce_pwrite (int fd, const void *buf, size_t count, off_t offset);
+
+int dce_daemon (int nochdir, int noclose);
+
+unsigned int dce_alarm (unsigned int seconds);
+
+ssize_t dce_readlink (const char *p, char *b, size_t bufsize);
+
 
 #ifdef __cplusplus
 }

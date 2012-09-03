@@ -2,6 +2,7 @@
 #include "dce-stdarg.h"
 #include "dce-fcntl.h"
 #include "dce-unistd.h"
+#include "dce-stdlib.h"
 #include "sys/dce-stat.h"
 #include "process.h"
 #include "utils.h"
@@ -728,10 +729,53 @@ void dce___fpurge (FILE *stream)
   NS_ASSERT (Current () != 0);
  __fpurge (stream);
 }
-size_t dce___fpending(FILE *stream)
+size_t dce___fpending (FILE *stream)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
   size_t ret = __fpending (stream);
+  return ret;
+}
+int dce_asprintf (char **strp, const char *fmt, ...)
+{
+  va_list ap;
+  va_start (ap, fmt);
+
+  return dce_vasprintf (strp, fmt, ap);
+}
+
+int dce_vasprintf (char **strp, const char *fmt, va_list ap)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () );
+  NS_ASSERT (Current () != 0);
+
+  char *res = 0;
+  int ret = 0;
+
+  if ( !strp || ! fmt )
+    {
+      Current ()->err = ENOMEM;
+      return -1;
+    }
+
+  ret = vasprintf( &res, fmt , ap);
+
+  if (ret > 0)
+    {
+        char *tmp = (char*) dce_malloc (ret);
+
+        if (tmp)
+          {
+            memcpy (tmp, res, ret);
+
+            *strp = tmp;
+
+            return ret;
+          }
+        Current ()->err = ENOMEM;
+        return -1;
+    }
+  Current ()->err = errno;
+
   return ret;
 }

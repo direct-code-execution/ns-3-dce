@@ -98,6 +98,15 @@ protected:
   void ChangeSocket (Ptr<Socket> socket);
   void ClearSocket (void);
 
+  int m_statusFlags;
+  Ptr<Packet> m_peekedData;
+  Address m_peekedAddress;
+
+  void AddPeekedData (const uint8_t *buf, uint32_t count, Address from);
+  void AddPeekedData (Ptr<Packet> p);
+  bool isPeekedData (void);
+  Address GetPeekedFrom (void);
+
 private:
   void RecvSocketData (Ptr<Socket> socket);
   void SendSocketData (Ptr<Socket> socket, uint32_t available);
@@ -107,7 +116,7 @@ private:
   Time m_recvTimeout;
   int m_recvttl;
   int m_recverr;
-  int m_statusFlags;
+  int m_fdFlags;
   // int m_recvpktinfo;
   // int m_recvpktinfo6;
   // int m_iphdrincl;

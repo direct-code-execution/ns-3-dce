@@ -295,7 +295,7 @@ DceManager::CreateProcess (std::string name, std::string stdinfilename, std::vec
 {
   struct Process *process = new Process ();
   process->euid = 0;
-  process->ruid = 0;
+  process->ruid = 1;
   process->suid = 0;
   process->egid = 0;
   process->rgid = 0;

@@ -117,6 +117,16 @@ extern "C" {
 //     }
 // }
 
+char *strpbrk (const char *s, const char *a)
+{
+  return g_libc.strpbrk_fn (s,a);
+}
+
+char *strstr (const char *u, const char *d)
+{
+  return g_libc.strstr_fn (u,d);
+}
+
 #include "libc-globals.h"
 
 void LIBSETUP (const struct Libc *fn)

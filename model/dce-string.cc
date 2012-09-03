@@ -26,3 +26,13 @@ char *dce___strcpy_chk (char *__restrict __dest,
   /// \todo Do actual checking
   strcpy (__dest, __src); 
 }
+
+char *dce_strpbrk (const char *s, const char *a)
+{
+  return (char*) strpbrk(s, a);
+}
+
+char *dce_strstr (const char *u, const char *d)
+{
+  return (char*)strstr(u, d);
+}

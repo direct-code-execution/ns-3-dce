@@ -3,7 +3,9 @@
 
 #include "sys/dce-time.h"
 #include <time.h>
+#include <utime.h>
 #include <sys/sysinfo.h>
+#include <sys/types.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,7 +18,11 @@ char *dce_ctime(const time_t *timep);
 char *dce_asctime(const struct tm *tm);
 int dce_clock_gettime(clockid_t which_clock, struct timespec *tp);
 int dce_sysinfo (struct sysinfo *info);
-	
+void dce_tzset (void);
+int dce_clock_getres (clockid_t c, struct timespec *r);
+int dce_clock_gettime (clockid_t c, struct timespec *t);
+int dce_utime (const char *filename, const struct utimbuf *times);
+
 #ifdef __cplusplus
 }
 #endif

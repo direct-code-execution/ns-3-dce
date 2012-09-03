@@ -134,6 +134,7 @@ NATIVE_EXPLICIT (rindex, char * (*) (char *, int))
 NATIVE (strtok)
 NATIVE (strtok_r)
 
+
 // LOCALE.H
 DCE    (setlocale)
 NATIVE_WITH_ALIAS (newlocale)
@@ -240,6 +241,9 @@ NATIVE (pathconf)
 NATIVE (getdtablesize)
 DCE (pread)
 DCE (pwrite)
+DCE (daemon)
+DCE (alarm)
+DCE (readlink)
 
 // SYS/UIO.H
 DCE (writev)
@@ -259,8 +263,8 @@ DCE (printf)
 NATIVE (fprintf)
 NATIVE (sprintf)
 NATIVE (snprintf)
-NATIVE (asprintf)
-NATIVE (vasprintf)
+DCE (asprintf)
+DCE (vasprintf)
 NATIVE (dprintf)
 NATIVE (vdprintf)
 DCE_WITH_ALIAS2 (fgetc,fgetc_unlocked)
@@ -316,7 +320,15 @@ DCE_WITH_ALIAS2 (gmtime, localtime)
 NATIVE_WITH_ALIAS2 (gmtime_r, localtime_r)
 NATIVE (mktime)
 NATIVE (strftime)
-DCE_EXPLICIT (clock_gettime, int, clockid_t, struct timespec *)
+NATIVE (strptime)
+NATIVE (timegm)
+NATIVE (timelocal)
+
+// UTIME.H
+DCE (utime)
+DCE (tzset)
+DCE (clock_getres)
+DCE (clock_gettime)
 
 // SYS/TIME.H
 DCE (gettimeofday)
@@ -466,6 +478,8 @@ NATIVE (getgrnam)
 
 // SYS/RESOURCE.H
 NATIVE (getrusage) // not sure if native call will give stats about the requested process..
+NATIVE (getrlimit)
+NATIVE (setrlimit)
 
 // SYSLOG.H
 DCE (openlog)
@@ -502,6 +516,12 @@ NATIVE (tfind)
 NATIVE (tdelete)
 NATIVE (twalk)
 NATIVE (tdestroy)
+
+// FNMATCH.H
+NATIVE (fnmatch)
+
+// LANGINFO.H
+NATIVE (nl_langinfo)
 
 ///////////////////// END OF INVENTAIRE //////////////////////////////////////////////////
 

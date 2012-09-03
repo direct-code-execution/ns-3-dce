@@ -907,6 +907,53 @@ int dce_sysinfo (struct sysinfo *info)
   // XXX
   return 0;
 }
+int dce_daemon (int nochdir, int noclose)
+{
+  return 0;
+}
+unsigned int dce_alarm (unsigned int s)
+{
+  struct itimerval it;
+  memset (&it, 0, sizeof (it));
+
+  unsigned int ret = 0;
+
+  if ( !dce_getitimer(ITIMER_REAL, &it))
+    {
+      ret = it.it_value.tv_sec;
+    }
+
+  memset (&it, 0, sizeof (it));
+  it.it_value.tv_sec = s;
+  it.it_value.tv_usec = 0;
+
+  dce_setitimer (ITIMER_REAL, &it, NULL);
+
+  return ret;
+}
+ssize_t dce_readlink (const char *path, char *buf, size_t bufsize)
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (current << UtilsGetNodeId ());
+  NS_ASSERT (current != 0);
+
+  std::string fullpath = UtilsGetRealFilePath (path);
+
+  ssize_t ret = readlink( fullpath.c_str (), buf, bufsize);
+
+  if (ret)
+    {
+      current->err = errno;
+      return ret;
+    }
+
+  int l = UtilsGetRealFilePath ("/").length ();
+
+  memcpy ( buf, buf + l , l);
+  buf [l] = 0;
+
+  return 0;
+}
 #ifdef HAVE_GETCPUFEATURES
 extern "C"
 {

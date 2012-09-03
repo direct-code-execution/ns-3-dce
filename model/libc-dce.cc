@@ -90,6 +90,8 @@
 #include <error.h>
 #include <netinet/ether.h>
 #include <search.h>
+#include <fnmatch.h>
+#include <langinfo.h>
 
 extern void __cxa_finalize (void *d);
 extern int __cxa_atexit (void (*func) (void *), void *arg, void *d);
@@ -150,6 +152,9 @@ void libc_dce (struct Libc **libc)
   (*libc)->name ## _fn = (func_t)((type)name);
 
 #include "libc-ns3.h"
+
+  (*libc)->strpbrk_fn = dce_strpbrk;
+  (*libc)->strstr_fn = dce_strstr;
 }
 } // extern "C"
 

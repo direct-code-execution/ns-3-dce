@@ -9,6 +9,7 @@
 #include <algorithm>
 #include "ns3/socket-factory.h"
 #include <poll.h>
+#include <fcntl.h>
 #include "file-usage.h"
 
 NS_LOG_COMPONENT_DEFINE ("UnixStreamSocketFd");
@@ -43,61 +44,97 @@ UnixStreamSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
   NS_LOG_FUNCTION (this << current << msg << flags << m_state);
   NS_ASSERT (current != 0);
 
-  if (!WaitRecvDoSignal (flags & MSG_DONTWAIT))
+  if (!isPeekedData ())
     {
-      // current->err set by callee
-      return -1;
-    }
-  switch (m_state)
-    {
-    default:
-    case CREATED:
+      if (!WaitRecvDoSignal (flags & MSG_DONTWAIT))
+        {
+          // current->err set by callee
+          return -1;
+        }
+      switch (m_state)
       {
-        current->err = EINVAL;
-        return -1;
-      }
-
-    case CONNECTED: break;
-
-    case CLOSING:
-      return 0;
-
-    case REMOTECLOSED:
-    case CLOSED:
-      {
-        if (  m_socket->GetRxAvailable () <= 0 )
+        default:
+        case CREATED:
           {
-            return 0;
+            current->err = EINVAL;
+            return -1;
           }
-      }
-      break;
 
+        case CONNECTED: break;
+
+        case CLOSING:
+          return 0;
+
+        case REMOTECLOSED:
+        case CLOSED:
+          {
+            if (  m_socket->GetRxAvailable () <= 0 )
+              {
+                return 0;
+              }
+          }
+          break;
+      }
     }
 
   uint32_t totalAvailable = 0;
+  const uint8_t *buf = 0;
+  size_t toCopy = 0;
+  ssize_t ret = 0;
+  Ptr<Packet> packet = 0;
+
   for (uint32_t i = 0; i < msg->msg_iovlen; i++)
     {
       totalAvailable += msg->msg_iov[i].iov_len;
     }
-  Address from;
-  Ptr<Packet> packet = m_socket->RecvFrom (totalAvailable, flags & ~MSG_DONTWAIT, from);
-  if (packet == 0)
+
+  if (isPeekedData ())
     {
-      current->err = ErrnoToSimuErrno ();
-      return -1;
+      buf = m_peekedData->PeekData ();
+      toCopy = m_peekedData->GetSize ();
+
+      if (toCopy > totalAvailable)
+        {
+          toCopy = totalAvailable;
+        }
+      Ns3AddressToPosixAddress (GetPeekedFrom (), (struct sockaddr*)msg->msg_name, &msg->msg_namelen);
     }
-  NS_ASSERT (packet->GetSize () <= totalAvailable);
-  const uint8_t *buf = packet->PeekData ();
-  size_t toCopy = packet->GetSize ();
+  else
+    {
+      Address from;
+      packet = m_socket->RecvFrom (totalAvailable, flags & ~MSG_DONTWAIT & ~MSG_PEEK, from);
+      if (packet == 0)
+        {
+          current->err = ErrnoToSimuErrno ();
+          return -1;
+        }
+      NS_ASSERT (packet->GetSize () <= totalAvailable);
+      buf = packet->PeekData ();
+      toCopy = packet->GetSize ();
+      Ns3AddressToPosixAddress (from, (struct sockaddr*)msg->msg_name, &msg->msg_namelen);
+      if (flags & MSG_PEEK)
+        {
+          AddPeekedData (buf, toCopy, from);
+        }
+    }
   for (uint32_t i = 0; i < msg->msg_iovlen && toCopy > 0; i++)
     {
       uint32_t len = std::min (toCopy, msg->msg_iov[i].iov_len);
       memcpy (msg->msg_iov[i].iov_base, buf, len);
       toCopy -= len;
       buf += len;
+      ret += len;
     }
-  Ns3AddressToPosixAddress (from, (struct sockaddr*)msg->msg_name, &msg->msg_namelen);
-  return packet->GetSize ();
+
+  if ( !(flags & MSG_PEEK) && isPeekedData ())
+    {
+      m_peekedData->RemoveAtStart (ret);
+      if (m_peekedData->GetSize () <= 0 )
+        {
+          m_peekedData = 0;
+        }
+    }
+  return ret;
 }
 ssize_t 
 UnixStreamSocketFd::DoSendmsg (const struct msghdr *msg, int flags)
@@ -241,6 +278,12 @@ UnixStreamSocketFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
 
   while (m_connectionQueue.empty ())
     {
+      if ( m_statusFlags & O_NONBLOCK)
+        {
+          current->err = EWOULDBLOCK;
+          return -1;
+        }
+
       if (!wq)
         {
           wq = new WaitQueueEntryTimeout (POLLIN | POLLHUP, GetRecvTimeout ());

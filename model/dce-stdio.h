@@ -64,7 +64,10 @@ int dce___snprintf_chk (char *__restrict __s, size_t __n, int __flag,
 						size_t __slen, __const char *__restrict __format, ...);
 
 void dce___fpurge (FILE *stream);
-size_t dce___fpending(FILE *stream);
+size_t dce___fpending (FILE *stream);
+
+int dce_asprintf (char **strp, const char *fmt, ...);
+int dce_vasprintf (char **strp, const char *fmt, va_list ap);
 
 #ifdef __cplusplus
 }
