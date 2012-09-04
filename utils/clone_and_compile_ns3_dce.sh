@@ -3,6 +3,7 @@
 USE_KERNEL=NO
 USE_VDL=NO
 USE_MPI=NO
+USE_OPT=NO
 WAF_VDL=
 args=("$@")
 NB=$#
@@ -21,6 +22,11 @@ for (( i=0;i<$NB;i++)); do
        USE_MPI=YES
        MPI_SWITCH=--enable-mpi
     fi
+    if [ ${args[${i}]} = '-o' ]
+    then 
+       USE_OPT=YES
+       OPT_SWITCH=--enable-opt
+    fi    
 done 
 for i in patch hg make $WGET tar
 do
@@ -52,7 +58,13 @@ cd ns-3-dev
 hg revert -a
 patch -p1 <../ns-3-dce/utils/packet-socket-upgrade-exp.patch
 patch -p1 <../ns-3-dce/utils/remove-default-simulator-asserts.patch
-./waf configure --prefix=`pwd`/../build --enable-tests $MPI_SWITCH
+patch -p1 <../ns-3-dce/utils/NS3-shutdown.patch
+if [ "YES" == "$USE_OPT" ]
+then
+	CXXFLAGS='-O3' ./waf configure -d optimized --prefix=`pwd`/../build --enable-tests $MPI_SWITCH
+else
+	./waf configure --prefix=`pwd`/../build --enable-tests $MPI_SWITCH
+fi
 ./waf
 ./waf install
 cd ..
@@ -97,7 +109,7 @@ if [ "YES" == "$USE_KERNEL" ]
 then
     WAF_KERNEL=--enable-kernel-stack=`pwd`/../ns-3-linux
 fi
-./waf configure --prefix=`pwd`/../build --verbose $WAF_KERNEL $WAF_VDL $MPI_SWITCH
+./waf configure --prefix=`pwd`/../build --verbose $WAF_KERNEL $WAF_VDL $MPI_SWITCH $OPT_SWITCH
 ./waf
 ./waf install
 export LD_LIBRARY_PATH=$SAVE_LDLP:`pwd`/build/lib:`pwd`/build/bin:`pwd`/../build/lib
