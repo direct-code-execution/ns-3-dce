@@ -769,9 +769,11 @@ int dce_vasprintf (char **strp, const char *fmt, va_list ap)
             memcpy (tmp, res, ret);
 
             *strp = tmp;
+            free (res);
 
             return ret;
           }
+        free (res);
         Current ()->err = ENOMEM;
         return -1;
     }
