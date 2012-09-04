@@ -113,6 +113,7 @@ NATIVE (bcopy)
 NATIVE (memcmp)
 NATIVE (memmove)
 NATIVE_EXPLICIT (memchr, void * (*) (void *, int, size_t))
+NATIVE_EXPLICIT (memrchr, void * (*) (void *, int, size_t))
 NATIVE (strcpy)
 NATIVE (strncpy)
 NATIVE (strcat)
@@ -133,6 +134,7 @@ NATIVE_EXPLICIT (index, char * (*) (char *, int))
 NATIVE_EXPLICIT (rindex, char * (*) (char *, int))
 NATIVE (strtok)
 NATIVE (strtok_r)
+
 
 
 // LOCALE.H
