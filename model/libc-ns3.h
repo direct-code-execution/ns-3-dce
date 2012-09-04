@@ -323,12 +323,12 @@ NATIVE (strftime)
 NATIVE (strptime)
 NATIVE (timegm)
 NATIVE (timelocal)
+DCE_EXPLICIT (clock_gettime, int, clockid_t, struct timespec *)
+DCE_EXPLICIT (clock_getres, int, clockid_t, struct timespec *)
 
 // UTIME.H
 DCE (utime)
 DCE (tzset)
-DCE (clock_getres)
-DCE (clock_gettime)
 
 // SYS/TIME.H
 DCE (gettimeofday)
