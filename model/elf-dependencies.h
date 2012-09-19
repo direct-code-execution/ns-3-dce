@@ -28,7 +28,7 @@ private:
   bool Exists (std::string filename) const;
   bool SearchFile (std::string filename, std::string *dirname) const;
   std::vector<struct Dependency> GatherDependencies (std::string fullname) const;
-
+  std::vector<struct Dependency> NewGather (std::string sName, std::string fullname) const;
 
   std::vector<struct Dependency> m_deps;
 };

@@ -1,4 +1,5 @@
 #include "elf-dependencies.h"
+#include "elf-ldd.h"
 #include "ns3/log.h"
 #include "ns3/assert.h"
 #include <string.h>
@@ -25,13 +26,53 @@ ElfDependencies::ElfDependencies (std::string filename)
   bool found;
   found = SearchFile (filename, &fullname);
   NS_ASSERT (found);
-  std::vector<struct Dependency> deps = GatherDependencies (fullname);
-  std::reverse (deps.begin (), deps.end ());
-  struct Dependency dependency;
-  dependency.required = filename;
-  dependency.found = fullname;
-  deps.push_back (dependency);
-  m_deps = deps;
+  if ( getenv("OLDDEP") )
+    {
+      m_deps = GatherDependencies (fullname);
+      std::reverse (m_deps.begin (), m_deps.end ());
+      struct Dependency dependency;
+      dependency.required = filename;
+      dependency.found = fullname;
+      m_deps.push_back (dependency);
+    }
+  else
+    {
+      m_deps = NewGather (filename, fullname);
+      struct Dependency dependency;
+      dependency.required = filename;
+      dependency.found = fullname;
+      m_deps.push_back (dependency);
+    }
+}
+
+std::vector<struct ElfDependencies::Dependency>
+ElfDependencies::NewGather (std::string sName, std::string fullname) const
+{
+  std::vector<struct Dependency> res;
+  ElfLdd tool (sName, fullname);
+  std::vector<struct Dependency> tm = tool.GetDeps ();
+
+  for (Iterator i = tool.Begin ();
+      i != tool.End (); ++i)
+    {
+      std::string depname = (*i).required;
+
+      if (depname == "linux-gate.so.1" ||
+          depname == "ld-linux.so.2" ||
+          depname == "ld-linux-x86-64.so.2" ||
+          depname == "/lib/ld-linux.so.2" ||
+          depname == "/lib64/ld-linux-x86-64.so.2" ||
+          depname == "/usr/lib/debug/ld-linux-x86-64.so.2" ||
+          depname == "linux-vdso.so.1")
+        {
+          // IGNORE
+        }
+      else
+        {
+          res.push_back (*i);
+        }
+    }
+  return res;
 }
 
 std::vector<struct ElfDependencies::Dependency>
