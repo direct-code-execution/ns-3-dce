@@ -22,7 +22,11 @@ def options(opt):
                    help=('Enable MPI and distributed simulation support'),
                    dest='enable_mpi', action='store_true',
                    default=False)
-                   
+    opt.add_option('--enable-opt',
+                   help=('Enable use of DCE and NS-3 optimized compilation'),
+                   dest='enable_opt', action='store_true',
+                   default=False)    
+                                  
 def search_file(files):
     for f in files:
         if os.path.isfile (f):
@@ -411,6 +415,8 @@ def build(bld):
         'model/dce-at.cc',
         'model/exec-utils.cc',
         'model/linux/ipv4-linux.cc',
+#        'model/dce-vfs.cc',
+        'model/elf-ldd.cc',
         # helper.
         'helper/ipv4-dce-routing-helper.cc',
         'helper/dce-manager-helper.cc',

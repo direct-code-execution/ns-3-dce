@@ -76,6 +76,10 @@ def _check_static(conf):
     import os
     env = conf.env
     env['NS3_ENABLE_STATIC'] = False
+    if Options.options.enable_opt:
+    	env['LIB_SUFFIX'] = 'optimized'
+    else:
+    	env['LIB_SUFFIX'] = 'debug'
     if Options.options.enable_static:
         if sys.platform.startswith('linux') and \
                 env['CXX_NAME'] in ['gcc', 'icc']:
@@ -110,7 +114,8 @@ def _check_static(conf):
             env['STLIB_MARKER'] = '-Wl,-all_load'
         else:
             env['STLIB_MARKER'] = '-Wl,--whole-archive,-Bstatic'
-            env['SHLIB_MARKER'] = '-Wl,-Bdynamic,--no-whole-archive'
+            env['SHLIB_MARKER'] = '-Wl,-Bdynamic,--no-whole-archive'    
+
 
 def _check_win32(conf):
     import Options
@@ -140,7 +145,7 @@ def _check_win32(conf):
 def _check_dependencies(conf, required, mandatory):
     found = []
     for module in required:
-        retval = conf.check_cfg(package = 'libns3-dev-%s-debug' % module.lower(),
+        retval = conf.check_cfg(package = 'libns3-dev-%s-%s'  % (module.lower() , conf.env['LIB_SUFFIX']) ,
                                 args='--cflags --libs', mandatory=mandatory,
                                 msg="Checking for ns3-%s" % module.lower(),
                                 uselib_store='NS3_%s' % module.upper())
@@ -394,7 +399,7 @@ def _build_pkgconfig(bld, name, use):
     def run(task):
         _generate_pcfile(bld, name, use, bld.env['PREFIX'], task.outputs[0].abspath())
         return 0
-    target = os.path.join('lib', 'pkgconfig', 'libns3-dev-%s-debug.pc' % name)
+    target = os.path.join('lib', 'pkgconfig', 'libns3-dev-%s-%s.pc' % (name, bld.env['LIB_SUFFIX'] )   )
     bld(rule=run, target=target, always=True)
     bld.install_files(os.path.join('${PREFIX}', 'lib', 'pkgconfig'), [target])
 
