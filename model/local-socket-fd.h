@@ -116,7 +116,6 @@ protected:
   Time m_recvTimeout;
   Ptr<LocalSocketFdFactory> m_factory;
   int32_t m_linger;
-  int m_statusFlags;
   std::string m_bindPath;
   std::string m_connectPath;
   bool m_shutRead;

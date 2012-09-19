@@ -62,7 +62,6 @@ public:
   virtual off64_t Lseek (off64_t offset, int whence);
   virtual int Fxstat (int ver, struct stat *buf);
   virtual int Fxstat64 (int ver, struct stat64 *buf);
-  virtual int Fcntl (int cmd, unsigned long arg);
   virtual int Settime (int flags,
                        const struct itimerspec *new_value,
                        struct itimerspec *old_value);
@@ -98,7 +97,6 @@ protected:
   void ChangeSocket (Ptr<Socket> socket);
   void ClearSocket (void);
 
-  int m_statusFlags;
   Ptr<Packet> m_peekedData;
   Address m_peekedAddress;
 
@@ -116,7 +114,6 @@ private:
   Time m_recvTimeout;
   int m_recvttl;
   int m_recverr;
-  int m_fdFlags;
   // int m_recvpktinfo;
   // int m_recvpktinfo6;
   // int m_iphdrincl;

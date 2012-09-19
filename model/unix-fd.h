@@ -41,7 +41,7 @@ public:
   virtual off64_t Lseek (off64_t offset, int whence) = 0;
   virtual int Fxstat (int ver, struct ::stat *buf) = 0;
   virtual int Fxstat64 (int ver, struct ::stat64 *buf) = 0;
-  virtual int Fcntl (int cmd, unsigned long arg) = 0;
+  virtual int Fcntl (int cmd, unsigned long arg);
   virtual int Settime (int flags,
                        const struct itimerspec *new_value,
                        struct itimerspec *old_value) = 0;
@@ -66,6 +66,8 @@ protected:
   void RemoveWaitQueue (WaitQueueEntry*, bool andUnregister);
   void AddWaitQueue (WaitQueueEntry*, bool andRegister);
   void WakeWaiters (void *key);
+  int m_fdFlags;
+  int m_statusFlags;
 
 private:
   std::list <WaitQueueEntry*> m_waitQueueList;

@@ -54,9 +54,7 @@ UnixSocketFd::UnixSocketFd (Ptr<Socket> socket)
   : m_socket (socket),
     m_sendTimeout (Seconds (0.0)),
     m_recvTimeout (Seconds (0.0)),
-    m_statusFlags (0),
-    m_peekedData (0),
-    m_fdFlags (0)
+    m_peekedData (0)
 {
   m_socket->SetAttributeFailSafe ("SndBufSize", UintegerValue (126976));
   m_socket->SetAttributeFailSafe ("RcvBufSize", UintegerValue (126976));
@@ -96,33 +94,6 @@ UnixSocketFd::Fxstat64 (int ver, struct stat64 *buf)
   buf->st_dev = -1;
   buf->st_blksize = 0;
   return 0;
-}
-int 
-UnixSocketFd::Fcntl (int cmd, unsigned long arg)
-{
-  switch (cmd) 
-    {
-    case F_GETFL: //XXX this command should also consider the flags O_APPEND and O_ASYNC
-      return m_statusFlags;
-      break;
-    case F_SETFL:
-      m_statusFlags = arg;
-      return 0;
-      break;
-
-    case F_GETFD:
-      return m_fdFlags;
-      break;
-    case F_SETFD:
-      m_fdFlags = arg;
-      return 0;
-      break;
-
-    default:
-      //XXX commands missing
-      NS_FATAL_ERROR ("fcntl not implemented on socket");
-      return -1;
-    }
 }
 int 
 UnixSocketFd::ErrnoToSimuErrno (void) const

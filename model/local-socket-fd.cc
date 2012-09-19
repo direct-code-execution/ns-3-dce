@@ -48,7 +48,7 @@ LocalSocketFd::GetInstanceTypeId (void) const
   return LocalSocketFd::GetTypeId ();
 }
 LocalSocketFd::LocalSocketFd () : m_readBuffer (0), m_readBufferSize (0), m_sendTimeout (0), m_recvTimeout (0),
-                                  m_factory (0), m_linger (0), m_statusFlags (0), m_bindPath (""), m_connectPath (""),
+                                  m_factory (0), m_linger (0), m_bindPath (""), m_connectPath (""),
                                   m_shutRead (false), m_shutWrite (false)
 {
 }
@@ -191,20 +191,7 @@ LocalSocketFd::Fxstat64 (int ver, struct ::stat64 *buf)
 int
 LocalSocketFd::Fcntl (int cmd, unsigned long arg)
 {
-  switch (cmd)
-    {
-    case F_GETFL: //XXX this command should also consider the flags O_APPEND and O_ASYNC
-      return m_statusFlags;
-      break;
-    case F_SETFL:
-      m_statusFlags = arg;
-      return 0;
-      break;
-    default:
-      //XXX commands missing
-      NS_FATAL_ERROR ("fcntl not implemented on socket");
-      return -1;
-    }
+  return UnixFd::Fcntl (cmd, arg);
 }
 int
 LocalSocketFd::Settime (int flags, const struct itimerspec *new_value, struct itimerspec *old_value)
