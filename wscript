@@ -415,7 +415,7 @@ def build(bld):
         'model/dce-at.cc',
         'model/exec-utils.cc',
         'model/linux/ipv4-linux.cc',
-#        'model/dce-vfs.cc',
+        'model/dce-vfs.cc',
         'model/elf-ldd.cc',
         # helper.
         'helper/ipv4-dce-routing-helper.cc',
