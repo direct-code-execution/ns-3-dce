@@ -132,8 +132,8 @@ DCE_WITH_ALIAS (strdup) // because C++ defines both const and non-const function
 DCE (strndup)
 NATIVE_EXPLICIT (index, char * (*) (char *, int))
 NATIVE_EXPLICIT (rindex, char * (*) (char *, int))
-NATIVE (strtok)
-NATIVE (strtok_r)
+NATIVE_EXPLICIT (strtok, char * (*) (char *, const char *))
+NATIVE_EXPLICIT (strtok_r,  char * (*)(char *, const char *, char **))
 
 
 
@@ -524,6 +524,13 @@ NATIVE (fnmatch)
 
 // LANGINFO.H
 NATIVE (nl_langinfo)
+
+// SYS/VFS.H
+DCE (fstatfs)
+DCE (fstatfs64)
+DCE (statfs)
+DCE (statfs64)
+
 
 ///////////////////// END OF INVENTAIRE //////////////////////////////////////////////////
 
