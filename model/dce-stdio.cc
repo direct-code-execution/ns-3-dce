@@ -575,12 +575,38 @@ int dce_fseek (FILE *stream, long offset, int whence)
     }
   return status;
 }
+int dce_fseeko (FILE *stream, off_t offset, int whence)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream << offset << whence);
+  NS_ASSERT (Current () != 0);
+  Thread *current = Current ();
+  int status = fseeko (stream, offset, whence);
+  if (status == -1)
+    {
+      current->err = errno;
+      return -1;
+    }
+  return status;
+}
 long dce_ftell (FILE *stream)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream);
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
   long status = ftell (stream);
+  if (status == -1)
+    {
+      current->err = errno;
+      return -1;
+    }
+  return status;
+}
+off_t dce_ftello (FILE *stream)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream);
+  NS_ASSERT (Current () != 0);
+  Thread *current = Current ();
+  off_t status = ftello (stream);
   if (status == -1)
     {
       current->err = errno;

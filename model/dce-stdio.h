@@ -25,7 +25,9 @@ int dce_ferror (FILE *stream);
 int dce_fileno (FILE *stream);
 
 int dce_fseek (FILE *stream, long offset, int whence);
+int dce_fseeko (FILE *stream, off_t offset, int whence);
 long dce_ftell (FILE *stream);
+off_t dce_ftello (FILE *stream);
 int dce_fgetpos (FILE *stream, fpos_t *pos);
 int dce_fsetpos (FILE *stream, const fpos_t *pos);
 void dce_rewind (FILE *stream);
