@@ -1,0 +1,31 @@
+diff -r 319dc814102b extract-system-config.py
+--- a/extract-system-config.py	Mon Jun 18 09:09:15 2012 +0200
++++ b/extract-system-config.py	Thu Sep 20 15:20:26 2012 +0900
+@@ -138,6 +138,8 @@
+                     '/usr/lib/debug/lib/x86_64-linux-gnu/ld-2.13.so',
+                     # for ubuntu 0910. braindead
+                     '/usr/lib/debug/lib/ld-2.10.1.so',
++                    # for ubuntu 1004.
++                    '/usr/lib/debug/lib/ld-2.11.1.so',
+                     # ubuntu 1204
+                     '/usr/lib/debug/lib/x86_64-linux-gnu/ld-2.15.so'
+                     ]
+diff -r 319dc814102b test/Makefile
+--- a/test/Makefile	Mon Jun 18 09:09:15 2012 +0200
++++ b/test/Makefile	Thu Sep 20 15:20:26 2012 +0900
+@@ -5,7 +5,7 @@
+ CXXFLAGS=$(CFLAGS)
+ LDFLAGS=-Wl,--warn-unresolved-symbols -L. -Wl,--no-as-needed
+ LINKER=$(CC)
+-MACHINE_MAKEFILE=Makefile.$(shell uname -p)
++MACHINE_MAKEFILE=Makefile.$(shell uname -m)
+ 
+ include $(SRCDIR)$(MACHINE_MAKEFILE)
+ 
+@@ -111,4 +111,4 @@
+ 	-rm -f *.o *~ 2>/dev/null
+ 	-rm -f $(TARGETS) 2>/dev/null
+ 	-rm -f $(addprefix $(OUTPUT_DIR)/,$(TESTS)) 2>/dev/null
+-	-rm -f $(addsuffix -ldso,$(TESTS)) 2>/dev/null
+\ No newline at end of file
++	-rm -f $(addsuffix -ldso,$(TESTS)) 2>/dev/null

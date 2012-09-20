@@ -42,7 +42,7 @@ echo clone readversiondef
 hg clone http://code.nsnam.org/mathieu/readversiondef
 
 echo clone elf-loader
-hg clone -r d7ef4732dccc http://code.nsnam.org/mathieu/elf-loader/
+hg clone http://code.nsnam.org/mathieu/elf-loader/
 
 if [ "YES" == "$USE_KERNEL" ]
 then
@@ -76,6 +76,7 @@ make install PREFIX=`pwd`/../build/
 cd ..
 # build elf-loader
 cd elf-loader
+patch -p1 < ../ns-3-dce/utils/elf-loader-r633.patch
 make vdl-config.h
 make
 make test
