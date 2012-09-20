@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <stdio_ext.h>
-
+#include <unistd.h>
 
 #ifdef __cplusplus
 extern "C" {
