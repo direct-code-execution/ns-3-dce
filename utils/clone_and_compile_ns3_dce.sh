@@ -76,7 +76,7 @@ make install PREFIX=`pwd`/../build/
 cd ..
 # build elf-loader
 cd elf-loader
-patch -p1 < ../ns-3-dce/utils/elf-loader-r633.patch
+patch -f -p1 < ../ns-3-dce/utils/elf-loader-r633.patch
 make vdl-config.h
 make
 make test
