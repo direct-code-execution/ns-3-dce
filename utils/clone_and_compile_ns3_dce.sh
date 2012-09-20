@@ -80,7 +80,7 @@ patch -f -p1 < ../ns-3-dce/utils/elf-loader-r633.patch
 make vdl-config.h
 make
 make test
-cp libvdl.so ../build/lib
+cp ldso libvdl.so ../build/lib
 cd ..
 
 if [ "YES" == "$USE_KERNEL" ]

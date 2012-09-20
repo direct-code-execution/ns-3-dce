@@ -26,7 +26,7 @@ class DceManagerTestCase : public TestCase
 {
 public:
   DceManagerTestCase (std::string filename, Time maxDuration, std::string stdinFilename, 
-                      bool useNet, bool useK);
+                      bool useNet, bool useK, bool skip);
 private:
   virtual void DoRun (void);
   static void Finished (int *pstatus, uint16_t pid, int status);
@@ -36,18 +36,22 @@ private:
   Time m_maxDuration;
   bool m_useKernel;
   bool m_useNet;
+  bool m_skip;
 };
 
 DceManagerTestCase::DceManagerTestCase (std::string filename, Time maxDuration, 
-                                        std::string stdin, bool useNet, bool useK)
-  : TestCase ("Check that process \"" + filename +
-              (useK ? " (kernel" : " (ns3)") + 
+                                        std::string stdin, bool useNet, bool useK,
+                                        bool skip)
+  : TestCase (std::string ("") + (skip ? "(SKIP) " : "" ) + 
+              "Check that process \"" + filename +
+              (useK ? " (kernel)" : " (ns3)") + 
               "\" completes correctly."),
     m_filename (filename), 
     m_stdinFilename (stdin),
     m_maxDuration (maxDuration),
     m_useKernel (useK),
-    m_useNet (useNet)
+    m_useNet (useNet),
+    m_skip (skip)
 {
 //  mtrace ();
 }
@@ -64,6 +68,11 @@ DceManagerTestCase::DoRun (void)
   DceApplicationHelper dce;
   ApplicationContainer apps;
   DceManagerHelper dceManager;
+
+  if (m_skip)
+    {
+      return;
+    }
 
   if (m_useNet) {
       if (m_useKernel) {
@@ -144,6 +153,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
     int duration;
     const char *stdinfile;
     bool useNet;
+    bool skipUctx;
   } testPair;
 
   const testPair tests[] = {
@@ -165,14 +175,14 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-cond", 0, "", false}, 
       {  "test-timer-fd", 0, "", false}, 
       {  "test-stdlib", 0, "", false},
-      {  "test-fork", 0, "", false },
+      {  "test-fork", 0, "", false, true},
       {  "test-select", 3600, "", true },
       {  "test-nanosleep", 0, "", false},  
       {  "test-random", 0, "", false },
       {  "test-local-socket", 0, "", false },
       {  "test-poll", 3200, "", true },
       {  "test-tcp-socket", 320, "", true },
-      {  "test-exec", 0, "" , false},
+      {  "test-exec", 0, "" , false, true},
       /* {  "test-raw-socket", 320, "", true },*/
       {  "test-iperf", 0, "" , false},
       {  "test-name", 0, "" , false},
@@ -199,12 +209,28 @@ DceManagerTestSuite::DceManagerTestSuite ()
   fclose (to);
   //
 
+  char *envVar = getenv ("NS_ATTRIBUTE_DEFAULT");
+  bool isUctxFiber = false;
+  if (envVar != 0)
+    {
+      std::string env = std::string (envVar);
+      std::string::size_type val = 0;
+      val = env.find ("UcontextFiberManager", 0);
+      if (val != std::string::npos)
+        {
+          isUctxFiber = true;
+        }
+    }
+
   for (unsigned int i = 0; i < sizeof(tests)/sizeof(testPair); i++)
     {
+
       AddTestCase (new DceManagerTestCase (tests[i].name,  Seconds (tests[i].duration), 
                                            tests[i].stdinfile, 
                                            tests[i].useNet, 
-                                           useKernel ()));
+                                           useKernel (),
+                                           isUctxFiber ? tests[i].skipUctx : false
+                                           ));
     }
 }
 
