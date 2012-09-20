@@ -188,6 +188,7 @@ client2 (void *arg)
 
   printf ("Client2: end \n \n ");
 
+  sleep (3);
   return arg;
 }
 
@@ -1301,6 +1302,7 @@ launch (void *
   fflush (stdout);
   fflush (stderr);
   sleep (1); // TEMPOFUR if removed can crash :(
+  printf ("launch ended\n\n ");
 }
 
 int LongCompare (const void *A, const void *B)

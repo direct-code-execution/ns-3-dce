@@ -14,10 +14,6 @@ def options(opt):
                    help=('Path to the prefix where the kernel wrapper headers are installed'),
                    default=None,
                    dest='kernel_stack', type="string")
-    opt.add_option('--enable-vdl-loader',
-                   help=('Enable the build of dce-runner.'),
-                   dest='enable_vdl_loader', action='store_true',
-                   default=False)               
     opt.add_option('--enable-mpi',
                    help=('Enable MPI and distributed simulation support'),
                    dest='enable_mpi', action='store_true',
@@ -110,14 +106,7 @@ def configure(conf):
 
     conf_myscripts(conf)
     
-    # Decide if VDL
-    if Options.options.enable_vdl_loader:
-        # Tests were explicitly enabled. 
-        conf.env['ENABLE_VDL'] = True
-    	conf.recurse(os.path.join('utils'))
-    else:
-        # Tests were explicitly disabled. 
-        conf.env['ENABLE_VDL'] = False
+    conf.recurse(os.path.join('utils'))
     ns3waf.print_feature_summary(conf)
     
 def build_netlink(bld):
@@ -162,8 +151,12 @@ def dce_kw(**kw):
 def build_dce_tests(module, kern):
     if kern:
         module.add_runner_test(needed=['core', 'dce', 'internet'],  source=['test/dce-manager-test.cc', 'test/with-kernel.cc'])
+        module.add_runner_test(needed=['core', 'dce', 'internet'],  source=['test/dce-manager-test.cc', 'test/with-kernel.cc'],
+                               linkflags = ['-Wl,--dynamic-linker=' + os.path.abspath ('../build/lib/ldso')], name='vdl')
     else:
         module.add_runner_test(needed=['core', 'dce', 'internet'], source=['test/dce-manager-test.cc','test/without-kernel.cc'])
+        module.add_runner_test(needed=['core', 'dce', 'internet'], source=['test/dce-manager-test.cc','test/without-kernel.cc'],
+                               linkflags = ['-Wl,--dynamic-linker=' + os.path.abspath ('../build/lib/ldso')], name='vdl')
     	    
     module.add_test(features='cxx cxxshlib', source=['test/test-macros.cc'], 
                     target='lib/test', linkflags=['-Wl,-soname=libtest.so'])
@@ -505,5 +498,4 @@ def build(bld):
                          '-Wl,--version-script=' + os.path.join('model', 'librt.version'),
                          '-Wl,-soname=librt.so.1'])
 
-    if bld.env['ENABLE_VDL']:                     
-        bld.add_subdirs(['utils'])
+    bld.add_subdirs(['utils'])

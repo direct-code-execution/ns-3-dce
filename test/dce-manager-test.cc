@@ -25,7 +25,8 @@ namespace ns3 {
 class DceManagerTestCase : public TestCase
 {
 public:
-  DceManagerTestCase (std::string filename, Time maxDuration, std::string stdinFilename, bool useNet, bool useK);
+  DceManagerTestCase (std::string filename, Time maxDuration, std::string stdinFilename, 
+                      bool useNet, bool useK);
 private:
   virtual void DoRun (void);
   static void Finished (int *pstatus, uint16_t pid, int status);
@@ -37,9 +38,16 @@ private:
   bool m_useNet;
 };
 
-DceManagerTestCase::DceManagerTestCase (std::string filename, Time maxDuration, std::string stdin, bool useNet, bool useK)
-  : TestCase ("Check that process \"" + filename + "\" completes correctly."),
-    m_filename (filename), m_stdinFilename ( stdin), m_maxDuration ( maxDuration ), m_useKernel (useK), m_useNet (useNet)
+DceManagerTestCase::DceManagerTestCase (std::string filename, Time maxDuration, 
+                                        std::string stdin, bool useNet, bool useK)
+  : TestCase ("Check that process \"" + filename +
+              (useK ? " (kernel" : " (ns3)") + 
+              "\" completes correctly."),
+    m_filename (filename), 
+    m_stdinFilename (stdin),
+    m_maxDuration (maxDuration),
+    m_useKernel (useK),
+    m_useNet (useNet)
 {
 //  mtrace ();
 }
@@ -83,7 +91,6 @@ DceManagerTestCase::DoRun (void)
           apps = dce.Install (nodes.Get (0));
           apps.Start (Seconds (3.0));
 
-          //dceManager.SetTaskManagerAttribute( "FiberManagerType", StringValue ( "UcontextFiberManager" ) );
         } else
         {
           dceManager.Install (nodes);
@@ -164,7 +171,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-random", 0, "", false },
       {  "test-local-socket", 0, "", false },
       {  "test-poll", 3200, "", true },
-      //      {  "test-tcp-socket", 320, "", true },
+      {  "test-tcp-socket", 320, "", true },
       {  "test-exec", 0, "" , false},
       /* {  "test-raw-socket", 320, "", true },*/
       {  "test-iperf", 0, "" , false},
@@ -194,7 +201,10 @@ DceManagerTestSuite::DceManagerTestSuite ()
 
   for (unsigned int i = 0; i < sizeof(tests)/sizeof(testPair); i++)
     {
-      AddTestCase (new DceManagerTestCase (tests[i].name,  Seconds (tests[i].duration), tests[i].stdinfile, tests[i].useNet, useKernel () ) );
+      AddTestCase (new DceManagerTestCase (tests[i].name,  Seconds (tests[i].duration), 
+                                           tests[i].stdinfile, 
+                                           tests[i].useNet, 
+                                           useKernel ()));
     }
 }
 

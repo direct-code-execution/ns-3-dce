@@ -1,10 +1,8 @@
 #!/bin/bash
 # this script checkout NS3 and DCE sources, and build them.
 USE_KERNEL=NO
-USE_VDL=NO
 USE_MPI=NO
 USE_OPT=NO
-WAF_VDL=
 args=("$@")
 NB=$#
 for (( i=0;i<$NB;i++)); do
@@ -12,10 +10,6 @@ for (( i=0;i<$NB;i++)); do
     then 
        USE_KERNEL=YES
        WGET=wget
-    fi
-    if [ ${args[${i}]} = '-v' ]
-    then 
-       USE_VDL=YES
     fi
     if [ ${args[${i}]} = '-m' ]
     then 
@@ -46,6 +40,10 @@ SAVE_PKG=$PKG_CONFIG_PATH
 #hg clone http://code.nsnam.org/furbani/ns-3-dce
 echo clone readversiondef
 hg clone http://code.nsnam.org/mathieu/readversiondef
+
+echo clone elf-loader
+hg clone -r d7ef4732dccc http://code.nsnam.org/mathieu/elf-loader/
+
 if [ "YES" == "$USE_KERNEL" ]
 then
 	echo clone ns-3-linux
@@ -71,10 +69,19 @@ cd ..
 export PATH=$SAVE_PATH:`pwd`/build/bin
 export LD_LIBRARY_PATH=$SAVE_LDLP:`pwd`/build/lib
 export PKG_CONFIG_PATH=$SAVE_PKG:`pwd`/build/lib/pkgconfig
+# build readversiondef
 cd readversiondef/
 make 
 make install PREFIX=`pwd`/../build/
 cd ..
+# build elf-loader
+cd elf-loader
+make vdl-config.h
+make
+make test
+cp libvdl.so ../build/lib
+cd ..
+
 if [ "YES" == "$USE_KERNEL" ]
 then
 	cd ns-3-linux/
@@ -93,23 +100,12 @@ then
 	ln -s ../../../iproute2-2.6.38/ip/ip
 	cd ../..
 fi
-if [ "YES" == "$USE_VDL" ]
-then
-	hg clone -r d7ef4732dccc http://code.nsnam.org/mathieu/elf-loader/
-	cd elf-loader
-	make vdl-config.h
-	make
-	make test
-	cp libvdl.so ../build/lib
-	cd ..
-	WAF_VDL="--enable-vdl-loader"
-fi	
 cd ns-3-dce/
 if [ "YES" == "$USE_KERNEL" ]
 then
     WAF_KERNEL=--enable-kernel-stack=`pwd`/../ns-3-linux
 fi
-./waf configure --prefix=`pwd`/../build --verbose $WAF_KERNEL $WAF_VDL $MPI_SWITCH $OPT_SWITCH
+./waf configure --prefix=`pwd`/../build --verbose $WAF_KERNEL $MPI_SWITCH $OPT_SWITCH
 ./waf
 ./waf install
 export LD_LIBRARY_PATH=$SAVE_LDLP:`pwd`/build/lib:`pwd`/build/bin:`pwd`/../build/lib
