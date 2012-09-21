@@ -285,7 +285,7 @@ For more information, see the latest support `document <http://www.nsnam.org/~th
 CCNx examples
 #############
 
-Under example/ccnx there is more realistics examples using the implementation of an experimental protocol named CCN. In this examples we use the `PARC  <http://www.parc.com>`_ implementation named `CCNx <http://www.ccnx.org>`_ (c) in its early version 0.4.2.
+Under example/ccnx there is more realistics examples using the implementation of an experimental protocol named CCN. In this examples we use the `PARC  <http://www.parc.com>`_ implementation named `CCNx <http://www.ccnx.org>`_ (c) in its early version 0.6.1.
   
 CCNx setup
 ==========
@@ -293,7 +293,7 @@ CCNx setup
 In order to run ccnx binaries you must compile them with some required compilator and linker parameters.
 The principe here is to obtain Position Independent Executable. 
 To obtain this type of exe you should use the gcc -fPIC when compiling sources, and the option -pie when linking your exe.
-For CNNx we notice that (under linux) its configure script sets by default the -fPIC option, you can check it in the generated file named conf.mk under directory ccnx.0.4.0/csrc:
+For CNNx we notice that (under linux) its configure script sets by default the -fPIC option, you can check it in the generated file named conf.mk under directory ccnx.0.6.1/csrc:
 ::
 
   $ cat cscr/conf.mk
@@ -320,8 +320,8 @@ CCNx installation example
 ::
 
   $ cd /where/is/ns-3-dce/
-  $ wget http://www.ccnx.org/releases/ccnx-0.4.2.tar.gz
-  $ tar zxf ccnx-0.4.2.tar.gz && cd ccnx-0.4.2
+  $ wget http://www.ccnx.org/releases/ccnx-0.6.1.tar.gz
+  $ tar zxf ccnx-0.6.1.tar.gz && cd ccnx-0.6.1
   $ INSTALL_BASE=$PWD/../build ./configure
   $ make MORE_LDLIBS=-pie && make install
  
@@ -389,7 +389,7 @@ This simulation launches a *ccnd* daemon, publishes a file using *ccnput* and re
 ::
 
   $ . ./ns-3-dce/utils/setenv.sh
-  $ ./build/bin/dce-ccnd-simple
+  $ ./build/bin/dce-ccnd-simple --cv=6
 
 Verify the status of execution:
 
@@ -426,7 +426,7 @@ This simulation uses multiple nodes placed in a line, each node are linked 2 by 
 
   .. image:: images/ccnd-linear-multiple-1.png
 
-The launch script dce-ccnd-linear-multiple offer 3 options:
+The launch script dce-ccnd-linear-multiple offer 4 options:
 
 ::
 
@@ -441,6 +441,7 @@ The launch script dce-ccnd-linear-multiple offer 3 options:
       --nNodes: Number of nodes to place in the line
       --tcp: Use TCP to link ccnd daemons.
       --kernel: Use kernel linux IP stack.
+      --cv: Ccnx version 4 for 0.4.x variantes and 5 for 0.5.x variantes, default: 4
 
 
  1. nNodes allows to choose the Number of Nodes,
@@ -451,7 +452,7 @@ for example with 200 nodes and TCP transport you should see this in the first cc
 
 ::
 
-  $ ./build/bin/dce-ccnd-linear-multiple --nNodes=200 --tcp=1 --kernel=0
+  $ ./build/bin/dce-ccnd-linear-multiple --nNodes=200 --tcp=1 --kernel=0 --cv=6
   $ cat files-199/var/log/30916/status
   Start Time: NS3 Time:          2s (          +2700000000.0ns) , REAL Time: 1328710217
         Time: NS3 Time:          2s (          +2700000000.0ns) , REAL Time: 1328710217 --> Starting: /user/furbani/home/dev/dce/dev/ns-3-dce/build/bin/ccnget
@@ -474,39 +475,35 @@ Prerequisite
 ============
 
 You should be able to build and run the CCN plugin for VLC in order to display Video using CCNx. 
-So you should follow carefully the instructions delivered in CCNx distribution in the directory :  ccnx.0.4.0/apps/vlc 
+So you should follow carefully the instructions delivered in CCNx distribution in the directory :  ccnx-0.6.1/apps/vlc 
 
-You should ensure that the executable named *tap-creator* is owned by *root* and have the sticky bit setted :
+You should ensure that the executable named *ns3-dev-tap-creator-debug* is owned by *root* and have the sticky bit setted :
 
 ::
 
    $ cd build/bin
    $ su
-   # chown root tap-creator 
-   # chmod +s tap-creator
+   # chown root ns3-dev-tap-creator-debug
+   # chmod +s ns3-dev-tap-creator-debug
 
 Overview
 ========
 
 In this example we use other exe than *ccnd*:
 
-1. *ccn_repo* is a CCN repository used to serve the Video file
-2. *vlc* the well known media player
-3. *ccnputfile* used to fill the repository with our Video file
+1. *vlc* the well known media player
+2. *ccnr* is a CCN repository used to serve the Video file
+3. *SyncTest* used to fill the repository with our Video file
 
-The two first exe are not usable under DCE:
+The first exe is not usable under DCE: *vlc* use a graphical interface and DCE do not supports this kind of application.
 
-1. *ccn_repo* is a java program and DCE do not yet supports Java,
-2. *vlc* use a graphical interface and DCE do not supports this kind of application.
-
-So the parts *cnn_repo* and *vlc* will be launched normally outside of DCE environnement.
-We will also use 3 *ccnd*:
+So *vlc* will be launched normally outside of DCE environnement.
+We will also use 2 *ccnd*:
 
 1. the first *ccnd* will be launched normally outside DCE, it will be the server for *vlc* player ,it will use the standard CCNx port ie 9596.
-2. the second *ccnd* will be launched inside DCE listening port 2000.
-3. the third *ccnd* will be launched normally outside DCE listening port 3000 
+2. the second *ccnd* will be launched inside DCE listening on second node.
 
-then we install ccn routes like this : first *ccnd* forward every interests to second *ccnd* and second *ccnd* forward every interests to third one.
+then we install ccn route like this : first *ccnd* forward every interests starting by /VIDEO/ to second *ccnd*.
 
 In order to link real world and NS3 network we use the NS-3 TAP BRIDGE functionnality which is more documented there: `Tap NetDevice <http://www.nsnam.org/docs/release/3.12/models/singlehtml/index.html#document-tap>`_
 
@@ -517,7 +514,7 @@ A schema of our network:
   +----------+
   | external |
   |  Linux   |
-  |   Host   | 1 ccnd on standard port (9596), 1 ccnd on port 3000, 1 repository using ccnd:3000
+  |   Host   | 1 ccnd on standard port (9596)
   |          |
   | "thetap" | 1 vlc client querying ccnx:///VIDEO/bunny.ts
   +----------+
@@ -530,7 +527,7 @@ A schema of our network:
                +----------+    +----------+
                |  CSMA    |    |  CSMA    |
                +----------+    +----------+
-               | 10.0.0.1 |    | 10.0.0.2 |  ccnd:2000
+               | 10.0.0.1 |    | 10.0.0.2 |  ccnd and ccnr
                +----------+    +----------+
                      |               |
                      |               |
@@ -554,16 +551,14 @@ Run :
 
 ::
 
-  $ ./run-tap-vlc.sh
+  $ cd $BASEDCE/myscripts/ccn-tap-vlc
+  $ ./run-ccn-vlc.sh
 
 If all is right you should see a *vlc* window playing the video, then after 600 seconds the script stops itself
 if you interrupt the script before you should terminate real the processes ie:
 
-1. 2 instances of *ccnd*
-2. 1 *ccn_repo*
-3. and 1 *dce-tap-vlc*
-
-you may also delete ccnd sockets files like */tmp/.ccnd.sock* and */tmp/.ccnd.sock.3000*
+1. 1 instances of *ccnd*
+2. and 1 *dce-ccn-vlc*
 
 Note that if you replay the video (url: ccnx:///VIDEO/bunny.ts) the content should be cached in first *ccnd* so in this case 
 NS3/DCE will probably not be used for the second delivery of the video.
