@@ -206,8 +206,13 @@ SharedLibrary::SearchLibs ()
               p.second = fullPath;
               n.insert(p);
               count++;
+              f = 1;
               break;
             }
+        }
+      if (!f)
+        {
+          NS_LOG_DEBUG (p.first << " NOT FOUND");
         }
     }
   if (m_libs.size() == count)
@@ -380,9 +385,9 @@ ElfLdd::Loop (std::string s, std::string f)
 
   while (todo.size() > 0)
     {
-      const pair<string,string> name = *todo.begin ();
+      const pair<string,string> name = *(todo.begin ());
+      todo.erase ( name );
       SharedLibrary* l =  ExtractLibraries ( name.first, name.second );
-
       if (l)
         {
           toFree.push_back (l);
@@ -400,7 +405,6 @@ ElfLdd::Loop (std::string s, std::string f)
             }
           if (l->SearchLibs ())
             {
-              todo.erase ( name );
               done.insert (name.second);
               mapScanned [name.second] = l;
               set < pair<string,string> > full = l->GetLibs ();
@@ -419,6 +423,12 @@ ElfLdd::Loop (std::string s, std::string f)
                 }
             }
         }
+    }
+
+  if ( 0==mapScanned[f] )
+    {
+      NS_LOG_DEBUG ("No libraries found for " << f);
+      return;
     }
 
   if (!mapScanned[f]->CalcDepth (mapScanned.size (), mapScanned))
