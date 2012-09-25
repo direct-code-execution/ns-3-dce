@@ -397,7 +397,7 @@ ElfLdd::Loop (std::string s, std::string f)
             }
           if (l->GetArch32 ())
             {
-              l->AddPath ("/lib/:/usr/lib/");
+              l->AddPath ("/lib/:/usr/lib/:/lib/i386-linux-gnu/:/usr/lib/i386-linux-gnu/");
             }
           if (l->GetArch64 ())
             {
