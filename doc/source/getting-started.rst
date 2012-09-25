@@ -1,5 +1,8 @@
+DCE - GETTING STARTED
+---------------------
+
 Introduction
-------------
+************
 
 The DCE ns-3 module provides facilities to execute within ns-3 existing
 implementations of userspace and kernelspace network protocols. 
@@ -11,8 +14,6 @@ researchers to use the unmodified implementation of their protocols for
 real-world deployments and simulations.
 
 
-Getting Started
----------------
 
 Prerequisite
 ************
@@ -325,7 +326,7 @@ CCNx installation example
   $ INSTALL_BASE=$PWD/../build ./configure
   $ make MORE_LDLIBS=-pie && make install
  
-CCNx simple test in real world 
+CCNx simple test in real world
 ++++++++++++++++++++++++++++++
 
 Before using it within DCE we will do a little test in real world.  For this we will start the ccnd daemon, publish a file, and request the file, then you end up stopping the ccnd daemon.

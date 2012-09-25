@@ -40,7 +40,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'NS3 DCE CCNx Quick Start'
+project = u'DIRECT CODE EXECUTION'
 copyright = u'2012, INRIA'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -91,7 +91,12 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'default'
+#html_theme = 'default'
+#html_theme = 'agogo'
+#html_theme = 'traditional'
+#html_theme = 'scrolls'
+html_theme = 'sphinxdoc'
+
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -103,14 +108,14 @@ html_theme = 'default'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-#html_title = None
+html_title = 'Direct Code Execution'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #html_short_title = None
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-#html_logo = None
+html_logo = 'images/inria.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -164,7 +169,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'NS3DCECCNxQuickStart'
+htmlhelp_basename = 'DCE'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -177,10 +182,7 @@ htmlhelp_basename = 'NS3DCECCNxQuickStart'
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
-latex_documents = [
-  ('index', 'NS3DCECCNxQuickStart.tex', u'NS3 DCE CCNx Quick Start',
-   u'Frederic Urbani', 'manual'),
-]
+
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
@@ -210,7 +212,4 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    ('index', 'ns3dceccnxquickstart', u'NS3 DCE CCNx Quick Start',
-     [u'Frederic Urbani'], 1)
-]
+

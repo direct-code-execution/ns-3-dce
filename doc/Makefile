@@ -128,6 +128,17 @@ doctest:
 	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) $(BUILDDIR)/doctest
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in $(BUILDDIR)/doctest/output.txt."
+#install: html
+#	rm -rf $(HOME)/Frederic.Urbani/ns3dceccnx
+#	cp -r  $(BUILDDIR)/html $(HOME)/Frederic.Urbani/ns3dceccnx
+
+test: html
+	firefox $(BUILDDIR)/html/index.html
+
+t2: html
+	firefox $(BUILDDIR)/html/dce-kernel.html
+
 install: html
-	rm -rf $(HOME)/Frederic.Urbani/ns3dceccnx
-	cp -r  $(BUILDDIR)/html $(HOME)/Frederic.Urbani/ns3dceccnx
+	rm -rf $(HOME)/Frederic.Urbani/in-pro-gress/
+	cp -r  $(BUILDDIR)/html $(HOME)/Frederic.Urbani/in-pro-gress/
+
