@@ -10,9 +10,10 @@ struct Libc g_libc;
 extern "C" {
 
 // Step 2.  Very dirty trick to force redirection to library functions
-// This will work only with GCC. Number 256 was picked to be arbitrarily large to allow
+// This will work only with GCC. Number 128 was picked to be arbitrarily large to allow
 // function calls with a large number of arguments.
 // \see http://tigcc.ticalc.org/doc/gnuexts.html#SEC67___builtin_apply_args
+// FIXME: 120925: 128 was heuristically picked to pass the test under 32bits environment.
 #define NATIVE DCE
 #define NATIVE_WITH_ALIAS DCE_WITH_ALIAS
 #define NATIVE_WITH_ALIAS2 DCE_WITH_ALIAS2
@@ -20,14 +21,14 @@ extern "C" {
 #define GCC_BUILTIN_APPLY(export_symbol, func_to_call) \
   void export_symbol (...) {\
   void *args =  __builtin_apply_args();\
-		void *result = __builtin_apply( g_libc.func_to_call ## _fn, args, 256 ); \
+		void *result = __builtin_apply( g_libc.func_to_call ## _fn, args, 128 ); \
 		__builtin_return (result);\
   }
 
 #define GCC_BUILTIN_APPLYT(rtype, export_symbol, func_to_call) \
   rtype export_symbol (...) {\
   void *args =  __builtin_apply_args();\
-                void *result = __builtin_apply( (void(*)(...)) g_libc.func_to_call ## _fn, args, 256 ); \
+                void *result = __builtin_apply( (void(*)(...)) g_libc.func_to_call ## _fn, args, 128 ); \
                 __builtin_return (result);\
   }
 
