@@ -1,6 +1,6 @@
-diff -r 319dc814102b -r d4dd4b5919ac Makefile
+diff -r 319dc814102b Makefile
 --- a/Makefile	Mon Jun 18 09:09:15 2012 +0200
-+++ b/Makefile	Wed Sep 26 11:47:01 2012 +0900
++++ b/Makefile	Wed Sep 26 17:22:34 2012 +0900
 @@ -19,7 +19,10 @@
  endif
  ifeq ($(ARCH),i386/)
@@ -20,9 +20,9 @@ diff -r 319dc814102b -r d4dd4b5919ac Makefile
 --include $(SRC:%.o=.%.o.d)
 \ No newline at end of file
 +-include $(SRC:%.o=.%.o.d)
-diff -r 319dc814102b -r d4dd4b5919ac extract-system-config.py
+diff -r 319dc814102b extract-system-config.py
 --- a/extract-system-config.py	Mon Jun 18 09:09:15 2012 +0200
-+++ b/extract-system-config.py	Wed Sep 26 11:47:01 2012 +0900
++++ b/extract-system-config.py	Wed Sep 26 17:22:34 2012 +0900
 @@ -134,10 +134,15 @@
                      '/usr/lib/debug/ld-linux-x86-64.so.2',
                      '/usr/lib/debug/lib/ld-linux.so.2.debug',
@@ -40,10 +40,44 @@ diff -r 319dc814102b -r d4dd4b5919ac extract-system-config.py
                      # ubuntu 1204
                      '/usr/lib/debug/lib/x86_64-linux-gnu/ld-2.15.so'
                      ]
-diff -r 319dc814102b -r d4dd4b5919ac glibc.c
+@@ -185,6 +190,11 @@
+         sys.exit (1)
+     config.write ('#define CONFIG_RTLD_GLOBAL_RO_SIZE ' + str(data.data) + '\n')
+ 
++    data = debug.get_struct_member_offset ('rtld_global_ro', '_dl_pagesize')
++    if data is None:
++        sys.exit (1)
++    config.write ('#define CONFIG_RTLD_DL_PAGESIZE_OFFSET ' + str(data.data) + '\n')
++
+     data = debug.get_struct_member_offset ('rtld_global', '_dl_error_catch_tsd')
+     if data is None:
+         sys.exit (1)
+diff -r 319dc814102b glibc.c
 --- a/glibc.c	Mon Jun 18 09:09:15 2012 +0200
-+++ b/glibc.c	Wed Sep 26 11:47:01 2012 +0900
-@@ -235,6 +235,7 @@
++++ b/glibc.c	Wed Sep 26 17:22:34 2012 +0900
+@@ -67,7 +67,10 @@
+ // and how this symbol is imported by libc.so
+ EXPORT char **_dl_argv;
+ 
+-EXPORT char _rtld_global_ro[CONFIG_RTLD_GLOBAL_RO_SIZE];
++static char _rtld_local_ro[CONFIG_RTLD_GLOBAL_RO_SIZE];
++// and, then, we define the exported symbol as an alias to the local symbol.
++extern __typeof (_rtld_local_ro) _rtld_global_ro __attribute__ ((alias("_rtld_local_ro"),
++                                                                 visibility("default")));
+ // We have to define first a local symbol to ensure that all references
+ // to this symbol do not go through the GOT.
+ static char _rtld_local[CONFIG_RTLD_GLOBAL_SIZE];
+@@ -223,6 +226,9 @@
+   void **(*fn) (void) = vdl_dl_error_catch_tsd;
+   char *dst = &_rtld_local[CONFIG_DL_ERROR_CATCH_TSD_OFFSET];
+   vdl_memcpy ((void*)dst, &fn, sizeof (fn));
++  char *off = &_rtld_local_ro[CONFIG_RTLD_DL_PAGESIZE_OFFSET];
++  int pgsz = system_getpagesize ();
++  vdl_memcpy (off, &pgsz, sizeof (pgsz));
+ }
+ 
+ 
+@@ -235,6 +241,7 @@
  // Typically called by malloc to lookup ptmalloc_init.
  // In this case, symbolp is 0.
  int
@@ -51,9 +85,9 @@ diff -r 319dc814102b -r d4dd4b5919ac glibc.c
  _dl_addr_hack (const void *address, Dl_info *info,
  	       void **mapp, const ElfW(Sym) **symbolp)
  {
-diff -r 319dc814102b -r d4dd4b5919ac i386/machine.c
+diff -r 319dc814102b i386/machine.c
 --- a/i386/machine.c	Mon Jun 18 09:09:15 2012 +0200
-+++ b/i386/machine.c	Wed Sep 26 11:47:01 2012 +0900
++++ b/i386/machine.c	Wed Sep 26 17:22:34 2012 +0900
 @@ -335,7 +335,9 @@
      "/lib:" 
      "/lib32:"
@@ -65,9 +99,9 @@ diff -r 319dc814102b -r d4dd4b5919ac i386/machine.c
    return dirs;
  }
  
-diff -r 319dc814102b -r d4dd4b5919ac test/Makefile
+diff -r 319dc814102b test/Makefile
 --- a/test/Makefile	Mon Jun 18 09:09:15 2012 +0200
-+++ b/test/Makefile	Wed Sep 26 11:47:01 2012 +0900
++++ b/test/Makefile	Wed Sep 26 17:22:34 2012 +0900
 @@ -5,7 +5,7 @@
  CXXFLAGS=$(CFLAGS)
  LDFLAGS=-Wl,--warn-unresolved-symbols -L. -Wl,--no-as-needed
