@@ -1,6 +1,28 @@
-diff -r 319dc814102b extract-system-config.py
---- a/extract-system-config.py  Mon Jun 18 09:09:15 2012 +0200
-+++ b/extract-system-config.py  Fri Sep 21 03:39:56 2012 +0200
+diff -r 319dc814102b -r d4dd4b5919ac Makefile
+--- a/Makefile	Mon Jun 18 09:09:15 2012 +0200
++++ b/Makefile	Wed Sep 26 11:47:01 2012 +0900
+@@ -19,7 +19,10 @@
+ endif
+ ifeq ($(ARCH),i386/)
+ LDSO_FILE=/lib/ld-linux.so.2
+-LIBDL_FILE=/lib/libdl.so.2
++LIBDL_FILES= \
++ /lib/i386-linux-gnu/libdl.so.2 \
++ /lib/libdl.so.2
++LIBDL_FILE=$(foreach file,$(LIBDL_FILES),$(wildcard $(file)))
+ else ifeq ($(ARCH),x86_64/)
+ LDSO_FILES= \
+  /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 \
+@@ -139,4 +142,4 @@
+ 	mkdir -p test
+ 	$(MAKE) -C test -f $(SRCDIR)test/Makefile clean
+ 
+--include $(SRC:%.o=.%.o.d)
+\ No newline at end of file
++-include $(SRC:%.o=.%.o.d)
+diff -r 319dc814102b -r d4dd4b5919ac extract-system-config.py
+--- a/extract-system-config.py	Mon Jun 18 09:09:15 2012 +0200
++++ b/extract-system-config.py	Wed Sep 26 11:47:01 2012 +0900
 @@ -134,10 +134,15 @@
                      '/usr/lib/debug/ld-linux-x86-64.so.2',
                      '/usr/lib/debug/lib/ld-linux.so.2.debug',
@@ -18,9 +40,34 @@ diff -r 319dc814102b extract-system-config.py
                      # ubuntu 1204
                      '/usr/lib/debug/lib/x86_64-linux-gnu/ld-2.15.so'
                      ]
-diff -r 319dc814102b test/Makefile
+diff -r 319dc814102b -r d4dd4b5919ac glibc.c
+--- a/glibc.c	Mon Jun 18 09:09:15 2012 +0200
++++ b/glibc.c	Wed Sep 26 11:47:01 2012 +0900
+@@ -235,6 +235,7 @@
+ // Typically called by malloc to lookup ptmalloc_init.
+ // In this case, symbolp is 0.
+ int
++internal_function
+ _dl_addr_hack (const void *address, Dl_info *info,
+ 	       void **mapp, const ElfW(Sym) **symbolp)
+ {
+diff -r 319dc814102b -r d4dd4b5919ac i386/machine.c
+--- a/i386/machine.c	Mon Jun 18 09:09:15 2012 +0200
++++ b/i386/machine.c	Wed Sep 26 11:47:01 2012 +0900
+@@ -335,7 +335,9 @@
+     "/lib:" 
+     "/lib32:"
+     "/usr/lib:"
+-    "/usr/lib32";
++    "/usr/lib32:"
++    "/usr/lib/i386-linux-gnu:"
++    "/lib/i386-linux-gnu";
+   return dirs;
+ }
+ 
+diff -r 319dc814102b -r d4dd4b5919ac test/Makefile
 --- a/test/Makefile	Mon Jun 18 09:09:15 2012 +0200
-+++ b/test/Makefile	Thu Sep 20 15:20:26 2012 +0900
++++ b/test/Makefile	Wed Sep 26 11:47:01 2012 +0900
 @@ -5,7 +5,7 @@
  CXXFLAGS=$(CFLAGS)
  LDFLAGS=-Wl,--warn-unresolved-symbols -L. -Wl,--no-as-needed
@@ -30,10 +77,3 @@ diff -r 319dc814102b test/Makefile
  
  include $(SRCDIR)$(MACHINE_MAKEFILE)
  
-@@ -111,4 +111,4 @@
- 	-rm -f *.o *~ 2>/dev/null
- 	-rm -f $(TARGETS) 2>/dev/null
- 	-rm -f $(addprefix $(OUTPUT_DIR)/,$(TESTS)) 2>/dev/null
--	-rm -f $(addsuffix -ldso,$(TESTS)) 2>/dev/null
-\ No newline at end of file
-+	-rm -f $(addsuffix -ldso,$(TESTS)) 2>/dev/null
