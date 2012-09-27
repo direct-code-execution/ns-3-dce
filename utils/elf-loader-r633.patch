@@ -1,6 +1,6 @@
 diff -r 319dc814102b Makefile
 --- a/Makefile	Mon Jun 18 09:09:15 2012 +0200
-+++ b/Makefile	Thu Sep 27 23:43:22 2012 +0900
++++ b/Makefile	Fri Sep 28 08:09:06 2012 +0900
 @@ -19,7 +19,10 @@
  endif
  ifeq ($(ARCH),i386/)
@@ -22,7 +22,7 @@ diff -r 319dc814102b Makefile
 +-include $(SRC:%.o=.%.o.d)
 diff -r 319dc814102b extract-system-config.py
 --- a/extract-system-config.py	Mon Jun 18 09:09:15 2012 +0200
-+++ b/extract-system-config.py	Thu Sep 27 23:43:22 2012 +0900
++++ b/extract-system-config.py	Fri Sep 28 08:09:06 2012 +0900
 @@ -134,18 +134,35 @@
                      '/usr/lib/debug/ld-linux-x86-64.so.2',
                      '/usr/lib/debug/lib/ld-linux.so.2.debug',
@@ -38,8 +38,9 @@ diff -r 319dc814102b extract-system-config.py
 +                    # for ubuntu 1010.
 +                    '/usr/lib/debug/lib/ld-2.12.1.so',
                      # ubuntu 1204
-                     '/usr/lib/debug/lib/x86_64-linux-gnu/ld-2.15.so'
-+                    '/usr/lib/debug/lib/i386-linux-gnu/ld-2.15.so'
+-                    '/usr/lib/debug/lib/x86_64-linux-gnu/ld-2.15.so'
++                    '/usr/lib/debug/lib/x86_64-linux-gnu/ld-2.15.so',
++                    '/usr/lib/debug/lib/i386-linux-gnu/ld-2.15.so',
                      ]
      for file in files_to_try:
          if os.path.isfile (file):
@@ -83,7 +84,7 @@ diff -r 319dc814102b extract-system-config.py
  
 diff -r 319dc814102b glibc.c
 --- a/glibc.c	Mon Jun 18 09:09:15 2012 +0200
-+++ b/glibc.c	Thu Sep 27 23:43:22 2012 +0900
++++ b/glibc.c	Fri Sep 28 08:09:06 2012 +0900
 @@ -67,7 +67,10 @@
  // and how this symbol is imported by libc.so
  EXPORT char **_dl_argv;
@@ -116,7 +117,7 @@ diff -r 319dc814102b glibc.c
  {
 diff -r 319dc814102b i386/machine.c
 --- a/i386/machine.c	Mon Jun 18 09:09:15 2012 +0200
-+++ b/i386/machine.c	Thu Sep 27 23:43:22 2012 +0900
++++ b/i386/machine.c	Fri Sep 28 08:09:06 2012 +0900
 @@ -335,7 +335,11 @@
      "/lib:" 
      "/lib32:"
@@ -132,7 +133,7 @@ diff -r 319dc814102b i386/machine.c
  
 diff -r 319dc814102b test/Makefile
 --- a/test/Makefile	Mon Jun 18 09:09:15 2012 +0200
-+++ b/test/Makefile	Thu Sep 27 23:43:22 2012 +0900
++++ b/test/Makefile	Fri Sep 28 08:09:06 2012 +0900
 @@ -5,7 +5,7 @@
  CXXFLAGS=$(CFLAGS)
  LDFLAGS=-Wl,--warn-unresolved-symbols -L. -Wl,--no-as-needed
@@ -151,7 +152,7 @@ diff -r 319dc814102b test/Makefile
 +	-rm -f $(addsuffix -ldso,$(TESTS)) 2>/dev/null
 diff -r 319dc814102b x86_64/machine.c
 --- a/x86_64/machine.c	Mon Jun 18 09:09:15 2012 +0200
-+++ b/x86_64/machine.c	Thu Sep 27 23:43:22 2012 +0900
++++ b/x86_64/machine.c	Fri Sep 28 08:09:06 2012 +0900
 @@ -7,6 +7,7 @@
  #include "local-elf.h"
  #include "syscall.h"
