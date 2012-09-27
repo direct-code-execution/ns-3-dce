@@ -39,8 +39,7 @@ Ping from the following archive `<http://www.skbuff.net/iputils/iputils-s2010100
 Quagga
 ------
 
-Quagga from the following archive `<http://www.quagga.net/download/quagga-0.99.20.tar.gz>`_ as been tested.
-Only ``zebra`` and ``ospfd`` binaries are supported for now. You can see the tutorial for more information.
+For more information, see the latest support `document <http://www.nsnam.org/~thehajime/ns-3-dce-quagga/index.html>`_.
 
 iPERF
 -----

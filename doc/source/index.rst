@@ -14,10 +14,13 @@ Contents:
    dce-over
    dce-doc
    getting-started
-   how-it-works
-   dce-readme
+
    dce-kernel
    dce-about
+
+
+.. how-it-works
+   dce-readme
  
     
 
