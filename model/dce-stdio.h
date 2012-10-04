@@ -70,6 +70,7 @@ size_t dce___fpending (FILE *stream);
 
 int dce_asprintf (char **strp, const char *fmt, ...);
 int dce_vasprintf (char **strp, const char *fmt, va_list ap);
+int dce_vsnprintf (char *s, size_t si, const char *f, va_list ap);
 
 #ifdef __cplusplus
 }

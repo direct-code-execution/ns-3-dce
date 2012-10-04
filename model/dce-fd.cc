@@ -379,6 +379,34 @@ int dce_socket (int domain, int type, int protocol)
 
   return fd;
 }
+ssize_t dce_readv (int fd, const struct iovec *iov, int iovcnt)
+{
+  Thread *current = Current ();
+  ssize_t ret = 0;
+
+  if ((0 == iov)||(iovcnt < 0))
+    {
+      current->err = EINVAL;
+      return -1;
+    }
+  for (int b=0;b < iovcnt; b++)
+    {
+      ssize_t r = dce_read (fd , iov[b].iov_base, iov[b].iov_len);
+      if (r>=0)
+        {
+          ret += r;
+          if (!r || (r < iov[b].iov_len))
+            {
+              return ret;
+            }
+        }
+      else
+        {
+          return -1;
+        }
+    }
+  return ret;
+}
 int dce_socketpair (int domain, int type, int protocol, int sv[2])
 {
   sv[0] = dce_socket (domain, type, protocol);

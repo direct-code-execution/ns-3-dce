@@ -807,3 +807,7 @@ int dce_vasprintf (char **strp, const char *fmt, va_list ap)
 
   return ret;
 }
+int dce_vsnprintf (char *s, size_t si, const char *f, va_list ap)
+{
+  return ::vsnprintf (s, si, f, ap);
+}

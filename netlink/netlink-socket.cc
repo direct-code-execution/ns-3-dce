@@ -924,6 +924,8 @@ NetlinkSocket::BuildRouteDumpMessages ()
   NS_LOG_FUNCTION (this);
   MultipartNetlinkMessage nlmsg_dump;
 
+  if (0 == m_ipv4Routing) return nlmsg_dump;
+
   NS_ASSERT_MSG (m_ipv4Routing != 0, "Should not happen");
   
   // We only care about staticRouting for netlink support

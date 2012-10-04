@@ -410,6 +410,7 @@ def build(bld):
         'model/linux/ipv4-linux.cc',
         'model/dce-vfs.cc',
         'model/elf-ldd.cc',
+        'model/dce-termio.cc',
         # helper.
         'helper/ipv4-dce-routing-helper.cc',
         'helper/dce-manager-helper.cc',

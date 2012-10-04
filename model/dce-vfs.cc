@@ -46,3 +46,21 @@ int dce_fstatfs64 (int fd, struct statfs *buf)
 
   return -1;
 }
+
+int dce_statvfs (const char *path, struct statvfs *buf)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
+  NS_ASSERT (Current () != 0);
+  Current ()->err = ENOSYS;
+
+  return -1;
+}
+
+int dce_fstatvfs (int fd, struct statvfs *buf)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
+  NS_ASSERT (Current () != 0);
+  Current ()->err = ENOSYS;
+
+  return -1;
+}

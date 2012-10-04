@@ -45,6 +45,7 @@
 #include <linux/netlink.h>
 #include <poll.h>
 #include <linux/netlink.h>
+#include <sys/ioctl.h>
 
 NS_LOG_COMPONENT_DEFINE ("UnixSocketFd");
 
@@ -602,8 +603,26 @@ UnixSocketFd::Ioctl (int request, char *argp)
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current);
   NS_ASSERT (current != 0);
-  current->err = EINVAL;
-  return -1;
+
+  if ( FIONBIO == request )
+    {
+        const int *arg = (const int *) argp;
+        if ( *arg )
+          {
+            m_statusFlags = m_statusFlags | O_NONBLOCK;
+          }
+        else
+          {
+            m_statusFlags = m_statusFlags & ~O_NONBLOCK;
+          }
+        return 0;
+    }
+  else
+    {
+      current->err = EINVAL;
+
+      return -1;
+    }
 }
 Address
 UnixSocketFd::PosixAddressToNs3Address (const struct sockaddr *my_addr, socklen_t addrlen) const

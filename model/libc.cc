@@ -128,6 +128,20 @@ char *strstr (const char *u, const char *d)
   return g_libc.strstr_fn (u,d);
 }
 
+int snprintf (char *s, size_t si, const char *f, ...)
+{
+  va_list vl;
+  va_start (vl, f);
+  int r =  g_libc.vsnprintf_fn (s, si, f, vl);
+  va_end (vl);
+
+  return r;
+}
+int vsnprintf (char *s, size_t si, const char *f, va_list v)
+{
+  return g_libc.vsnprintf_fn (s, si, f, v);
+}
+
 #include "libc-globals.h"
 
 void LIBSETUP (const struct Libc *fn)

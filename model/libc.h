@@ -1,6 +1,7 @@
 #ifndef LIBC_H
 #define LIBC_H
 
+#include <stdarg.h>
 #define _SYS_SELECT_H
 #include <sys/types.h>
 #undef _SYS_SELECT_H
@@ -17,7 +18,7 @@ struct Libc
 
   char* (*strpbrk_fn) (const char *s, const char *accept);
   char* (*strstr_fn) (const char *a, const char *b);
-
+  int (*vsnprintf_fn) (char *str, size_t size, const char *format, va_list v);
 };
 
 

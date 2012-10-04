@@ -83,7 +83,7 @@ NATIVE (srand48_r)
 NATIVE (seed48_r)
 NATIVE (lcong48_r)
 DCE (calloc)
-DCE (malloc)
+DCE_WITH_ALIAS2 (malloc, valloc)
 DCE (free)
 DCE (realloc)
 NATIVE (atoi)
@@ -248,6 +248,7 @@ DCE (alarm)
 DCE (readlink)
 
 // SYS/UIO.H
+DCE (readv)
 DCE (writev)
 
 // STDIO.H
@@ -266,7 +267,6 @@ DCE (fsetpos)
 DCE (printf)
 NATIVE (fprintf)
 NATIVE (sprintf)
-NATIVE (snprintf)
 DCE (asprintf)
 DCE (vasprintf)
 NATIVE (dprintf)
@@ -306,7 +306,6 @@ NATIVE_WITH_ALIAS2 (sscanf, __isoc99_sscanf)
 DCE (vprintf)
 NATIVE (vfprintf)
 NATIVE (vsprintf)
-NATIVE (vsnprintf)
 
 // FCNTL.H
 DCE (fcntl)
@@ -407,6 +406,7 @@ NATIVE (pthread_rwlock_rdlock)
 NATIVE (pthread_rwlock_destroy)
 NATIVE (pthread_setcancelstate)
 NATIVE (pthread_sigmask)
+NATIVE (pthread_equal)
 
 // SEMAPHORE.H
 DCE (sem_init)
@@ -533,6 +533,13 @@ DCE (fstatfs64)
 DCE (statfs)
 DCE (statfs64)
 
+// SYS/STATVFS.H
+DCE (statvfs)
+DCE (fstatvfs)
+
+// TERMIO.H
+DCE (tcgetattr)
+DCE (tcsetattr)
 
 ///////////////////// END OF INVENTAIRE //////////////////////////////////////////////////
 

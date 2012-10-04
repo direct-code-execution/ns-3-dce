@@ -40,6 +40,7 @@
 #include "dce-pwd.h"
 #include "dce-dirent.h"
 #include "dce-vfs.h"
+#include "dce-termio.h"
 
 #include <arpa/inet.h>
 #include <ctype.h>
@@ -94,6 +95,7 @@
 #include <fnmatch.h>
 #include <langinfo.h>
 #include <sys/vfs.h>
+#include <termio.h>
 
 extern void __cxa_finalize (void *d);
 extern int __cxa_atexit (void (*func) (void *), void *arg, void *d);
@@ -157,6 +159,7 @@ void libc_dce (struct Libc **libc)
 
   (*libc)->strpbrk_fn = dce_strpbrk;
   (*libc)->strstr_fn = dce_strstr;
+  (*libc)->vsnprintf_fn = dce_vsnprintf;
 }
 } // extern "C"
 
