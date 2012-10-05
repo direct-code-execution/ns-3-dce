@@ -160,6 +160,7 @@ def build_dce_tests(module, bld, kern):
     	    
     module.add_test(features='cxx cxxshlib', source=['test/test-macros.cc'], 
                     target='lib/test', linkflags=['-Wl,-soname=libtest.so'])
+    bld.install_files('${PREFIX}/lib', 'lib/libtest.so', chmod=0755 )
 
     tests = [['test-empty', []],
              ['test-sleep', []],
