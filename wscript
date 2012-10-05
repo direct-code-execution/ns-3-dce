@@ -203,9 +203,9 @@ def build_dce_tests(module, bld, kern):
     for name,uselib in tests:
         module.add_test(**dce_kw(target='bin_dce/' + name, source = ['test/' + name + '.cc'],
                                  use = uselib + ['lib/test']))
-        bld.install_files('${PREFIX}/bin', 'build/bin_dce/' + name , chmod=0755 )
+        bld.install_files('${PREFIX}/bin_dce', 'build/bin_dce/' + name , chmod=0755 )
 
-def build_dce_examples(module):
+def build_dce_examples(module, bld):
     dce_examples = [['udp-server', []],
                     ['udp-client', []],
                     ['udp-perf', ['m']],
@@ -222,6 +222,7 @@ def build_dce_examples(module):
         module.add_example(**dce_kw(target = 'bin_dce/' + name, 
                                     source = ['example/' + name + '.cc'],
                                     lib = lib))
+        bld.install_files('${PREFIX}/bin_dce', 'bin_dce/' + name , chmod=0755 )        
 
     module.add_example(needed = ['core', 'internet', 'dce'], 
                        target='bin/dce-tcp-simple',
@@ -445,7 +446,7 @@ def build(bld):
                                   lib=['dl'])
 #                                  lib=['dl','efence'])
     build_dce_tests(module, bld, bld.env['KERNEL_STACK'])
-    build_dce_examples(module)
+    build_dce_examples(module, bld)
 
     bld.install_files('${PREFIX}/bin', 'build/bin/ns3test-dce', chmod=0755 )
 

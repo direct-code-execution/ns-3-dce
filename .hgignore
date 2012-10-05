@@ -10,7 +10,6 @@ glob:**/files-*
 ^files-
 ^.waf-
 ^.lock-
-^ccnx-0.4.2
-^ccnx-0.5.*
+^ccnx-*
 ^doc/build
 ^NetAnim
