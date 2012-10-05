@@ -148,7 +148,7 @@ def dce_kw(**kw):
     d['linkflags'] = d.get('linkflags', []) + ['-pie'] + ['-lrt'] + debug_dl
     return d
 
-def build_dce_tests(module, kern):
+def build_dce_tests(module, bld, kern):
     if kern:
         module.add_runner_test(needed=['core', 'dce', 'internet'],  source=['test/dce-manager-test.cc', 'test/with-kernel.cc'])
         module.add_runner_test(needed=['core', 'dce', 'internet'],  source=['test/dce-manager-test.cc', 'test/with-kernel.cc'],
@@ -203,6 +203,7 @@ def build_dce_tests(module, kern):
     for name,uselib in tests:
         module.add_test(**dce_kw(target='bin_dce/' + name, source = ['test/' + name + '.cc'],
                                  use = uselib + ['lib/test']))
+        bld.install_files('${PREFIX}/bin', 'build/bin_dce/' + name , chmod=0755 )
 
 def build_dce_examples(module):
     dce_examples = [['udp-server', []],
@@ -443,8 +444,10 @@ def build(bld):
                                   includes=kernel_includes,
                                   lib=['dl'])
 #                                  lib=['dl','efence'])
-    build_dce_tests(module, bld.env['KERNEL_STACK'])
+    build_dce_tests(module, bld, bld.env['KERNEL_STACK'])
     build_dce_examples(module)
+
+    bld.install_files('${PREFIX}/bin', 'build/bin/ns3test-dce', chmod=0755 )
 
     if bld.env['KERNEL_STACK']:
         build_dce_kernel_examples(module)
