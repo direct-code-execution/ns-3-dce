@@ -1,0 +1,27 @@
+diff -r 7752dc4ce7e9 src/internet/model/ipv4-end-point.cc
+--- a/src/internet/model/ipv4-end-point.cc	Wed Aug 15 18:08:46 2012 -0700
++++ b/src/internet/model/ipv4-end-point.cc	Fri Oct 05 17:33:57 2012 +0200
+@@ -123,7 +123,10 @@
+ Ipv4EndPoint::DoForwardUp (Ptr<Packet> p, const Ipv4Header& header, uint16_t sport,
+                            Ptr<Ipv4Interface> incomingInterface)
+ {
+-  m_rxCallback (p, header, sport, incomingInterface);
++  if (!m_rxCallback.IsNull ())
++    {
++      m_rxCallback (p, header, sport, incomingInterface);
++    }
+ }
+ 
+ void 
+@@ -144,7 +147,10 @@
+                              uint8_t icmpType, uint8_t icmpCode,
+                              uint32_t icmpInfo)
+ {
+-  m_icmpCallback (icmpSource,icmpTtl,icmpType,icmpCode,icmpInfo);
++  if (!m_icmpCallback.IsNull ())
++    {
++      m_icmpCallback (icmpSource,icmpTtl,icmpType,icmpCode,icmpInfo);
++    }
+ }
+ 
+ } // namespace ns3

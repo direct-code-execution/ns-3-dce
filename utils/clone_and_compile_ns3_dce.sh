@@ -57,6 +57,7 @@ hg revert -a
 patch -p1 <../ns-3-dce/utils/packet-socket-upgrade-exp.patch
 patch -p1 <../ns-3-dce/utils/remove-default-simulator-asserts.patch
 patch -p1 <../ns-3-dce/utils/NS3-shutdown.patch
+patch -p1 <../ns-3-dce/utils/ipv4endpoint.patch
 if [ "YES" == "$USE_OPT" ]
 then
 	CXXFLAGS='-O3' ./waf configure -d optimized --prefix=`pwd`/../build --enable-tests $MPI_SWITCH
