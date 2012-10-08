@@ -122,15 +122,17 @@ bool HasPendingSignal (void)
 struct timeval UtilsTimeToTimeval (Time time)
 {
   struct timeval tv;
-  tv.tv_sec = (time_t) time.GetSeconds ();
-  tv.tv_usec = time.GetMicroSeconds () % 1000000;
+  int64_t m = time.GetMicroSeconds ();
+  tv.tv_sec = m / 1000000L;
+  tv.tv_usec = m % 1000000L;
   return tv;
 }
 struct timespec UtilsTimeToTimespec (Time time)
 {
   struct timespec tv;
-  tv.tv_sec = (time_t) time.GetSeconds ();
-  tv.tv_nsec = time.GetNanoSeconds () % 1000000000;
+  int64_t n = time.GetNanoSeconds ();
+  tv.tv_sec = (time_t) ( n / 1000000000L );
+  tv.tv_nsec = n % 1000000000;
   return tv;
 }
 static unsigned long TimeBase (void)
