@@ -57,13 +57,37 @@ def configure(conf):
     if vg_h and vg_memcheck_h:
         conf.env.append_value('CXXDEFINES', 'HAVE_VALGRIND_H')
 
-    conf.start_msg('Searching C library')
-    libc = search_file ([
+    if os.uname()[4] == 'x86_64':
+        libc_files = [
             '/lib64/libc.so.6',
-            '/lib/libc.so.6',
             '/lib/x86_64-linux-gnu/libc.so.6',
-            '/lib/i386-linux-gnu/libc.so.6',
-            ])
+            ]
+        libpthread_files = [
+            '/lib64/libpthread.so.0',
+            '/lib/x86_64-linux-gnu/libpthread.so.0',
+            ]
+        librt_files = [
+            '/lib64/librt.so.1',
+            '/lib/x86_64-linux-gnu/librt.so.1',
+            ]
+    elif os.uname()[4] == 'i686':
+        libc_files = [
+                '/lib/libc.so.6',
+                '/lib/i386-linux-gnu/libc.so.6',
+                ]
+        libpthread_files = [
+            '/lib/libpthread.so.0',
+            '/lib/i386-linux-gnu/libpthread.so.0',
+            ]
+        librt_files = [
+            '/lib/librt.so.1',
+            '/lib/i386-linux-gnu/librt.so.1',
+            ]
+    else:
+        conf.fatal('unknown architecture')
+
+    conf.start_msg('Searching C library')
+    libc = search_file (libc_files)
     if libc is None:
         conf.fatal('not found')
     else:
@@ -71,12 +95,7 @@ def configure(conf):
     conf.env['LIBC_FILE'] = libc
 
     conf.start_msg('Searching pthread library')
-    libpthread = search_file ([
-            '/lib64/libpthread.so.0',
-            '/lib/libpthread.so.0',
-            '/lib/x86_64-linux-gnu/libpthread.so.0',
-            '/lib/i386-linux-gnu/libpthread.so.0',
-            ])
+    libpthread = search_file (libpthread_files)
     if libpthread is None:
         conf.fatal('not found')
     else:
@@ -84,12 +103,7 @@ def configure(conf):
     conf.env['LIBPTHREAD_FILE'] = libpthread
 
     conf.start_msg('Searching rt library')
-    librt = search_file ([
-            '/lib64/librt.so.1',
-            '/lib/librt.so.1',
-            '/lib/x86_64-linux-gnu/librt.so.1',
-            '/lib/i386-linux-gnu/librt.so.1',
-            ])
+    librt = search_file (librt_files)
     if librt is None:
         conf.fatal('not found')
     else:
