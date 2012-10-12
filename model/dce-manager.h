@@ -87,10 +87,12 @@ public:
   virtual ~DceManager ();
 
   uint16_t Start (std::string name, std::string stdinfilename, std::vector<std::string> args,
-                  std::vector<std::pair<std::string,std::string> > envs);
+                  std::vector<std::pair<std::string,std::string> > envs,
+                  uid_t uid, uid_t euid, uid_t gid, uid_t egid);
   uint16_t Start (std::string name, std::string stdinfilename, uint32_t stackSize,
                   std::vector<std::string> args,
-                  std::vector<std::pair<std::string,std::string> > envs);
+                  std::vector<std::pair<std::string,std::string> > envs,
+                  uid_t uid, uid_t euid, uid_t gid, uid_t egid);
   void SetFinishedCallback (uint16_t pid, Callback<void,uint16_t,int> cb);
   void Stop (uint16_t pid);
 

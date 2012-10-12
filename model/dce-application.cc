@@ -23,7 +23,7 @@ DceApplication::GetTypeId (void)
 
 DceApplication::DceApplication ()
   : m_stackSize (0),
-    m_pid (0)
+    m_pid (0), m_uid (0), m_euid (0), m_gid (0), m_egid (0)
 {}
 DceApplication::~DceApplication ()
 {}
@@ -69,11 +69,13 @@ DceApplication::StartApplication (void)
     }
   if (m_stackSize != 0)
     {
-      m_pid = manager->Start (m_filename, m_stdinFilename, m_stackSize, m_args, m_envs);
+      m_pid = manager->Start (m_filename, m_stdinFilename, m_stackSize, m_args,
+          m_envs, m_uid, m_euid, m_gid, m_egid);
     } 
   else
     {
-      m_pid = manager->Start (m_filename, m_stdinFilename, m_args, m_envs);
+      m_pid = manager->Start (m_filename, m_stdinFilename, m_args, m_envs,
+          m_uid, m_euid, m_gid, m_egid);
     }
   if ( !m_finishedCallback.IsNull () )
     {
@@ -98,5 +100,25 @@ void
 DceApplication::SetFinishedCallback (Callback<void,uint16_t,int> cb)
 {
   m_finishedCallback = cb;
+}
+void
+DceApplication::SetUid (uid_t i)
+{
+  m_uid = i;
+}
+void
+DceApplication::SetEuid (uid_t i)
+{
+  m_euid = i;
+}
+void
+DceApplication::SetGid (uid_t i)
+{
+  m_gid = i;
+}
+void
+DceApplication::SetEgid (uid_t i)
+{
+  m_egid = i;
 }
 } // namespace ns3

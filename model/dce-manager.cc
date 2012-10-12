@@ -295,7 +295,7 @@ DceManager::CreateProcess (std::string name, std::string stdinfilename, std::vec
 {
   struct Process *process = new Process ();
   process->euid = 0;
-  process->ruid = 1;
+  process->ruid = 0;
   process->suid = 0;
   process->egid = 0;
   process->rgid = 0;
@@ -376,10 +376,15 @@ DceManager::TaskSwitch (enum Task::SwitchType type, void *context)
 }
 uint16_t
 DceManager::Start (std::string name, std::string stdinfilename, std::vector<std::string> args,
-                   std::vector<std::pair<std::string,std::string> > envs)
+                   std::vector<std::pair<std::string,std::string> > envs,
+                   uid_t uid, uid_t euid, uid_t gid, uid_t egid)
 {
   NS_LOG_FUNCTION (this << name << args.size ());
   struct Process *process = CreateProcess (name, stdinfilename, args, envs, 0);
+  process->ruid = uid;
+  process->euid = euid;
+  process->rgid = gid;
+  process->egid = egid;
   struct Thread *thread = CreateThread (process);
   Task *task = TaskManager::Current ()->Start (&DceManager::DoStartProcess, thread);
   task->SetContext (thread);
@@ -389,10 +394,16 @@ DceManager::Start (std::string name, std::string stdinfilename, std::vector<std:
 }
 uint16_t
 DceManager::Start (std::string name, std::string stdinfilename, uint32_t stackSize,
-                   std::vector<std::string> args, std::vector<std::pair<std::string,std::string> > envs)
+                   std::vector<std::string> args,
+                   std::vector<std::pair<std::string,std::string> > envs,
+                   uid_t uid, uid_t euid, uid_t gid, uid_t egid)
 {
   NS_LOG_FUNCTION (this << name << stackSize << args.size () << envs.size ());
   struct Process *process = CreateProcess (name, stdinfilename, args, envs, 0);
+  process->ruid = uid;
+  process->euid = euid;
+  process->rgid = gid;
+  process->egid = egid;
   struct Thread *thread = CreateThread (process);
   Task *task = TaskManager::Current ()->Start (&DceManager::DoStartProcess, thread, stackSize);
   task->SetContext (thread);

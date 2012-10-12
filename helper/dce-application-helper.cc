@@ -8,7 +8,7 @@ NS_LOG_COMPONENT_DEFINE ("DceApplicationHelper");
 namespace ns3 {
 
 DceApplicationHelper::DceApplicationHelper ()
-  : m_stackSize (0)
+  : m_stackSize (0), m_uid (0), m_euid (0), m_gid (0), m_egid (0)
 {}
 void 
 DceApplicationHelper::SetBinary (std::string filename)
@@ -139,6 +139,8 @@ DceApplicationHelper::Install (NodeContainer c)
       dce->SetArguments (m_args);
       dce->SetEnvironment (m_envs);
       dce->SetStdinFile (m_stdinFilename);
+      dce->SetUid (m_uid);
+      dce->SetEuid (m_euid);
       if ( ! m_finishedCallback.IsNull() )
         {
           dce->SetFinishedCallback (m_finishedCallback);
@@ -153,5 +155,25 @@ void
 DceApplicationHelper::SetFinishedCallback (Callback<void,uint16_t,int> cb)
 {
   m_finishedCallback = cb;
+}
+void
+DceApplicationHelper::SetUid (uid_t i)
+{
+  m_uid = i;
+}
+void
+DceApplicationHelper::SetEuid (uid_t i)
+{
+  m_euid = i;
+}
+void
+DceApplicationHelper::SetGid (uid_t i)
+{
+  m_gid = i;
+}
+void
+DceApplicationHelper::SetEgid (uid_t i)
+{
+  m_egid = i;
 }
 } // namespace ns3

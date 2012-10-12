@@ -34,6 +34,10 @@ public:
   void ResetEnvironment (void);
   virtual ApplicationContainer Install (NodeContainer c);
   void SetFinishedCallback (Callback<void,uint16_t,int> cb);
+  void SetUid (uid_t i);
+  void SetEuid (uid_t i);
+  void SetGid (uid_t i);
+  void SetEgid (uid_t i);
 
 private:
   bool m_isBinary;
@@ -43,6 +47,10 @@ private:
   std::vector<std::pair<std::string,std::string> > m_envs;
   std::string m_stdinFilename;
   Callback<void,uint16_t,int> m_finishedCallback;
+  uid_t m_uid;
+  uid_t m_euid;
+  uid_t m_gid;
+  uid_t m_egid;
 };
 
 } // namespace ns3
