@@ -401,7 +401,7 @@ ElfLdd::Loop (std::string s, std::string f)
             }
           if (l->GetArch64 ())
             {
-              l->AddPath ("/lib64/:/usr/lib64/:/lib/x86_64-linux-gnu/:/usr/lib/x86_64-linux-gnu/");
+              l->AddPath ("/lib/:/usr/lib/:/lib64/:/usr/lib64/:/lib/x86_64-linux-gnu/:/usr/lib/x86_64-linux-gnu/");
             }
           if (l->SearchLibs ())
             {
