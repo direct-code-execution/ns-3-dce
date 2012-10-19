@@ -278,18 +278,31 @@ UnixSocketFd::Setsockopt (int level, int optname,
             m_sendTimeout = UtilsTimevalToTime (*tv);
           } break;
         case SO_SNDBUF: {
-            if (optlen != sizeof (int))
-        {
-          current->err = EINVAL;
-          return -1;
-        }
-            int *val = (int*)optval;
-            if (!m_socket->SetAttributeFailSafe ("SndBufSize", UintegerValue (*val)))
-        {
-          current->err = EINVAL;
-          return -1;
-        }
-          } break;
+          if (optlen != sizeof (int))
+            {
+              current->err = EINVAL;
+              return -1;
+            }
+          int *val = (int*)optval;
+          if (!m_socket->SetAttributeFailSafe ("SndBufSize", UintegerValue (*val)))
+            {
+              current->err = EINVAL;
+              return -1;
+            }
+        } break;
+        case SO_RCVBUF: {
+          if (optlen != sizeof (int))
+            {
+              current->err = EINVAL;
+              return -1;
+            }
+          int *val = (int*)optval;
+          if (!m_socket->SetAttributeFailSafe ("RcvBufSize", UintegerValue (*val)))
+            {
+              current->err = EINVAL;
+              return -1;
+            }
+        } break;
     default:
       NS_LOG_WARN ("Unsupported setsockopt requested. level: SOL_SOCKET, optname: " << optname);
       break;
@@ -489,21 +502,39 @@ UnixSocketFd::Getsockopt (int level, int optname,
             *optlen = sizeof (struct timeval);
           } break;
         case SO_SNDBUF: {
-            if (*optlen < sizeof (int))
-        {
-          current->err = EINVAL;
-          return -1;
-        }
-            int *val = (int*)optval;
-            UintegerValue attrValue;
-            if (!m_socket->GetAttributeFailSafe ("SndBufSize", attrValue))
-        {
-          current->err = EINVAL;
-          return -1;
-        }
-            *val = attrValue.Get ();
-            *optlen = sizeof (int);
-          } break;
+          if (*optlen < sizeof (int))
+            {
+              current->err = EINVAL;
+              return -1;
+            }
+          int *val = (int*)optval;
+          UintegerValue attrValue;
+          if (!m_socket->GetAttributeFailSafe ("SndBufSize", attrValue))
+            {
+              current->err = EINVAL;
+              return -1;
+            }
+          *val = attrValue.Get ();
+          *optlen = sizeof (int);
+        } break;
+
+        case SO_RCVBUF: {
+          if (*optlen < sizeof (int))
+            {
+              current->err = EINVAL;
+              return -1;
+            }
+          int *val = (int*)optval;
+          UintegerValue attrValue;
+          if (!m_socket->GetAttributeFailSafe ("RcvBufSize", attrValue))
+            {
+              current->err = EINVAL;
+              return -1;
+            }
+          *val = attrValue.Get ();
+          *optlen = sizeof (int);
+        } break;
+
     default:
       NS_LOG_WARN ("Unsupported setsockopt requested. level: SOL_SOCKET, optname: " << optname);
       break;
