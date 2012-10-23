@@ -1,0 +1,83 @@
+This scenario use real bittorrent protocol to download a file.
+
+We use 2 externals software to do this experience:
+
+ 1. opentracker  while act as the torrent tracker it can be found here :  http://erdgeist.org/arts/software/opentracker/
+ 
+ 2. client_test a client and also a server for torrent; this exe came from the libtorrent (rasterbar) torrent implementation: 
+     http://www.rasterbar.com/products/libtorrent/
+    we use also make_torrent from the same source to create torrent file, but we use it outside the simulation 
+    before running it in order to prepare the file to be downloaded in the simulation. 
+     
+The topology is simple we use 2 nodes linked by a point to point channel.
+
+As you must know to use a real application under NS-3/DCE you need to recompile it. 
+So below there is the recipe to compile the needed softwares for DCE usage.
+
+OPENTRACKER -------------------------------------------------------------------------------------------------
+
+opentracker use an external library named libowfat that you can find here http://www.fefe.de/libowfat/
+
+To compile libowfat we only need to patch its makefile in order to add -fPIC option to compilation 
+and to instruct libowfat to not use not supported calls like epoll and sigio .
+
+Below there is the commands you may use to build libowfat library :
+
+wget http://dl.fefe.de/libowfat-0.28.tar.bz2
+tar xf libowfat-0.28.tar.bz2
+ln -s libowfat-0.28 libowfat   # this link is mandatory because opentracker links against ../libowfat/libowfat.a
+cd libowfat
+# Apply a patch to the makefiles
+patch -p1 < dce-libowfat028.patch
+make
+
+As result you must have a brand new library file named libowfat.a.
+
+Now we can build OpenTracker :
+
+cd ..
+cvs -d :pserver:anoncvs@cvs.erdgeist.org:/home/cvsroot co opentracker
+cd opentracker
+CFLAGS=-fPIC LDFLAGS=-pie make
+cp opentracker $BASEDCE/build/bin_dce
+
+----------------------------------------------------------------------------------------------------------------
+
+LIBTORRENT-RASTERBAR
+
+Below there is the commands you may use to build libtorrent:
+
+wget http://libtorrent.googlecode.com/files/libtorrent-rasterbar-0.16.3.tar.gz
+tar xf libtorrent-rasterbar-0.16.3.tar.gz
+mkdir rasterbar
+cd libtorrent-rasterbar-0.16.3
+./configure --with-boost-system=mt --prefix=$PWD/../rasterbar --enable-tests --enable-examples --enable-debug --disable-dht --disable-geoip  --disable-pool-allocators
+patch -p1 < dce-libtorrent16.3.patch
+make V=1
+make install
+cp ../rasterbar/bin/client_test $BASEDCE/build/bin_dce
+cp ../rasterbar/bin/make_torrent $BASEDCE/build/bin_dce
+
+-----------------------------------------------------------------------------------------------------------------
+
+Then you can use the script named run-bt1.sh to run the scenario.
+
+As result of execution you should find the downloaded file by torrent in the NODE 1,
+this file is named erel_working.jpg it is a picture of my cat at work.
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
