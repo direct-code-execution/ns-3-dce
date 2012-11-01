@@ -232,6 +232,8 @@ def build_dce_examples(module, bld):
                     ['unix-client', []],
                     ['udp-echo-server', []],
                     ['udp-echo-client', []],
+                    ['dccp-server', []],
+                    ['dccp-client', []],
 #                    ['little-cout', []],
                     ]
     for name,lib in dce_examples:
@@ -315,6 +317,10 @@ def build_dce_kernel_examples(module):
     module.add_example(needed = ['core', 'network', 'dce', 'wifi', 'point-to-point', 'csma', 'mobility' ],
                        target='bin/dce-linux',
                        source=['example/dce-linux.cc'])
+
+    module.add_example(needed = ['core', 'network', 'dce', 'csma'], 
+                       target='bin/dce-dccp',
+                       source=['example/dce-dccp.cc'])
 
 # Add a script to build system 
 def build_a_script(bld, name, needed = [], **kw):
