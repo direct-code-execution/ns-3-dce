@@ -134,7 +134,7 @@ NATIVE_EXPLICIT (index, char * (*) (char *, int))
 NATIVE_EXPLICIT (rindex, char * (*) (char *, int))
 NATIVE_EXPLICIT (strtok, char * (*) (char *, const char *))
 NATIVE_EXPLICIT (strtok_r,  char * (*)(char *, const char *, char **))
-
+NATIVE (strsep)
 
 
 // LOCALE.H
