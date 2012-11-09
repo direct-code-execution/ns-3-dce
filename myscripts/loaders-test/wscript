@@ -1,0 +1,23 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+import ns3waf
+import os
+
+def configure(conf):
+    ns3waf.check_modules(conf, ['core', 'internet', 'point-to-point' ], mandatory = True)
+
+def build(bld):
+    linkerpath=os.path.abspath(os.path.join('..', 'elf-loader','ldso'))
+    bld.build_a_script('dce', needed = ['core', 'internet', 'dce', 'point-to-point' ],
+				  target='bin/dce-twin',
+				  source=['dce-twin.cc'])
+    bld.build_a_script('dce', needed = ['core', 'internet', 'dce', 'point-to-point' ],
+				  target='bin/vdl-dce-twin',
+				  source=['dce-twin.cc'],
+				  linkflags=['-Wl,--dynamic-linker=' + linkerpath ] )				  
+    bld.program(source='mytest.cc', target='../../bin_dce/mytest', use='../../lib/mylib',
+                cxxflags = [ '-fPIC'], 
+                linkflags = [ '-L'+os.path.abspath('build/lib/'), '-lmylib', '-lstdc++', '-pie'])
+    bld.shlib(source = ['mylib.cc'],
+              target='../../lib/mylib', cflags=['-g'],
+              linkflags=['-shared', '-Wl,-soname=libmylib.so'])

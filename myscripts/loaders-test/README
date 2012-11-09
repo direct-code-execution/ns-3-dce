@@ -1,0 +1,41 @@
+This example shows how loaders can affect the behavior of executables.
+
+The executable launched by DCE is mytest it uses a shared library named libmylib.so, you can study the sources
+and tested it:
+
+ $BASEDCE/build/bin_dce/mytest 
+ 
+Also you can test under DCE using differents loaders: 
+
+1. using CoojaLoader
+
+   $BASEDCE/build/myscripts/loaders-test/bin/dce-twin --ns3::DceManagerHelper::LoaderFactory=ns3::CoojaLoaderFactory[]
+   
+ then you can look at output :
+ 
+  cat files-*/var/log/*/*
+  
+2. using CopyLoader
+
+   $BASEDCE/build/myscripts/loaders-test/bin/dce-twin --ns3::DceManagerHelper::LoaderFactory=ns3::CopyLoaderFactory[]
+   
+3. Using elf-loader and CoojaLoader :
+
+   $BASEDCE/build/myscripts/loaders-test/bin/vdl-dce-twin --ns3::DceManagerHelper::LoaderFactory=ns3::CopyLoaderFactory[]
+   
+4. Using elf-loader only 
+
+   $BASEDCE/build/myscripts/loaders-test/bin/vdl-dce-twin  --ns3::DceManagerHelper::LoaderFactory=ns3::DlmLoaderFactory[]
+ or
+   dce-runner $BASEDCE/build/myscripts/loaders-test/bin/dce-twin
+
+
+Only the last the elf loader give the good result.
+  
+
+      
+     
+   
+
+
+
