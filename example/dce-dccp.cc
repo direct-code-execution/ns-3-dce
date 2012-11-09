@@ -20,6 +20,8 @@ int main (int argc, char *argv[])
   NetDeviceContainer devices = csma.Install (nodes);
 
   DceManagerHelper dceManager;
+  dceManager.SetTaskManagerAttribute ("FiberManagerType",
+                                      StringValue ("UcontextFiberManager"));
   dceManager.SetNetworkStack("ns3::LinuxSocketFdFactory",
 			     "Library", StringValue ("liblinux.so"));
 
