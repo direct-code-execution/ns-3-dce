@@ -50,7 +50,7 @@ then
  	hg clone http://code.nsnam.org/furbani/ns-3-linux
 fi
 echo clone ns-3-dev
-hg clone -r 7752dc4ce7e9 http://code.nsnam.org/ns-3-dev
+hg clone -r 7a750f032acd http://code.nsnam.org/ns-3-dev
 mkdir build
 cd ns-3-dev
 hg revert -a
