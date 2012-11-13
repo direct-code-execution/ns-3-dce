@@ -14,7 +14,7 @@
 #include <netinet/ip.h>
 #include <arpa/inet.h>
 
-#define BUFF_LEN ((size_t) 1000001)
+#define BUFF_LEN ((size_t) 33 * 1024 )
 
 static char *sendBuffer = 0;
 static char *readBuffer = 0;

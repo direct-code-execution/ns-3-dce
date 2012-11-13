@@ -14,6 +14,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <poll.h>
+#include <unistd.h>
 
 static
 void fill_addr (struct sockaddr_in &addr, int port)

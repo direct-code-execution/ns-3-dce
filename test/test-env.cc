@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <unistd.h>
 #include "test-macros.h"
 
 static bool environ_search (const char *str)

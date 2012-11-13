@@ -8,6 +8,7 @@
 #include <sys/select.h>
 #include <pthread.h>
 #include <netinet/ip.h>
+#include <unistd.h>
 #include "test-macros.h"
 
 #undef OUTPUT

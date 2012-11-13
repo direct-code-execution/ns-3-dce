@@ -30,6 +30,7 @@
 #include "unix-fd.h"
 #include <exception>
 #include <poll.h>
+#include <unistd.h>
 #include "wait-queue.h"
 #include "ns3/simulator.h"
 #include "file-usage.h"
@@ -767,7 +768,7 @@ LocalStreamSocketFd::Bind (const struct sockaddr *my_addr, socklen_t addrlen)
     {
       Current ()->err = errno;
     }
-  close (realFd);
+    close (realFd);
 
   return ret;
 }

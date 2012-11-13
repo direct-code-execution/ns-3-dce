@@ -13,6 +13,7 @@
 #include <string.h>
 #include <list>
 #include <fcntl.h>
+#include <unistd.h>
 #include "file-usage.h"
 
 NS_LOG_COMPONENT_DEFINE ("ProcessUtils");

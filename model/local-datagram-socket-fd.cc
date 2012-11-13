@@ -32,6 +32,7 @@
 #include <exception>
 #include <poll.h>
 #include "wait-queue.h"
+#include <unistd.h>
 
 NS_LOG_COMPONENT_DEFINE ("LocalDatagramSocketFd");
 

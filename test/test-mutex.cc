@@ -2,6 +2,7 @@
 #include "test-macros.h"
 #include <stdint.h>
 #include <errno.h>
+#include <unistd.h>
 
 struct SharedData
 {
