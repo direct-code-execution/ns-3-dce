@@ -1,0 +1,173 @@
+diff -r e6a6b9c61d5c Makefile
+--- a/Makefile	Tue Nov 20 10:38:26 2012 +0100
++++ b/Makefile	Tue Nov 20 10:41:10 2012 +0100
+@@ -83,12 +83,12 @@
+ AWK = gawk
+ CC = gcc
+ CCDEPMODE = depmode=gcc3
+-CFLAGS =  -O2 
++CFLAGS =  -g -fpic
+ CPP = gcc -E
+ CPPFLAGS = 
+ CXX = g++
+ CXXDEPMODE = depmode=gcc3
+-CXXFLAGS =  -O2 
++CXXFLAGS =  -g -fpic
+ CYGPATH_W = echo
+ DEFS = -DHAVE_CONFIG_H
+ DEPDIR = .deps
+@@ -102,7 +102,7 @@
+ INSTALL_PROGRAM = ${INSTALL}
+ INSTALL_SCRIPT = ${INSTALL}
+ INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
+-LDFLAGS = 
++LDFLAGS = -pie
+ LIBOBJS = 
+ LIBS = 
+ LTLIBOBJS = 
+diff -r e6a6b9c61d5c compat/Makefile
+--- a/compat/Makefile	Tue Nov 20 10:38:26 2012 +0100
++++ b/compat/Makefile	Tue Nov 20 10:41:10 2012 +0100
+@@ -84,12 +84,12 @@
+ AWK = gawk
+ CC = gcc
+ CCDEPMODE = depmode=gcc3
+-CFLAGS =  -O2 
++CFLAGS =  -g -fpic
+ CPP = gcc -E
+ CPPFLAGS = 
+ CXX = g++
+ CXXDEPMODE = depmode=gcc3
+-CXXFLAGS =  -O2 
++CXXFLAGS =  -g -fpic
+ CYGPATH_W = echo
+ DEFS = -DHAVE_CONFIG_H
+ DEPDIR = .deps
+@@ -103,7 +103,7 @@
+ INSTALL_PROGRAM = ${INSTALL}
+ INSTALL_SCRIPT = ${INSTALL}
+ INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
+-LDFLAGS = 
++LDFLAGS = -pie
+ LIBOBJS = 
+ LIBS = 
+ LTLIBOBJS = 
+diff -r e6a6b9c61d5c compat/Thread.c
+--- a/compat/Thread.c	Tue Nov 20 10:38:26 2012 +0100
++++ b/compat/Thread.c	Tue Nov 20 10:41:10 2012 +0100
+@@ -409,6 +409,7 @@
+     SwitchToThread( );
+ #endif
+ #endif
++    sleep (1);
+ }
+ 
+ #ifdef __cplusplus
+diff -r e6a6b9c61d5c doc/Makefile
+--- a/doc/Makefile	Tue Nov 20 10:38:26 2012 +0100
++++ b/doc/Makefile	Tue Nov 20 10:41:10 2012 +0100
+@@ -59,12 +59,12 @@
+ AWK = gawk
+ CC = gcc
+ CCDEPMODE = depmode=gcc3
+-CFLAGS =  -O2 
++CFLAGS =  -g -fpic
+ CPP = gcc -E
+ CPPFLAGS = 
+ CXX = g++
+ CXXDEPMODE = depmode=gcc3
+-CXXFLAGS =  -O2 
++CXXFLAGS =  -g -fpic
+ CYGPATH_W = echo
+ DEFS = -DHAVE_CONFIG_H
+ DEPDIR = .deps
+@@ -78,7 +78,7 @@
+ INSTALL_PROGRAM = ${INSTALL}
+ INSTALL_SCRIPT = ${INSTALL}
+ INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
+-LDFLAGS = 
++LDFLAGS = -pie
+ LIBOBJS = 
+ LIBS = 
+ LTLIBOBJS = 
+diff -r e6a6b9c61d5c include/Makefile
+--- a/include/Makefile	Tue Nov 20 10:38:26 2012 +0100
++++ b/include/Makefile	Tue Nov 20 10:41:10 2012 +0100
+@@ -59,12 +59,12 @@
+ AWK = gawk
+ CC = gcc
+ CCDEPMODE = depmode=gcc3
+-CFLAGS =  -O2 
++CFLAGS =  -g -fpic
+ CPP = gcc -E
+ CPPFLAGS = 
+ CXX = g++
+ CXXDEPMODE = depmode=gcc3
+-CXXFLAGS =  -O2 
++CXXFLAGS =  -g -fpic
+ CYGPATH_W = echo
+ DEFS = -DHAVE_CONFIG_H
+ DEPDIR = .deps
+@@ -78,7 +78,7 @@
+ INSTALL_PROGRAM = ${INSTALL}
+ INSTALL_SCRIPT = ${INSTALL}
+ INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
+-LDFLAGS = 
++LDFLAGS = -pie
+ LIBOBJS = 
+ LIBS = 
+ LTLIBOBJS = 
+diff -r e6a6b9c61d5c man/Makefile
+--- a/man/Makefile	Tue Nov 20 10:38:26 2012 +0100
++++ b/man/Makefile	Tue Nov 20 10:41:10 2012 +0100
+@@ -64,12 +64,12 @@
+ AWK = gawk
+ CC = gcc
+ CCDEPMODE = depmode=gcc3
+-CFLAGS =  -O2 
++CFLAGS =  -g -fpic
+ CPP = gcc -E
+ CPPFLAGS = 
+ CXX = g++
+ CXXDEPMODE = depmode=gcc3
+-CXXFLAGS =  -O2 
++CXXFLAGS =  -g -fpic
+ CYGPATH_W = echo
+ DEFS = -DHAVE_CONFIG_H
+ DEPDIR = .deps
+@@ -83,7 +83,7 @@
+ INSTALL_PROGRAM = ${INSTALL}
+ INSTALL_SCRIPT = ${INSTALL}
+ INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
+-LDFLAGS = 
++LDFLAGS = -pie
+ LIBOBJS = 
+ LIBS = 
+ LTLIBOBJS = 
+diff -r e6a6b9c61d5c src/Makefile
+--- a/src/Makefile	Tue Nov 20 10:38:26 2012 +0100
++++ b/src/Makefile	Tue Nov 20 10:41:10 2012 +0100
+@@ -88,12 +88,12 @@
+ AWK = gawk
+ CC = gcc
+ CCDEPMODE = depmode=gcc3
+-CFLAGS =  -O2 
++CFLAGS =  -g -fpic
+ CPP = gcc -E
+ CPPFLAGS = 
+ CXX = g++
+ CXXDEPMODE = depmode=gcc3
+-CXXFLAGS =  -O2 
++CXXFLAGS =  -g -fpic
+ CYGPATH_W = echo
+ DEFS = -DHAVE_CONFIG_H
+ DEPDIR = .deps
+@@ -107,7 +107,7 @@
+ INSTALL_PROGRAM = ${INSTALL}
+ INSTALL_SCRIPT = ${INSTALL}
+ INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
+-LDFLAGS = 
++LDFLAGS = -pie
+ LIBOBJS = 
+ LIBS = 
+ LTLIBOBJS = 
