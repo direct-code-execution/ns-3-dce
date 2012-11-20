@@ -16,6 +16,7 @@ Contents:
    getting-started
 
    dce-kernel
+   dce-poll
    dce-about
 
 
