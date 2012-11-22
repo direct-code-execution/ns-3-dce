@@ -57,61 +57,6 @@ def configure(conf):
     if vg_h and vg_memcheck_h:
         conf.env.append_value('CXXDEFINES', 'HAVE_VALGRIND_H')
 
-    if os.uname()[4] == 'x86_64':
-        libc_files = [
-            '/lib64/libc.so.6',
-            '/lib/x86_64-linux-gnu/libc.so.6',
-            ]
-        libpthread_files = [
-            '/lib64/libpthread.so.0',
-            '/lib/x86_64-linux-gnu/libpthread.so.0',
-            ]
-        librt_files = [
-            '/lib64/librt.so.1',
-            '/lib/x86_64-linux-gnu/librt.so.1',
-            ]
-    elif os.uname()[4] == 'i686':
-        libc_files = [
-                '/lib/libc.so.6',
-                '/lib/i386-linux-gnu/libc.so.6',
-                ]
-        libpthread_files = [
-            '/lib/libpthread.so.0',
-            '/lib/i386-linux-gnu/libpthread.so.0',
-            ]
-        librt_files = [
-            '/lib/librt.so.1',
-            '/lib/i386-linux-gnu/librt.so.1',
-            ]
-    else:
-        conf.fatal('unknown architecture')
-
-    conf.start_msg('Searching C library')
-    libc = search_file (libc_files)
-    if libc is None:
-        conf.fatal('not found')
-    else:
-        conf.end_msg(libc, True)
-    conf.env['LIBC_FILE'] = libc
-
-    conf.start_msg('Searching pthread library')
-    libpthread = search_file (libpthread_files)
-    if libpthread is None:
-        conf.fatal('not found')
-    else:
-        conf.end_msg(libpthread, True)
-    conf.env['LIBPTHREAD_FILE'] = libpthread
-
-    conf.start_msg('Searching rt library')
-    librt = search_file (librt_files)
-    if librt is None:
-        conf.fatal('not found')
-    else:
-        conf.end_msg(librt, True)
-    conf.env['LIBRT_FILE'] = librt
-
-    conf.find_program('readversiondef', var='READVERSIONDEF', mandatory=True)
-
     if Options.options.kernel_stack is not None and os.path.isdir(Options.options.kernel_stack):
         conf.check(header_name='sim.h',
                    includes=os.path.join(Options.options.kernel_stack, 'sim/include'))
@@ -349,7 +294,7 @@ def conf_myscripts(conf):
              conf.recurse(os.path.join('myscripts', dir))
 
 	
-def build(bld):
+def build(bld):    
     build_netlink(bld)
 
     if bld.env['KERNEL_STACK']:
@@ -480,21 +425,14 @@ def build(bld):
     add_myscripts(bld)
 
     bld.add_group('dce_version_files')
+    
+    bld.program(source='utils/dcemakeversion.c', 
+                name='dcemakeversion',
+                target='dcemakeversion', cflags = [ '-g'], linkflags    = ['-lpthread', '-lrt']) 
 
-    bld(source=['model/libc-ns3.version'],
-        target='model/libc.version',
-        rule='%s %s | cat ${SRC[0].abspath()} - > ${TGT}' %
-        (bld.env['READVERSIONDEF'], bld.env['LIBC_FILE']))
-
-    bld(source=['model/libpthread-ns3.version'],
-        target='model/libpthread.version',
-        rule='%s %s | cat ${SRC[0].abspath()} - > ${TGT}' %
-        (bld.env['READVERSIONDEF'], bld.env['LIBPTHREAD_FILE']))
-
-    bld(source=['model/librt-ns3.version'],
-        target='model/librt.version',
-        rule='%s %s | cat ${SRC[0].abspath()} - > ${TGT}' %
-        (bld.env['READVERSIONDEF'], bld.env['LIBRT_FILE']))
+    bld(source=['dcemakeversion','model/libc-ns3.version' , 'model/libpthread-ns3.version' ,'model/librt-ns3.version'],
+        target=['model/libc.version','model/libpthread.version','model/librt.version'],
+        rule='${SRC[0].abspath()} ${SRC[1].abspath()}  ${SRC[2].abspath()}  ${SRC[3].abspath()} ')
 
     bld.add_group('dce_use_version_files')
 
@@ -506,7 +444,6 @@ def build(bld):
               linkflags=['-nostdlib', 
                          '-Wl,--version-script=' + os.path.join('model', 'libc.version'),
                          '-Wl,-soname=libc.so.6'])
-
     # The very small libpthread used to replace the glibc
     # and forward to the dce_* code
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc'],

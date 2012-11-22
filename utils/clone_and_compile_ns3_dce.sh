@@ -38,8 +38,6 @@ SAVE_LDLP=$LD_LIBRARY_PATH
 SAVE_PKG=$PKG_CONFIG_PATH
 #echo clone ns-3-dce : 
 #hg clone http://code.nsnam.org/furbani/ns-3-dce
-echo clone readversiondef
-hg clone http://code.nsnam.org/mathieu/readversiondef
 
 echo clone elf-loader
 hg clone http://code.nsnam.org/mathieu/elf-loader/
@@ -70,11 +68,6 @@ cd ..
 export PATH=$SAVE_PATH:`pwd`/build/bin
 export LD_LIBRARY_PATH=$SAVE_LDLP:`pwd`/build/lib
 export PKG_CONFIG_PATH=$SAVE_PKG:`pwd`/build/lib/pkgconfig
-# build readversiondef
-cd readversiondef/
-make 
-make install PREFIX=`pwd`/../build/
-cd ..
 # build elf-loader
 cd elf-loader
 patch -f -p1 < ../ns-3-dce/utils/elf-loader-r633.patch
