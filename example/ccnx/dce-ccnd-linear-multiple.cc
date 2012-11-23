@@ -62,14 +62,11 @@ int main (int argc, char *argv[])
   bool useTcp = 0;
   std::string animFile = "NetAnimLinear.xml";
   bool useKernel = 0;
-  int ccnxVersion = 4;
 
   CommandLine cmd;
   cmd.AddValue ("nNodes", "Number of nodes to place in the line", nNodes);
   cmd.AddValue ("tcp", "Use TCP to link ccnd daemons.", useTcp);
   cmd.AddValue ("kernel", "Use kernel linux IP stack.", useKernel);
-  cmd.AddValue ("cv", "Ccnx version 4 for 0.4.x variantes and 5 for 0.5.x variantes, default: 4",
-      ccnxVersion);
   cmd.Parse (argc, argv);
 
   NS_LOG_INFO( "useTcp: " << useTcp );
@@ -223,7 +220,7 @@ int main (int argc, char *argv[])
   dce.ResetArguments();
   dce.ResetEnvironment();
   dce.AddEnvironment("HOME", "/root");
-  dce.SetBinary ((ccnxVersion==4)?"ccnput":"ccnpoke");
+  dce.SetBinary ("ccnpoke");
   dce.SetStdinFile ("/tmp/README");
   dce.AddFile ("/tmp/README","/tmp/README");
   dce.AddArgument ("-x" );
@@ -242,7 +239,7 @@ int main (int argc, char *argv[])
   dce.ResetEnvironment();
   dce.AddEnvironment("HOME", "/root");
   dce.AddEnvironment("CCN_LINGER", "3540"); // 1 little hour or less
-  dce.SetBinary ((ccnxVersion==4)?"ccnget":"ccnpeek"); // First get can take 105s when ccnd daemons are linked with tcp, with 500 nodes.
+  dce.SetBinary ("ccnpeek"); // First get can take 105s when ccnd daemons are linked with tcp, with 500 nodes.
   dce.SetStdinFile ("");
   dce.AddArgument ("-c");
   dce.AddArgument ("-a");
@@ -256,7 +253,7 @@ int main (int argc, char *argv[])
   dce.ResetEnvironment();
   dce.AddEnvironment("HOME", "/root");
   dce.AddEnvironment("CCN_LINGER", "1");
-  dce.SetBinary ((ccnxVersion==4)?"ccnget":"ccnpeek");
+  dce.SetBinary ("ccnpeek");
   dce.SetStdinFile ("");
   dce.AddArgument ("-c");
   dce.AddArgument ("-a");
