@@ -5,7 +5,7 @@ def configure(conf):
 	conf.load('compiler_cxx')
 
 def build(bld):
-	linkerpath=os.path.abspath(os.path.join('..', 'elf-loader','ldso'))
+	linkerpath = os.path.abspath (bld.env.PREFIX + '/lib/ldso')
 	bld.program(source='dce-runner.c', target='../../build/bin/dce-runner',
 	 cflags = [ '-fPIC'], linkflags  = ['-pie','-ldl','-Wl,--dynamic-linker=' + linkerpath ] )
 

@@ -111,11 +111,11 @@ def build_dce_tests(module, bld, kern):
     if kern:
         module.add_runner_test(needed=['core', 'dce', 'internet'],  source=['test/dce-manager-test.cc', 'test/with-kernel.cc'])
         module.add_runner_test(needed=['core', 'dce', 'internet'],  source=['test/dce-manager-test.cc', 'test/with-kernel.cc'],
-                               linkflags = ['-Wl,--dynamic-linker=' + os.path.abspath ('../build/lib/ldso')], name='vdl')
+                               linkflags = ['-Wl,--dynamic-linker=' + os.path.abspath (bld.env.PREFIX + '/lib/ldso')], name='vdl')
     else:
         module.add_runner_test(needed=['core', 'dce', 'internet'], source=['test/dce-manager-test.cc','test/without-kernel.cc'])
         module.add_runner_test(needed=['core', 'dce', 'internet'], source=['test/dce-manager-test.cc','test/without-kernel.cc'],
-                               linkflags = ['-Wl,--dynamic-linker=' + os.path.abspath ('../build/lib/ldso')], name='vdl')
+                               linkflags = ['-Wl,--dynamic-linker=' + os.path.abspath (bld.env.PREFIX + '/lib/ldso')], name='vdl')
     	    
     module.add_test(features='cxx cxxshlib', source=['test/test-macros.cc'], 
                     target='lib/test', linkflags=['-Wl,-soname=libtest.so'])
@@ -416,6 +416,7 @@ def build(bld):
     build_dce_examples(module, bld)
 
     bld.install_files('${PREFIX}/bin', 'build/bin/ns3test-dce', chmod=0755 )
+    bld.install_files('${PREFIX}/bin', 'build/bin/ns3test-dce-vdl', chmod=0755 )
 
     if bld.env['KERNEL_STACK']:
         build_dce_kernel_examples(module)
