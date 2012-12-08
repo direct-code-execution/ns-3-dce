@@ -18,6 +18,7 @@ int dce_getnameinfo (const struct sockaddr *sa, socklen_t salen, char *host,
                        socklen_t hostlen, char *serv, socklen_t servlen, unsigned int flags);
 
 void dce_herror(const char *string);
+int dce_getifaddrs (struct ifaddrs **ifap);
 
 #ifdef __cplusplus
 }
