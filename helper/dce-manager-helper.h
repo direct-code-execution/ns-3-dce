@@ -59,6 +59,9 @@ public:
   void SetScheduler (std::string type, 
 		     std::string n0 = "", const AttributeValue &v0 = EmptyAttributeValue (),
 		     std::string n1 = "", const AttributeValue &v1 = EmptyAttributeValue ());
+  void SetDelayModel (std::string type, 
+                      std::string n0 = "", const AttributeValue &v0 = EmptyAttributeValue (),
+                      std::string n1 = "", const AttributeValue &v1 = EmptyAttributeValue ());
   void SetTaskManagerAttribute (std::string n0, const AttributeValue &v0);
   void SetLoader (std::string type);
   void SetNetworkStack (std::string type,
@@ -82,6 +85,7 @@ private:
   ObjectFactory m_taskManagerFactory;
   ObjectFactory m_managerFactory;
   ObjectFactory m_networkStackFactory;
+  ObjectFactory m_delayFactory;
   std::string m_virtualPath;
 };
 

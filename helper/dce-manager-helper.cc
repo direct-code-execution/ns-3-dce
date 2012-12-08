@@ -54,6 +54,7 @@ DceManagerHelper::DceManagerHelper ()
   m_schedulerFactory.SetTypeId ("ns3::RrTaskScheduler");
   m_managerFactory.SetTypeId ("ns3::DceManager");
   m_networkStackFactory.SetTypeId ("ns3::Ns3SocketFdFactory");
+  m_delayFactory.SetTypeId ("ns3::RandomProcessDelayModel");
   m_virtualPath ="";
 }
 void 
@@ -64,6 +65,15 @@ DceManagerHelper::SetScheduler (std::string type,
   m_schedulerFactory.SetTypeId (type);
   m_schedulerFactory.Set (n0, v0);
   m_schedulerFactory.Set (n1, v1);
+}
+void 
+DceManagerHelper::SetDelayModel (std::string type, 
+                                 std::string n0, const AttributeValue &v0,
+                                 std::string n1, const AttributeValue &v1)
+{
+  m_delayFactory.SetTypeId (type);
+  m_delayFactory.Set (n0, v0);
+  m_delayFactory.Set (n1, v1);
 }
 void 
 DceManagerHelper::SetTaskManagerAttribute (std::string n0, const AttributeValue &v0)
@@ -97,8 +107,10 @@ DceManagerHelper::Install (NodeContainer nodes)
       Ptr<TaskScheduler> scheduler = m_schedulerFactory.Create<TaskScheduler> ();
       Ptr<LoaderFactory> loader = m_loaderFactory.Create<LoaderFactory> ();
       Ptr<SocketFdFactory> networkStack = m_networkStackFactory.Create<SocketFdFactory> ();
+      Ptr<ProcessDelayModel> delay = m_delayFactory.Create<ProcessDelayModel> ();
 
       taskManager->SetScheduler (scheduler);
+      taskManager->SetDelayModel (delay);
       manager->SetAttribute ("FirstPid", UintegerValue (g_firstPid.GetInteger (0, 0xffff)));
       Ptr<Node> node = *i;
       node->AggregateObject (taskManager);

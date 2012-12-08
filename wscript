@@ -380,6 +380,7 @@ def build(bld):
         'model/dce-vfs.cc',
         'model/elf-ldd.cc',
         'model/dce-termio.cc',
+        'model/process-delay-model.cc',
         # helper.
         'helper/ipv4-dce-routing-helper.cc',
         'helper/dce-manager-helper.cc',
@@ -401,6 +402,7 @@ def build(bld):
         'helper/ccn-client-helper.h',
         'helper/linux-stack-helper.h',
         'helper/ipv4-dce-routing-helper.h',
+        'model/process-delay-model.h',
         ]
     module_source = module_source + kernel_source
     module_headers = module_headers + kernel_headers

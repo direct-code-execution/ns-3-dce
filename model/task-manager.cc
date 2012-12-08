@@ -13,6 +13,7 @@
 #include "dce-stdio.h"
 #include "process.h"
 #include "utils.h"
+#include "process-delay-model.h"
 
 namespace ns3 {
 
@@ -174,6 +175,12 @@ void
 TaskManager::SetScheduler (Ptr<TaskScheduler> scheduler)
 {
   m_scheduler = scheduler;
+}
+
+void 
+TaskManager::SetDelayModel (Ptr<ProcessDelayModel> model)
+{
+  m_delayModel = model;
 }
 
 Task *
@@ -383,6 +390,7 @@ TaskManager::Schedule (void)
           m_current = next;
           NS_ASSERT (next->m_state == Task::ACTIVE);
           next->m_state = Task::RUNNING;
+          m_delayModel->RecordStart ();
           if (next->m_switchNotifier != 0)
             {
               next->m_switchNotifier (Task::TO, next->m_switchNotifierContext);
@@ -398,13 +406,14 @@ TaskManager::Schedule (void)
     {
       // we have something to schedule from.
       // but, we have nothing to schedule to so, we go back to the main task.
-      NS_LOG_DEBUG ("Leaving " << m_current <<", entering main");
+      Time delay = m_delayModel->RecordEnd ();
+      NS_LOG_DEBUG ("Leaving " << m_current <<", delay " << delay << " entering main");
       struct Task *next = m_scheduler->PeekNext ();
       if (next != 0)
         {
           // but before leaving, we check if we have further processes active, and,
           // if so, make sure we will schedule them later.
-          Simulator::ScheduleNow (&TaskManager::Schedule, this);
+          Simulator::Schedule (delay, &TaskManager::Schedule, this);
         }
       struct Fiber *fiber = m_current->m_fiber;
       if (m_current->m_switchNotifier != 0)

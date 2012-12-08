@@ -7,6 +7,7 @@
 #include "ns3/nstime.h"
 #include "task-scheduler.h"
 #include <list>
+#include "process-delay-model.h"
 
 namespace ns3 {
 
@@ -61,6 +62,7 @@ public:
   virtual ~TaskManager ();
 
   void SetScheduler (Ptr<TaskScheduler> scheduler);
+  void SetDelayModel (Ptr<ProcessDelayModel> model);
 
   /**
    * Create a task and schedule it to run later.
@@ -148,6 +150,7 @@ private:
 
   Task *m_current;
   Ptr<TaskScheduler> m_scheduler;
+  Ptr<ProcessDelayModel> m_delayModel;
   FiberManager *m_fiberManager;
   Fiber *m_mainFiber;
   uint32_t m_defaultStackSize;
