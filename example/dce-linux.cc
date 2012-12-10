@@ -9,6 +9,7 @@
 #include <fstream>
 
 using namespace ns3;
+NS_LOG_COMPONENT_DEFINE ("DceLinux");
 
 static void RunIp (Ptr<Node> node, Time at, std::string str)
 {
@@ -20,6 +21,12 @@ static void RunIp (Ptr<Node> node, Time at, std::string str)
   process.ParseArguments(str.c_str ());
   apps = process.Install (node);
   apps.Start (at);
+}
+
+void
+PrintTcpFlags (std::string key, std::string value)
+{
+  NS_LOG_INFO (key << "=" << value);
 }
 
 int main (int argc, char *argv[])
@@ -146,6 +153,10 @@ int main (int argc, char *argv[])
       apps = process.Install (nodes.Get (1));
       apps.Start (Seconds (1.5));
     }
+
+  // print tcp sysctl value
+  LinuxStackHelper::SysctlGet (nodes.Get (0), Seconds (1.0), 
+                               ".net.ipv4.tcp_available_congestion_control", &PrintTcpFlags);
 
   Simulator::Stop (Seconds (2000000.0));
   Simulator::Run ();

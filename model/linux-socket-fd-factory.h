@@ -44,7 +44,8 @@ public:
   virtual UnixFd *CreateSocket (int domain, int type, int protocol);
 
   void Set (std::string path, std::string value);
-
+  std::string Get (std::string path);
+  void ScheduleTask (EventImpl *event);
 
 private:
   friend class LinuxSocketFd;
@@ -119,7 +120,6 @@ private:
   void SetTask (std::string path, std::string value);
   static void TaskSwitch (enum Task::SwitchType type, void *context);
   static void ScheduleTaskTrampoline (void *context);
-  void ScheduleTask (EventImpl *event);
   void EventTrampoline (void (*fn)(void *context),
                         void *context, void (*pre_fn)(void),
                         Ptr<EventIdHolder> event);

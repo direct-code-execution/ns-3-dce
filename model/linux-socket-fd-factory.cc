@@ -494,6 +494,28 @@ LinuxSocketFdFactory::Set (std::string path, std::string value)
     }
 }
 
+std::string 
+LinuxSocketFdFactory::Get (std::string path)
+{
+  NS_LOG_FUNCTION (path);
+  std::string ret;
+  std::vector<std::pair<std::string,struct SimSysFile *> > files = GetSysFileList ();
+  for (uint32_t i = 0; i < files.size (); i++)
+    {
+      if (files[i].first == path)
+        {
+          char buffer[512];
+          memset (buffer, 0, sizeof(buffer));
+          m_exported->sys_file_read (files[i].second, buffer, sizeof(buffer), 0);
+          NS_LOG_FUNCTION ("sysctl read: " << buffer);
+          ret = std::string (buffer);
+          break;
+        }
+    }
+  return ret;
+}
+
+
 void
 LinuxSocketFdFactory::InitializeStack (void)
 {

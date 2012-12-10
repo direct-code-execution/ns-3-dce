@@ -19,6 +19,7 @@
  */
 #include "linux-stack-helper.h"
 #include "ipv4-linux.h"
+#include "linux-socket-fd-factory.h"
 #include "ns3/node.h"
 #include "ns3/node-container.h"
 #include "ns3/names.h"
@@ -48,4 +49,53 @@ LinuxStackHelper::InstallAll (void)
 {
   Install (NodeContainer::GetGlobal ());
 }
+
+
+void
+LinuxStackHelper::SysctlGetCallback (Ptr<Node> node, std::string path, 
+                                     void (*callback)(std::string, std::string))
+{
+  Ptr<LinuxSocketFdFactory> sock = node->GetObject<LinuxSocketFdFactory>();
+  if (!sock)
+    {
+      callback ("error", "no socket factory");
+      return;
+    }
+
+  std::string value = sock->Get (path);
+  callback (path, value);
+  return;
+}
+
+void
+LinuxStackHelper::SysctlGet (Ptr<Node> node, Time at, std::string path, 
+                             void (*callback)(std::string, std::string))
+{
+  Ptr<LinuxSocketFdFactory> sock = node->GetObject<LinuxSocketFdFactory>();
+  if (!sock)
+    {
+      callback ("error", "no socket factory");
+      return;
+    }
+  Simulator::ScheduleWithContext (node->GetId (), at,
+                                  &LinuxSocketFdFactory::ScheduleTask, sock,
+                                  MakeEvent (&LinuxStackHelper::SysctlGetCallback, 
+                                  node, path, callback));
+  return;
+}
+void
+LinuxStackHelper::SysctlSet (NodeContainer c, std::string path, std::string value)
+{
+  for (NodeContainer::Iterator i = c.Begin (); i != c.End (); ++i)
+    {
+      Ptr<Node> node = *i;
+      Ptr<LinuxSocketFdFactory> sock = node->GetObject<LinuxSocketFdFactory>();
+      if (!sock)
+        {
+          continue;
+        }
+      sock->Set (path, value);      
+    }
+}
+
 } // namespace ns3
