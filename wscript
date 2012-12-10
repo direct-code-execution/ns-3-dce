@@ -199,10 +199,6 @@ def build_dce_examples(module, bld):
                        target='bin/dce-udp-perf',
                        source=['example/dce-udp-perf.cc'])
 
-    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
-                       target='bin/dce-ccnd-udp-2-nodes',
-                       source=['example/ccnx/dce-ccnd-udp-2-nodes.cc', 'example/ccnx/misc-tools.cc'])
-
     module.add_example(needed = ['core', 'internet', 'dce'], 
                        target='bin/dce-ccnd-simple',
                        source=['example/ccnx/dce-ccnd-simple.cc'])
@@ -219,10 +215,6 @@ def build_dce_examples(module, bld):
                        target='bin/dce-tap-ccnd',
                        source=['example/ccnx/dce-tap-ccnd.cc'])       
                        
-    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
-                       target='bin/dce-ccnd-linear-multiple',
-                       source=['example/ccnx/dce-ccnd-linear-multiple.cc', 'example/ccnx/misc-tools.cc'])
-                       
     module.add_example(needed = ['core', 'internet', 'dce', 'tap-bridge', 'csma' ], 
                        target='bin/dce-tap-vlc',
                        source=['example/ccnx/dce-tap-vlc.cc'])       
@@ -231,10 +223,6 @@ def build_dce_examples(module, bld):
 #                       target='bin/dce-ping',
 #                       source=['example/dce-ping.cc', 'example/ccnx/misc-tools.cc'])
 
-    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim', 'csma'], 
-                       target='bin/dce-iperf',
-                       source=['example/dce-iperf.cc', 'example/ccnx/misc-tools.cc'])
-    
     module.add_example(needed = ['core', 'internet', 'dce' ], 
                        target='bin/dce-bash-simple',
                        source=['example/bash/dce-bash-simple.cc'])
@@ -266,6 +254,19 @@ def build_dce_kernel_examples(module):
     module.add_example(needed = ['core', 'network', 'dce', 'csma'], 
                        target='bin/dce-dccp',
                        source=['example/dce-dccp.cc'])
+
+    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim', 'csma'], 
+                       target='bin/dce-iperf',
+                       source=['example/dce-iperf.cc', 'example/ccnx/misc-tools.cc'])
+    
+    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
+                       target='bin/dce-ccnd-udp-2-nodes',
+                       source=['example/ccnx/dce-ccnd-udp-2-nodes.cc', 'example/ccnx/misc-tools.cc'])
+
+    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
+                       target='bin/dce-ccnd-linear-multiple',
+                       source=['example/ccnx/dce-ccnd-linear-multiple.cc', 'example/ccnx/misc-tools.cc'])
+                       
 
 # Add a script to build system 
 def build_a_script(bld, name, needed = [], **kw):
