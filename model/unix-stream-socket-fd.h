@@ -52,6 +52,7 @@ private:
   int m_backlog;
   State m_state;
   Address* m_peerAddress;
+  bool m_shutWrite;
 };
 
 } // namespace ns3

@@ -19,7 +19,8 @@ namespace ns3 {
 UnixStreamSocketFd::UnixStreamSocketFd (Ptr<Socket> sock, bool connected)
   : UnixSocketFd (sock),
     m_backlog (0),
-    m_peerAddress (0)
+    m_peerAddress (0),
+    m_shutWrite (0)
 {
   NS_LOG_FUNCTION (this << sock);
   m_socket->SetAcceptCallback (MakeCallback (&UnixStreamSocketFd::ConnectionRequest, this),
@@ -185,6 +186,12 @@ UnixStreamSocketFd::DoSendmsg (const struct msghdr *msg, int flags)
                       current->err = ENOTCONN;
                       RETURNFREE (-1);
                     }
+                }
+
+              if (m_shutWrite)
+                {
+                  current->err = EPIPE;
+                  RETURNFREE (-1);
                 }
 
               if (!wq)
@@ -401,12 +408,13 @@ UnixStreamSocketFd::Shutdown (int how)
     }
   else if (how == SHUT_WR)
     {
-      retval = m_socket->ShutdownSend ();
+      m_shutWrite = 1;
+      return 0;
     }
   else if (how == SHUT_RDWR)
     {
       retval = m_socket->ShutdownRecv ();
-      retval = m_socket->ShutdownSend ();
+      m_shutWrite = 1;
     }
   else
     {
