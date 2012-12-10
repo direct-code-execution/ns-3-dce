@@ -301,8 +301,12 @@ def build(bld):
         kernel_source = [
             'model/linux-socket-fd-factory.cc',
             'model/linux-socket-fd.cc',
+            'helper/linux-stack-helper.cc',
             ]
-        kernel_headers = [ 'model/linux-socket-fd-factory.h']
+        kernel_headers = [
+            'model/linux-socket-fd-factory.h',
+            'helper/linux-stack-helper.h',
+            ]
         kernel_includes = [bld.env['KERNEL_STACK']]
     else:
         kernel_source = []
@@ -311,7 +315,7 @@ def build(bld):
 
     module_source = [
         'model/dce-manager.cc',
-	    'model/dce-application.cc',
+        'model/dce-application.cc',
         'model/dce.cc',
         'model/dce-signal.cc',
         'model/libc-dce.cc',
@@ -386,7 +390,6 @@ def build(bld):
         'helper/dce-manager-helper.cc',
         'helper/dce-application-helper.cc',
         'helper/ccn-client-helper.cc',
-        'helper/linux-stack-helper.cc',
         ]
     module_headers = [
         'model/dce-manager.h',
@@ -397,12 +400,11 @@ def build(bld):
         'model/dce-application.h',
         'model/ipv4-dce-routing.h',
         'model/linux/ipv4-linux.h',
+        'model/process-delay-model.h',
         'helper/dce-manager-helper.h',
         'helper/dce-application-helper.h',
         'helper/ccn-client-helper.h',
-        'helper/linux-stack-helper.h',
         'helper/ipv4-dce-routing-helper.h',
-        'model/process-delay-model.h',
         ]
     module_source = module_source + kernel_source
     module_headers = module_headers + kernel_headers
