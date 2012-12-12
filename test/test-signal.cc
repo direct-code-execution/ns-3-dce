@@ -5,14 +5,14 @@
 #include <errno.h>
 #include <signal.h>
 
-int 
+int
 main (int argc, char *argv[])
 {
   sigset_t sigcatch;
   int ret = 1;
   int signum;
-  sigemptyset(&sigcatch);
-  sigaddset(&sigcatch, SIGALRM);
+  sigemptyset (&sigcatch);
+  sigaddset (&sigcatch, SIGALRM);
 
   {
     struct itimerval it;
@@ -26,8 +26,8 @@ main (int argc, char *argv[])
     setitimer (ITIMER_REAL, &it, NULL);
     while (1)
       {
-        sigwait(&sigcatch, &signum);
-        switch (signum) 
+        sigwait (&sigcatch, &signum);
+        switch (signum)
           {
           case SIGALRM:
             printf ("SIG rcvd\n");

@@ -6,7 +6,10 @@
 #include <signal.h>
 #include <sys/sysinfo.h>
 
-void sigresp (int) {return; }
+void sigresp (int)
+{
+  return;
+}
 
 int main (int argc, char *argv[])
 {
@@ -23,8 +26,8 @@ int main (int argc, char *argv[])
     gettimeofday (&end, NULL);
 
     TEST_ASSERT_EQUAL (result, 0);
-    TEST_ASSERT_EQUAL (end.tv_sec-start.tv_sec, 1);
-    TEST_ASSERT_EQUAL (end.tv_usec-start.tv_usec, 5);
+    TEST_ASSERT_EQUAL (end.tv_sec - start.tv_sec, 1);
+    TEST_ASSERT_EQUAL (end.tv_usec - start.tv_usec, 5);
   }
 
   // Simple nanolseep() without interruption: clock_gettime () version
@@ -40,8 +43,8 @@ int main (int argc, char *argv[])
     clock_gettime (CLOCK_REALTIME, &end);
 
     TEST_ASSERT_EQUAL (result, 0);
-    TEST_ASSERT_EQUAL (end.tv_sec-start.tv_sec, 1);
-    TEST_ASSERT_EQUAL (end.tv_nsec-start.tv_nsec, 5000);
+    TEST_ASSERT_EQUAL (end.tv_sec - start.tv_sec, 1);
+    TEST_ASSERT_EQUAL (end.tv_nsec - start.tv_nsec, 5000);
   }
 
   // Simple nanolseep() without interruption: sysinfo (): uptime version
@@ -78,8 +81,8 @@ int main (int argc, char *argv[])
     int result = nanosleep (&req, &rem);
     gettimeofday (&end, NULL);
     TEST_ASSERT_EQUAL (result, -1);
-    TEST_ASSERT_EQUAL (end.tv_sec-start.tv_sec, 1);
-    TEST_ASSERT_EQUAL (end.tv_usec-start.tv_usec, 500000);
+    TEST_ASSERT_EQUAL (end.tv_sec - start.tv_sec, 1);
+    TEST_ASSERT_EQUAL (end.tv_usec - start.tv_usec, 500000);
     TEST_ASSERT_EQUAL (rem.tv_sec, 1);
     TEST_ASSERT (rem.tv_nsec = 500000000);
   }

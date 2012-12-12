@@ -90,7 +90,7 @@ int main (int argc, char *argv[])
   pthread_t thread;
 
   // try to join after the thread exits.
-  status = pthread_create (&thread, NULL, 
+  status = pthread_create (&thread, NULL,
                            &thread0,
                            (void*)-3);
   TEST_ASSERT_EQUAL (status, 0);
@@ -103,7 +103,7 @@ int main (int argc, char *argv[])
 
 
   // try to join before the thread exits.
-  status = pthread_create (&thread, NULL, 
+  status = pthread_create (&thread, NULL,
                            &thread1,
                            (void*)-4);
   TEST_ASSERT_EQUAL (status, 0);
@@ -116,7 +116,7 @@ int main (int argc, char *argv[])
   TEST_ASSERT_EQUAL (status, EDEADLK);
 
   // try to join a thread in detached state.
-  status = pthread_create (&thread, NULL, 
+  status = pthread_create (&thread, NULL,
                            &thread2,
                            (void*)-5);
   TEST_ASSERT_EQUAL (status, 0);
@@ -129,7 +129,7 @@ int main (int argc, char *argv[])
   TEST_ASSERT_EQUAL (status, 0);
 
   // try to join a thread in detached state which is dead.
-  status = pthread_create (&thread, NULL, 
+  status = pthread_create (&thread, NULL,
                            &thread3,
                            (void*)-6);
   TEST_ASSERT_EQUAL (status, 0);
@@ -145,11 +145,11 @@ int main (int argc, char *argv[])
   // has not been yet reused for another newly created thread.
   // So, theoretically, ESRCH is the correct return value here
   // but EINVAL is what we get on nptl
-  TEST_ASSERT (status == ESRCH 
+  TEST_ASSERT (status == ESRCH
                || status == EINVAL);
 
   // try to detach a thread which is joined.
-  status = pthread_create (&thread, NULL, 
+  status = pthread_create (&thread, NULL,
                            &thread4,
                            (void*)-7);
   TEST_ASSERT_EQUAL (status, 0);
@@ -158,11 +158,11 @@ int main (int argc, char *argv[])
   TEST_ASSERT_EQUAL (return_value, (void*)-7);
 
   // try to join the same thread twice
-  status = pthread_create (&thread, NULL, 
+  status = pthread_create (&thread, NULL,
                            &thread5,
                            (void*)&thread);
   TEST_ASSERT_EQUAL (status, 0);
-  status = pthread_create (&thread, NULL, 
+  status = pthread_create (&thread, NULL,
                            &thread6,
                            (void*)-82);
   TEST_ASSERT_EQUAL (status, 0);

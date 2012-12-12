@@ -375,6 +375,7 @@ test_poll_stdout_stdin (void)
 
 // Some error cases
 // Test POLLNVAL
+/*
 static void
 test_nval (void)
 {
@@ -394,6 +395,7 @@ test_nval (void)
   TEST_ASSERT ( fd.revents == POLLNVAL );
 
 }
+*/
 
 // Test, POLLHUP not set on AF_INET socket on close but pollin yes !
 static void *
@@ -507,7 +509,7 @@ client5 (void *arg)
   struct pollfd fd;
 
   fd.fd = sock;
-  fd.events = POLLIN|POLLOUT;
+  fd.events = POLLIN | POLLOUT;
   fd.revents = 0;
 
   status = poll (&fd, 1, -1);
@@ -605,7 +607,7 @@ CreateDgramBind (void)
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
   strcpy (address.sun_path, SOCK_PATH);
-  status = bind (sock, (struct sockaddr *) &address, SUN_LEN (&address));;
+  status = bind (sock, (struct sockaddr *) &address, SUN_LEN (&address));
   if (status == 0)
     {
       return sock;
@@ -621,7 +623,6 @@ client6 (void *arg)
 {
   sleep (1);
   int sock = CreateDgramConnect ();
-  struct sockaddr_in addr;
   int res = 1;
   int status = -1;
   TEST_ASSERT ( sock >= 0 );
@@ -770,6 +771,8 @@ client_last (void *arg)
 
   TEST_ASSERT (false);
 
+  printf ("fd %d fd2 %d status %d\n", fd ,fd2, status);
+
   return arg;
 }
 
@@ -819,14 +822,12 @@ main (int argc, char *argv[])
   test_poll_stdin ();
   test_poll_stdout_stdin ();
   test_poll_stdout ();
-C1:
   launch (client1, server1);
   launch (client2, server2);
   launch (client3, server3);
   // test_nval ();
 
   launch (client5, server5);
-C4:
   launch (client4, server4);
   launch (client6, server6);
 

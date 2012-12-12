@@ -21,7 +21,7 @@
 static void
 test_select_null_null (void)
 {
-  // create timer to check whether a following call to select() blocks
+  // create timer to check whether a followixng call to select() blocks
   int timerfd = timerfd_create (CLOCK_MONOTONIC, 0);
   TEST_ASSERT_UNEQUAL (timerfd, -1);
 
@@ -41,16 +41,18 @@ test_select_null_null (void)
 
   // doing select() with timeout = {0, 0}
   struct timeval timeout =
-  { 0, 0 };
+  {
+    0, 0
+  };
   int nfds = select (timerfd + 1, &fds, NULL, NULL, &timeout);
   // no fds must be ready and select() should complete without errors
   TEST_ASSERT_EQUAL (nfds, 0);
 
   timeout.tv_sec = 1;
   timeout.tv_usec = 0;
-  // select(2): 
+  // select(2):
   // Some  code  calls  select() with all three sets empty, nfds zero, and a
-  // non-NULL timeout as a fairly portable way to sleep with subsecond 
+  // non-NULL timeout as a fairly portable way to sleep with subsecond
   // precision.
   nfds = select (0, &fds, NULL, NULL, &timeout);
   // no fds must be ready and select() should complete without errors
@@ -72,7 +74,7 @@ test_select_read (int fd, int timeOutSec, bool needSuccess)
   FD_ZERO (&readFd);
   FD_SET (fd, &readFd);
 
-  ret = select (maxFd, &readFd, NULL, NULL, (timeOutSec>0) ? &timeOut : NULL);
+  ret = select (maxFd, &readFd, NULL, NULL, (timeOutSec > 0) ? &timeOut : NULL);
   printf ("read select -> %d, errno:%d\n\n ", ret, errno);
   if (needSuccess)
     {
@@ -527,7 +529,6 @@ server5 (void *arg)
   int sock, sockin;
   struct sockaddr_un addr;
   int res;
-  int on = 1;
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
   TEST_ASSERT ( sock >= 0 );
@@ -592,7 +593,7 @@ CreateDgramBind (void)
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
   strcpy (address.sun_path, SOCK_PATH);
-  status = bind (sock, (struct sockaddr *) &address, SUN_LEN (&address));;
+  status = bind (sock, (struct sockaddr *) &address, SUN_LEN (&address));
   if (status == 0)
     {
       return sock;
@@ -608,7 +609,6 @@ client6 (void *arg)
 {
   sleep (1);
   int sock = CreateDgramConnect ();
-  struct sockaddr_in addr;
   int res = 1;
   int status = -1;
   TEST_ASSERT ( sock >= 0 );
@@ -763,7 +763,9 @@ static void test_select_rfds_wfds (void)
   FD_SET (sockfd, &wfds);
 
   // doing select() with timeout = {0, 0}
-  struct timeval timeout = {5, 0};
+  struct timeval timeout = {
+    5, 0
+  };
   int nfds = select (sockfd + 1, &rfds, &wfds, NULL, &timeout);
   close (sockfd);
   // no fds must be ready and select() should complete without errors
@@ -797,7 +799,9 @@ static void test_select_rfds (void)
   FD_SET (filefd, &fds);
 
   // doing select() with timeout = {0, 0}
-  struct timeval timeout = {6, 0};
+  struct timeval timeout = {
+    6, 0
+  };
   int nfds = select (timerfd > filefd ? timerfd + 1 : filefd + 1, &fds, NULL, NULL, &timeout);
   close (timerfd);
   close (filefd);

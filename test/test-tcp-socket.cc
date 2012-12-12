@@ -44,7 +44,6 @@ client1 (void *arg)
   TEST_ASSERT ( sock >= 0 );
 
   fill_addr (ad, 1234);
-encore:
   status = connect (sock, (struct sockaddr *) &ad, sizeof(ad));
   printf ("Client1: connect --> %d errno: %d\n", status, errno );
   // if ( ( status != 0) &&  ( EINPROGRESS == errno )) goto encore;
@@ -199,8 +198,6 @@ server2 (void *arg)
   int sock = -1;
   int sockin = -1;
   struct sockaddr_in ad;
-
-  size_t tot = 0;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
 
@@ -861,7 +858,10 @@ client10 (void *arg)
       status = send (sock, sendBuffer + tot, LEN_10 - tot, 0);
       printf ("Client10: send %d / %ld\n", status, LEN_10 - tot);
       tot += status;
-      if (tot >= LEN_10) tot = 0;
+      if (tot >= LEN_10)
+        {
+          tot = 0;
+        }
     }
   while (status != -1);
 
@@ -967,7 +967,7 @@ server11 (void *arg)
   TEST_ASSERT ( sockin >= 0 );
 
   status = send (sockin, sendBuffer, LEN_11, 0);
-  printf ("Server11: send -> %d / %d \n \n ", status, LEN_11);
+  printf ("Server11: send -> %d / %ld \n \n ", status, LEN_11);
   TEST_ASSERT ( status >= 0 );
 
   status = close (sockin);
@@ -988,7 +988,9 @@ client12 (void *arg)
   int sock = socket (AF_INET, SOCK_STREAM, 0);
 
   if (sock > 0)
-    sock = 0;
+    {
+      sock = 0;
+    }
 
   return 0;
 }
@@ -1155,7 +1157,7 @@ server14 (void *arg)
 static void
 CloseAll (std::vector<int> &list)
 {
-  while(!list.empty ())
+  while (!list.empty ())
     {
       int toClose = list.back ();
 
@@ -1175,15 +1177,20 @@ client15 (void *arg)
   int sock = -1;
   std::vector<int> closeList;
 
-  do {
+  do
+    {
       sock = socket (AF_INET, SOCK_STREAM, 0);
-      if (sock < 0) break;
+      if (sock < 0)
+        {
+          break;
+        }
       closeList.push_back (sock);
 
       fill_addr ( ad, 1244 );
       status = connect (sock, (struct sockaddr *) &ad, sizeof(ad));
       printf ("Client15: connect -> %d \n ", status);
-    } while(true);
+    }
+  while (true);
 
   printf ("Client15: out of do-while\n ");
 
@@ -1309,8 +1316,14 @@ int LongCompare (const void *A, const void *B)
 {
   long *a = (long*)A;
   long *b = (long*)B;
-  if ( *a == *b ) return 0;
-  if ( *a < *b ) return -1;
+  if ( *a == *b )
+    {
+      return 0;
+    }
+  if ( *a < *b )
+    {
+      return -1;
+    }
   return 1;
 }
 
@@ -1318,64 +1331,18 @@ int
 main (int argc, char *argv[])
 {
   signal (SIGPIPE, SIG_IGN);
-/*
-  unsigned short int rac[3] = { 3 , 2, 1 };
-
-  seed48(rac);
-
-  for(int i=0;i < 20; i++)
-    {
-      unsigned short param[7];
-
-      srand48( (unsigned long) i*i );
-
-      for (int j=0; j < 7 ; j++)
-        {
-          param[j] = (unsigned short) lrand48() ;
-        }
-
-      lcong48(param);
-
-      printf("nrand48 %ld %ld %ld %f %ld \n", nrand48 (rac), lrand48 (), mrand48 (), erand48 (rac), jrand48 (rac));
-    }
-
-  char destination[1024];
-
-  *destination = 0;
-  printf("strcat test %s \n \n ", strcat ( destination, "Hello DCE :)") );
-
-  printf("strcat test %s \n \n ", strncat ( destination, " Hello DCE :)", 3) );
-
-  long tab[10000];
-
-  for(int i=0; i < 10000 ; i++)
-    {
-      tab [i] = mrand48 ();
-    }
-
-  qsort( tab , 10000, sizeof(long), LongCompare);
-
-  for(int i=0; i < 10000 ; i++)
-    {
-      printf ("%d: sorted random result %ld \n \n ", i, tab[i] );
-    }
-
-  fflush(stdout);
-*/
   readBuffer = (char *)malloc ( BUFF_LEN );
   sendBuffer = (char *)malloc ( BUFF_LEN );
 
   launch (client1, server1);
   launch (client2, server2);
-C3:
- // launch (client3, server3); // NS3 failed : tcp stack bug like bug 907 or 1167
+  if (0) launch (client3, server3); // NS3 failed : tcp stack bug like bug 907 or 1167
   // the server defer close because it is waiting for : Stop sending if we need to wait for a larger Tx window
   // But it is never came ....
   // The client is blocked in read ....
   launch (client4, server4);
   launch (client5, server5);
   launch (client6, server6);
-C8:
   launch (client8, server8);
 
   launch (client9, server9);
@@ -1384,8 +1351,8 @@ C8:
   launch (client12, client12);
   launch (client13, server13);
   launch (client14, server14);
-C15:
- // TODO DEBUG   launch (client15, server15); // Valgrind crash ?
+
+  if (0) launch (client15, server15); // Valgrind crash ?  // TODO DEBUG
 
   printf ("That's All Folks ....\n \n " );
   fflush (stdout);

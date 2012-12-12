@@ -4,7 +4,7 @@
 
 static pthread_key_t a;
 
-static void *thread_fn (void *v)
+static void * thread_fn (void *v)
 {
   void *tmp = pthread_getspecific (a);
   TEST_ASSERT_EQUAL (tmp, 0);
@@ -42,7 +42,7 @@ int main (int argc, char *argv[])
   tmp = pthread_getspecific (a);
   TEST_ASSERT_EQUAL (tmp, av);
   pthread_t thread;
-  status = pthread_create (&thread, NULL, 
+  status = pthread_create (&thread, NULL,
                            &thread_fn,
                            (void*)-5);
   TEST_ASSERT_EQUAL (status, 0);

@@ -18,7 +18,7 @@ static void test_fork (void)
   char * toto = strdup ("tintin");
   char * houla = (char*)42;
 
-  printf( "Before Fork toto: %lx %s \nhoula %lx\n", toto, toto, houla);
+  printf ( "Before Fork toto: %lx %s \nhoula %lx\n", toto, toto, houla);
 
   pid_t pid = fork ();
 
@@ -27,7 +27,7 @@ static void test_fork (void)
   if (pid == 0)
     {
       // child.
-      printf( "CHILD toto: %lx %s \nhoula %lx\n", toto, toto, houla);
+      printf ( "CHILD toto: %lx %s \nhoula %lx\n", toto, toto, houla);
       printf ("I am the child ! \n");
       TEST_ASSERT_EQUAL (parent, 1);
       TEST_ASSERT_EQUAL (g_static, 1);
@@ -44,7 +44,7 @@ static void test_fork (void)
     }
   else
     {
-      printf( "FATHER toto: %lx %s \nhoula %lx\n", toto, toto, houla);
+      printf ( "FATHER toto: %lx %s \nhoula %lx\n", toto, toto, houla);
       printf ("I am the father, my son pid is %d\n", pid);
       TEST_ASSERT_EQUAL (parent, 1);
       TEST_ASSERT_EQUAL (g_static, 1);
@@ -153,12 +153,18 @@ void big_fork (int prof)
 
           pid_t w =  waitpid ( pid, &st, 0);
           printf ("Child pid:%d %d\n", pid, w);
-          if (prof>0) exit (0);
+          if (prof > 0)
+            {
+              exit (0);
+            }
           return;
         }
       else
         {
-          if (prof++ >= 100) exit (0);
+          if (prof++ >= 100)
+            {
+              exit (0);
+            }
           printf ("pid:%d prof%d\n",getpid (), prof);
         }
     }
@@ -177,7 +183,7 @@ void big_fork_exec (int prof)
         }
       char buffer[1024];
 
-      sprintf(buffer,"The Father have a prof of:%d !", prof);
+      sprintf (buffer,"The Father have a prof of:%d !", prof);
 
       char *copy = strdup (buffer);
 
@@ -187,13 +193,13 @@ void big_fork_exec (int prof)
 
           printf ("Father %lx %s\n", copy,copy);
 
-          sprintf(copy,"changed string !");
+          sprintf (copy,"changed string !");
 
           free (copy);
 
           pid_t w =  waitpid ( pid, &st, 0);
           printf ("Child pid:%d %d\n", pid, w);
-          if (prof>0)
+          if (prof > 0)
             {
               exit (0);
             }
@@ -210,7 +216,7 @@ void big_fork_exec (int prof)
 
           sprintf (arg,"%d",prof);
 
-          static char* const args[] = { "build/bin/test-fork", arg , 0 };
+          static char* const args[] = { (char * const) "build/bin/test-fork", arg, 0 };
 
           sleep (1);
 
@@ -243,8 +249,8 @@ first_test (void)
   tv.tv_sec  = 1;
   tv.tv_usec = 0;
 
-  FD_ZERO(&r);
-  FD_SET(0, &r);
+  FD_ZERO (&r);
+  FD_SET (0, &r);
 
   if (pid)
     {
@@ -287,7 +293,7 @@ void test_fork_simple ()
 
       st = read (fd[0], &st, sizeof (st));
       printf ("read -> %d\n",st);
-      st = waitpid (pid , &st, 0);
+      st = waitpid (pid, &st, 0);
     }
 }
 
@@ -295,7 +301,7 @@ void test_fork_simple ()
 int main (int argc, char *argv[])
 {
   printf ("main argc=%d\n",argc);
-  for (int i=0; i < argc ; ++i)
+  for (int i = 0; i < argc; ++i)
     {
       printf ("main argv[%d]=%s\n",i, argv[i]);
     }

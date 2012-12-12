@@ -90,7 +90,7 @@ NetlinkSocketTestCase::BuildGetMessage (uint16_t type, uint16_t flags)
   NS_ASSERT (type == NETLINK_RTM_GETLINK || type == NETLINK_RTM_GETADDR || type == NETLINK_RTM_GETROUTE);
 
   NetlinkMessage nlmsg;
-  flags |= (NETLINK_MSG_F_DUMP|NETLINK_MSG_F_ACK|NETLINK_MSG_F_REQUEST);
+  flags |= (NETLINK_MSG_F_DUMP | NETLINK_MSG_F_ACK | NETLINK_MSG_F_REQUEST);
   nlmsg.SetHeader (NetlinkMessageHeader (type, flags, 0, 0));
   GeneralMessage genmsg;
   genmsg.SetFamily (AF_INET);
@@ -104,7 +104,7 @@ NetlinkSocketTestCase::BuildAddressMessage (uint16_t type, uint16_t flags)
 {
   NS_ASSERT (type == NETLINK_RTM_NEWADDR || type == NETLINK_RTM_DELADDR);
 
-  flags |= (NETLINK_MSG_F_ACK|NETLINK_MSG_F_REQUEST); 
+  flags |= (NETLINK_MSG_F_ACK | NETLINK_MSG_F_REQUEST);
   if (type == NETLINK_RTM_NEWADDR)
     {
       flags |= NETLINK_MSG_F_CREATE;
@@ -120,9 +120,10 @@ NetlinkSocketTestCase::BuildAddressMessage (uint16_t type, uint16_t flags)
   ifamsg.SetLength (24);
   ifamsg.SetInterfaceIndex (3);
 
-  ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_LOCAL, ADDRESS, Ipv4Address ("192.168.0.1")));
-  ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_ADDRESS,ADDRESS, Ipv4Address ("192.168.0.2")));
-  ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_LABEL, STRING, "TESTSTRING"));
+  ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_LOCAL, ADDRESS, (void*)&Ipv4Address ("192.168.0.1")));
+  ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_ADDRESS,ADDRESS, (void*)&Ipv4Address ("192.168.0.2")));
+  std::string value = "TESTSTRING";
+  ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_LABEL, STRING, (void*)&value));
 
   nlmsg.SetInterfaceAddressMessage (ifamsg);
   return nlmsg;
@@ -141,7 +142,7 @@ NetlinkSocketTestCase::BuildRouteMessage (uint16_t type, uint16_t flags)
 {
   NS_ASSERT (type == NETLINK_RTM_NEWROUTE || type == NETLINK_RTM_DELROUTE);
 
-  flags |= (NETLINK_MSG_F_ACK|NETLINK_MSG_F_REQUEST); 
+  flags |= (NETLINK_MSG_F_ACK | NETLINK_MSG_F_REQUEST);
   if (type == NETLINK_RTM_NEWROUTE)
     {
       flags |= NETLINK_MSG_F_CREATE;
@@ -155,10 +156,11 @@ NetlinkSocketTestCase::BuildRouteMessage (uint16_t type, uint16_t flags)
   RouteMessage rtmsg;
   //set attribute
   rtmsg.SetFamily (AF_INET);
-  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_DST, ADDRESS, Ipv4Address ("192.168.0.10")));
-  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_SRC, ADDRESS, Ipv4Address ("192.168.2.10")));
-  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_GATEWAY, ADDRESS, Ipv4Address ("10.1.1.10")));
-  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_OIF, U32, (uint32_t)2));
+  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_DST, ADDRESS, (void*)&Ipv4Address ("192.168.0.10")));
+  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_SRC, ADDRESS, (void*)&Ipv4Address ("192.168.2.10")));
+  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_GATEWAY, ADDRESS, (void*)&Ipv4Address ("10.1.1.10")));
+  int value = 2;
+  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_OIF, U32, (void*)&value));
 
   nlmsg.SetRouteMessage (rtmsg);
   return nlmsg;
@@ -168,9 +170,9 @@ MultipartNetlinkMessage
 NetlinkSocketTestCase::BuildMultipartMessage (uint16_t type, uint16_t flags)
 {
   //usually multi-part message used for message dump, kernel return to user space for NETLINK_RTM_GETxxx
-  //type = NETLINK_RTM_NEWxxx, flags = NETLINK_MSG_F_MULTI, terminated by NETLINK_MSG_DONE, 
+  //type = NETLINK_RTM_NEWxxx, flags = NETLINK_MSG_F_MULTI, terminated by NETLINK_MSG_DONE,
   //here this example contain 2 NETLINK_MSG_F_MULTI
-  NS_ASSERT (flags&NETLINK_MSG_F_MULTI);
+  NS_ASSERT (flags & NETLINK_MSG_F_MULTI);
 
   MultipartNetlinkMessage nlmsg;
   NetlinkMessage nlmsg1, nlmsg2, nlmsg3;
@@ -198,8 +200,8 @@ NetlinkSocketTestCase::CheckIsAck (NetlinkMessage nlmsg)
 bool
 NetlinkSocketTestCase::CheckIsDump (MultipartNetlinkMessage mulmsg)
 {
-  return (mulmsg.GetNMessages () > 0 && mulmsg.GetMessage (0).GetHeader ().GetMsgFlags () & NETLINK_MSG_F_MULTI &&
-          mulmsg.GetMessage (mulmsg.GetNMessages () - 1).GetMsgType () == NETLINK_MSG_DONE); 
+  return (mulmsg.GetNMessages () > 0 && mulmsg.GetMessage (0).GetHeader ().GetMsgFlags () & NETLINK_MSG_F_MULTI
+          && mulmsg.GetMessage (mulmsg.GetNMessages () - 1).GetMsgType () == NETLINK_MSG_DONE);
 }
 
 bool
@@ -219,7 +221,9 @@ bool
 NetlinkSocketTestCase::CheckIsEqual (MultipartNetlinkMessage mulmsg1, MultipartNetlinkMessage mulmsg2)
 {
   if (mulmsg1.GetNMessages () != mulmsg2.GetNMessages ())
-    return false;
+    {
+      return false;
+    }
 
   for (uint32_t i = 0; i < mulmsg1.GetNMessages (); i++)
     {
@@ -237,7 +241,7 @@ NetlinkSocketTestCase::TestNetlinkSerialization ()
   MultipartNetlinkMessage multinlmsg1, multinlmsg2;
   Ptr<Packet> p = Create<Packet> ();
 
-  multinlmsg1 = BuildMultipartMessage (NETLINK_RTM_NEWADDR, NETLINK_MSG_F_REQUEST|NETLINK_MSG_F_MULTI);
+  multinlmsg1 = BuildMultipartMessage (NETLINK_RTM_NEWADDR, NETLINK_MSG_F_REQUEST | NETLINK_MSG_F_MULTI);
   p->AddHeader (multinlmsg1);
   p->RemoveHeader (multinlmsg2);
   NS_TEST_ASSERT_MSG_EQ (CheckIsEqual (multinlmsg1, multinlmsg2), true, "Should be equal");
@@ -372,7 +376,7 @@ NetlinkSocketTestCase::TestBroadcastMessage ()
   Simulator::Schedule (Seconds (6), &NetlinkSocketTestCase::SendCmdToKernel, this, NETLINK_RTM_DELADDR);
 #endif
   Simulator::Schedule (Seconds (8), &NetlinkSocketTestCase::SendCmdToKernel, this, NETLINK_RTM_DELROUTE);
-};
+}
 
 
 void
@@ -382,9 +386,11 @@ NetlinkSocketTestCase::SendNetlinkMessage (NetlinkMessage nlmsg)
   Ptr<Packet> p = Create<Packet> ();
   p->AddHeader (MultipartNetlinkMessage (nlmsg));
 #else
-  char buf[20] = {0x14,0x00,0x00,0x00,0x12,0x00,0x05,0x03,
-                  0x34,0xb2,0xf5,0x47,0x01,0x00,0x00,0x00,
-                  0x00,0x00,0x00,0x00};
+  char buf[20] = {
+    0x14,0x00,0x00,0x00,0x12,0x00,0x05,0x03,
+    0x34,0xb2,0xf5,0x47,0x01,0x00,0x00,0x00,
+    0x00,0x00,0x00,0x00
+  };
   uint32_t count = 20;
   Ptr<Packet> p = ns3::Create<Packet> ((const uint8_t *)buf, (uint32_t)count);
 #endif
@@ -394,7 +400,7 @@ NetlinkSocketTestCase::SendNetlinkMessage (NetlinkMessage nlmsg)
 void
 NetlinkSocketTestCase::SendCmdToKernel (uint16_t type)
 {
-  NS_LOG_INFO ("At = " <<  Simulator::Now ().GetSeconds () <<"s, user send cmd to kernel, cmd = " << type);
+  NS_LOG_INFO ("At = " <<  Simulator::Now ().GetSeconds () << "s, user send cmd to kernel, cmd = " << type);
 
   if (type == NETLINK_RTM_NEWADDR || type == NETLINK_RTM_DELADDR)
     {
@@ -448,8 +454,8 @@ NetlinkSocketTestCase::MonitorKernelChanges ()
           NetlinkMessage nlmsg = multinlmsg.GetMessage (0);
           uint16_t type;
           type = nlmsg.GetMsgType ();
-          NS_ASSERT (type == NETLINK_RTM_NEWADDR || type == NETLINK_RTM_DELADDR ||
-                     type == NETLINK_RTM_NEWROUTE || type == NETLINK_RTM_DELROUTE);
+          NS_ASSERT (type == NETLINK_RTM_NEWADDR || type == NETLINK_RTM_DELADDR
+                     || type == NETLINK_RTM_NEWROUTE || type == NETLINK_RTM_DELROUTE);
           NS_LOG_INFO ("group socket recv netlink message, type =" << type);
         }
       else
@@ -470,7 +476,9 @@ NetlinkSocketTestCase::MonitorKernelChanges ()
 
 NetlinkSocketTestCase::NetlinkSocketTestCase ()
   : TestCase ("Netlink"),
-    m_pid (1) {}
+    m_pid (1)
+{
+}
 
 Ptr<SocketFactory>
 NetlinkSocketTestCase::CreateNetlinkFactory (void)
@@ -492,7 +500,7 @@ NetlinkSocketTestCase::DoRun (void)
   //       n1 -------------------------n2
 
 
-  NodeContainer nodes; 
+  NodeContainer nodes;
   nodes.Create (3);
   NodeContainer n0n1 = NodeContainer (nodes.Get (0), nodes.Get (1));
   NodeContainer n1n2 = NodeContainer (nodes.Get (1), nodes.Get (2));
@@ -517,7 +525,7 @@ NetlinkSocketTestCase::DoRun (void)
 
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 
-  /*create two netlink sockets in node1 
+  /*create two netlink sockets in node1
   one is to exchange information between userspace and kernel ,
   one is to monitor the changes happened in kernel
   */
@@ -528,17 +536,17 @@ NetlinkSocketTestCase::DoRun (void)
 
   /*creat an cmd netlink socket, it send cmd to kernel space*/
   m_cmdSock = socketFactory->CreateSocket ();
-  m_cmdSock->SetRecvCallback (MakeCallback (&NetlinkSocketTestCase::ReceiveUnicastPacket, this)); 
+  m_cmdSock->SetRecvCallback (MakeCallback (&NetlinkSocketTestCase::ReceiveUnicastPacket, this));
   addr.SetProcessID (m_pid);
   addr.SetGroupsMask (0);
-  m_cmdSock->Bind (addr); 
+  m_cmdSock->Bind (addr);
 
   /*creat an group netlink socket, it monitor the kernel's changes*/
   m_groupSock = socketFactory->CreateSocket ();
-  m_groupSock->SetRecvCallback (MakeCallback (&NetlinkSocketTestCase::ReceiveMulticastPacket, this)); 
+  m_groupSock->SetRecvCallback (MakeCallback (&NetlinkSocketTestCase::ReceiveMulticastPacket, this));
   addr.SetProcessID (m_pid + 1);
-  addr.SetGroupsMask (NETLINK_RTM_GRP_IPV4_IFADDR|NETLINK_RTM_GRP_IPV4_ROUTE);
-  m_groupSock->Bind (addr); 
+  addr.SetGroupsMask (NETLINK_RTM_GRP_IPV4_IFADDR | NETLINK_RTM_GRP_IPV4_ROUTE);
+  m_groupSock->Bind (addr);
 
   /*test 1: for Serialize and Deserialize*/
   TestNetlinkSerialization ();

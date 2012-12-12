@@ -27,7 +27,7 @@ sv ()
 #endif
 
   accept_sock = socket (AF_INET, SOCK_STREAM, 0);
-  if (accept_sock < 0) 
+  if (accept_sock < 0)
     {
       perror ("socket");
       return -1;
@@ -38,8 +38,8 @@ sv ()
   addr.sin_port = htons (10001);
   addr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
 
-  ret  = bind (accept_sock, (struct sockaddr *)&addr, 
-	       sizeof (struct sockaddr_in));
+  ret  = bind (accept_sock, (struct sockaddr *)&addr,
+               sizeof (struct sockaddr_in));
   if (ret < 0)
     {
       perror ("bind");
@@ -61,7 +61,7 @@ sv ()
     }
 
 #ifdef DEBUG
-   printf ("accept\n");
+  printf ("accept\n");
 #endif
   val = fcntl (sock, F_GETFL, 0);
   fcntl (sock, F_SETFL, (val | O_NONBLOCK));
@@ -95,16 +95,18 @@ sv ()
         }
 
       if (ret < 0)
-	{
+        {
           if (errno == EINTR || errno == EAGAIN)
-	    continue;
+            {
+              continue;
+            }
 
-	  perror ("select");
-	  return -1;
-	}
+          perror ("select");
+          return -1;
+        }
 
       // To increase read buffer
-      if (i%3 == 0)
+      if (i % 3 == 0)
         {
           i++;
           continue;
@@ -112,7 +114,9 @@ sv ()
 
       ret = read (sock, buf, sizeof(buf));
       if (ret == 0)
-        return 0;
+        {
+          return 0;
+        }
       else if (ret < 0)
         {
           perror ("read, exit");
@@ -145,7 +149,7 @@ cl ()
 #endif
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  if (sock < 0) 
+  if (sock < 0)
     {
       perror ("socket");
       return -1;
@@ -156,7 +160,7 @@ cl ()
   addr.sin_port = htons (10001);
   addr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
 
-  ret  = connect (sock, (struct sockaddr *)&addr, 
+  ret  = connect (sock, (struct sockaddr *)&addr,
                   sizeof (struct sockaddr_in));
   if (ret < 0)
     {

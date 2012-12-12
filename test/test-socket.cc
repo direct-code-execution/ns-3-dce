@@ -57,7 +57,7 @@ void test_raw (void)
   TEST_ASSERT_EQUAL (ret, 2);
   OUTPUT ("RAW recv PEEK ret = " << ret);
 
-  // recvmsg 
+  // recvmsg
   struct in_pktinfo *pktinfo;
   struct cmsghdr *cmsg;
   char cbuff [sizeof (*cmsg) + sizeof (*pktinfo)];
@@ -69,7 +69,7 @@ void test_raw (void)
   msg.msg_iov = &iov[0];
   msg.msg_iovlen = 1;
   msg.msg_control = cbuff;
-  msg.msg_controllen = CMSG_SPACE(sizeof (struct in_pktinfo));
+  msg.msg_controllen = CMSG_SPACE (sizeof (struct in_pktinfo));
   ret = recvmsg (sock, &msg, 0);
   TEST_ASSERT_EQUAL (ret, sizeof (buf2));
   OUTPUT ("RAW recv ret = " << ret);
@@ -77,7 +77,7 @@ void test_raw (void)
 
   // RECV interface via PKTINFO
   cmsg = CMSG_FIRSTHDR (&msg);
-  pktinfo = (struct in_pktinfo *)CMSG_DATA(cmsg);
+  pktinfo = (struct in_pktinfo *)CMSG_DATA (cmsg);
   TEST_ASSERT_EQUAL (pktinfo->ipi_ifindex, 1); // Loopback Interface
 
 
@@ -92,7 +92,7 @@ void test_raw (void)
   iph.ip_src = dst.sin_addr;
   iph.ip_dst = dst.sin_addr;
   iph.ip_p = IPPROTO_ICMP;
-  iph.ip_len = iph.ip_hl*4 + sizeof (buf);
+  iph.ip_len = iph.ip_hl * 4 + sizeof (buf);
   iov[0].iov_base = (char*)&iph;
   iov[0].iov_len = iph.ip_hl * 4;
   iov[1].iov_base = (void *) buf;
@@ -132,7 +132,6 @@ void test_raw6 (void)
   struct iovec iov[2];
   static struct sockaddr_in6 dst;
   int ret;
-  int on = 1;
 
   // ICMP Raw sock
   sock = socket (AF_INET6, SOCK_RAW, IPPROTO_ICMPV6);
@@ -164,7 +163,7 @@ void test_raw6 (void)
   TEST_ASSERT_EQUAL (ret, 2);
   OUTPUT ("RAW6 recv PEEK ret = " << ret);
 
-  // recvmsg 
+  // recvmsg
   char buf2[32];
   iov[0].iov_base = (void *) buf2;
   iov[0].iov_len = sizeof (buf2);
@@ -313,7 +312,7 @@ void test_tcp (void)
   TEST_ASSERT_UNEQUAL (ret, -1);
 
   // recv thread
-  ret = pthread_create (&thread, NULL, 
+  ret = pthread_create (&thread, NULL,
                         &thread_recv,
                         (void*)&socks[0]);
 
@@ -356,7 +355,7 @@ void test_netlink (void)
   // Bind
   memset (&snl, 0, sizeof snl);
   snl.nl_family = AF_NETLINK;
-  snl.nl_groups = RTMGRP_LINK|RTMGRP_IPV4_ROUTE|RTMGRP_IPV4_IFADDR;
+  snl.nl_groups = RTMGRP_LINK | RTMGRP_IPV4_ROUTE | RTMGRP_IPV4_IFADDR;
   ret = bind (sock, (struct sockaddr *) &snl, sizeof snl);
   TEST_ASSERT_UNEQUAL (sock, -1);
 
@@ -383,8 +382,8 @@ void test_netlink (void)
   req.nlh.nlmsg_pid = 0;
   req.nlh.nlmsg_seq = ++seq;
   req.g.rtgen_family = AF_INET;
- 
-  ret = sendto (sock, (void *) &req, sizeof (req), 0, 
+
+  ret = sendto (sock, (void *) &req, sizeof (req), 0,
                 (struct sockaddr *) &snl, sizeof (snl));
   TEST_ASSERT_EQUAL (ret, sizeof (req));
 
@@ -407,33 +406,35 @@ void test_netlink (void)
        h = NLMSG_NEXT (h, ret))
     {
       if (h->nlmsg_type == NLMSG_DONE)
-        break;
+        {
+          break;
+        }
 
       /* Error handling. */
       if (h->nlmsg_type == NLMSG_ERROR)
         {
           struct nlmsgerr *err = (struct nlmsgerr *) NLMSG_DATA (h);
           /* If the error field is zero, then this is an ACK */
-          if (err->error == 0) 
+          if (err->error == 0)
             {
               // ACK
-              /* return if not a multipart message, otherwise continue */  
-              if (!(h->nlmsg_flags & NLM_F_MULTI)) 
-                { 
+              /* return if not a multipart message, otherwise continue */
+              if (!(h->nlmsg_flags & NLM_F_MULTI))
+                {
                   break;
                 }
-              continue; 
+              continue;
             }
-          
+
           TEST_ASSERT (h->nlmsg_len >= NLMSG_LENGTH (sizeof (struct nlmsgerr)));
         }
 
       ifa = (struct ifaddrmsg *) NLMSG_DATA (h);
       TEST_ASSERT (ifa->ifa_family == AF_INET || ifa->ifa_family == AF_INET6);
       OUTPUT ("NL: family =  " << (int)ifa->ifa_family);
-    
+
       TEST_ASSERT (h->nlmsg_type == RTM_NEWADDR || h->nlmsg_type == RTM_DELADDR);
-      TEST_ASSERT (h->nlmsg_len - NLMSG_LENGTH(sizeof (struct ifaddrmsg) >= 0));
+      TEST_ASSERT (h->nlmsg_len - NLMSG_LENGTH (sizeof (struct ifaddrmsg) >= 0));
 
       // We didn't get into detail to parse attribute
     }
@@ -453,5 +454,6 @@ int main (int argc, char *argv[])
   test_udp ();
   test_tcp ();
   test_netlink ();
+
   return 0;
 }

@@ -13,7 +13,9 @@ int main (int argc, char *argv[])
   int res = clock_gettime (CLOCK_MONOTONIC, &first);
   TEST_ASSERT_EQUAL (res, 0);
 
-  struct timespec delta = { 0, 999999999L - first.tv_nsec };
+  struct timespec delta = {
+    0, 999999999L - first.tv_nsec
+  };
   res = nanosleep (&delta, 0);
   TEST_ASSERT_EQUAL (res, 0);
 

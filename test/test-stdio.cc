@@ -4,7 +4,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 #include <errno.h>
 
 #include "test-macros.h"
@@ -63,7 +65,7 @@ static void test_fopen (void)
 static void test_freadwrite (void)
 {
   char buffer[] = {
-    0xff, 0xfe, 0xfd, 0x00, 
+    0xff, 0xfe, 0xfd, 0x00,
     0x02, 0x05, 0x12, 0x15
   };
   int status;
@@ -156,7 +158,7 @@ void test_seek (void)
   unlink ("X");
   // let's write a file
   char buffer[] = {
-    0xff, 0xfe, 0xfd, 0x00, 
+    0xff, 0xfe, 0xfd, 0x00,
     0x02, 0x05, 0x12, 0x15
   };
   FILE *file;
@@ -183,15 +185,15 @@ void test_seek (void)
   status = fseek (ro, 0, SEEK_END);
   TEST_ASSERT_EQUAL (status, 0);
   current = ftell (ro);
-  TEST_ASSERT_EQUAL (current, sizeof(buffer)*2);
+  TEST_ASSERT_EQUAL (current, sizeof(buffer) * 2);
   status = fseek (ro, -5, SEEK_END);
   TEST_ASSERT_EQUAL (status, 0);
   current = ftell (ro);
-  TEST_ASSERT_EQUAL (current, sizeof(buffer)*2-5);
+  TEST_ASSERT_EQUAL (current, sizeof(buffer) * 2 - 5);
   status = fseek (ro, +3, SEEK_CUR);
   TEST_ASSERT_EQUAL (status, 0);
   current = ftell (ro);
-  TEST_ASSERT_EQUAL (current, sizeof(buffer)*2-5+3);
+  TEST_ASSERT_EQUAL (current, sizeof(buffer) * 2 - 5 + 3);
   rewind (ro);
   current = ftell (ro);
   TEST_ASSERT_EQUAL (current, 0);
@@ -329,37 +331,40 @@ void test_dup (void)
   while (fd > 0)
     {
       last = fd;
-        if (!first) first = fd;
+      if (!first)
+        {
+          first = fd;
+        }
 
-       char line[1024];
+      char line[1024];
 
-       int l = sprintf (line, "%d\n", fd);
+      int l = sprintf (line, "%d\n", fd);
 
-       write (fd, line , l);
+      write (fd, line, l);
 
-       fd = dup (fd);
+      fd = dup (fd);
     }
   fd = last;
   while (fd >= first)
     {
       close (fd);
-      fd --;
+      fd--;
     }
 
 }
 
 void simple_dup (void)
 {
-  int fd = open ("/tmp/hello",  O_RDWR|O_CREAT, 0644);
+  int fd = open ("/tmp/hello",  O_RDWR | O_CREAT, 0644);
   char line[1024];
 
   int l = sprintf (line, "Hello Fd %d\n", fd);
-  write (fd, line , l);
+  write (fd, line, l);
 
   int fd2 = dup (fd);
 
   l = sprintf (line, "Hello fd %d\n", fd2);
-  write (fd2, line , l);
+  write (fd2, line, l);
 
   close (fd);
   close (fd2);

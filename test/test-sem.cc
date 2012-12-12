@@ -3,7 +3,7 @@
 #include <errno.h>
 #include "test-macros.h"
 
-void *thread_a (void *ctx)
+void * thread_a (void *ctx)
 {
   sem_t *sems = (sem_t *)ctx;
   for (int i = 0; i < 100; i++)
@@ -16,7 +16,7 @@ void *thread_a (void *ctx)
   return 0;
 }
 
-void *thread_b (void *ctx)
+void * thread_b (void *ctx)
 {
   sem_t *sems = (sem_t *)ctx;
   for (int i = 0; i < 100; i++)
@@ -78,10 +78,10 @@ int main (int argc, char *argv[])
   TEST_ASSERT_EQUAL (status, 0);
   status = sem_init (&sems[1], 0, 0);
   TEST_ASSERT_EQUAL (status, 0);
-  status = pthread_create (&threads[0], 0, 
+  status = pthread_create (&threads[0], 0,
                            &thread_a, sems);
   TEST_ASSERT_EQUAL (status, 0);
-  status = pthread_create (&threads[1], 0, 
+  status = pthread_create (&threads[1], 0,
                            &thread_b, sems);
   TEST_ASSERT_EQUAL (status, 0);
   status = pthread_join (threads[0], 0);

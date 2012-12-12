@@ -69,7 +69,7 @@ int main (int argc, char *argv[])
     struct in_addr re_addr;
     inet_aton ("255.255.255.0", &re_addr);
     TEST_ASSERT (memcmp (&(ipv4->sin_addr), &re_addr, sizeof (in_addr)) == 0);
-  } 
+  }
 
   //SIOCGIFMTU
   ioctlres = ioctl (sock, SIOCGIFMTU, &m_ifreq);

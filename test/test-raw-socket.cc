@@ -88,7 +88,10 @@ test1_server (void *arg)
     {
       status = recv (sockin, readBuffer + tot, BUFF_LEN - tot, 0);
       printf ("test1_server: received %d / %ld\n", status, BUFF_LEN - tot);
-      if ( 0 == status) break;
+      if ( 0 == status)
+        {
+          break;
+        }
       TEST_ASSERT ( status > 0 );
       tot += status;
     }
@@ -111,7 +114,7 @@ test1_reader (void *ctxt)
     {
       printf ("test1_reader: waiting 4 raw Data ....\n");
 
-      char buffer [1024*10];
+      char buffer [1024 * 10];
       struct sockaddr_ll from;
       socklen_t l =  sizeof(from);
       int st = recvfrom (rawFd, buffer, sizeof (buffer), 0, (sockaddr*) &from, &l);
@@ -120,9 +123,9 @@ test1_reader (void *ctxt)
               st, from.sll_family, ntohs (from.sll_protocol),
               from.sll_ifindex, from.sll_pkttype, from.sll_hatype, from.sll_hatype );
 
-      for (int i=14; i < st - 2; i++)
+      for (int i = 14; i < st - 2; i++)
         {
-          if ( (buffer[i] == 'G') && (buffer[i+1] == 'E') && (buffer[i+2] == 'T') )
+          if ( (buffer[i] == 'G') && (buffer[i + 1] == 'E') && (buffer[i + 2] == 'T') )
             {
               printf ("we win !\n");
               return ctxt;   // GET found :)
@@ -166,8 +169,10 @@ void*
 test2_client (void *arg)
 {
   int rawFd, st, tcp4;
-  struct sockaddr_ll dest = { 0 };
-  char buffer [1024*1];
+  struct sockaddr_ll dest = {
+    0
+  };
+  char buffer [1024 * 1];
 
   rawFd = socket (AF_PACKET, SOCK_RAW, htons (ETH_P_ALL));
   // rawFd = socket (AF_PACKET, SOCK_RAW, htons(ETH_P_IP));
@@ -178,7 +183,7 @@ test2_client (void *arg)
   dest.sll_ifindex = 1;
 
   sleep (1);
-  for (int i=0; i < sizeof (buffer); i++)
+  for (int i = 0; i < sizeof (buffer); i++)
     {
       buffer [ i ] = i & 0xff;
     }
@@ -194,7 +199,7 @@ void*
 test2_server (void *arg)
 {
   int rawFd, st, tcp4;
-  char buffer [1024*10];
+  char buffer [1024 * 10];
   struct sockaddr_ll from;
   socklen_t l =  sizeof(from);
 

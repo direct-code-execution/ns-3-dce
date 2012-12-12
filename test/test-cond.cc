@@ -43,7 +43,8 @@ private:
 
 BarrierContext::BarrierContext ()
   : sense (1)
-{}
+{
+}
 
 Barrier::Barrier (int expected)
   : m_expected (expected),
@@ -58,7 +59,7 @@ Barrier::~Barrier ()
   pthread_cond_destroy (&m_cond);
   pthread_mutex_destroy (&m_mutex);
 }
-void 
+void
 Barrier::Wait (struct BarrierContext *context)
 {
   pthread_mutex_lock (&m_mutex);
@@ -82,7 +83,7 @@ Barrier::Wait (struct BarrierContext *context)
 
 int g_nIterations = 1000;
 
-void *thread (void *context)
+void * thread (void *context)
 {
   Barrier *barrier = (Barrier *)context;
   BarrierContext ctx;

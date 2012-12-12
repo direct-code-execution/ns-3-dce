@@ -29,7 +29,7 @@ void fill_addr (struct sockaddr_in &addr, int port)
 void*
 second_thread1 (void *arg)
 {
-  int sock=*((int*)arg);
+  int sock = *((int*)arg);
   printf ("second_thread1: enter\nsecond_thread1:sleeping 1 sec\n");
   sleep (1);
   printf ("second_thread1: closing fd:%d\n",sock);

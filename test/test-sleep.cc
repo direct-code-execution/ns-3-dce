@@ -9,7 +9,7 @@ int main (int argc, char *argv[])
   unsigned int left = sleep (1);
   time_t end = time (0);
   TEST_ASSERT_EQUAL (left, 0);
-  TEST_ASSERT_EQUAL (end-start, 1);
+  TEST_ASSERT_EQUAL (end - start, 1);
   exit (0);
   // never reached.
   return -1;

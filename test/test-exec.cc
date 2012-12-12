@@ -13,13 +13,13 @@
 // Test ExecV with an invalid path then with a valid one.
 int test1 ()
 {
-  char * args[] = { "test-exec", "2", 0 };
-  int ret = execv ("test-exec", args);
+  const char * args[] = { "test-exec", "2", 0 };
+  int ret = execv ("test-exec", (char * const *) args);
   TEST_ASSERT_EQUAL (ret, -1);
   TEST_ASSERT_EQUAL (errno,  ENOENT);
 
   setenv ("CALLER", "TEST1", 1);
-  ret = execv ("/bin_dce/test-exec", args);
+  ret = execv ("/bin_dce/test-exec", (char * const *)args);
   TEST_ASSERT ( false ); // Must not be reached
 
   return ret;
@@ -29,12 +29,12 @@ int test2 ()
 {
   TEST_ASSERT_EQUAL ( strcmp ("TEST1", getenv ("CALLER")), 0 );
   setenv ("CALLER", "TEST2", 1);
-  char * args[] = { "test-exec-not-existing", "3", 0 };
-  int ret = execvp ("test-exec-not-existing", args);
+  const char * args[] = { "test-exec-not-existing", "3", 0 };
+  int ret = execvp ("test-exec-not-existing", (char * const *)args);
   TEST_ASSERT_EQUAL (ret, -1);
   TEST_ASSERT_EQUAL (errno,  ENOENT);
 
-  ret = execvp ("test-exec", args);
+  ret = execvp ("test-exec", (char * const *)args);
   TEST_ASSERT ( false ); // Must not be reached
 
   return ret;
@@ -44,11 +44,11 @@ int test3 ()
 {
   TEST_ASSERT_EQUAL ( strcmp ("TEST2", getenv ("CALLER")), 0 );
   setenv ("CALLER", "TEST3", 1);
-  int ret = execl ("test-exec-not-existing", "4", 0 );
+  int ret = execl ("test-exec-not-existing", "4", NULL );
   TEST_ASSERT_EQUAL (ret, -1);
   TEST_ASSERT_EQUAL (errno,  ENOENT);
 
-  ret = execl ("/bin_dce/test-exec", "/bin_dce/test-exec", "4", 0);
+  ret = execl ("/bin_dce/test-exec", "/bin_dce/test-exec", "4", NULL);
   TEST_ASSERT ( false ); // Must not be reached
 
   return ret;
@@ -59,17 +59,17 @@ int test4 ()
   TEST_ASSERT_EQUAL ( strcmp ("TEST3", getenv ("CALLER")), 0 );
   setenv ("CALLER", "", 1);
 
-  char * args[] = { "test-exec-not-existing", "5", 0 };
-  char * env[] = { "CALLER=TEST4", "LD_LIBRARY_PATH=./build/lib", 0 };
+  const char * args[] = { "test-exec-not-existing", "5", 0 };
+  const char * env[] = { "CALLER=TEST4", "LD_LIBRARY_PATH=./build/lib", 0 };
 
-  int ret = execve ("test-exec-not-existing", args, env);
+  int ret = execve ("test-exec-not-existing", (char * const *)args, (char * const *)env);
   TEST_ASSERT_EQUAL (ret, -1);
   TEST_ASSERT_EQUAL (errno,  ENOENT);
 
   {
-    char * args[] = { "build/bin/test-exec", "5", 0 };
+    const char * args[] = { "build/bin/test-exec", "5", 0 };
 
-    ret = execve ("/bin_dce/test-exec", args, env);
+    ret = execve ("/bin_dce/test-exec", (char * const *)args, (char * const *)env);
     TEST_ASSERT ( false ); // Must not be reached
   }
 
@@ -80,11 +80,11 @@ int test5 ()
 {
   TEST_ASSERT_EQUAL ( strcmp ("TEST4", getenv ("CALLER")), 0 );
   setenv ("CALLER", "TEST5", 1);
-  int ret = execlp ("test-exec-not-existing", "6", 0 );
+  int ret = execlp ("test-exec-not-existing", "6", NULL);
   TEST_ASSERT_EQUAL (ret, -1);
   TEST_ASSERT_EQUAL (errno,  ENOENT);
 
-  ret = execlp ("test-exec", "test-exec", "6", 0);
+  ret = execlp ("test-exec", "test-exec", "6", NULL);
   TEST_ASSERT ( false ); // Must not be reached
 
   return ret;
@@ -94,12 +94,12 @@ int test6 ()
 {
   TEST_ASSERT_EQUAL ( strcmp ("TEST5", getenv ("CALLER")), 0 );
   setenv ("CALLER", "", 1);
-  char * env[] = { "CALLER=TEST6", "LD_LIBRARY_PATH=./build/lib", 0 };
-  int ret = execle ("test-exec", "test-exec",  "7", 0, env);
+  const char * env[] = { "CALLER=TEST6", "LD_LIBRARY_PATH=./build/lib", 0 };
+  int ret = execle ("test-exec", "test-exec",  "7", NULL, (char * const *) env);
   TEST_ASSERT_EQUAL (ret, -1);
   TEST_ASSERT_EQUAL (errno,  ENOENT);
 
-  ret = execle ("/bin_dce/test-exec", "/bin_dce/test-exec", "7", (char*)0, env );
+  ret = execle ("/bin_dce/test-exec", "/bin_dce/test-exec", "7", NULL, (char * const *) env );
   printf ("execle -> %d, errno=%d\n", ret, errno);
   TEST_ASSERT ( false ); // Must not be reached
 
@@ -125,7 +125,7 @@ thread_test7 (void *arg)
 // Create some thread before execing
 int test7 ()
 {
-  for (int i=0; i < 30 ; i++)
+  for (int i = 0; i < 30; i++)
     {
       int status;
       pthread_t thread;
@@ -133,7 +133,7 @@ int test7 ()
       // try to join after the thread exits.
       status = pthread_create (&thread, NULL, &thread_test7, 0);
     }
-  int ret = execl ("/bin_dce/test-exec", "/bin_dce/test-exec", "8", 0);
+  int ret = execl ("/bin_dce/test-exec", "/bin_dce/test-exec", "8", NULL);
   TEST_ASSERT ( false ); // Must not be reached
 
   return ret;
@@ -141,7 +141,7 @@ int test7 ()
 
 int test8 ()
 {
-  int fd = open ("Script8", O_CREAT|O_WRONLY, 0755);
+  int fd = open ("Script8", O_CREAT | O_WRONLY, 0755);
   FILE *f = fdopen (fd, "w");
   char *argv[] = { 0 };
   char *envp[] = {  0 };
@@ -180,17 +180,24 @@ int main (int c, char **v)
 
   switch (atoi (v[1]))
     {
-    case 2: return test2 ();
-    case 3: return test3 ();
-    case 4: return test4 ();
-    case 5: return test5 ();
-    case 6: return test6 ();
-    case 7: return test7 ();
+    case 2:
+      return test2 ();
+    case 3:
+      return test3 ();
+    case 4:
+      return test4 ();
+    case 5:
+      return test5 ();
+    case 6:
+      return test6 ();
+    case 7:
+      return test7 ();
     // TEST 8 Disabled because this test need a sh recompiled for DCE which is not
     // part of the DCE distribution for now.
-   // case 8: return test8 ();
+    // case 8: return test8 ();
 
-    default: return last_test ();
+    default:
+      return last_test ();
     }
 
 }

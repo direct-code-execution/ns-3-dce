@@ -66,7 +66,7 @@ static void test_stat (void)
   // first, make sure we get an empty file
   fd = open ("X", O_CREAT | O_TRUNC | O_RDWR, S_IRWXU);
   // we know that fd 0, 1, and 2 exist already
-  TEST_ASSERT (fd >= 3); 
+  TEST_ASSERT (fd >= 3);
 
   // verify new file has zero size
   status = fstat (fd, &st);
@@ -91,16 +91,16 @@ static void test_stat (void)
   status = close (fd);
   TEST_ASSERT_EQUAL (status, 0);
 
-  status = fstatat( 42, "/etc/passwd", &st, 0);
+  status = fstatat ( 42, "/etc/passwd", &st, 0);
   TEST_ASSERT_EQUAL (status, 0);
 
-  status = fstatat( 42, "passwd", &st, 0);
+  status = fstatat ( 42, "passwd", &st, 0);
   TEST_ASSERT_EQUAL (status, -1);
   TEST_ASSERT_EQUAL (errno, EBADF);
 
   fd = open ("/etc/passwd", O_RDONLY, 0);
   TEST_ASSERT (fd > 0);
-  status = fstatat( fd, "passwd", &st, 0);
+  status = fstatat ( fd, "passwd", &st, 0);
   TEST_ASSERT_EQUAL (status, -1);
   TEST_ASSERT_EQUAL (errno, ENOTDIR);
   status = close (fd);
@@ -108,7 +108,7 @@ static void test_stat (void)
 
   fd = open ("/etc", O_RDONLY, 0);
   TEST_ASSERT (fd > 0);
-  status = fstatat( fd, "passwd", &st, 0);
+  status = fstatat ( fd, "passwd", &st, 0);
   TEST_ASSERT_EQUAL (status, 0);
   status = close (fd);
   TEST_ASSERT_EQUAL (status, 0);
@@ -140,7 +140,7 @@ static void test_file_remove (void)
 
   // create file
   fd = open ("X", O_CREAT | O_TRUNC | O_RDWR, S_IRWXU);
-  TEST_ASSERT_UNEQUAL (fd, -1); 
+  TEST_ASSERT_UNEQUAL (fd, -1);
 
   // try to delete with remove.
   status = remove ("X");
@@ -312,11 +312,11 @@ static void test_cwd (void)
   memset (buffer, 0, len + 1);
   cwd = getcwd (buffer, len);
   TEST_ASSERT_EQUAL (cwd, 0);
-  cwd = getcwd (buffer, len+1);
+  cwd = getcwd (buffer, len + 1);
   TEST_ASSERT_UNEQUAL (cwd, 0);
   free (buffer);
 
-  char tmp[PATH_MAX+1];
+  char tmp[PATH_MAX + 1];
   cwd = getwd (tmp);
   TEST_ASSERT_UNEQUAL (cwd, 0);
 }
@@ -434,8 +434,8 @@ static void test_pread_pwrite (void)
   ssize_t w = pwrite (fd, buffer, sizeof (buffer), 0);
   TEST_ASSERT_EQUAL (w, sizeof (buffer));
   ssize_t p = lseek (fd, 0, SEEK_CUR);
-  w = pread (fd, buffer, sizeof (buffer)/2,  sizeof (buffer)/2);
-  TEST_ASSERT_EQUAL (w, sizeof (buffer)/2);
+  w = pread (fd, buffer, sizeof (buffer) / 2,  sizeof (buffer) / 2);
+  TEST_ASSERT_EQUAL (w, sizeof (buffer) / 2);
   ssize_t p2 = lseek (fd, 0, SEEK_CUR);
   TEST_ASSERT_EQUAL (p, p2);
   int status = close (fd);

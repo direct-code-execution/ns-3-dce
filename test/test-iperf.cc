@@ -22,10 +22,10 @@ void* client (void *arg)
 {
 
   while ( !gStop )
-      {
-        printf ("hello\n");
-        sleep (1);
-      }
+    {
+      printf ("hello\n");
+      sleep (1);
+    }
 
   gStop2 = 1;
 
@@ -38,9 +38,9 @@ void* reporter (void *arg)
 {
 
   while ( !gStop2 )
-      {
-        usleep (10000);
-      }
+    {
+      usleep (10000);
+    }
 
   return arg;
 }

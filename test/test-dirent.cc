@@ -12,18 +12,18 @@ test2 (void) // Stolen from man
   struct dirent **namelist;
   int n;
 
-  n = scandir(".", &namelist, 0, alphasort);
+  n = scandir (".", &namelist, 0, alphasort);
   TEST_ASSERT (n >= 0);
   while (n--)
     {
-      struct dirent dd ;
+      struct dirent dd;
 
       memcpy (&dd, namelist[n], sizeof (struct dirent));
 
-      printf("%s\n", namelist[n]->d_name);
-      free(namelist[n]);
+      printf ("%s\n", namelist[n]->d_name);
+      free (namelist[n]);
     }
-  free(namelist);
+  free (namelist);
 }
 
 void
@@ -31,7 +31,7 @@ test1 (void)
 {
   std::ostringstream s;
 
-  s << "/var/log/" << getpid () << "/" ;
+  s << "/var/log/" << getpid () << "/";
 
   std::string outPath = s.str ();
 
@@ -44,7 +44,7 @@ test1 (void)
 
   TEST_ASSERT ( dp != 0 );
 
-  while ((dirp = readdir(dp)) != NULL)
+  while ((dirp = readdir (dp)) != NULL)
     {
       std::cout <<  dirp->d_name << std::endl;
       cpt1++;
@@ -55,7 +55,7 @@ test1 (void)
 
   std::cout <<  "Rewind then redo ! " << std::endl;
 
-  while ((dirp = readdir(dp)) != NULL)
+  while ((dirp = readdir (dp)) != NULL)
     {
       std::cout <<  dirp->d_name << std::endl;
       cpt2++;
@@ -63,7 +63,7 @@ test1 (void)
   TEST_ASSERT ( cpt2 > 0 );
   TEST_ASSERT_EQUAL (cpt1, cpt2);
 
-  int st = closedir(dp);
+  int st = closedir (dp);
 
   TEST_ASSERT_EQUAL (st, 0);
 
@@ -71,7 +71,7 @@ test1 (void)
 
 int main (int c, char **v)
 {
- // test1 ();
+  // test1 ();
   test2 ();
 
   return 0;
