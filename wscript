@@ -91,8 +91,10 @@ def build_netlink(bld):
         'test/netlink-socket-test.cc',
         ]
     uselib = ns3waf.modules_uselib(bld, ['dce'])
+    # no idea to solve this two-way dependency (dce <-> netlink)
     module.add_runner_test(needed = ['internet', 'point-to-point', 'core', 'netlink'], 
                            use=uselib,
+                           includes=['build/include'],
                            source=module_tests)
 
 def dce_kw(**kw):
