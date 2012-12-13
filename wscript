@@ -90,12 +90,6 @@ def build_netlink(bld):
     module_tests = [
         'test/netlink-socket-test.cc',
         ]
-    uselib = ns3waf.modules_uselib(bld, ['dce'])
-    # no idea to solve this two-way dependency (dce <-> netlink)
-    module.add_runner_test(needed = ['internet', 'point-to-point', 'core', 'netlink'], 
-                           use=uselib,
-                           includes=['build/include'],
-                           source=module_tests)
 
 def dce_kw(**kw):
     d = dict(**kw)
@@ -423,6 +417,13 @@ def build(bld):
 #                                  lib=['dl','efence'])
     build_dce_tests(module, bld, bld.env['KERNEL_STACK'])
     build_dce_examples(module, bld)
+
+    # no idea to solve this two-way dependency (dce <-> netlink)
+    module.add_runner_test(needed = ['internet', 'point-to-point', 'core', 'dce'], 
+                           use=uselib,
+                           includes=['netlink'],
+                           source=['test/netlink-socket-test.cc'],
+                           name='netlink')
 
     bld.install_files('${PREFIX}/bin', 'build/bin/ns3test-dce', chmod=0755 )
     bld.install_files('${PREFIX}/bin', 'build/bin/ns3test-dce-vdl', chmod=0755 )
