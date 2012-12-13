@@ -27,6 +27,7 @@
 #include "ns3/point-to-point-helper.h"
 #include "ns3/ipv4-address-helper.h"
 #include "ns3/ipv4-global-routing-helper.h"
+#include "ns3/ipv4-dce-routing-helper.h"
 #include "ns3/socket-factory.h"
 #include "ns3/string.h"
 #include "ns3/assert.h"
@@ -120,10 +121,10 @@ NetlinkSocketTestCase::BuildAddressMessage (uint16_t type, uint16_t flags)
   ifamsg.SetLength (24);
   ifamsg.SetInterfaceIndex (3);
 
-  ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_LOCAL, ADDRESS, (void*)&Ipv4Address ("192.168.0.1")));
-  ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_ADDRESS,ADDRESS, (void*)&Ipv4Address ("192.168.0.2")));
+  ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_LOCAL, ADDRESS, Ipv4Address ("192.168.0.1")));
+  ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_ADDRESS, ADDRESS, Ipv4Address ("192.168.0.2")));
   std::string value = "TESTSTRING";
-  ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_LABEL, STRING, (void*)&value));
+  ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_LABEL, STRING, value));
 
   nlmsg.SetInterfaceAddressMessage (ifamsg);
   return nlmsg;
@@ -156,11 +157,11 @@ NetlinkSocketTestCase::BuildRouteMessage (uint16_t type, uint16_t flags)
   RouteMessage rtmsg;
   //set attribute
   rtmsg.SetFamily (AF_INET);
-  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_DST, ADDRESS, (void*)&Ipv4Address ("192.168.0.10")));
-  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_SRC, ADDRESS, (void*)&Ipv4Address ("192.168.2.10")));
-  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_GATEWAY, ADDRESS, (void*)&Ipv4Address ("10.1.1.10")));
-  int value = 2;
-  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_OIF, U32, (void*)&value));
+  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_DST, ADDRESS, Ipv4Address ("192.168.0.10")));
+  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_SRC, ADDRESS, Ipv4Address ("192.168.2.10")));
+  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_GATEWAY, ADDRESS, Ipv4Address ("10.1.1.10")));
+  uint32_t value = 2;
+  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_OIF, U32, value));
 
   nlmsg.SetRouteMessage (rtmsg);
   return nlmsg;
@@ -506,6 +507,8 @@ NetlinkSocketTestCase::DoRun (void)
   NodeContainer n1n2 = NodeContainer (nodes.Get (1), nodes.Get (2));
 
   InternetStackHelper stack;
+  Ipv4DceRoutingHelper ipv4RoutingHelper;
+  stack.SetRoutingHelper (ipv4RoutingHelper);
   stack.Install (nodes);
 
   //add a p2p device with an ip address
