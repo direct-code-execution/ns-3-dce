@@ -1,0 +1,8 @@
+set xlabel "Time"
+set ylabel "Bytes"
+plot "udp_tput_1000.data" using 1:3 title 'CCNx 1000 Bytes chunk' with linespoints, \
+"udp_tput_1500.data" using 1:3 title 'CCNx 1500 Bytes chunk' with linespoints, \
+"udp_tput_2000.data" using 1:3 title 'CCNx 2000 Bytes chunk' with linespoints, \
+"udp_tput_3000.data" using 1:3 title 'CCNx 3000 Bytes chunk' with linespoints, \
+"udp_tput_4000.data" using 1:3 title 'CCNx 4000 Bytes chunk' with linespoints, \
+"tcp_tput.data" using 1:3 title 'TCP transfert' with linespoints

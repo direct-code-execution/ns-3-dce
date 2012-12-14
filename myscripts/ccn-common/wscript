@@ -1,0 +1,15 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+import ns3waf
+
+def configure(conf):
+	conf.load('compiler_c')
+	conf.load('compiler_cxx')
+
+
+def build(bld):
+	bld.program(source='my-client.c', target='../../bin_dce/my-client', cflags = [ '-fPIC'], linkflags    = ['-pie']) 
+	bld.program(source='my-serveur.c', target='../../bin_dce/my-serveur', cflags = [ '-fPIC'], linkflags    = ['-pie']) 
+	bld.program(source='lanceur.c', target='../../bin_dce/lanceur', cflags = [ '-fPIC'], linkflags    = ['-pie']) 
+	bld.program(source='bug1167.cc', target='../../bin_dce/bug1167', cxxflags = [ '-fPIC'], linkflags    = ['-pie']) 
+        
