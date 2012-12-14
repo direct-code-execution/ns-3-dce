@@ -1,0 +1,20 @@
+
+Topology:    2 nodes linked by a point to point link !
+
+Experience:  Compare throughput for transfert of a 6Mb file using CCNx (over udp or tcp) or using a TCP socket.
+
+Usage: ..../build/myscripts/ccn-exp1/bin/dce-ccn-exp1 
+
+
+Output: see pcap files,
+  
+        use wireshark for produce throughput plots : 
+        
+           1. go to IO Graph, add a filter : ip.dst==10.1.1.1
+           2. select options : Tick interval 0.01 , 10 pixels per tick, Unit: Bytes/Tick Scale: Auto. 
+           3. Click copy 
+           4. paste in emacs save and use it with plt1.txt gnuplot file...
+           
+               
+                
+              
