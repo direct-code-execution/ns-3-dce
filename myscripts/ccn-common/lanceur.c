@@ -3,6 +3,7 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <wait.h>
 
 // Return ms.
 long duration (struct timeval *st, struct timeval *ed)
