@@ -94,7 +94,9 @@ LinuxStackHelper::SysctlSet (NodeContainer c, std::string path, std::string valu
         {
           continue;
         }
-      sock->Set (path, value);      
+      Simulator::ScheduleWithContext (node->GetId (), Seconds (0.0),
+                                      MakeEvent (&LinuxSocketFdFactory::Set, sock,
+                                                 path, value));
     }
 }
 
