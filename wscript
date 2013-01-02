@@ -62,7 +62,8 @@ def configure(conf):
                    includes=os.path.join(Options.options.kernel_stack, 'sim/include'))
       #  conf.check()
         conf.env['KERNEL_STACK'] = Options.options.kernel_stack
-
+        conf.env.append_value ('DEFINES', 'KERNEL_STACK=Y')
+        
     conf_myscripts(conf)
     
     conf.recurse(os.path.join('utils'))
@@ -399,7 +400,7 @@ def build(bld):
         'model/dce-application.h',
         'model/ipv4-dce-routing.h',
         'model/linux/ipv4-linux.h',
-        'model/process-delay-model.h',
+        'model/process-delay-model.h',        
         'helper/dce-manager-helper.h',
         'helper/dce-application-helper.h',
         'helper/ccn-client-helper.h',
