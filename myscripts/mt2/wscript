@@ -1,4 +1,5 @@
 ## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
 import ns3waf
 import os
 
@@ -7,6 +8,8 @@ def configure(conf):
 
 def build(bld):
     bld.build_a_script('dce', needed = ['core', 'internet', 'dce', 'point-to-point'],
-				  target='bin/dce-ping-mt1',
-				  source=['ping-mt1.cc'],
+				  target='bin/dce-mt2',
+				  source=['dce-mt2.cc'],
 				  )
+    bld.program(source='mcreceive.c', target='../../bin_dce/mcreceive', cflags = [ '-fPIC'], linkflags    = ['-pie'])
+    bld.program(source='mcsend.c', target='../../bin_dce/mcsend', cflags = [ '-fPIC'], linkflags    = ['-pie'])

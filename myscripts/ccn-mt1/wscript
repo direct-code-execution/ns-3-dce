@@ -1,0 +1,13 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+import ns3waf
+import os
+
+def configure(conf):
+    ns3waf.check_modules(conf, ['core', 'internet', 'point-to-point', 'tools', 'applications',], mandatory = True)
+
+def build(bld):
+    bld.build_a_script('dce', needed = ['core', 'internet', 'dce', 'point-to-point', 'tools',  'applications',],
+				  target='bin/dce-ccn-mt1',
+				  source=['ccn-mt1.cc'],
+				  )
