@@ -169,7 +169,7 @@ int dce_getnameinfo (const struct sockaddr *sa, socklen_t salen, char *host,
 
             int r = snprintf (host, hostlen, "%s", oss.str ().c_str ());
 
-            if ( r > servlen )
+            if ( r > hostlen )
               {
                 return EAI_OVERFLOW;
               }
