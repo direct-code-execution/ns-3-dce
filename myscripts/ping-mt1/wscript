@@ -1,0 +1,18 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+
+#    ns3waf.check_modules(conf, ['core', 'internet', 'point-to-point', 'tools', 'applications',], mandatory = True)
+#    bld.build_a_script('dce', needed = ['core', 'internet', 'dce', 'point-to-point', 'tools',  'applications',],
+
+
+import ns3waf
+import os
+
+def configure(conf):
+    ns3waf.check_modules(conf, ['core', 'internet', 'point-to-point'], mandatory = True)
+
+def build(bld):
+    bld.build_a_script('dce', needed = ['core', 'internet', 'dce', 'point-to-point'],
+				  target='bin/dce-ping-mt1',
+				  source=['ping-mt1.cc'],
+				  )
