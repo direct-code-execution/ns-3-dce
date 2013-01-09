@@ -1,6 +1,6 @@
-diff -r 7a750f032acd src/core/model/default-simulator-impl.cc
---- a/src/core/model/default-simulator-impl.cc	Sat Nov 10 19:16:38 2012 +0100
-+++ b/src/core/model/default-simulator-impl.cc	Mon Nov 12 10:42:25 2012 +0100
+diff -r 55055ecdbd47 src/core/model/default-simulator-impl.cc
+--- a/src/core/model/default-simulator-impl.cc	Wed Jan 09 14:13:15 2013 +0100
++++ b/src/core/model/default-simulator-impl.cc	Wed Jan 09 18:14:15 2013 +0100
 @@ -219,7 +219,7 @@
  DefaultSimulatorImpl::Schedule (Time const &time, EventImpl *event)
  {
@@ -10,12 +10,12 @@ diff -r 7a750f032acd src/core/model/default-simulator-impl.cc
  
    Time tAbsolute = time + TimeStep (m_currentTs);
  
-@@ -271,7 +271,7 @@
+@@ -270,7 +270,7 @@
+ EventId
  DefaultSimulatorImpl::ScheduleNow (EventImpl *event)
  {
-   NS_LOG_FUNCTION (this << event);
 -  NS_ASSERT_MSG (SystemThread::Equals (m_main), "Simulator::ScheduleNow Thread-unsafe invocation!");
-+ // NS_ASSERT_MSG (SystemThread::Equals (m_main), "Simulator::ScheduleNow Thread-unsafe invocation!");
++  //  NS_ASSERT_MSG (SystemThread::Equals (m_main), "Simulator::ScheduleNow Thread-unsafe invocation!");
  
    Scheduler::Event ev;
    ev.impl = event;

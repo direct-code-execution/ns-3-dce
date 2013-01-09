@@ -251,8 +251,6 @@ int main (int argc, char *argv[])
   // Create the animation object and configure for specified output
   AnimationInterface anim (animFile);
 
-  anim.StartAnimation ();
-
   Simulator::Stop (Seconds(10.0));
   Simulator::Run ();
   Simulator::Destroy ();
