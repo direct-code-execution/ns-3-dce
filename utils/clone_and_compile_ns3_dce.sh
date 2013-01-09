@@ -48,13 +48,11 @@ then
  	hg clone http://code.nsnam.org/furbani/ns-3-linux
 fi
 echo clone ns-3-dev
-hg clone -r 7a750f032acd http://code.nsnam.org/ns-3-dev
+hg clone -r 55055ecdbd47 http://code.nsnam.org/ns-3-dev
 mkdir build
 cd ns-3-dev
 hg revert -a
-patch -p1 <../ns-3-dce/utils/packet-socket-upgrade-exp.patch
 patch -p1 <../ns-3-dce/utils/remove-default-simulator-asserts.patch
-patch -p1 <../ns-3-dce/utils/ipv4endpoint.patch
 if [ "YES" == "$USE_OPT" ]
 then
 	CXXFLAGS='-O3' ./waf configure -d optimized --prefix=`pwd`/../build --enable-tests $MPI_SWITCH
