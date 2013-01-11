@@ -44,10 +44,8 @@ int
 main (int argc, char *argv[])
 {
   CommandLine cmd;
-#ifdef KERNEL_STACK
   bool useKernel = 0;
   cmd.AddValue ("kernel", "Use kernel linux IP stack.", useKernel);
-#endif
   cmd.Parse (argc, argv);
 
   NodeContainer nodes;
@@ -62,13 +60,10 @@ main (int argc, char *argv[])
   DceManagerHelper dceManager;
 
 
-#ifdef KERNEL_STACK
   if (!useKernel)
     {
-#endif
       InternetStackHelper stack;
       stack.Install (nodes);
-#ifdef KERNEL_STACK
     }
   else
     {
@@ -76,18 +71,14 @@ main (int argc, char *argv[])
       LinuxStackHelper stack;
       stack.Install (nodes);
     }
-#endif
-
 
   Ipv4AddressHelper address;
   address.SetBase ("10.1.1.0", "255.255.255.0");
 
   Ipv4InterfaceContainer interfaces = address.Assign (devices);
 
-#ifdef KERNEL_STACK
   if (!useKernel)
     {
-#endif
       Ipv4StaticRoutingHelper multicast;
       // 2) Set up a default multicast route on the sender n0
       Ptr<Node> sender = nodes.Get (0);
@@ -97,7 +88,6 @@ main (int argc, char *argv[])
       sender = nodes.Get (1);
       senderIf = devices.Get (1);
       multicast.SetDefaultMulticastRoute (sender, senderIf);
-#ifdef KERNEL_STACK
     }
   else
     {
@@ -113,8 +103,6 @@ main (int argc, char *argv[])
           a.Start (Seconds(0.001));
         }
     }
-#endif
-
 
   dceManager.Install (nodes);
 

@@ -68,17 +68,13 @@ main (int argc, char *argv[])
   std::string packetSize = "1024";
   std::string ccnTransport = "udp"; // or tcp
   std::string dataRate = "100Mbps";
-#ifdef KERNEL_STACK
   bool useKernel = 0;
-#endif
   bool ccnTest = 0;
 
   CommandLine cmd;
   bool enableFlowMonitor = false;
   cmd.AddValue ("EnableMonitor", "Enable Flow Monitor", enableFlowMonitor);
-#ifdef KERNEL_STACK
   cmd.AddValue ("kernel", "Use kernel linux IP stack.", useKernel);
-#endif
   cmd.AddValue ("ccnd", "if true use ccnd to exchange the file, else use tcp (default).", ccnTest);
   cmd.AddValue ("size", "packet size for ccnsendchunks. default 1024.", packetSize);
   cmd.AddValue ("ct", "CCN used transport udp or tcp. default udp.", ccnTransport);
@@ -102,13 +98,10 @@ main (int argc, char *argv[])
 
   DceManagerHelper dceManager;
 
-#ifdef KERNEL_STACK
   if (!useKernel)
     {
-#endif
       InternetStackHelper stack;
       stack.Install (nodes);
-#ifdef KERNEL_STACK
       }
   else
     {
@@ -116,7 +109,6 @@ main (int argc, char *argv[])
       LinuxStackHelper stack;
       stack.Install (nodes);
     }
-#endif
 
   Ipv4AddressHelper address;
   address.SetBase ("10.1.1.0", "255.255.255.252");

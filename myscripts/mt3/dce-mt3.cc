@@ -73,13 +73,9 @@ int
 main (int argc, char *argv[])
 {
   CommandLine cmd;
-#ifdef KERNEL_STACK
   bool useKernel = 0;
-#endif
   cmd.AddValue ("r", "Radius of the circle default (50) ", r);
-#ifdef KERNEL_STACK
   cmd.AddValue ("kernel", "Use kernel linux IP stack.", useKernel);
-#endif
   cmd.Parse (argc, argv);
   NodeContainer nodes;
   nodes.Create (4);
@@ -96,13 +92,10 @@ main (int argc, char *argv[])
   Simulator::Schedule (Seconds (0.0), &AdvancePosition, nodes.Get (3));
   DceManagerHelper dceManager;
 
-#ifdef KERNEL_STACK
   if (!useKernel)
     {
-#endif
       InternetStackHelper stack;
       stack.Install (nodes);
-#ifdef KERNEL_STACK
     }
   else
     {
@@ -110,7 +103,6 @@ main (int argc, char *argv[])
       LinuxStackHelper stack;
       stack.Install (nodes);
     }
-#endif
 
   PointToPointHelper pointToPoint;
   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
@@ -152,16 +144,13 @@ main (int argc, char *argv[])
   interfaces = address.Assign (devices);
   dceManager.Install (nodes);
 
-#ifdef KERNEL_STACK
   if (!useKernel)
     {
-#endif
       Ipv4StaticRoutingHelper multicast;
       // 2) Set up a default multicast route on the sender n0
       Ptr<Node> sender = nodes.Get (3);
       Ptr<NetDevice> senderIf = sender->GetDevice (1);
       multicast.SetDefaultMulticastRoute (sender, senderIf);
-#ifdef KERNEL_STACK
     }
   else
     {
@@ -177,7 +166,6 @@ main (int argc, char *argv[])
           a.Start (Seconds(0.001));
         }
     }
-#endif
 
   DceApplicationHelper dce;
   ApplicationContainer apps;

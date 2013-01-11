@@ -133,6 +133,8 @@ int main (int argc, char *argv[])
 
   AnimationInterface anim (animFile);
 
+  //anim.StartAnimation ();
+
   Simulator::Stop (Seconds(40.0));
   Simulator::Run ();
   Simulator::Destroy ();

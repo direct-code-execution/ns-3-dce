@@ -301,11 +301,9 @@ def build(bld):
         kernel_source = [
             'model/linux-socket-fd-factory.cc',
             'model/linux-socket-fd.cc',
-            'helper/linux-stack-helper.cc',
             ]
         kernel_headers = [
             'model/linux-socket-fd-factory.h',
-            'helper/linux-stack-helper.h',
             ]
         kernel_includes = [bld.env['KERNEL_STACK']]
     else:
@@ -390,6 +388,7 @@ def build(bld):
         'helper/dce-manager-helper.cc',
         'helper/dce-application-helper.cc',
         'helper/ccn-client-helper.cc',
+        'helper/linux-stack-helper.cc',
         ]
     module_headers = [
         'model/dce-manager.h',
@@ -405,6 +404,7 @@ def build(bld):
         'helper/dce-application-helper.h',
         'helper/ccn-client-helper.h',
         'helper/ipv4-dce-routing-helper.h',
+        'helper/linux-stack-helper.h',
         ]
     module_source = module_source + kernel_source
     module_headers = module_headers + kernel_headers

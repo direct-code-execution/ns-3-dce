@@ -28,26 +28,34 @@ namespace ns3 {
 void
 LinuxStackHelper::Install (Ptr<Node> node)
 {
+#ifdef KERNEL_STACK
   Ipv4Linux::InstallNode (node);
+#endif
 }
 void
 LinuxStackHelper::Install (std::string nodeName)
 {
+#ifdef KERNEL_STACK
   Ptr<Node> node = Names::Find<Node> (nodeName);
   Install (node);
+#endif
 }
 void
 LinuxStackHelper::Install (NodeContainer c)
 {
+#ifdef KERNEL_STACK
   for (NodeContainer::Iterator i = c.Begin (); i != c.End (); ++i)
     {
       Install (*i);
     }
+#endif
 }
 void
 LinuxStackHelper::InstallAll (void)
 {
+#ifdef KERNEL_STACK
   Install (NodeContainer::GetGlobal ());
+#endif
 }
 
 
@@ -55,6 +63,7 @@ void
 LinuxStackHelper::SysctlGetCallback (Ptr<Node> node, std::string path, 
                                      void (*callback)(std::string, std::string))
 {
+#ifdef KERNEL_STACK
   Ptr<LinuxSocketFdFactory> sock = node->GetObject<LinuxSocketFdFactory>();
   if (!sock)
     {
@@ -65,12 +74,14 @@ LinuxStackHelper::SysctlGetCallback (Ptr<Node> node, std::string path,
   std::string value = sock->Get (path);
   callback (path, value);
   return;
+#endif
 }
 
 void
 LinuxStackHelper::SysctlGet (Ptr<Node> node, Time at, std::string path, 
                              void (*callback)(std::string, std::string))
 {
+#ifdef KERNEL_STACK
   Ptr<LinuxSocketFdFactory> sock = node->GetObject<LinuxSocketFdFactory>();
   if (!sock)
     {
@@ -82,10 +93,12 @@ LinuxStackHelper::SysctlGet (Ptr<Node> node, Time at, std::string path,
                                   MakeEvent (&LinuxStackHelper::SysctlGetCallback, 
                                   node, path, callback));
   return;
+#endif
 }
 void
 LinuxStackHelper::SysctlSet (NodeContainer c, std::string path, std::string value)
 {
+#ifdef KERNEL_STACK
   for (NodeContainer::Iterator i = c.Begin (); i != c.End (); ++i)
     {
       Ptr<Node> node = *i;
@@ -98,6 +111,7 @@ LinuxStackHelper::SysctlSet (NodeContainer c, std::string path, std::string valu
                                       MakeEvent (&LinuxSocketFdFactory::Set, sock,
                                                  path, value));
     }
+#endif
 }
 
 } // namespace ns3
