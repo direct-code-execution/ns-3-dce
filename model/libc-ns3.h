@@ -102,6 +102,8 @@ DCE (unsetenv)
 DCE (clearenv)
 NATIVE (qsort)
 DCE (abort)
+DCE (mkstemp)
+DCE (rename)
 
 // STRING.H
 NATIVE (strerror)

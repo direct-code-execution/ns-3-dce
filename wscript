@@ -271,6 +271,10 @@ def build_dce_kernel_examples(module):
                        target='bin/dce-xfrm',
                        source=['example/dce-xfrm.cc'])
 
+    module.add_example(needed = ['core', 'network', 'dce', 'wifi', 'point-to-point', 'csma', 'mobility' ],
+                       target='bin/dce-ltp',
+                       source=['example/dce-ltp.cc'])
+
 # Add a script to build system 
 def build_a_script(bld, name, needed = [], **kw):
     external = [i for i in needed if not i == name]

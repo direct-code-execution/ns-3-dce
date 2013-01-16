@@ -2,6 +2,9 @@
 #include "process.h"
 #include "dce-manager.h"
 #include "utils.h"
+#include "unix-fd.h"
+#include "unix-file-fd.h"
+#include "file-usage.h"
 #include "ns3/log.h"
 #include <errno.h>
 #include <limits.h>
@@ -86,3 +89,48 @@ int dce_atexit (void (*function)(void))
 }
 
 // XXX: run function to runall atexit functions
+int dce_mkstemp (char *temp)
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (current << UtilsGetNodeId ());
+  NS_ASSERT (current != 0);
+
+  std::string fullpath = UtilsGetRealFilePath (temp);
+  NS_LOG_FUNCTION (fullpath);
+  int realFd = mkstemp ((char *)fullpath.c_str ());
+  if (realFd == -1)
+    {
+      current->err = errno;
+      return -1;
+    }
+
+  int fd = UtilsAllocateFd ();
+  if (fd == -1)
+    {
+      current->err = EMFILE;
+      return -1;
+    }
+  UnixFd *unixFd = 0;
+  unixFd = new UnixFileFd (realFd);
+  unixFd->IncFdCount ();
+  current->process->openFiles[fd] = new FileUsage (fd, unixFd);
+  return fd;
+}
+
+int dce_rename(const char *oldpath, const char *newpath)
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (current << UtilsGetNodeId ());
+  NS_ASSERT (current != 0);
+
+  std::string oldFullpath = UtilsGetRealFilePath (oldpath);
+  std::string newFullpath = UtilsGetRealFilePath (newpath);
+
+  int ret = rename (oldFullpath.c_str (), newFullpath.c_str ());
+  if (ret == -1)
+    {
+      current->err = errno;
+      return -1;
+    }
+  return 0;
+}
