@@ -28,6 +28,8 @@ UniformVariable g_firstPid;
 
 NS_OBJECT_ENSURE_REGISTERED (DceManagerHelper);
 
+unsigned long DceManagerHelper::nanoCpt=0;
+
 TypeId 
 DceManagerHelper::GetTypeId (void)
 {
@@ -153,10 +155,10 @@ DceManagerHelper::Install (NodeContainer nodes)
                       oss << '/' ;
                       ia.GetMask ().Print (oss);
                       std::string addrMask = oss.str ();
-                      AddAddress (node,  NanoSeconds (1), deviceName, addrMask);
+                      AddAddress (node,  NanoSeconds (++nanoCpt), deviceName, addrMask);
                       oss.clear (); oss.str ("");
                       oss << "link set " << deviceName << " up arp " <<  ((device->IsPointToPoint())?"off":"on");
-                      RunIp (node, NanoSeconds (2), oss.str () );
+                      RunIp (node, NanoSeconds (++nanoCpt), oss.str () );
                     }
                 }
               // Install static routes.
@@ -290,7 +292,7 @@ DceManagerHelper::AddRoute (Ptr<Node> node, std::string r)
       std::ostringstream oss;
 
       oss << "route add to "<< desti << '/' << mask << " via " << gateway << " metric 1";
-      RunIp (node , NanoSeconds (3), oss.str ());
+      RunIp (node , NanoSeconds (++nanoCpt), oss.str ());
     }
 }
 
@@ -409,6 +411,15 @@ DceManagerHelper::GetProcStatus (void)
     }
 
   return res;
+}
+
+void
+DceManagerHelper::AddRoute (Ptr<Node> node, std::string dest, std::string mask, std::string gateway, int metric)
+{
+  std::ostringstream oss;
+
+  oss << "route add to "<< dest << '/' << mask << " via " << gateway << " metric " << metric;
+  RunIp (node , NanoSeconds (++nanoCpt), oss.str ());
 }
 
 ProcStatus::ProcStatus (int n, int e, int p, int64_t ns, int64_t ne, long rs, long re, double nd, long rd, std::string cmd) :

@@ -73,6 +73,7 @@ public:
   std::string GetVirtualPath () const;
   /* Return a Vector of Finished Process */
   static std::vector<ProcStatus> GetProcStatus (void);
+  void AddRoute (Ptr<Node> node, std::string dest, std::string mask, std::string gateway, int metric);
 
 private:
   static void RunIp (Ptr<Node> node, Time at, std::string str);
@@ -87,6 +88,7 @@ private:
   ObjectFactory m_networkStackFactory;
   ObjectFactory m_delayFactory;
   std::string m_virtualPath;
+  static unsigned long nanoCpt;
 };
 
 } // namespace ns3
