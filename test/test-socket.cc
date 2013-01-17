@@ -446,11 +446,8 @@ void test_netlink (void)
 
 int main (int argc, char *argv[])
 {
-#ifdef FIXME
-  /* Not working at this moment (12/06/22) */
   test_raw ();
   test_raw6 ();
-#endif
   test_udp ();
   test_tcp ();
   test_netlink ();

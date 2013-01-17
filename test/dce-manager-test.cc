@@ -183,7 +183,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
       {  "test-poll", 3200, "", true },
       {  "test-tcp-socket", 320, "", true },
       {  "test-exec", 0, "" , false, true},
-      /* {  "test-raw-socket", 320, "", true },*/
+      {  "test-raw-socket", 320, "", true },
       {  "test-iperf", 0, "" , false},
       {  "test-name", 0, "" , false},
       {  "test-pipe", 0, "" , false},
