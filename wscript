@@ -267,6 +267,10 @@ def build_dce_kernel_examples(module):
                        source=['example/ccnx/dce-ccnd-linear-multiple.cc', 'example/ccnx/misc-tools.cc'])
                        
 
+    module.add_example(needed = ['core', 'network', 'dce', 'point-to-point'], 
+                       target='bin/dce-xfrm',
+                       source=['example/dce-xfrm.cc'])
+
 # Add a script to build system 
 def build_a_script(bld, name, needed = [], **kw):
     external = [i for i in needed if not i == name]
