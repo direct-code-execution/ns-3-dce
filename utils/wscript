@@ -8,8 +8,7 @@ def build(bld):
 	linkerpath = os.path.abspath (bld.env.PREFIX + '/lib/ldso')
 	bld.program(source='dce-runner.c', target='../bin/dce-runner',
 	 cflags = [ '-fPIC'], linkflags  = ['-pie','-ldl','-Wl,--dynamic-linker=' + linkerpath ] )
-        bld.install_files(os.path.join('${PREFIX}', 'bin'), '../bin/dce-runner')
-
+        bld.install_files(os.path.join('${PREFIX}', 'bin'), '../bin/dce-runner', chmod=0755)
 
 
 

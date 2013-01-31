@@ -13,5 +13,5 @@ UCON='--ns3::TaskManager::FiberManagerType=UcontextFiberManager'
 CPLD='--ns3::DceManagerHelper::LoaderFactory=ns3::CopyLoaderFactory[]'
 DLLD='--ns3::DceManagerHelper::LoaderFactory=ns3::DlmLoaderFactory[]'
 COLD='--ns3::DceManagerHelper::LoaderFactory=ns3::CoojaLoaderFactory[]'
-export LD_LIBRARY_PATH PKG_CONFIG_PATH DCE_PATH DCE_ROOT DCE_PATH
+export LD_LIBRARY_PATH PKG_CONFIG_PATH DCE_PATH DCE_ROOT DCE_PATH BASEDCE
 cd $BASEDCE
