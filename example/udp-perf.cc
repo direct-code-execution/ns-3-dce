@@ -14,6 +14,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <math.h>
+#include <poll.h>
 
 extern long long int llrintl(long double x);
 extern long int lrintl(long double x);
@@ -49,7 +50,7 @@ static void set_txbuf_size (int fd, int buffer_size)
 #endif
 
 static void run_client (int to_port, const char *to_ip, int pkt_size, 
-			long long bytes_per_second)
+			long long bytes_per_second, int dur, int nodes, long long bw)
 {
   int fd = socket (AF_INET, SOCK_DGRAM, 0);
   if (fd == -1)
@@ -119,6 +120,8 @@ static void run_client (int to_port, const char *to_ip, int pkt_size,
   int64_t sent = 0, total_misses = 0, snd_skipped = 0;
   int expires = 0;
   uint64_t last_print_time = current_time ();
+  int cpt=0;
+  long total = 0;
   while (true)
     {
       uint64_t current = current_time ();
@@ -126,6 +129,18 @@ static void run_client (int to_port, const char *to_ip, int pkt_size,
 	{
 	  last_print_time = current;
 	  //printf("Timer misses: %ld, skipped sends: %ld\n", total_misses, snd_skipped);
+	  if (dur > 0)
+	    {
+	      cpt++;
+	      if (cpt>=dur)
+	        {
+	          printf("duration %d, total write %ld total packets %ld\n", dur, total, sent);
+	          FILE *f = fopen ("client.txt","a");
+	          fprintf(f, "%lld %d %ld\n",bw, nodes, sent);
+	          fclose (f);
+	          exit (0);
+	        }
+	    }
 	}
       uint64_t skipped;
       ssize_t bytes_read;
@@ -148,6 +163,7 @@ static void run_client (int to_port, const char *to_ip, int pkt_size,
 		  perror("sentto");
 		  exit(1);
 	  }
+	  total+=written;
 	  sent++;
 	}
     }
@@ -178,7 +194,7 @@ static uint64_t current_time (void)
   return current_time;
 }
 
-static void run_server (int port)
+static void run_server (int port, int dur, int nodes, long long bytes_per_second)
 {
   int fd = socket (AF_INET, SOCK_DGRAM, 0);
   if (fd == -1)
@@ -201,6 +217,9 @@ static void run_server (int port)
   uint64_t last_print_time = current_time ();
   int64_t total_received = 0, total_reads = 0;
   int64_t buffer_size = 1 << 17;
+  uint64_t total_packet = 0;
+  int cpt = 0;
+
   char *buffer = (char*)malloc (buffer_size);
   while (true)
     {
@@ -208,17 +227,50 @@ static void run_server (int port)
       if (current > last_print_time + 1000000)
 	{
 	  last_print_time = current;
+	  full_total += total_received;
+	  int64_t q = total_reads;
+	  if (q == 0) q = 1;
 	  printf ("received=%lld bytes, %lld reads (@%lld bytes) %llu\n",
 		  (signed long long) total_received, 
 		  (signed long long) total_reads,
-		  (signed long long) (total_received / total_reads),
+		  (signed long long) (total_received / q),
 		  (unsigned long long) full_total);
-	  full_total += total_received;
+
 	  total_received = total_reads = 0;
+	  if (dur > 0)
+	    {
+	      cpt++;
+	      if (cpt>dur)
+	        {
+	          printf("duration %d, total read %ld total packet %ld\n", dur, full_total, total_packet);
+	          FILE *f = fopen ("server.txt","a");
+	          fprintf(f, "%lld %d %ld\n",bytes_per_second, nodes, total_packet);
+	          fclose (f);
+	          exit (0);
+	        }
+	    }
 	}
-      ssize_t received = recvfrom (fd, buffer, buffer_size, 0, 0, 0);
-      total_reads++;
-      total_received += received;
+      int r = 1;
+      if (dur > 0)
+        {
+          struct pollfd p = { fd, POLLIN, 0 };
+          int t = dur - cpt;
+          if (t <= 0)
+            {
+              t = 1;
+            }
+          r = poll (&p, 1, t * 1000);
+        }
+      if (1 == r)
+        {
+          ssize_t received = recvfrom (fd, buffer, buffer_size, 0, 0, 0);
+          if (received > 0)
+            {
+              total_reads++;
+              total_packet++;
+              total_received += received;
+            }
+        }
     }
   free (buffer);
 
@@ -235,6 +287,8 @@ int main (int argc, char *argv[])
   long long bytes_per_second = 1000000;
   int pkt_size = 1500;
   int port = 5000;
+  int nodes = 0;
+  int duration = 0;
   const char *to_ip = "127.0.0.1";
   bool client = false;
   char **arg = argv;
@@ -243,6 +297,8 @@ int main (int argc, char *argv[])
       CHECK_INT_ARG(*arg, "pktsize", pkt_size);
       CHECK_LLINT_ARG(*arg, "bandwidth", bytes_per_second);
       CHECK_INT_ARG(*arg, "port", port);
+      CHECK_INT_ARG(*arg, "nodes", nodes);
+      CHECK_INT_ARG(*arg, "duration", duration);
       CHECK_STR_ARG(*arg, "host", to_ip);
       if (strcmp (*arg, "--client") == 0)
 	{
@@ -253,11 +309,11 @@ int main (int argc, char *argv[])
   setlinebuf(stdout);
   if (client)
     {
-      run_client (port, to_ip, pkt_size, bytes_per_second);
+      run_client (port, to_ip, pkt_size, bytes_per_second/8.5, duration, nodes, bytes_per_second);
     }
   else
     {
-      run_server (port);
+      run_server (port, duration, nodes, bytes_per_second);
     }
 
   return 0;

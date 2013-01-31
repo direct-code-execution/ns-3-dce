@@ -3,6 +3,7 @@
 #include "ns3/point-to-point-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/network-module.h"
+#include "ns3/data-rate.h"
 
 using namespace ns3;
 
@@ -20,9 +21,11 @@ int main (int argc, char *argv[])
   std::string rate = "5Mbps";
   uint32_t nHops = 1;
   CommandLine cmd;
+  bool useKernel = 1;
   cmd.AddValue ("Delay", "link delay", delay);
   cmd.AddValue ("Bandwidth", "link bandwidth", rate);
   cmd.AddValue ("nHops", "number of hops between source and destination", nHops);
+  cmd.AddValue ("kernel", "Use kernel linux IP stack.", useKernel);
   cmd.Parse (argc, argv);
 
   NodeContainer nodes;
@@ -41,10 +44,19 @@ int main (int argc, char *argv[])
       devs.push_back (dev);
     }
 
-  // add an ip stack
-  InternetStackHelper stack;
-  //stack.SetTcp ("ns3::NscTcpL4Protocol", "Library", StringValue ("liblinux2.6.26.so"));
-  stack.Install (nodes);
+  DceManagerHelper dceManager;
+
+  if (!useKernel)
+    {
+      InternetStackHelper stack;
+      stack.Install (nodes);
+      }
+  else
+    {
+      dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
+      LinuxStackHelper stack;
+      stack.Install (nodes);
+    }
 
   // ip address assignment
   Ipv4AddressHelper ipv4;
@@ -58,37 +70,132 @@ int main (int argc, char *argv[])
     }
 
   // setup ip routes
-  Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+ // Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 
 
   // start the ping binaries.
-  DceManagerHelper processManager;
-  processManager.Install (nodes);
+  dceManager.Install (nodes);
+
+  Ipv4Address serverAddress = interfaces[nHops-1].GetAddress (1, 0);
+  Ipv4Address clientAddress = interfaces[0].GetAddress (0, 0);
+
+  if (useKernel)
+    {
+      // Set the routes
+      for (int n=0; n < nHops + 1; n++)
+        {
+          if (n < nHops )
+            {
+              Ipv4Address monte = interfaces[n].GetAddress (0, 0);
+              dceManager.AddRoute (nodes.Get (n), Ipv4AddressToString (serverAddress), "255.255.255.255", Ipv4AddressToString (monte), 1);
+            }
+          if (n > 1)
+            {
+              Ipv4Address desc = interfaces[n-1].GetAddress (1, 0);
+              dceManager.AddRoute (nodes.Get (n), Ipv4AddressToString (clientAddress), "255.255.255.255", Ipv4AddressToString (desc), 1);
+            }
+        }
+    }
+  else
+    {
+      Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+    }
+
   DceApplicationHelper process;
   process.SetStackSize (1<<16);
   ApplicationContainer apps;
 
   Ptr<Node> serverNode = nodes.Get (nHops);
   Ptr<Node> clientNode = nodes.Get (0);
-  Ipv4Address serverAddress = interfaces[nHops-1].GetAddress (1, 0);
+  //Ipv4Address serverAddress = interfaces[nHops-1].GetAddress (1, 0);
+
+  std::ostringstream oss;
 
   process.SetBinary ("udp-perf");
+  process.AddArgument ("--duration=10");
+  oss << "--nodes=" << (nHops+1);
+  process.AddArgument (oss.str().c_str ());
   apps = process.Install (serverNode);
   apps.Start (Seconds (1.0));
 
   process.SetBinary ("udp-perf");
   process.ResetArguments ();
   process.AddArgument ("--client");
-  process.AddArgument (Ipv4AddressToString (serverAddress));
+  process.AddArgument (oss.str().c_str ());
+  oss.clear ();
+  oss.str ("");
+  oss << "--host=" << Ipv4AddressToString (serverAddress);
+  process.AddArgument (oss.str().c_str ());
+  oss.clear ();
+  oss.str ("");
+  oss << "--bandwidth=" << DataRate (rate).GetBitRate ();
+  process.AddArgument (oss.str().c_str ());
+  process.AddArgument ("--duration=10");
   apps = process.Install (clientNode);
   apps.Start (Seconds (2.0));
 
   //PointToPointHelper::EnablePcapAll ("process-iperf");
 
-  Simulator::Stop (Seconds (10.0));
+  Simulator::Stop (Seconds (14.0));
   Simulator::Run ();
-  Simulator::Destroy ();
 
+  std::vector <ProcStatus> v = dceManager.GetProcStatus ();
+
+  for (std::vector <ProcStatus>::iterator i = v.begin (); i != v.end () ; ++i)
+    {
+      ProcStatus st = *i;
+      const char *interest = "udp-perf";
+      if (st.GetCmdLine().compare(0, strlen (interest), interest) == 0)
+        {
+          if ( 0 != st.GetNode () )
+            {
+              // This is the server
+              char stdoutname[1024];
+              sprintf (stdoutname, "files-%d/var/log/%d/stdout", st.GetNode (), st.GetPid ());
+              FILE *f = fopen (stdoutname,"r");
+              char tmp[1024];
+              int l = fread (tmp, 1, sizeof (tmp), f);
+              tmp[l]=0;
+              fclose (f);
+              unsigned long pn=0;
+              l--;
+              // Seek the last number must be the total packet number.
+              int lvl=1;
+              while ( (l>=0) && (!isdigit(tmp[l]))) { l--; }
+              while ( (l>=0) && (isdigit(tmp[l])))
+                {
+                  pn += lvl * (tmp[l]-'0');
+                  lvl *= 10;
+                  l--;
+                }
+              std::cout << "Packet Number:" << pn << std::endl;
+              std::cout << "Real duration : " << st.GetRealDuration() << std::endl;
+
+              long theoric = (long) (DataRate (rate).GetBitRate ())/8.5; // (long) (DataRate (rate).GetBitRate ())/8.192F;
+
+              std::cout <<  "DataRate:" << theoric << std::endl;
+              if (st.GetRealDuration () > 0)
+                {
+                  // Packets / seconds
+                  unsigned long pps = pn/st.GetRealDuration();
+                  unsigned long Bps = pn * 1500 / st.GetRealDuration();
+                  std::cout << "Packets / second :" << pps << std::endl;
+                  std::cout << "Bytes / second" << Bps << std::endl;
+                  float rapport = (float)Bps / (float)theoric;
+                  std::cout << "Ratio : " << rapport << std::endl;
+                }
+              if (st.GetRealDuration () <= 10)
+                {
+                  std::cout << "OK " << pn << " TAKE LESS OR EQUAL TIME"  << std::endl;
+                }
+              else
+                {
+                  std::cout << "KO " << pn << " TAKE MORE TIME THAT REALITY"  << std::endl;
+                }
+            }
+        }
+    }
+  Simulator::Destroy ();
 
   return 0;
 }
