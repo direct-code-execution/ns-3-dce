@@ -11,6 +11,7 @@
 #include "sim/include/sim-init.h"
 #include "ns3/log.h"
 #include "ns3/string.h"
+#include "ns3/double.h"
 #include "ns3/node.h"
 #include "ns3/net-device.h"
 #include "ns3/random-variable.h"
@@ -68,7 +69,16 @@ LinuxSocketFdFactory::GetTypeId (void)
     .AddAttribute ("Library", "File to load in memory",
                    StringValue ("liblinux.so"),
                    MakeStringAccessor (&LinuxSocketFdFactory::m_library),
-                   MakeStringChecker ());
+                   MakeStringChecker ())
+    .AddAttribute ("ErrorRate", "The error rate of malloc().",
+                   DoubleValue (DoubleValue (0.0)),
+                   MakeDoubleAccessor (&LinuxSocketFdFactory::m_rate),
+                   MakeDoubleChecker<double> ())
+    .AddAttribute ("RanVar", "The decision variable attached to this error model.",
+                   RandomVariableValue (UniformVariable (0.0, 1.0)),
+                   MakeRandomVariableAccessor (&LinuxSocketFdFactory::m_ranvar),
+                   MakeRandomVariableChecker ())
+    ;
   return tid;
 }
 LinuxSocketFdFactory::LinuxSocketFdFactory ()
@@ -122,6 +132,13 @@ void *
 LinuxSocketFdFactory::Malloc (struct SimKernel *kernel, unsigned long size)
 {
   LinuxSocketFdFactory *self = (LinuxSocketFdFactory *)kernel;
+  if (self->m_ranvar.GetValue () < self->m_rate)
+    {
+      NS_LOG_DEBUG ("return null");
+      // Inject fault
+      return NULL;
+    }
+
   size += sizeof (size_t);
   uint8_t *buffer = self->m_alloc->Malloc (size);
   memcpy (buffer, &size, sizeof (size_t));

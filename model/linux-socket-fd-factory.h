@@ -135,6 +135,8 @@ private:
   FILE *m_logFile;
   std::list<std::pair<std::string,std::string> > m_earlySysfs;
   std::vector<Ptr<LinuxDeviceStateListener > > m_listeners;
+  double m_rate;
+  RandomVariable m_ranvar;
 };
 
 } // namespace ns3
