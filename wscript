@@ -63,7 +63,10 @@ def configure(conf):
       #  conf.check()
         conf.env['KERNEL_STACK'] = Options.options.kernel_stack
         conf.env.append_value ('DEFINES', 'KERNEL_STACK=Y')
-        
+
+    conf.env['ENABLE_PYTHON_BINDINGS'] = True
+    conf.env['EXAMPLE_DIRECTORIES'] = '.'
+    conf.env['NS3_ENABLED_MODULES'] = []
     conf_myscripts(conf)
     
     conf.recurse(os.path.join('utils'))
@@ -303,6 +306,12 @@ def conf_myscripts(conf):
 
 	
 def build(bld):    
+    bld.env['NS3_MODULES_WITH_TEST_LIBRARIES'] = []
+    bld.env['NS3_ENABLED_MODULE_TEST_LIBRARIES'] = []
+    bld.env['NS3_SCRIPT_DEPENDENCIES'] = []
+    bld.env['NS3_RUNNABLE_PROGRAMS'] = []
+    bld.env['NS3_RUNNABLE_SCRIPTS'] = []
+
     build_netlink(bld)
 
     if bld.env['KERNEL_STACK']:
@@ -483,3 +492,16 @@ def build(bld):
                          '-Wl,-soname=librt.so.1'])
 
     bld.add_subdirs(['utils'])
+
+    # Write the build status file.
+    build_status_file = os.path.join(bld.out_dir, 'build-status.py')
+    out = open(build_status_file, 'w')
+    out.write('#! /usr/bin/env python\n')
+    out.write('\n')
+    out.write('# Programs that are runnable.\n')
+    out.write('ns3_runnable_programs = ' + str(bld.env['NS3_RUNNABLE_PROGRAMS']) + '\n')
+    out.write('\n')
+    out.write('# Scripts that are runnable.\n')
+    out.write('ns3_runnable_scripts = ' + str(bld.env['NS3_RUNNABLE_SCRIPTS']) + '\n')
+    out.write('\n')
+    out.close()

@@ -13,3 +13,6 @@ glob:**/files-*
 ^ccnx-*
 ^doc/build
 ^NetAnim
+\.pyc$
+testpy-output
+

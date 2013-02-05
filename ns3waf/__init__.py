@@ -419,6 +419,7 @@ class Module:
         _build_headers(bld, name, kw.get('headers'))
         _build_pkgconfig(bld, name, kw.get('use', []))
     def add_example(self, needed = [], **kw):
+        import os
         if not self._needed_ok:
             return
         if not self._bld.env['NS3_ENABLE_EXAMPLES']:
@@ -430,6 +431,10 @@ class Module:
         if 'features' not in kw:
             kw['features'] = 'cxx cxxprogram'
         self._bld(**kw)
+        if kw['target'].find("bin_dce") == -1:
+            object_name = "%s" % (kw['target'])
+            object_name = os.path.basename(object_name)
+            self._bld.env.append_value('NS3_RUNNABLE_PROGRAMS', object_name)
 
     def add_runner_test(self, needed = [], name = None, **kw):
         import os
@@ -453,6 +458,11 @@ int main (int argc, char *argv[])
         os.close(handle)
         kw['source'] = kw['source'] + [os.path.relpath(filename, self._bld.bldnode.abspath())]
         self.add_test(needed, **kw)
+
+        if kw['target'].find("bin_dce") == -1:
+            object_name = "%s" % (kw['target'])
+            object_name = os.path.basename(object_name)
+            self._bld.env.append_value('NS3_RUNNABLE_PROGRAMS', object_name)
 
     def add_test(self, needed = [], **kw):
         if not self._needed_ok:
