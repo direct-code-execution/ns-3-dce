@@ -37,7 +37,7 @@ cpp_examples = [
     ("dce-mt2 --kernel=1", "True", "True"),
     ("dce-mt3 --kernel=1", "True", "True"),
     ("dce-xfrm", "True", "True"),
-    ("dce-ltp", "True", "True"),
+#    ("dce-ltp", "True", "True"),
 ]
 
 # A list of Python examples to run in order to ensure that they remain
