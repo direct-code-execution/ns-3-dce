@@ -594,11 +594,7 @@ def make_paths():
         + os.path.join (NS3_BUILDDIR, "bin") + ":" \
         + os.path.join (NS3_PREFIX_DIR, "lib") + ":" \
         + os.path.join (NS3_PREFIX_DIR, "sbin") + ":" \
-        + os.path.join (NS3_PREFIX_DIR, "bin")
-    os.environ["DCE_PATH"] =  os.path.join (NS3_BUILDDIR, "bin_dce") + ":" \
-        + os.path.join (NS3_BUILDDIR, "bin") + ":" \
-        + os.path.join (NS3_PREFIX_DIR, "lib") + ":" \
-        + os.path.join (NS3_PREFIX_DIR, "sbin") + ":" \
+        + os.path.join (NS3_PREFIX_DIR, "bin_dce") + ":" \
         + os.path.join (NS3_PREFIX_DIR, "bin")
 
     os.environ["NS_ATTRIBUTE_DEFAULT"] = "ns3::DceManagerHelper::LoaderFactory=ns3::DlmLoaderFactory[];" \
@@ -654,6 +650,7 @@ def make_paths():
         os.environ["LD_LIBRARY_PATH"] += ":" + dce_ldlibpath
         if options.verbose:
             print "os.environ[\"LD_LIBRARY_PATH\"] == %s" % os.environ["LD_LIBRARY_PATH"]
+        os.environ["DCE_PATH"] = os.environ["LD_LIBRARY_PATH"]
 
 #
 # Short note on generating suppressions:
@@ -1368,7 +1365,7 @@ def run_tests():
                     test_name = os.path.basename(test_name)
 
                     # set dce-runner path
-                    dce_runner_path = os.path.join (NS3_BUILDDIR, 'bin', 'dce-runner')
+                    dce_runner_path = os.path.join (os.path.dirname(os.path.abspath(__file__)), 'build', 'bin', 'dce-runner')
 
                     # Don't try to run this example if it isn't runnable.
                     if test_name in ns3_runnable_programs:
@@ -1405,7 +1402,7 @@ def run_tests():
             print "Example %s is not runnable." % example_name
         else:
             # set dce-runner path
-            dce_runner_path = os.path.join (NS3_BUILDDIR, 'bin', 'dce-runner')
+            dce_runner_path = os.path.join (os.path.dirname(os.path.abspath(__file__)), 'build', 'bin', 'dce-runner')
 
             #
             # If you tell me to run an example, I will try and run the example

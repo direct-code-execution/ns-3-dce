@@ -57,7 +57,7 @@ int main (int argc, char *argv[])
   //  processManager.SetLoader ("ns3::CopyLoaderFactory");
   processManager.SetTaskManagerAttribute ("FiberManagerType",
                                           StringValue ("UcontextFiberManager"));
-  processManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("libsim-linux.so"));
+  processManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
   LinuxStackHelper stack;
   stack.Install (nodes);
 
