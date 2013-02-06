@@ -552,10 +552,17 @@ def read_waf_config():
         if line.startswith("out_dir ="):
             key, val = line.split('=')
             out_dir = eval(val.strip())
+        if line.startswith("options ="):
+            import ast
+            key, table = line.split('= ')
+            table = ast.literal_eval(table)
+            prefix_dir = table['prefix']
     global NS3_BASEDIR
     NS3_BASEDIR = top_dir
     global NS3_BUILDDIR
     NS3_BUILDDIR = out_dir
+    global NS3_PREFIX_DIR
+    NS3_PREFIX_DIR = prefix_dir
     for line in open("%s/c4che/_cache.py" % out_dir).readlines():
         for item in interesting_config_items:
             if line.startswith(item):
@@ -585,12 +592,14 @@ def make_paths():
     dce_ldlibpath = ""
     dce_ldlibpath += os.path.join (NS3_BUILDDIR, "lib") + ":" \
         + os.path.join (NS3_BUILDDIR, "bin") + ":" \
-        + os.path.join (NS3_BASEDIR, "..", "build", "lib") + ":" \
-        + os.path.join (NS3_BASEDIR, "..", "build", "bin")
+        + os.path.join (NS3_PREFIX_DIR, "lib") + ":" \
+        + os.path.join (NS3_PREFIX_DIR, "sbin") + ":" \
+        + os.path.join (NS3_PREFIX_DIR, "bin")
     os.environ["DCE_PATH"] =  os.path.join (NS3_BUILDDIR, "bin_dce") + ":" \
         + os.path.join (NS3_BUILDDIR, "bin") + ":" \
-        + os.path.join (NS3_BASEDIR, "..", "build", "bin") + ":" \
-        + os.path.join (NS3_BASEDIR, "..", "build", "sbin")
+        + os.path.join (NS3_PREFIX_DIR, "lib") + ":" \
+        + os.path.join (NS3_PREFIX_DIR, "sbin") + ":" \
+        + os.path.join (NS3_PREFIX_DIR, "bin")
 
     os.environ["NS_ATTRIBUTE_DEFAULT"] = "ns3::DceManagerHelper::LoaderFactory=ns3::DlmLoaderFactory[];" \
         "ns3::TaskManager::FiberManagerType=UcontextFiberManager"
