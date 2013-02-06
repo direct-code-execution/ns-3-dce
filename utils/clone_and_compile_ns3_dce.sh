@@ -101,6 +101,5 @@ fi
 ./waf
 ./waf install
 export LD_LIBRARY_PATH=$SAVE_LDLP:`pwd`/build/lib:`pwd`/build/bin:`pwd`/../build/lib
-. utils/setenv.sh
 echo Launch NS3TEST-DCE
-./build/bin/ns3test-dce --verbose
+./waf --run "ns3test-dce --verbose"

@@ -6,6 +6,8 @@ import os.path
 import ns3waf
 import sys
 import types
+# local modules
+import wutils
 
 def options(opt):
     opt.tool_options('compiler_cc') 
@@ -22,6 +24,26 @@ def options(opt):
                    help=('Enable use of DCE and NS-3 optimized compilation'),
                    dest='enable_opt', action='store_true',
                    default=False)    
+    opt.add_option('--cwd',
+                   help=('Set the working directory for a program.'),
+                   action="store", type="string", default=None,
+                   dest='cwd_launch')
+    opt.add_option('--command-template',
+                   help=('Template of the command used to run the program given by --run;'
+                         ' It should be a shell command string containing %s inside,'
+                         ' which will be replaced by the actual program.'),
+                   type="string", default=None, dest='command_template')
+    opt.add_option('--run',
+                   help=('Run a locally built program; argument can be a program name,'
+                         ' or a command starting with the program name.'),
+                   type="string", default='', dest='run')
+    opt.add_option('--visualize',
+                   help=('Modify --run arguments to enable the visualizer'),
+                   action="store_true", default=False, dest='visualize')
+    opt.add_option('--valgrind',
+                   help=('Change the default command template to run programs and unit tests with valgrind'),
+                   action="store_true", default=False,
+                   dest='valgrind')
                                   
 def search_file(files):
     for f in files:
@@ -30,11 +52,13 @@ def search_file(files):
     return None
 
 def configure(conf):
+    os.environ['PKG_CONFIG_PATH'] = os.path.join(conf.env.PREFIX, 'lib', 'pkgconfig')
     ns3waf.check_modules(conf, ['core', 'network', 'internet'], mandatory = True)
     ns3waf.check_modules(conf, ['point-to-point', 'tap-bridge', 'netanim'], mandatory = False)
     ns3waf.check_modules(conf, ['wifi', 'point-to-point', 'csma', 'mobility'], mandatory = False)
     ns3waf.check_modules(conf, ['point-to-point-layout'], mandatory = False)
     ns3waf.check_modules(conf, ['mpi'], mandatory = False)
+    ns3waf.check_modules(conf, ['visualizer'], mandatory = False)
     conf.check_tool('compiler_cc')
     conf.check(header_name='stdint.h', define_name='HAVE_STDINT_H', mandatory=False)
     conf.check(header_name='inttypes.h', define_name='HAVE_INTTYPES_H', mandatory=False)
@@ -305,6 +329,11 @@ def conf_myscripts(conf):
              conf.recurse(os.path.join('myscripts', dir))
 
 	
+def _get_all_task_gen(self):
+    for group in self.groups:
+        for taskgen in group:
+            yield taskgen
+
 def build(bld):    
     bld.env['NS3_MODULES_WITH_TEST_LIBRARIES'] = []
     bld.env['NS3_ENABLED_MODULE_TEST_LIBRARIES'] = []
@@ -505,3 +534,63 @@ def build(bld):
     out.write('ns3_runnable_scripts = ' + str(bld.env['NS3_RUNNABLE_SCRIPTS']) + '\n')
     out.write('\n')
     out.close()
+
+    wutils.bld = bld
+    bld.__class__.all_task_gen = property(_get_all_task_gen)
+    Options.cwd_launch = bld.path.abspath()
+    if Options.options.run:
+        # Check that the requested program name is valid
+        program_name, dummy_program_argv = wutils.get_run_program(Options.options.run, wutils.get_command_template(bld.env))
+
+        # When --run'ing a program, tell WAF to only build that program,
+        # nothing more; this greatly speeds up compilation when all you
+        # want to do is run a test program.
+        Options.options.targets += ',' + os.path.basename(program_name)
+        if getattr(Options.options, "visualize", False):
+            program_obj = wutils.find_program(program_name, bld.env)
+            program_obj.use.append('NS3_VISUALIZER')
+        for gen in bld.all_task_gen:
+            if type(gen).__name__ in ['task_gen', 'ns3header_taskgen', 'ns3moduleheader_taskgen']:
+                gen.post()
+        bld.env['PRINT_BUILT_MODULES_AT_END'] = False 
+
+from waflib import Context, Build
+class Ns3ShellContext(Context.Context):
+    """run a shell with an environment suitably modified to run locally built programs"""
+    cmd = 'shell'
+
+    def execute(self):
+
+        # first we execute the build
+	bld = Context.create_context("build")
+	bld.options = Options.options # provided for convenience
+	bld.cmd = "build"
+	bld.execute()
+
+        # Set this so that the lists won't be printed when the user
+        # exits the shell.
+        bld.env['PRINT_BUILT_MODULES_AT_END'] = False
+
+        if sys.platform == 'win32':
+            shell = os.environ.get("COMSPEC", "cmd.exe")
+        else:
+            shell = os.environ.get("SHELL", "/bin/sh")
+
+        env = bld.env
+        os_env = {
+            'NS3_MODULE_PATH': os.pathsep.join(env['NS3_MODULE_PATH']),
+            'NS3_EXECUTABLE_PATH': os.pathsep.join(env['NS3_EXECUTABLE_PATH']),
+            }
+        wutils.run_argv([shell], env, os_env)
+
+def shutdown(ctx):
+    bld = wutils.bld
+    if wutils.bld is None:
+        return
+    env = bld.env
+
+    if Options.options.run:
+        wutils.run_program(Options.options.run, env, wutils.get_command_template(env),
+                           visualize=Options.options.visualize)
+        raise SystemExit(0)
+

@@ -73,8 +73,6 @@ Below you will find the main directories:
 DCE Configuration Environment
 =============================
 
-In order to use DCE you should configure some environments variables, some of them are the standards paths where to find executables and dynamic libraries, other are DCE specifics. The following script do the job for you: *ns-3-dce/utils/setenv.sh*, so you should call this script prior to use DCE.
-
 The DCE specifics variables are essentially two PATH like variables: so within them you may put paths separated by ':' character.
 
 **DCE_PATH** is used by DCE to find the executable you want to launch within NS-3 simulated network. This variable is used when you reference the executable using a relative form like 'ping'.
@@ -163,13 +161,13 @@ The directory named ``myscripts`` is a good place to place your scripts. To crea
 Compile a Script
 ================
 
-To compile simply execute the command waf. The result must be under the directory named ``build/bin/myscripts/foo/bar`` where **foo** is your directory and **bar** your executable according to the content of your ``wscript`` file. **note** you should not forget to set environment variables using the ``setenv.sh`` script located in the ``utils`` directory.
+To compile simply execute the command waf. The result must be under the directory named ``build/bin/myscripts/foo/bar`` where **foo** is your directory and **bar** your executable according to the content of your ``wscript`` file. 
 
 
 Launch a Script
 ===============
 
-Simply launch your script like any other program. If it does not work you may have forgotten to place the environment variables using the ``setenv.sh`` script located in the ``utils`` directory.
+Simply launch your script like any other program. 
 
 
 Results

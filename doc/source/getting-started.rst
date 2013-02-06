@@ -118,15 +118,6 @@ Where:
 
  6. *iproute2-2.6.33* (only in advanced mode) contains source of *ip* tool needed to be compiled for DCE in order to configure ip routes of the slave kernel used by DCE.
 
-Setting Environnement
-*********************
-
-Call the setenv.sh script to correctly setup the environment variables (i.e., PATH, LD_LIBRARY_PATH and PKG_CONFIG_PATH)
-
-::
-
-  $ source ns-3-dce/utils/setenv.sh
-
 Examples
 ********
 
@@ -308,12 +299,6 @@ Then you should start the make like this:
 
   $ make MORE_LDLIBS=-pie
 
-You should also install the ccn binaries in a directory present in the DCE_PATH environment variable, by default after you execute the DCE *setenv.sh* script your should have a DCE_PATH env. var like this :
-
-::
-
-  $ echo $DCE_PATH
-  /where/is/ns-3-dce/build/bin_dce:/where/is/ns-3-dce/build/bin:/where/is/ns-3-dce/../build/bin
 
 CCNx installation example
 +++++++++++++++++++++++++
@@ -333,7 +318,6 @@ Before using it within DCE we will do a little test in real world.  For this we 
 
 ::
  
-  $ source /where/is/ns-3-dce/utils/setenv.sh
   $ pwd
   /where/is/ns-3-dce/  
   $ cd build/bin
@@ -389,8 +373,7 @@ This simulation launches a *ccnd* daemon, publishes a file using *ccnput* and re
 
 ::
 
-  $ . ./ns-3-dce/utils/setenv.sh
-  $ ./build/bin/dce-ccnd-simple --cv=6
+  $ ./waf --run dce-ccnd-simple --cv=6
 
 Verify the status of execution:
 
