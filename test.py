@@ -76,7 +76,7 @@ PYTHON = ""
 # This will be given a prefix and a suffix when the waf config file is
 # read.
 #
-test_runner_name = "ns3dce-test-vdl"
+test_runner_name = "ns3test-dce-vdl"
 
 #
 # If the user has constrained us to run certain kinds of tests, we can tell waf
@@ -1798,7 +1798,7 @@ def main(argv):
                       metavar="XML-FILE",
                       help="write detailed test results into XML-FILE.xml")
 
-    parser.add_option("-z", "--runner_name", action="store", type="string", dest="test_runner_name", default="ns3dce-test-vdl",
+    parser.add_option("-z", "--runner_name", action="store", type="string", dest="test_runner_name", default="ns3test-dce-vdl",
                       help="specify runner program name")
 
     global options

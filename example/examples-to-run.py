@@ -35,7 +35,7 @@ cpp_examples = [
     ("dce-ping-mt1 --kernel=1", "True", "True"),
     ("dce-mt2 --kernel=1", "True", "True"),
     ("dce-mt3 --kernel=1", "True", "True"),
-    ("dce-xfrm", "True", "True"),
+    ("dce-xfrm", "False", "False"),
 #    ("dce-ltp", "True", "True"),
 ]
 
