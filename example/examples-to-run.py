@@ -32,7 +32,6 @@ cpp_examples = [
     ("dce-ns3-onoff --rate=10kbps --proto=dccp -ccid=3", "True", "True"),
     ("dce-tcp-ns3-nsc-comparison", "True", "True"), 
     ("dce-tcp-ns3-nsc-comparison --stack=dce", "True", "True"),
-    ("dce-dccp", "True", "True"),
     ("dce-ping-mt1 --kernel=1", "True", "True"),
     ("dce-mt2 --kernel=1", "True", "True"),
     ("dce-mt3 --kernel=1", "True", "True"),
