@@ -39,10 +39,10 @@ int main (int argc, char *argv[])
       ssize_t n;
       n = read (sock, buf, 1024);
       if (n == -1 && errno == EINTR)
-	{
-	  std::cout << "timer interrupted read" << std::endl;
-	  exit (-1);
-	}
+        {
+          std::cout << "timer interrupted read" << std::endl;
+          exit (-1);
+        }
     }
 
   std::cout << "did read all buffers" << std::endl;

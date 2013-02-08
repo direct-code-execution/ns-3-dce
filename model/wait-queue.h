@@ -170,10 +170,11 @@ private:
 /**
  * Generic wait queue entry joined with a waitpoint
  */
-class WaitQueueEntryTimeout : public WaitQueueEntry, public WaitPoint
+class WaitQueueEntryTimeout : public WaitQueueEntry,
+                              public WaitPoint
 {
 public:
-  WaitQueueEntryTimeout(short eventMask, Time timeout);
+  WaitQueueEntryTimeout (short eventMask, Time timeout);
   virtual void WakeUp (void *key);
   WaitPoint::Result Wait ();
 

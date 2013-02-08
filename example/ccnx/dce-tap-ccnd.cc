@@ -80,12 +80,12 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("TapCCND");
+NS_LOG_COMPONENT_DEFINE ("TapCCND");
 
 void
 CreateReadme ()
 {
-  std::ofstream osf("/tmp/README", std::fstream::trunc);
+  std::ofstream osf ("/tmp/README", std::fstream::trunc);
 
   osf << "The wanted data is here :)" ;
 
@@ -93,8 +93,8 @@ CreateReadme ()
 }
 
 
-int 
-main( int argc, char *argv[] )
+int
+main ( int argc, char *argv[] )
 {
   std::string mode = "ConfigureLocal";
   std::string tapName = "thetap";
@@ -104,10 +104,10 @@ main( int argc, char *argv[] )
   cmd.AddValue ("mode", "Mode setting of TapBridge", mode);
   cmd.AddValue ("tapName", "Name of the OS tap device", tapName);
   cmd.AddValue ("cv", "Ccnx version 4 for 0.4.x variantes and 5 for 0.5.x variantes, default: 4",
-      ccnxVersion);
+                ccnxVersion);
   cmd.Parse (argc, argv);
 
-  LogComponentEnable("TapCCND", LOG_LEVEL_INFO);
+  LogComponentEnable ("TapCCND", LOG_LEVEL_INFO);
 
   GlobalValue::Bind ("SimulatorImplementationType", StringValue ("ns3::RealtimeSimulatorImpl"));
   GlobalValue::Bind ("ChecksumEnabled", BooleanValue (true));
@@ -140,32 +140,32 @@ main( int argc, char *argv[] )
   CcnClientHelper dce;
   ApplicationContainer apps;
 
-  dce.SetStackSize (1<<20);
+  dce.SetStackSize (1 << 20);
 
   // Launch ccn daemon on node 0
   dce.SetBinary ("ccnd");
-  dce.ResetArguments();
-  dce.ResetEnvironment();
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
 
-  dce.AddEnvironment("CCND_CAP", "50000");
-  dce.AddEnvironment("CCND_DEBUG", "-1"); // FULL TRACES
-  dce.AddEnvironment("CCN_LOCAL_PORT", "2000");
+  dce.AddEnvironment ("CCND_CAP", "50000");
+  dce.AddEnvironment ("CCND_DEBUG", "-1"); // FULL TRACES
+  dce.AddEnvironment ("CCN_LOCAL_PORT", "2000");
 
-  dce.AddEnvironment("CCND_CAP", "");
-  dce.AddEnvironment("CCND_AUTOREG", "");
-  dce.AddEnvironment("CCND_LISTEN_ON", "");
-  dce.AddEnvironment("CCND_MTU", "");
-  dce.AddEnvironment("CCND_LOCAL_SOCKNAME", "");
-  dce.AddEnvironment("CCND_DATA_PAUSE_MICROSEC", "");
-  dce.AddEnvironment("CCND_KEYSTORE_DIRECTORY", "");
-  dce.AddEnvironment("CCND_LISTEN_ON", "10.0.0.2");
+  dce.AddEnvironment ("CCND_CAP", "");
+  dce.AddEnvironment ("CCND_AUTOREG", "");
+  dce.AddEnvironment ("CCND_LISTEN_ON", "");
+  dce.AddEnvironment ("CCND_MTU", "");
+  dce.AddEnvironment ("CCND_LOCAL_SOCKNAME", "");
+  dce.AddEnvironment ("CCND_DATA_PAUSE_MICROSEC", "");
+  dce.AddEnvironment ("CCND_KEYSTORE_DIRECTORY", "");
+  dce.AddEnvironment ("CCND_LISTEN_ON", "10.0.0.2");
 
   apps = dce.Install (nodes.Get (1));
   apps.Start (Seconds (1.0));
 
   // Stop ccnd before simu end.
-  dce.ResetArguments();
-  dce.ResetEnvironment();
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
   dce.SetBinary ("ccndsmoketest");
   dce.SetStdinFile ("");
   dce.AddArgument ("kill");
@@ -173,12 +173,12 @@ main( int argc, char *argv[] )
   apps.Start (Seconds (9.0));
 
   // Publish file
-  dce.SetBinary ((ccnxVersion==4)?"ccnput":"ccnpoke");
-  dce.ResetArguments();
-  dce.ResetEnvironment();
-  dce.AddEnvironment("CCND_DEBUG", "-1"); // FULL TRACES
-  dce.AddEnvironment("HOME", "/root");
-  dce.AddEnvironment("CCN_LOCAL_PORT", "2000");
+  dce.SetBinary ((ccnxVersion == 4) ? "ccnput" : "ccnpoke");
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
+  dce.AddEnvironment ("CCND_DEBUG", "-1"); // FULL TRACES
+  dce.AddEnvironment ("HOME", "/root");
+  dce.AddEnvironment ("CCN_LOCAL_PORT", "2000");
   dce.AddArgument ("/NS3WORLD/README");
   dce.SetStdinFile ("/tmp/README");
   dce.AddFile ("/tmp/README","/tmp/README");
@@ -188,11 +188,11 @@ main( int argc, char *argv[] )
 
   // Forward interrest to real world !
   dce.SetBinary ("ccndc");
-  dce.ResetArguments();
-  dce.ResetEnvironment();
-  dce.AddEnvironment("CCND_DEBUG", "-1"); // FULL TRACES
-  dce.AddEnvironment("HOME", "/root");
-  dce.AddEnvironment("CCN_LOCAL_PORT", "2000");
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
+  dce.AddEnvironment ("CCND_DEBUG", "-1"); // FULL TRACES
+  dce.AddEnvironment ("HOME", "/root");
+  dce.AddEnvironment ("CCN_LOCAL_PORT", "2000");
   dce.AddArgument ("-v");
   dce.AddArgument ("add");
   dce.AddArgument ("/");
@@ -204,11 +204,11 @@ main( int argc, char *argv[] )
 
 
   // Retrieve a file
-  dce.SetBinary ((ccnxVersion==4)?"ccnget":"ccnpeek");
-  dce.ResetArguments();
-  dce.ResetEnvironment();
-  dce.AddEnvironment("CCN_LOCAL_PORT", "2000");
-  dce.AddEnvironment("HOME", "/root");
+  dce.SetBinary ((ccnxVersion == 4) ? "ccnget" : "ccnpeek");
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
+  dce.AddEnvironment ("CCN_LOCAL_PORT", "2000");
+  dce.AddEnvironment ("HOME", "/root");
   dce.AddArgument ("-c");
   dce.AddArgument ("/REALWORLD/README");
 

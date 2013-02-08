@@ -40,7 +40,7 @@ int dce_sigaction (int signum, const struct sigaction *act,
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << signum << act << oldact);
   NS_ASSERT (current != 0);
 
-  for (std::vector<SignalHandler>::iterator i = current->process->signalHandlers.begin (); 
+  for (std::vector<SignalHandler>::iterator i = current->process->signalHandlers.begin ();
        i != current->process->signalHandlers.end (); ++i)
     {
       if (i->signal == signum)
@@ -114,10 +114,10 @@ int dce_sigwait (const sigset_t *set, int *sig)
 
   return ret;
 }
-int dce_sigprocmask(int how, const sigset_t *set, sigset_t *oldset)
+int dce_sigprocmask (int how, const sigset_t *set, sigset_t *oldset)
 {
   Thread *current = Current ();
-  NS_LOG_FUNCTION (current << UtilsGetNodeId () << how );
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << how);
   NS_ASSERT (current != 0);
 
   if (0 != oldset)
@@ -126,12 +126,12 @@ int dce_sigprocmask(int how, const sigset_t *set, sigset_t *oldset)
     }
 
   switch (how)
-  {
+    {
     case SIG_BLOCK:
       {
         if (set)
           {
-            sigorset(&current->signalMask, &current->signalMask, set);
+            sigorset (&current->signalMask, &current->signalMask, set);
           }
       } break;
 
@@ -162,6 +162,6 @@ int dce_sigprocmask(int how, const sigset_t *set, sigset_t *oldset)
         current->err = EINVAL;
         return -1;
       }
-  }
+    }
   return 0;
 }

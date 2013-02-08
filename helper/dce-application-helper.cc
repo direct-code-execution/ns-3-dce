@@ -8,19 +8,24 @@ NS_LOG_COMPONENT_DEFINE ("DceApplicationHelper");
 namespace ns3 {
 
 DceApplicationHelper::DceApplicationHelper ()
-  : m_stackSize (0), m_uid (0), m_euid (0), m_gid (0), m_egid (0)
-{}
-void 
+  : m_stackSize (0),
+    m_uid (0),
+    m_euid (0),
+    m_gid (0),
+    m_egid (0)
+{
+}
+void
 DceApplicationHelper::SetBinary (std::string filename)
 {
   m_filename = filename;
 }
-void 
+void
 DceApplicationHelper::SetStackSize (uint32_t stackSize)
 {
   m_stackSize = stackSize;
 }
-void 
+void
 DceApplicationHelper::SetStdinFile (std::string filename)
 {
   m_stdinFilename = filename;
@@ -36,14 +41,14 @@ void DceApplicationHelper::AddArguments (std::string a0, std::string a1)
   AddArgument (a0);
   AddArgument (a1);
 }
-void 
+void
 DceApplicationHelper::AddArguments (std::string a0, std::string a1, std::string a2)
 {
   AddArgument (a0);
   AddArgument (a1);
   AddArgument (a2);
 }
-void 
+void
 DceApplicationHelper::AddArguments (std::string a0, std::string a1, std::string a2, std::string a3)
 {
   AddArgument (a0);
@@ -51,9 +56,9 @@ DceApplicationHelper::AddArguments (std::string a0, std::string a1, std::string 
   AddArgument (a2);
   AddArgument (a3);
 }
-void 
+void
 DceApplicationHelper::AddArguments (std::string a0, std::string a1, std::string a2, std::string a3,
-			     std::string a4)
+                                    std::string a4)
 {
   AddArgument (a0);
   AddArgument (a1);
@@ -61,9 +66,9 @@ DceApplicationHelper::AddArguments (std::string a0, std::string a1, std::string 
   AddArgument (a3);
   AddArgument (a4);
 }
-void 
+void
 DceApplicationHelper::AddArguments (std::string a0, std::string a1, std::string a2, std::string a3,
-			     std::string a4, std::string a5)
+                                    std::string a4, std::string a5)
 {
   AddArgument (a0);
   AddArgument (a1);
@@ -72,9 +77,9 @@ DceApplicationHelper::AddArguments (std::string a0, std::string a1, std::string 
   AddArgument (a4);
   AddArgument (a5);
 }
-void 
+void
 DceApplicationHelper::AddArguments (std::string a0, std::string a1, std::string a2, std::string a3,
-		     std::string a4, std::string a5, std::string a6)
+                                    std::string a4, std::string a5, std::string a6)
 {
   AddArgument (a0);
   AddArgument (a1);
@@ -84,9 +89,9 @@ DceApplicationHelper::AddArguments (std::string a0, std::string a1, std::string 
   AddArgument (a5);
   AddArgument (a6);
 }
-void 
+void
 DceApplicationHelper::AddArguments (std::string a0, std::string a1, std::string a2, std::string a3,
-			     std::string a4, std::string a5, std::string a6, std::string a7)
+                                    std::string a4, std::string a5, std::string a6, std::string a7)
 {
   AddArgument (a0);
   AddArgument (a1);
@@ -115,12 +120,12 @@ DceApplicationHelper::ResetArguments (void)
 {
   m_args.clear ();
 }
-void 
+void
 DceApplicationHelper::AddEnvironment (std::string name, std::string value)
 {
   m_envs.push_back (std::make_pair (name,value));
 }
-void 
+void
 DceApplicationHelper::ResetEnvironment (void)
 {
   m_envs.clear ();
@@ -141,7 +146,7 @@ DceApplicationHelper::Install (NodeContainer c)
       dce->SetStdinFile (m_stdinFilename);
       dce->SetUid (m_uid);
       dce->SetEuid (m_euid);
-      if ( ! m_finishedCallback.IsNull() )
+      if (!m_finishedCallback.IsNull ())
         {
           dce->SetFinishedCallback (m_finishedCallback);
         }

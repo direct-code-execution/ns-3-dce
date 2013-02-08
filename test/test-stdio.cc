@@ -302,11 +302,11 @@ void test_stdin (void)
 {
   int l = 0;
   char buf;
-  FILE *copyIt = fopen ( "/tmp/copy_stdin", "w");
+  FILE *copyIt = fopen ("/tmp/copy_stdin", "w");
 
-  while (!feof (stdin) )
+  while (!feof (stdin))
     {
-      int a = fread ( &buf, sizeof(buf), 1, stdin);
+      int a = fread (&buf, sizeof(buf), 1, stdin);
 
       if (a > 0)
         {
@@ -375,7 +375,7 @@ extern char *__progname;
 
 int main (int argc, char *argv[])
 {
-  printf ("ProgName: %s %s %s \n", __progname, program_invocation_name, program_invocation_short_name );
+  printf ("ProgName: %s %s %s \n", __progname, program_invocation_name, program_invocation_short_name);
   test_fopen ();
   test_freadwrite ();
   test_freopen ();

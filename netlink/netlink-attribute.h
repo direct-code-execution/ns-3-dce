@@ -35,7 +35,8 @@ namespace ns3 {
 * \brief The Netlink Attribute
 */
 
-typedef enum NetlinkAttributeValueType_e {
+typedef enum NetlinkAttributeValueType_e
+{
   UNSPEC, // invalid initial value.
   U8,
   U16,
@@ -55,7 +56,7 @@ public:
   NetlinkAttributeValue (NetlinkAttributeValueType type, uint64_t v);
   NetlinkAttributeValue (NetlinkAttributeValueType type, std::string v);
   NetlinkAttributeValue (NetlinkAttributeValueType type, Address v);
-  
+
   void Serialize (Buffer::Iterator& start) const;
   uint32_t DeserializeWithType (Buffer::Iterator& start, NetlinkAttributeValueType type, uint16_t remaining);
   uint32_t GetSerializedSize (void) const;
@@ -115,7 +116,7 @@ public:
 private:
   static const int NETLINK_MSG_ATTR_SIZE = 4; /* size of the nlattr field*/
   uint16_t m_len;
-  uint16_t m_type; 
+  uint16_t m_type;
   NetlinkAttributeValue m_payload;
 };
 

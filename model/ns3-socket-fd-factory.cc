@@ -32,13 +32,13 @@
 #include <netpacket/packet.h>
 #include <net/ethernet.h>
 
-NS_LOG_COMPONENT_DEFINE("Ns3SocketFdFactory");
+NS_LOG_COMPONENT_DEFINE ("Ns3SocketFdFactory");
 
 namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (Ns3SocketFdFactory);
 
-TypeId 
+TypeId
 Ns3SocketFdFactory::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::Ns3SocketFdFactory")
@@ -48,8 +48,8 @@ Ns3SocketFdFactory::GetTypeId (void)
   return tid;
 }
 
-Ns3SocketFdFactory::Ns3SocketFdFactory () 
-: m_netlink (0)
+Ns3SocketFdFactory::Ns3SocketFdFactory ()
+  : m_netlink (0)
 {
 }
 
@@ -73,85 +73,97 @@ Ns3SocketFdFactory::CreateSocket (int domain, int type, int protocol)
 
   if (domain == PF_INET)
     {
-      switch (type) {
-        case SOCK_DGRAM: {
-        TypeId tid = TypeId::LookupByName ("ns3::UdpSocketFactory");
-        Ptr<SocketFactory> factory = GetObject<SocketFactory> (tid);
-        sock = factory->CreateSocket ();
-        socket = new UnixDatagramSocketFd (sock);
+      switch (type)
+        {
+        case SOCK_DGRAM:
+          {
+            TypeId tid = TypeId::LookupByName ("ns3::UdpSocketFactory");
+            Ptr<SocketFactory> factory = GetObject<SocketFactory> (tid);
+            sock = factory->CreateSocket ();
+            socket = new UnixDatagramSocketFd (sock);
           } break;
-        case SOCK_RAW: {
-        TypeId tid = TypeId::LookupByName ("ns3::Ipv4RawSocketFactory");
-        Ptr<SocketFactory> factory = GetObject<SocketFactory> (tid);
-        sock = factory->CreateSocket ();
-        sock->SetAttribute ("Protocol", UintegerValue (protocol));
-        socket = new UnixDatagramSocketFd (sock);
+        case SOCK_RAW:
+          {
+            TypeId tid = TypeId::LookupByName ("ns3::Ipv4RawSocketFactory");
+            Ptr<SocketFactory> factory = GetObject<SocketFactory> (tid);
+            sock = factory->CreateSocket ();
+            sock->SetAttribute ("Protocol", UintegerValue (protocol));
+            socket = new UnixDatagramSocketFd (sock);
           } break;
-        case SOCK_STREAM: {
-        TypeId tid = TypeId::LookupByName ("ns3::TcpSocketFactory");
-        Ptr<SocketFactory> factory = GetObject<SocketFactory> (tid);
-        sock = factory->CreateSocket ();
-        socket = new UnixStreamSocketFd (sock);
+        case SOCK_STREAM:
+          {
+            TypeId tid = TypeId::LookupByName ("ns3::TcpSocketFactory");
+            Ptr<SocketFactory> factory = GetObject<SocketFactory> (tid);
+            sock = factory->CreateSocket ();
+            socket = new UnixStreamSocketFd (sock);
           } break;
         default:
-        NS_FATAL_ERROR ("missing socket type");
-        break;
+          NS_FATAL_ERROR ("missing socket type");
+          break;
         }
     }
   else if (domain == PF_INET6)
     {
-      switch (type) {
-        case SOCK_RAW: {
-        TypeId tid = TypeId::LookupByName ("ns3::Ipv6RawSocketFactory");
-        Ptr<SocketFactory> factory = GetObject<SocketFactory> (tid);
-        sock = factory->CreateSocket ();
-        sock->SetAttribute ("Protocol", UintegerValue (protocol));
-        socket = new UnixDatagramSocketFd (sock);
+      switch (type)
+        {
+        case SOCK_RAW:
+          {
+            TypeId tid = TypeId::LookupByName ("ns3::Ipv6RawSocketFactory");
+            Ptr<SocketFactory> factory = GetObject<SocketFactory> (tid);
+            sock = factory->CreateSocket ();
+            sock->SetAttribute ("Protocol", UintegerValue (protocol));
+            socket = new UnixDatagramSocketFd (sock);
           } break;
-        case SOCK_DGRAM: {
+        case SOCK_DGRAM:
+          {
           } break;
-        case SOCK_STREAM: {
-        TypeId tid = TypeId::LookupByName ("ns3::TcpSocketFactory");
-        Ptr<SocketFactory> factory = GetObject<SocketFactory> (tid);
-        sock = factory->CreateSocket ();
-        socket = new UnixStreamSocketFd (sock);
+        case SOCK_STREAM:
+          {
+            TypeId tid = TypeId::LookupByName ("ns3::TcpSocketFactory");
+            Ptr<SocketFactory> factory = GetObject<SocketFactory> (tid);
+            sock = factory->CreateSocket ();
+            socket = new UnixStreamSocketFd (sock);
           } break;
         default:
-        NS_FATAL_ERROR ("missing socket type");
-        break;
+          NS_FATAL_ERROR ("missing socket type");
+          break;
         }
     }
   else if (domain == PF_NETLINK)
     {
-      switch (type) {
-        case SOCK_RAW: 
-        case SOCK_DGRAM: {
-        NS_LOG_INFO ("Requesting for PF_NETLINK");
-        sock = m_netlink->CreateSocket ();
-        socket = new UnixDatagramSocketFd (sock);
+      switch (type)
+        {
+        case SOCK_RAW:
+        case SOCK_DGRAM:
+          {
+            NS_LOG_INFO ("Requesting for PF_NETLINK");
+            sock = m_netlink->CreateSocket ();
+            socket = new UnixDatagramSocketFd (sock);
           } break;
         default:
-        NS_FATAL_ERROR ("missing socket type");
-        break;
+          NS_FATAL_ERROR ("missing socket type");
+          break;
         }
     }
   else if (domain == AF_PACKET)
     {
-      switch (type) {
-        case SOCK_RAW: {
+      switch (type)
+        {
+        case SOCK_RAW:
+          {
             TypeId tid = TypeId::LookupByName ("ns3::PacketSocketFactory");
             Ptr<SocketFactory> factory = GetObject<SocketFactory> (tid);
             sock = factory->CreateSocket ();
 
             PacketSocketAddress a;
             a.SetAllDevices ();
-            if ( protocol == htons ( ETH_P_ALL) )
+            if (protocol == htons (ETH_P_ALL))
               {
-                a.SetProtocol ( 0 );
+                a.SetProtocol (0);
               }
             else
               {
-                a.SetProtocol ( ntohs ( protocol ) );
+                a.SetProtocol (ntohs (protocol));
               }
 
             sock->Bind (a);

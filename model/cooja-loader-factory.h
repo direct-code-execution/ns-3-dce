@@ -11,7 +11,7 @@ public:
   static TypeId GetTypeId (void);
   CoojaLoaderFactory ();
   virtual ~CoojaLoaderFactory ();
-  virtual Loader *Create (int argc, char **argv, char **envp);
+  virtual Loader * Create (int argc, char **argv, char **envp);
 };
 
 } // namespace ns3

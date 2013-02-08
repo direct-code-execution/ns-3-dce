@@ -18,7 +18,7 @@
 
 namespace ns3 {
 
-NS_LOG_COMPONENT_DEFINE("ElfDependencies");
+NS_LOG_COMPONENT_DEFINE ("ElfDependencies");
 
 ElfDependencies::ElfDependencies (std::string filename)
 {
@@ -26,7 +26,7 @@ ElfDependencies::ElfDependencies (std::string filename)
   bool found;
   found = SearchFile (filename, &fullname);
   NS_ASSERT (found);
-  if ( getenv("OLDDEP") )
+  if (getenv ("OLDDEP"))
     {
       m_deps = GatherDependencies (fullname);
       std::reverse (m_deps.begin (), m_deps.end ());
@@ -53,17 +53,17 @@ ElfDependencies::NewGather (std::string sName, std::string fullname) const
   std::vector<struct Dependency> tm = tool.GetDeps ();
 
   for (Iterator i = tool.Begin ();
-      i != tool.End (); ++i)
+       i != tool.End (); ++i)
     {
       std::string depname = (*i).required;
 
-      if (depname == "linux-gate.so.1" ||
-          depname == "ld-linux.so.2" ||
-          depname == "ld-linux-x86-64.so.2" ||
-          depname == "/lib/ld-linux.so.2" ||
-          depname == "/lib64/ld-linux-x86-64.so.2" ||
-          depname == "/usr/lib/debug/ld-linux-x86-64.so.2" ||
-          depname == "linux-vdso.so.1")
+      if (depname == "linux-gate.so.1"
+          || depname == "ld-linux.so.2"
+          || depname == "ld-linux-x86-64.so.2"
+          || depname == "/lib/ld-linux.so.2"
+          || depname == "/lib64/ld-linux-x86-64.so.2"
+          || depname == "/usr/lib/debug/ld-linux-x86-64.so.2"
+          || depname == "linux-vdso.so.1")
         {
           // IGNORE
         }
@@ -88,9 +88,9 @@ ElfDependencies::GatherDependencies (std::string fullname) const
   std::ostringstream tmpFile;
   tmpFile << "/tmp/deps_" << getpid ();
   std::ostringstream lddCmd;
-  lddCmd << "/usr/bin/ldd " 
-  	 << fullname
-  	 << " > " << tmpFile.str ();
+  lddCmd << "/usr/bin/ldd "
+         << fullname
+         << " > " << tmpFile.str ();
   int ret = system (lddCmd.str ().c_str ());
   if (ret == -1)
     {
@@ -127,39 +127,39 @@ ElfDependencies::GatherDependencies (std::string fullname) const
       full_start = lddOutput.find_first_not_of (" \t", full_start + 1);
       std::string::size_type full_end = lddOutput.find_first_of (" \n", full_start);
       NS_LOG_DEBUG ("dep_start=" << (int)dep_start << " dep_end=" << (int)dep_end
-          << " full_start=" << (int)full_start << " full_end=" << (int)full_end
-          << " next_line=" << (int)next_line << " cur=" << (int)cur );
-      if (dep_start != std::string::npos &&
-	  full_start != std::string::npos &&
-	  next_line != std::string::npos &&
-	  dep_start < next_line &&
-	  dep_end < next_line &&
-	  full_start <= next_line &&
-	  full_start > dep_start)
-	{
-	  std::string depname = lddOutput.substr (dep_start, dep_end - dep_start);
-	  std::string fulldepname = lddOutput.substr (full_start, full_end - (full_start));
-	  NS_LOG_DEBUG (depname << "->" << fulldepname);
-	  if (depname == "linux-gate.so.1" ||
-	      depname == "ld-linux.so.2" ||
-	      depname == "ld-linux-x86-64.so.2" ||
-	      depname == "/lib/ld-linux.so.2" ||
-	      depname == "/lib64/ld-linux-x86-64.so.2" ||
-	      depname == "/usr/lib/debug/ld-linux-x86-64.so.2" ||
-	      depname == "linux-vdso.so.1")
-	    {
-	      goto next;
-	    }
-	  else
-	    {
-	      struct Dependency dependency;
-	      dependency.required = depname;
-	      dependency.found = fulldepname;
-	      dependencies.push_back (dependency);
-	    }
-	}
+                                 << " full_start=" << (int)full_start << " full_end=" << (int)full_end
+                                 << " next_line=" << (int)next_line << " cur=" << (int)cur);
+      if (dep_start != std::string::npos
+          && full_start != std::string::npos
+          && next_line != std::string::npos
+          && dep_start < next_line
+          && dep_end < next_line
+          && full_start <= next_line
+          && full_start > dep_start)
+        {
+          std::string depname = lddOutput.substr (dep_start, dep_end - dep_start);
+          std::string fulldepname = lddOutput.substr (full_start, full_end - (full_start));
+          NS_LOG_DEBUG (depname << "->" << fulldepname);
+          if (depname == "linux-gate.so.1"
+              || depname == "ld-linux.so.2"
+              || depname == "ld-linux-x86-64.so.2"
+              || depname == "/lib/ld-linux.so.2"
+              || depname == "/lib64/ld-linux-x86-64.so.2"
+              || depname == "/usr/lib/debug/ld-linux-x86-64.so.2"
+              || depname == "linux-vdso.so.1")
+            {
+              goto next;
+            }
+          else
+            {
+              struct Dependency dependency;
+              dependency.required = depname;
+              dependency.found = fulldepname;
+              dependencies.push_back (dependency);
+            }
+        }
       else
-	{
+        {
           if (next_line == std::string::npos)
             {
               break;
@@ -168,19 +168,19 @@ ElfDependencies::GatherDependencies (std::string fullname) const
             {
               full_start = next_line - 1;
             }
-	}
-    next:
+        }
+next:
       cur = lddOutput.find_first_of ("\n", full_start);
       if (cur != std::string::npos)
-	{
-	  cur++;
-	}
+        {
+          cur++;
+        }
       else
-	{
-	  break;
-	}
+        {
+          break;
+        }
     }
-      
+
   return dependencies;
 }
 
@@ -195,18 +195,18 @@ ElfDependencies::Split (std::string input, std::string sep) const
     {
       next = input.find (sep, cur);
       if (next == cur)
-	{
-	  cur ++;
-	  continue;
-	} 
+        {
+          cur++;
+          continue;
+        }
       else if (next == std::string::npos)
-	{
-	  if (input.size () != cur)
-	    {
-	      retval.push_back (input.substr (cur, input.size () - cur));
-	    }
-	  break;
-	}
+        {
+          if (input.size () != cur)
+            {
+              retval.push_back (input.substr (cur, input.size () - cur));
+            }
+          break;
+        }
       retval.push_back (input.substr (cur, next - cur));
       cur = next + 1;
     }
@@ -222,17 +222,17 @@ ElfDependencies::GetSearchDirectories (void) const
   if (ldLibraryPath != 0)
     {
       std::list<std::string> tmp = Split (ldLibraryPath, ":");
-      directories.insert (directories.end (), 
-			  tmp.begin (),
-			  tmp.end ());
+      directories.insert (directories.end (),
+                          tmp.begin (),
+                          tmp.end ());
     }
   char *path = getenv ("PATH");
   if (path != 0)
     {
       std::list<std::string> tmp = Split (path, ":");
-      directories.insert (directories.end (), 
-			  tmp.begin (),
-			  tmp.end ());
+      directories.insert (directories.end (),
+                          tmp.begin (),
+                          tmp.end ());
     }
   directories.push_back ("/lib");
   directories.push_back ("/usr/lib");
@@ -263,23 +263,23 @@ ElfDependencies::SearchFile (std::string filename, std::string *fullname) const
   for (std::list<std::string>::const_iterator i = dirs.begin (); i != dirs.end (); i++)
     {
       if (Exists (*i + "/" + filename))
-	{
-	  *fullname = *i + "/" + filename;
-	  NS_LOG_DEBUG ("Found: " << filename << " as " << *fullname);
-	  return true;
-	}
+        {
+          *fullname = *i + "/" + filename;
+          NS_LOG_DEBUG ("Found: " << filename << " as " << *fullname);
+          return true;
+        }
     }
   return false;
 }
 
 
-ElfDependencies::Iterator 
+ElfDependencies::Iterator
 ElfDependencies::Begin (void) const
 {
   return m_deps.begin ();
 }
 
-ElfDependencies::Iterator 
+ElfDependencies::Iterator
 ElfDependencies::End (void) const
 {
   return m_deps.end ();

@@ -76,17 +76,17 @@ UnixSocketFd::Mmap (void *start, size_t length, int prot, int flags, off64_t off
   current->err = ENODEV;
   return MAP_FAILED;
 }
-int 
+int
 UnixSocketFd::Fxstat (int ver, struct stat *buf)
 {
   NS_LOG_FUNCTION (this << Current () << buf);
-  NS_ASSERT (Current ()!= 0);
+  NS_ASSERT (Current () != 0);
   buf->st_mode = S_IFSOCK;
   buf->st_dev = -1;
   buf->st_blksize = 0;
   return 0;
 }
-int 
+int
 UnixSocketFd::Fxstat64 (int ver, struct stat64 *buf)
 {
   NS_LOG_FUNCTION (this << Current () << buf);
@@ -96,10 +96,11 @@ UnixSocketFd::Fxstat64 (int ver, struct stat64 *buf)
   buf->st_blksize = 0;
   return 0;
 }
-int 
+int
 UnixSocketFd::ErrnoToSimuErrno (void) const
 {
-  switch (m_socket->GetErrno ()) {
+  switch (m_socket->GetErrno ())
+    {
     case Socket::ERROR_ISCONN:
       return EISCONN;
     case Socket::ERROR_NOTCONN:
@@ -132,7 +133,7 @@ UnixSocketFd::ErrnoToSimuErrno (void) const
       break;
     }
 }
-void 
+void
 UnixSocketFd::RecvSocketData (Ptr<Socket> socket)
 {
   NS_LOG_FUNCTION (this << m_socket << socket);
@@ -140,7 +141,7 @@ UnixSocketFd::RecvSocketData (Ptr<Socket> socket)
   int pi = POLLIN;
   WakeWaiters (&pi);
 }
-void 
+void
 UnixSocketFd::SendSocketData (Ptr<Socket> socket, uint32_t available)
 {
   NS_LOG_FUNCTION (this << m_socket << socket);
@@ -149,7 +150,7 @@ UnixSocketFd::SendSocketData (Ptr<Socket> socket, uint32_t available)
   WakeWaiters (&pi);
 }
 
-int 
+int
 UnixSocketFd::Close (void)
 {
   Thread *current = Current ();
@@ -173,7 +174,7 @@ UnixSocketFd::Close (void)
   WakeWaiters (&pi);
   return result;
 }
-ssize_t 
+ssize_t
 UnixSocketFd::Write (const void *buf, size_t count)
 {
   NS_LOG_FUNCTION (this << buf << count);
@@ -190,7 +191,7 @@ UnixSocketFd::Write (const void *buf, size_t count)
   ssize_t retval = Sendmsg (&msg, 0);
   return retval;
 }
-ssize_t 
+ssize_t
 UnixSocketFd::Read (void *buf, size_t count)
 {
   NS_LOG_FUNCTION (this << buf << count);
@@ -207,7 +208,7 @@ UnixSocketFd::Read (void *buf, size_t count)
   ssize_t retval = Recvmsg (&msg, 0);
   return retval;
 }
-ssize_t 
+ssize_t
 UnixSocketFd::Recvmsg (struct msghdr *msg, int flags)
 {
   bool nonBlocking = (m_statusFlags & O_NONBLOCK) == O_NONBLOCK;
@@ -222,13 +223,13 @@ UnixSocketFd::Sendmsg (const struct msghdr *msg, int flags)
   return DoSendmsg (msg, flags);
 }
 
-bool 
+bool
 UnixSocketFd::Isatty (void) const
 {
   return false;
 }
 
-int 
+int
 UnixSocketFd::Setsockopt (int level, int optname,
                           const void *optval, socklen_t optlen)
 {
@@ -236,10 +237,13 @@ UnixSocketFd::Setsockopt (int level, int optname,
   NS_LOG_FUNCTION (this << current << level << optname << optval << optlen);
   NS_ASSERT (current != 0);
 
-  switch (level) {
+  switch (level)
+    {
     case SOL_RAW:
-      switch (optname) {
-        case ICMP_FILTER: {
+      switch (optname)
+        {
+        case ICMP_FILTER:
+          {
             if (optlen != 4)
               {
                 current->err = EINVAL;
@@ -252,202 +256,216 @@ UnixSocketFd::Setsockopt (int level, int optname,
                 return -1;
               }
           } break;
-    default:
-      NS_LOG_WARN ("Unsupported setsockopt requested. level: SOL_RAW, optname: " << optname);
-      break;
+        default:
+          NS_LOG_WARN ("Unsupported setsockopt requested. level: SOL_RAW, optname: " << optname);
+          break;
         }
       break;
     case SOL_SOCKET:
-      switch (optname) {
-        case SO_RCVTIMEO: {
-            if (optlen != sizeof (struct timeval))
+      switch (optname)
         {
-          current->err = EINVAL;
-          return -1;
-        }
+        case SO_RCVTIMEO:
+          {
+            if (optlen != sizeof (struct timeval))
+              {
+                current->err = EINVAL;
+                return -1;
+              }
             struct timeval *tv = (struct timeval *)optval;
             m_recvTimeout = UtilsTimevalToTime (*tv);
           } break;
-        case SO_SNDTIMEO: {
+        case SO_SNDTIMEO:
+          {
             if (optlen != sizeof (struct timeval))
-        {
-          current->err = EINVAL;
-          return -1;
-        }
+              {
+                current->err = EINVAL;
+                return -1;
+              }
             struct timeval *tv = (struct timeval *)optval;
             m_sendTimeout = UtilsTimevalToTime (*tv);
           } break;
-        case SO_SNDBUF: {
-          if (optlen != sizeof (int))
-            {
-              current->err = EINVAL;
-              return -1;
-            }
-          int *val = (int*)optval;
-          if (!m_socket->SetAttributeFailSafe ("SndBufSize", UintegerValue (*val)))
-            {
-              current->err = EINVAL;
-              return -1;
-            }
-        } break;
-        case SO_RCVBUF: {
-          if (optlen != sizeof (int))
-            {
-              current->err = EINVAL;
-              return -1;
-            }
-          int *val = (int*)optval;
-          if (!m_socket->SetAttributeFailSafe ("RcvBufSize", UintegerValue (*val)))
-            {
-              current->err = EINVAL;
-              return -1;
-            }
-        } break;
-    default:
-      NS_LOG_WARN ("Unsupported setsockopt requested. level: SOL_SOCKET, optname: " << optname);
-      break;
+        case SO_SNDBUF:
+          {
+            if (optlen != sizeof (int))
+              {
+                current->err = EINVAL;
+                return -1;
+              }
+            int *val = (int*)optval;
+            if (!m_socket->SetAttributeFailSafe ("SndBufSize", UintegerValue (*val)))
+              {
+                current->err = EINVAL;
+                return -1;
+              }
+          } break;
+        case SO_RCVBUF:
+          {
+            if (optlen != sizeof (int))
+              {
+                current->err = EINVAL;
+                return -1;
+              }
+            int *val = (int*)optval;
+            if (!m_socket->SetAttributeFailSafe ("RcvBufSize", UintegerValue (*val)))
+              {
+                current->err = EINVAL;
+                return -1;
+              }
+          } break;
+        default:
+          NS_LOG_WARN ("Unsupported setsockopt requested. level: SOL_SOCKET, optname: " << optname);
+          break;
         }
       break;
     case SOL_IP:
-      switch (optname) {
-        case IP_RECVERR: {
-            if (optlen != sizeof (int))
+      switch (optname)
         {
-          current->err = EINVAL;
-          return -1;
-        }
+        case IP_RECVERR:
+          {
+            if (optlen != sizeof (int))
+              {
+                current->err = EINVAL;
+                return -1;
+              }
             int *v = (int*)optval;
             m_recverr = *v;
           } break;
-        case IP_RECVTTL: {
+        case IP_RECVTTL:
+          {
             if (optlen != sizeof (int))
-        {
-          current->err = EINVAL;
-          return -1;
-        }
+              {
+                current->err = EINVAL;
+                return -1;
+              }
             int *v = (int*)optval;
             m_recvttl = *v;
           } break;
-        case IP_TTL: {
+        case IP_TTL:
+          {
             if (optlen != sizeof (int))
-        {
-          current->err = EINVAL;
-          return -1;
-        }
+              {
+                current->err = EINVAL;
+                return -1;
+              }
             int *v = (int*)optval;
             if (!m_socket->SetAttributeFailSafe ("IpTtl", UintegerValue (*v)))
-        {
+              {
                 current->err = ENOPROTOOPT;
                 return -1;
-        }
+              }
           } break;
-    case IP_HDRINCL: {
-      if (optlen != sizeof (int))
-        {
-          current->err = EINVAL;
-          return -1;
+        case IP_HDRINCL:
+          {
+            if (optlen != sizeof (int))
+              {
+                current->err = EINVAL;
+                return -1;
+              }
+            int *v = (int*)optval;
+            if (!m_socket->SetAttributeFailSafe ("IpHeaderInclude",
+                                                 BooleanValue (*v ? true : false)))
+              {
+                current->err = ENOPROTOOPT;
+                return -1;
+              }
+          } break;
+        case IP_PKTINFO:
+          {
+            if (optlen != sizeof (int))
+              {
+                current->err = EINVAL;
+                return -1;
+              }
+            int *v = (int*)optval;
+            m_socket->SetRecvPktInfo (*v ? true : false);
+          } break;
+        default:
+          NS_LOG_WARN ("Unsupported setsockopt requested. level: SOL_IP, optname: " << optname);
+          break;
         }
-      int *v = (int*)optval;
-      if (!m_socket->SetAttributeFailSafe ("IpHeaderInclude",
-                                           BooleanValue (*v ? true : false)))
+      break;
+    case SOL_IPV6:
+      switch (optname)
         {
-          current->err = ENOPROTOOPT;
-          return -1;
+        case IPV6_PKTINFO:
+          {
+            if (optlen != sizeof (int))
+              {
+                current->err = EINVAL;
+                return -1;
+              }
+            int *v = (int*)optval;
+            m_socket->SetRecvPktInfo (*v ? true : false);
+          } break;
+        // case IPV6_RECVPKTINFO: {
+        //   if (optlen != sizeof (int))
+        //     {
+        //       current->err = EINVAL;
+        //       return -1;
+        //     }
+        //   int *v = (int*)optval;
+        //   m_recvpktinfo6 = *v;
+        // } break;
+        // case IPV6_CHECKSUM: {
+        //   if (optlen != sizeof (int))
+        //     {
+        //       current->err = EINVAL;
+        //       return -1;
+        //     }
+        //   int *v = (int*)optval;
+        //   m_sockchecksum = *v;
+        // } break;
+        // case IPV6_MULTICAST_LOOP: {
+        //   if (optlen != sizeof (int))
+        //     {
+        //       current->err = EINVAL;
+        //       return -1;
+        //     }
+        //   int *v = (int*)optval;
+        //   m_multicastloop = *v;
+        // } break;
+        // case IPV6_UNICAST_HOPS: {
+        //   if (optlen != sizeof (int))
+        //     {
+        //       current->err = EINVAL;
+        //       return -1;
+        //     }
+        //   int *v = (int*)optval;
+        //   m_unicasthops = *v;
+        // } break;
+        // case IPV6_MULTICAST_HOPS: {
+        //   if (optlen != sizeof (int))
+        //     {
+        //       current->err = EINVAL;
+        //       return -1;
+        //     }
+        //   int *v = (int*)optval;
+        //   m_multicasthops = *v;
+        // } break;
+        // case IPV6_RECVHOPLIMIT: {
+        //   if (optlen != sizeof (int))
+        //     {
+        //       current->err = EINVAL;
+        //       return -1;
+        //     }
+        //   int *v = (int*)optval;
+        //   m_recvhoplimit = *v;
+        // } break;
+        default:
+          NS_LOG_WARN ("Unsupported setsockopt requested. level: SOL_IPV6, optname: " << optname);
+          break;
         }
-    } break;
-    case IP_PKTINFO: {
-      if (optlen != sizeof (int))
-        {
-          current->err = EINVAL;
-          return -1;
-        }
-      int *v = (int*)optval;
-      m_socket->SetRecvPktInfo (*v ? true : false);
-    } break;
+      break;
     default:
-      NS_LOG_WARN ("Unsupported setsockopt requested. level: SOL_IP, optname: " << optname);
-      break;
-    }
-    break;
-  case SOL_IPV6:
-    switch (optname) {
-    case IPV6_PKTINFO: {
-      if (optlen != sizeof (int))
-        {
-          current->err = EINVAL;
-          return -1;
-        }
-      int *v = (int*)optval;
-      m_socket->SetRecvPktInfo (*v ? true : false);
-    } break;
-    // case IPV6_RECVPKTINFO: {
-    //   if (optlen != sizeof (int))
-    //     {
-    //       current->err = EINVAL;
-    //       return -1;
-    //     }
-    //   int *v = (int*)optval;
-    //   m_recvpktinfo6 = *v;
-    // } break;
-    // case IPV6_CHECKSUM: {
-    //   if (optlen != sizeof (int))
-    //     {
-    //       current->err = EINVAL;
-    //       return -1;
-    //     }
-    //   int *v = (int*)optval;
-    //   m_sockchecksum = *v;
-    // } break;
-    // case IPV6_MULTICAST_LOOP: {
-    //   if (optlen != sizeof (int))
-    //     {
-    //       current->err = EINVAL;
-    //       return -1;
-    //     }
-    //   int *v = (int*)optval;
-    //   m_multicastloop = *v;
-    // } break;
-    // case IPV6_UNICAST_HOPS: {
-    //   if (optlen != sizeof (int))
-    //     {
-    //       current->err = EINVAL;
-    //       return -1;
-    //     }
-    //   int *v = (int*)optval;
-    //   m_unicasthops = *v;
-    // } break;
-    // case IPV6_MULTICAST_HOPS: {
-    //   if (optlen != sizeof (int))
-    //     {
-    //       current->err = EINVAL;
-    //       return -1;
-    //     }
-    //   int *v = (int*)optval;
-    //   m_multicasthops = *v;
-    // } break;
-    // case IPV6_RECVHOPLIMIT: {
-    //   if (optlen != sizeof (int))
-    //     {
-    //       current->err = EINVAL;
-    //       return -1;
-    //     }
-    //   int *v = (int*)optval;
-    //   m_recvhoplimit = *v;
-    // } break;
-    default:
-      NS_LOG_WARN ("Unsupported setsockopt requested. level: SOL_IPV6, optname: " << optname);
-      break;
-        }
-      break;
-  default:{
-    std::cout << "Unsupported sockopt\n";
-    current->err = ENOPROTOOPT;
-    return -1;
-  } break;
+      {
+        std::cout << "Unsupported sockopt\n";
+        current->err = ENOPROTOOPT;
+        return -1;
+      } break;
     }
   return 0;
 }
-int 
+int
 UnixSocketFd::Getsockopt (int level, int optname,
                           void *optval, socklen_t *optlen)
 {
@@ -455,10 +473,13 @@ UnixSocketFd::Getsockopt (int level, int optname,
   NS_LOG_FUNCTION (this << current << level << optname << optval << optlen);
   NS_ASSERT (current != 0);
 
-  switch (level) {
+  switch (level)
+    {
     case SOL_RAW:
-      switch (optname) {
-        case ICMP_FILTER: {
+      switch (optname)
+        {
+        case ICMP_FILTER:
+          {
             if (*optlen < 4)
               {
                 current->err = EINVAL;
@@ -474,135 +495,145 @@ UnixSocketFd::Getsockopt (int level, int optname,
             memcpy (optval, (void*)&v, 4);
             *optlen = 4;
           } break;
-    default:
-      NS_LOG_WARN ("Unsupported setsockopt requested. level: SOL_RAW, optname: " << optname);
-      break;
+        default:
+          NS_LOG_WARN ("Unsupported setsockopt requested. level: SOL_RAW, optname: " << optname);
+          break;
         }
       break;
     case SOL_SOCKET:
-      switch (optname) {
-        case SO_RCVTIMEO: {
-            if (*optlen < sizeof (struct timeval))
+      switch (optname)
         {
-          current->err = EINVAL;
-          return -1;
-        }
+        case SO_RCVTIMEO:
+          {
+            if (*optlen < sizeof (struct timeval))
+              {
+                current->err = EINVAL;
+                return -1;
+              }
             struct timeval *tv = (struct timeval *)optval;
             *tv = UtilsTimeToTimeval (m_recvTimeout);
             *optlen = sizeof (struct timeval);
           } break;
-        case SO_SNDTIMEO: {
+        case SO_SNDTIMEO:
+          {
             if (*optlen < sizeof (struct timeval))
-        {
-          current->err = EINVAL;
-          return -1;
-        }
+              {
+                current->err = EINVAL;
+                return -1;
+              }
             struct timeval *tv = (struct timeval *)optval;
             *tv = UtilsTimeToTimeval (m_sendTimeout);
             *optlen = sizeof (struct timeval);
           } break;
-        case SO_SNDBUF: {
-          if (*optlen < sizeof (int))
-            {
-              current->err = EINVAL;
-              return -1;
-            }
-          int *val = (int*)optval;
-          UintegerValue attrValue;
-          if (!m_socket->GetAttributeFailSafe ("SndBufSize", attrValue))
-            {
-              current->err = EINVAL;
-              return -1;
-            }
-          *val = attrValue.Get ();
-          *optlen = sizeof (int);
-        } break;
+        case SO_SNDBUF:
+          {
+            if (*optlen < sizeof (int))
+              {
+                current->err = EINVAL;
+                return -1;
+              }
+            int *val = (int*)optval;
+            UintegerValue attrValue;
+            if (!m_socket->GetAttributeFailSafe ("SndBufSize", attrValue))
+              {
+                current->err = EINVAL;
+                return -1;
+              }
+            *val = attrValue.Get ();
+            *optlen = sizeof (int);
+          } break;
 
-        case SO_RCVBUF: {
-          if (*optlen < sizeof (int))
-            {
-              current->err = EINVAL;
-              return -1;
-            }
-          int *val = (int*)optval;
-          UintegerValue attrValue;
-          if (!m_socket->GetAttributeFailSafe ("RcvBufSize", attrValue))
-            {
-              current->err = EINVAL;
-              return -1;
-            }
-          *val = attrValue.Get ();
-          *optlen = sizeof (int);
-        } break;
+        case SO_RCVBUF:
+          {
+            if (*optlen < sizeof (int))
+              {
+                current->err = EINVAL;
+                return -1;
+              }
+            int *val = (int*)optval;
+            UintegerValue attrValue;
+            if (!m_socket->GetAttributeFailSafe ("RcvBufSize", attrValue))
+              {
+                current->err = EINVAL;
+                return -1;
+              }
+            *val = attrValue.Get ();
+            *optlen = sizeof (int);
+          } break;
 
-    default:
-      NS_LOG_WARN ("Unsupported setsockopt requested. level: SOL_SOCKET, optname: " << optname);
-      break;
+        default:
+          NS_LOG_WARN ("Unsupported setsockopt requested. level: SOL_SOCKET, optname: " << optname);
+          break;
         }
       break;
     case SOL_IP:
-      switch (optname) {
-        case IP_RECVERR: {
-            if (*optlen < sizeof (int))
+      switch (optname)
         {
-          current->err = EINVAL;
-          return -1;
-        }
+        case IP_RECVERR:
+          {
+            if (*optlen < sizeof (int))
+              {
+                current->err = EINVAL;
+                return -1;
+              }
             int *v = (int*)optval;
             *v = m_recverr;
             *optlen = sizeof (int);
           } break;
-        case IP_RECVTTL: {
+        case IP_RECVTTL:
+          {
             if (*optlen < sizeof (int))
-        {
-          current->err = EINVAL;
-          return -1;
-        }
+              {
+                current->err = EINVAL;
+                return -1;
+              }
             int *v = (int*)optval;
             *v = m_recvttl;
             *optlen = sizeof (int);
           } break;
-        case IP_TTL: {
+        case IP_TTL:
+          {
             if (*optlen < sizeof (int))
-        {
-          current->err = EINVAL;
-          return -1;
-        }
+              {
+                current->err = EINVAL;
+                return -1;
+              }
             int *v = (int*)optval;
             UintegerValue val;
             if (!m_socket->GetAttributeFailSafe ("IpTtl", val))
-        {
-          current->err = ENOPROTOOPT;
-          return -1;
-        }
+              {
+                current->err = ENOPROTOOPT;
+                return -1;
+              }
             *v = val.Get ();
             *optlen = sizeof (int);
           } break;
-    case IP_HDRINCL: {
-      if (*optlen != sizeof (int))
-        {
-          current->err = EINVAL;
-          return -1;
-        }
-      int *v = (int*)optval;
-      BooleanValue val;
-      if (!m_socket->GetAttributeFailSafe ("IpHeaderInclude", val))
-        {
-          current->err = ENOPROTOOPT;
-          return -1;
-        }
-      *v = val.Get () ? 1 : 0;
-      *optlen = sizeof (int);
-    } break;
-    default:
-      NS_LOG_WARN ("Unsupported setsockopt requested. level: SOL_IP, optname: " << optname);
-      break;
+        case IP_HDRINCL:
+          {
+            if (*optlen != sizeof (int))
+              {
+                current->err = EINVAL;
+                return -1;
+              }
+            int *v = (int*)optval;
+            BooleanValue val;
+            if (!m_socket->GetAttributeFailSafe ("IpHeaderInclude", val))
+              {
+                current->err = ENOPROTOOPT;
+                return -1;
+              }
+            *v = val.Get () ? 1 : 0;
+            *optlen = sizeof (int);
+          } break;
+        default:
+          NS_LOG_WARN ("Unsupported setsockopt requested. level: SOL_IP, optname: " << optname);
+          break;
         }
       break;
     }
   return 0;
 }
-int 
+int
 UnixSocketFd::Getsockname (struct sockaddr *name, socklen_t *namelen)
 {
   Thread *current = Current ();
@@ -622,31 +653,31 @@ UnixSocketFd::Getsockname (struct sockaddr *name, socklen_t *namelen)
     }
   return 0;
 }
-int 
+int
 UnixSocketFd::Getpeername (struct sockaddr *name, socklen_t *namelen)
 {
   //XXX
   return -1;
 }
-int 
+int
 UnixSocketFd::Ioctl (int request, char *argp)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current);
   NS_ASSERT (current != 0);
 
-  if ( FIONBIO == request )
+  if (FIONBIO == request)
     {
-        const int *arg = (const int *) argp;
-        if ( *arg )
-          {
-            m_statusFlags = m_statusFlags | O_NONBLOCK;
-          }
-        else
-          {
-            m_statusFlags = m_statusFlags & ~O_NONBLOCK;
-          }
-        return 0;
+      const int *arg = (const int *) argp;
+      if (*arg)
+        {
+          m_statusFlags = m_statusFlags | O_NONBLOCK;
+        }
+      else
+        {
+          m_statusFlags = m_statusFlags & ~O_NONBLOCK;
+        }
+      return 0;
     }
   else
     {
@@ -684,7 +715,7 @@ UnixSocketFd::PosixAddressToNs3Address (const struct sockaddr *my_addr, socklen_
 
       //pretend that it is kernel-level netlink socket. is required by unmodified version of quagga
       uint32_t pid = addr->nl_pid;
-	  
+
       NetlinkSocketAddress nladdress = NetlinkSocketAddress (pid, addr->nl_groups);
       return nladdress;
     }
@@ -726,7 +757,7 @@ UnixSocketFd::Ns3AddressToPosixAddress (const Address& nsaddr,
       ns_inetaddr.GetIpv6 ().GetBytes (inet_addr->sin6_addr.s6_addr);
       *addrlen = sizeof(struct sockaddr_in6);
     }
-  else if (NetlinkSocketAddress::IsMatchingType(nsaddr))
+  else if (NetlinkSocketAddress::IsMatchingType (nsaddr))
     {
       NetlinkSocketAddress ns_nladdr = NetlinkSocketAddress::ConvertFrom (nsaddr);
       NS_ASSERT (*addrlen >= sizeof (struct sockaddr_nl));
@@ -758,7 +789,7 @@ UnixSocketFd::Bind (const struct sockaddr *my_addr, socklen_t addrlen)
     }
   return result;
 }
-int 
+int
 UnixSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
 {
   Thread *current = Current ();
@@ -773,32 +804,32 @@ UnixSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
     }
   return result;
 }
-bool 
+bool
 UnixSocketFd::IsRecvErr (void) const
 {
   return m_recverr == 1;
 }
-bool 
+bool
 UnixSocketFd::IsRecvTtl (void) const
 {
   return m_recvttl == 1;
 }
-// bool 
+// bool
 // UnixSocketFd::IsRecvPktInfo (void) const
 // {
 //   return m_recvpktinfo == 1;
 // }
-// bool 
+// bool
 // UnixSocketFd::IsRecvPktInfo6 (void) const
 // {
 //   return m_recvpktinfo6 == 1;
 // }
-// bool 
+// bool
 // UnixSocketFd::IsIpHdrIncl (void) const
 // {
 //   return m_iphdrincl == 1;
 // }
-off64_t 
+off64_t
 UnixSocketFd::Lseek (off64_t offset, int whence)
 {
   Thread *current = Current ();
@@ -825,12 +856,12 @@ UnixSocketFd::WaitRecvDoSignal (bool dontwait)
       NS_LOG_DEBUG ("WaitRecvDoSignal: waiting ...");
       PollTable::Result res = wq->Wait ();
       NS_LOG_DEBUG ("WaitRecvDoSignal: wait result:" << res);
-      RemoveWaitQueue ( wq, true);
+      RemoveWaitQueue (wq, true);
       NS_LOG_FUNCTION (this << "DELETING: " << wq);
       delete wq;
       wq = 0;
 
-      if ( res == PollTable::INTERRUPTED)
+      if (res == PollTable::INTERRUPTED)
         {
           UtilsDoSignal ();
           current->err = EINTR;
@@ -850,18 +881,18 @@ UnixSocketFd::WaitRecvDoSignal (bool dontwait)
   NS_ASSERT (CanRecv ());
   return true;
 }
-Time 
+Time
 UnixSocketFd::GetRecvTimeout (void)
 {
   return m_recvTimeout;
 }
-Time 
+Time
 UnixSocketFd::GetSendTimeout (void)
 {
   return m_sendTimeout;
 }
 
-int 
+int
 UnixSocketFd::Settime (int flags,
                        const struct itimerspec *new_value,
                        struct itimerspec *old_value)
@@ -872,7 +903,7 @@ UnixSocketFd::Settime (int flags,
   current->err = EINVAL;
   return -1;
 }
-int 
+int
 UnixSocketFd::Gettime (struct itimerspec *cur_value) const
 {
   NS_LOG_FUNCTION (this << Current () << cur_value);
@@ -885,20 +916,20 @@ UnixSocketFd::Gettime (struct itimerspec *cur_value) const
 void
 UnixSocketFd::ClearSocket (void)
 {
-  if ( m_socket )
+  if (m_socket)
     {
       Callback<void, Ptr< Socket > > nil = MakeNullCallback<void, Ptr<Socket> > ();
 
       Callback<void, Ptr<Socket>, const Address &> nil2 = MakeNullCallback<void, Ptr<Socket>, const Address &> ();
       Callback<bool, Ptr<Socket>, const Address &> nil3 = MakeNullCallback<bool, Ptr<Socket>, const Address &> ();
 
-      m_socket->SetAcceptCallback ( nil3, nil2);
+      m_socket->SetAcceptCallback (nil3, nil2);
 
       m_socket->SetConnectCallback (nil, nil);
-      m_socket->SetCloseCallbacks  ( nil, nil);
+      m_socket->SetCloseCallbacks  (nil, nil);
 
-      m_socket->SetRecvCallback ( MakeNullCallback<void, Ptr<Socket> > () );
-      m_socket->SetSendCallback ( MakeNullCallback<void,Ptr<Socket>,uint32_t > ());
+      m_socket->SetRecvCallback (MakeNullCallback<void, Ptr<Socket> > ());
+      m_socket->SetSendCallback (MakeNullCallback<void,Ptr<Socket>,uint32_t > ());
     }
 
   m_socket = 0;
@@ -926,7 +957,7 @@ UnixSocketFd::Ns3AddressToDeviceIndependantPhysicalLayerAddress (const Address& 
         }
       memset (addr, 0, sizeof (struct sockaddr_ll));
       addr->sll_family = AF_PACKET;
-      addr->sll_protocol =  htons ( ll_addr.GetProtocol () );
+      addr->sll_protocol =  htons (ll_addr.GetProtocol ());
       addr->sll_ifindex = ll_addr.GetSingleDevice () + 1;
       addr->sll_hatype = 0;
       ll_addr.GetPhysicalAddress ().CopyAllTo (&(addr->sll_pkttype), 8);
@@ -939,23 +970,23 @@ UnixSocketFd::Ns3AddressToDeviceIndependantPhysicalLayerAddress (const Address& 
       found = pac.PeekPacketTag (dnt);
       if  (found)
         {
-          if ( dnt.GetDeviceName () == "NetDevice" )
+          if (dnt.GetDeviceName () == "NetDevice")
             {
               addr->sll_hatype = ARPHRD_PPP;
             }
-          else if ( dnt.GetDeviceName () == "LoopbackNetDevice" )
+          else if (dnt.GetDeviceName () == "LoopbackNetDevice")
             {
               addr->sll_hatype = ARPHRD_LOOPBACK;
             }
-          else if ( dnt.GetDeviceName () == "CsmaNetDevice" )
+          else if (dnt.GetDeviceName () == "CsmaNetDevice")
             {
               addr->sll_hatype = ARPHRD_ETHER;
             }
-          else if ( dnt.GetDeviceName () == "PointToPointNetDevice" )
+          else if (dnt.GetDeviceName () == "PointToPointNetDevice")
             {
               addr->sll_hatype = ARPHRD_PPP;
             }
-          else if ( dnt.GetDeviceName () == "WifiNetDevice" )
+          else if (dnt.GetDeviceName () == "WifiNetDevice")
             {
               addr->sll_hatype = ARPHRD_IEEE80211;
             }
@@ -1013,7 +1044,7 @@ UnixSocketFd::AddPeekedData (Ptr<Packet> p)
 bool
 UnixSocketFd::isPeekedData (void)
 {
-  return (  ( 0 != m_peekedData) && ( m_peekedData->GetSize () > 0 ) );
+  return ((0 != m_peekedData) && (m_peekedData->GetSize () > 0));
 }
 Address
 UnixSocketFd::GetPeekedFrom (void)

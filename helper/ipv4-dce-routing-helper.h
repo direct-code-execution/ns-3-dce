@@ -26,7 +26,7 @@ namespace ns3 {
 /**
  * \brief Helper class that adds ns3::Ipv4DceRouting objects
  *
- * This class is expected to be used in conjunction with 
+ * This class is expected to be used in conjunction with
  * ns3::InternetStackHelper::SetRoutingHelper
  */
 class Ipv4DceRoutingHelper : public Ipv4StaticRoutingHelper
@@ -39,7 +39,7 @@ public:
   Ipv4DceRoutingHelper ();
 
   /**
-   * \brief Construct an Ipv4StaticRoutingHelper from another previously 
+   * \brief Construct an Ipv4StaticRoutingHelper from another previously
    * initialized instance (Copy Constructor).
    */
   Ipv4DceRoutingHelper (const Ipv4DceRoutingHelper &);

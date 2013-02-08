@@ -28,23 +28,22 @@
 extern "C" {
 #endif
 
-DIR *dce_opendir (const char *name);
-DIR *dce_fdopendir (int fd);
-struct dirent *dce_readdir (DIR *dirp);
+DIR * dce_opendir (const char *name);
+DIR * dce_fdopendir (int fd);
+struct dirent * dce_readdir (DIR *dirp);
 int dce_readdir_r (DIR *dirp, struct dirent *entry, struct dirent **result);
 int dce_closedir (DIR *dirp);
 int dce_dirfd (DIR *dirp);
 void dce_rewinddir (DIR *dirp);
 int dce_scandir (const char *dirp, struct dirent ***namelist,
-       int (*filter)(const struct dirent *),
-       int (*compar)(const struct dirent **, const struct dirent **));
+                 int (*filter)(const struct dirent *),
+                 int (*compar)(const struct dirent **, const struct dirent **));
 
 #ifdef __cplusplus
 }
 #endif
 
-namespace ns3
-{
+namespace ns3 {
 struct Thread;
 
 int dce_internalClosedir (DIR *dirp, struct Thread *cur);

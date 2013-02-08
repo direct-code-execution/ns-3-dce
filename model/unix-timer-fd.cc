@@ -17,7 +17,8 @@ UnixTimerFd::UnixTimerFd (int clockid, int flags)
     m_skipped (0),
     m_timer (),
     m_waiter (0)
-{}
+{
+}
 
 int
 UnixTimerFd::Close (void)
@@ -30,7 +31,7 @@ UnixTimerFd::Close (void)
   return 0;
 }
 
-ssize_t 
+ssize_t
 UnixTimerFd::Write (const void *buf, size_t count)
 {
   NS_LOG_FUNCTION (this << buf << count);
@@ -38,7 +39,7 @@ UnixTimerFd::Write (const void *buf, size_t count)
   current->err = EINVAL;
   return -1;
 }
-ssize_t 
+ssize_t
 UnixTimerFd::Read (void *buf, size_t count)
 {
   Thread *current = Current ();
@@ -62,7 +63,7 @@ UnixTimerFd::Read (void *buf, size_t count)
 
   return 0;
 }
-ssize_t 
+ssize_t
 UnixTimerFd::Recvmsg (struct msghdr *msg, int flags)
 {
   NS_LOG_FUNCTION (this << msg << flags);
@@ -70,7 +71,7 @@ UnixTimerFd::Recvmsg (struct msghdr *msg, int flags)
   current->err = ENOTSOCK;
   return -1;
 }
-ssize_t 
+ssize_t
 UnixTimerFd::Sendmsg (const struct msghdr *msg, int flags)
 {
   NS_LOG_FUNCTION (this << msg << flags);
@@ -78,12 +79,12 @@ UnixTimerFd::Sendmsg (const struct msghdr *msg, int flags)
   current->err = ENOTSOCK;
   return -1;
 }
-bool 
+bool
 UnixTimerFd::Isatty (void) const
 {
   return false;
 }
-int 
+int
 UnixTimerFd::Setsockopt (int level, int optname,
                          const void *optval, socklen_t optlen)
 {
@@ -92,7 +93,7 @@ UnixTimerFd::Setsockopt (int level, int optname,
   current->err = ENOTSOCK;
   return -1;
 }
-int 
+int
 UnixTimerFd::Getsockopt (int level, int optname,
                          void *optval, socklen_t *optlen)
 {
@@ -101,7 +102,7 @@ UnixTimerFd::Getsockopt (int level, int optname,
   current->err = ENOTSOCK;
   return -1;
 }
-int 
+int
 UnixTimerFd::Getsockname (struct sockaddr *name, socklen_t *namelen)
 {
   NS_LOG_FUNCTION (this << name << namelen);
@@ -109,7 +110,7 @@ UnixTimerFd::Getsockname (struct sockaddr *name, socklen_t *namelen)
   current->err = ENOTSOCK;
   return -1;
 }
-int 
+int
 UnixTimerFd::Getpeername (struct sockaddr *name, socklen_t *namelen)
 {
   NS_LOG_FUNCTION (this << name << namelen);
@@ -117,13 +118,13 @@ UnixTimerFd::Getpeername (struct sockaddr *name, socklen_t *namelen)
   current->err = ENOTSOCK;
   return -1;
 }
-int 
+int
 UnixTimerFd::Ioctl (int request, char *argp)
 {
   //XXX
   return -1;
 }
-int 
+int
 UnixTimerFd::Bind (const struct sockaddr *my_addr, socklen_t addrlen)
 {
   NS_LOG_FUNCTION (this << my_addr << addrlen);
@@ -131,7 +132,7 @@ UnixTimerFd::Bind (const struct sockaddr *my_addr, socklen_t addrlen)
   current->err = ENOTSOCK;
   return -1;
 }
-int 
+int
 UnixTimerFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
 {
   NS_LOG_FUNCTION (this << my_addr << addrlen);
@@ -139,7 +140,7 @@ UnixTimerFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
   current->err = ENOTSOCK;
   return -1;
 }
-int 
+int
 UnixTimerFd::Listen (int backlog)
 {
   NS_LOG_FUNCTION (this << backlog);
@@ -147,7 +148,7 @@ UnixTimerFd::Listen (int backlog)
   current->err = ENOTSOCK;
   return -1;
 }
-int 
+int
 UnixTimerFd::Shutdown (int how)
 {
   NS_LOG_FUNCTION (this << how);
@@ -155,7 +156,7 @@ UnixTimerFd::Shutdown (int how)
   current->err = ENOTSOCK;
   return -1;
 }
-int 
+int
 UnixTimerFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
 {
   NS_LOG_FUNCTION (this << my_addr << addrlen);
@@ -171,7 +172,7 @@ UnixTimerFd::Mmap (void *start, size_t length, int prot, int flags, off64_t offs
   current->err = EINVAL;
   return MAP_FAILED;
 }
-off64_t 
+off64_t
 UnixTimerFd::Lseek (off64_t offset, int whence)
 {
   NS_LOG_FUNCTION (this << offset << whence);
@@ -179,7 +180,7 @@ UnixTimerFd::Lseek (off64_t offset, int whence)
   current->err = ESPIPE;
   return -1;
 }
-int 
+int
 UnixTimerFd::Fxstat (int ver, struct ::stat *buf)
 {
   NS_LOG_FUNCTION (this << buf);
@@ -187,7 +188,7 @@ UnixTimerFd::Fxstat (int ver, struct ::stat *buf)
   // but this call is expected to succeed by the kernel.
   return 0;
 }
-int 
+int
 UnixTimerFd::Fxstat64 (int ver, struct ::stat64 *buf)
 {
   NS_LOG_FUNCTION (this << buf);
@@ -195,7 +196,7 @@ UnixTimerFd::Fxstat64 (int ver, struct ::stat64 *buf)
   // but this call is expected to succeed by the kernel.
   return 0;
 }
-int 
+int
 UnixTimerFd::Fcntl (int cmd, unsigned long arg)
 {
   // XXX: this really needs to be fixed
@@ -216,7 +217,7 @@ UnixTimerFd::TimerExpired (void)
       m_waiter->process->manager->Wakeup (m_waiter);
     }
 }
-int 
+int
 UnixTimerFd::Settime (int flags,
                       const struct itimerspec *new_value,
                       struct itimerspec *old_value)
@@ -232,13 +233,13 @@ UnixTimerFd::Settime (int flags,
   Time initial = UtilsTimespecToTime (new_value->it_value);
   if (!initial.IsZero ())
     {
-      m_timer = Simulator::Schedule (initial, 
+      m_timer = Simulator::Schedule (initial,
                                      &UnixTimerFd::TimerExpired,
                                      this);
     }
   return 0;
 }
-int 
+int
 UnixTimerFd::Gettime (struct itimerspec *cur_value) const
 {
   if (!m_timer.IsRunning ())
@@ -255,13 +256,13 @@ UnixTimerFd::Gettime (struct itimerspec *cur_value) const
   return 0;
 }
 
-bool 
+bool
 UnixTimerFd::CanRecv (void) const
 {
   // XXX ?
   return false;
 }
-bool 
+bool
 UnixTimerFd::CanSend (void) const
 {
   return false;
@@ -284,7 +285,7 @@ UnixTimerFd::Poll (PollTable* ptable)
     {
       ret |= POLLOUT;
     }
-  if (HangupReceived () )
+  if (HangupReceived ())
     {
       ret |= POLLHUP;
     }

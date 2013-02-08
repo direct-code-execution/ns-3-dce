@@ -81,7 +81,7 @@ test2 ()
 
   for (int i = 0; i < MAXLINE; i++)
     {
-      line [i] = 'a' + ( i % 26 );
+      line [i] = 'a' + (i % 26);
     }
 
   if (pipe (fd) < 0)
@@ -97,9 +97,9 @@ test2 ()
     {
       close (fd[0]);           /* close read end */
 
-      for (int j = 0; j < 20; j++ )
+      for (int j = 0; j < 20; j++)
         {
-          if ( (n = write (fd[1], line, MAXLINE)) < 0)
+          if ((n = write (fd[1], line, MAXLINE)) < 0)
             {
               err_sys ((char*)"write error to pipe");
             }
@@ -118,7 +118,7 @@ test2 ()
   else                                                                                    /* child */
     {
       close (fd[1]);   /* close write end */
-      while ( ( n = read (fd[0], line, MAXLINE)) > 0)
+      while ((n = read (fd[0], line, MAXLINE)) > 0)
         {
           printf ("test2 read:%d\n",n);
           tot += n;
@@ -138,7 +138,7 @@ test3_thread (void *arg)
   int tot = 0;
   int n = 4;
 
-  while ( ( n = read (readFd, line, MAXLINE)) > 0)
+  while ((n = read (readFd, line, MAXLINE)) > 0)
     {
       printf ("test3 read %d\n",n);
       tot += n;
@@ -161,17 +161,17 @@ test3 ()
 
   for (int i = 0; i < MAXLINE; i++)
     {
-      line [i] = 'a' + ( i % 26 );
+      line [i] = 'a' + (i % 26);
     }
-  TEST_ASSERT_EQUAL ( pipe (fd), 0);
+  TEST_ASSERT_EQUAL (pipe (fd), 0);
 
   // try to join after the thread exits.
   status = pthread_create (&thread, NULL, &test3_thread, (void*)fd);
   TEST_ASSERT_EQUAL (status, 0);
 
-  for (int j = 0; j < 20; j++ )
+  for (int j = 0; j < 20; j++)
     {
-      if ( (n = write (fd[1], line, MAXLINE)) < 0)
+      if ((n = write (fd[1], line, MAXLINE)) < 0)
         {
           err_sys ((char*)"write error to pipe");
         }
@@ -197,14 +197,14 @@ test4 ()
 
   signal (SIGPIPE, sigpipe);
 
-  TEST_ASSERT_EQUAL ( pipe (fd), 0);
+  TEST_ASSERT_EQUAL (pipe (fd), 0);
 
 
   char line[MAXLINE];
 
   for (int i = 0; i < MAXLINE; i++)
     {
-      line [i] = 'a' + ( i % 26 );
+      line [i] = 'a' + (i % 26);
     }
   status = write (fd[1], line, MAXLINE);
 
@@ -235,12 +235,12 @@ test5_thread (void *arg)
       fd_set r;
 
       FD_ZERO (&r);
-      FD_SET ( readFd, &r);
+      FD_SET (readFd, &r);
 
       n = select (nfsd, &r, NULL, NULL, NULL);
       TEST_ASSERT_EQUAL (n, 1);
 
-      if (( n = read (readFd, line, MAXLINE)) > 0)
+      if ((n = read (readFd, line, MAXLINE)) > 0)
         {
           printf ("test5 read %d\n",n);
           tot += n;
@@ -268,15 +268,15 @@ test5 ()
 
   for (int i = 0; i < MAXLINE; i++)
     {
-      line [i] = 'a' + ( i % 26 );
+      line [i] = 'a' + (i % 26);
     }
-  TEST_ASSERT_EQUAL ( pipe (fd), 0);
+  TEST_ASSERT_EQUAL (pipe (fd), 0);
 
   // try to join after the thread exits.
   status = pthread_create (&thread, NULL, &test5_thread, (void*)fd);
   TEST_ASSERT_EQUAL (status, 0);
 
-  for (int j = 0; j < 20; j++ )
+  for (int j = 0; j < 20; j++)
     {
       int nfsd = fd[1] + 1;
       fd_set w;
@@ -287,7 +287,7 @@ test5 ()
       n = select (nfsd, NULL, &w, NULL, NULL);
       TEST_ASSERT_EQUAL (n, 1);
 
-      if ( (n = write (fd[1], line, MAXLINE)) < 0)
+      if ((n = write (fd[1], line, MAXLINE)) < 0)
         {
           err_sys ((char*)"write error to pipe");
         }
@@ -308,9 +308,9 @@ eat_stack (int fd, int pid)
 
 
 
-  for (int j = 0; j < 20; j++ )
+  for (int j = 0; j < 20; j++)
     {
-      if ( (n = write (fd, line, MAXLINE)) < 0)
+      if ((n = write (fd, line, MAXLINE)) < 0)
         {
           err_sys ((char*)"write error to pipe");
         }
@@ -336,7 +336,7 @@ test6 ()
 
   for (int i = 0; i < MAXLINE; i++)
     {
-      line [i] = 'a' + ( i % 26 );
+      line [i] = 'a' + (i % 26);
     }
 
   if (pipe (fd) < 0)
@@ -365,7 +365,7 @@ test6 ()
     {
       /* child */
       close (fd[1]);   /* close write end */
-      while ( ( n = read (fd[0], line, MAXLINE)) > 0)
+      while ((n = read (fd[0], line, MAXLINE)) > 0)
         {
           printf ("test6 read:%d\n",n);
           sleep (1);

@@ -20,7 +20,7 @@ main (int argc, char *argv[])
     it.it_value.tv_sec = 1;
     it.it_value.tv_usec = 500000;
 
-    timespec req = {3, 0};
+    timespec req = { 3, 0};
     timespec rem;
 
     setitimer (ITIMER_REAL, &it, NULL);

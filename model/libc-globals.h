@@ -12,7 +12,7 @@
 // };
 
 extern "C" {
-	
+
 void setup_global_variables ();
 
 }

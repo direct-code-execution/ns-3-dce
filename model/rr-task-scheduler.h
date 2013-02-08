@@ -34,7 +34,7 @@ public:
   static TypeId GetTypeId (void);
   RrTaskScheduler ();
 
-  virtual Task *PeekNext (void);
+  virtual Task * PeekNext (void);
   virtual void DequeueNext (void);
   virtual void Enqueue (Task *task);
   virtual void Dequeue (Task *task);

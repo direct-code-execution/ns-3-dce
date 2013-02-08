@@ -23,11 +23,11 @@ int main (int argc, char *argv[])
   ApplicationContainer apps;
 
   dce.SetBinary ("tcp-loopback");
-  dce.SetStackSize (1<<20);
+  dce.SetStackSize (1 << 20);
   apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds (4.0));
 
-  Simulator::Stop (Seconds(1000100.0));
+  Simulator::Stop (Seconds (1000100.0));
   Simulator::Run ();
   Simulator::Destroy ();
 

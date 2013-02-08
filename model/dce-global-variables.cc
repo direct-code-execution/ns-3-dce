@@ -25,7 +25,7 @@ void dce_global_variables_setup (struct DceGlobalVariables *variables)
   *process->penvp = process->originalEnvp;
 
   process->poptarg = variables->poptarg;
-  process->poptind = variables->poptind; 
+  process->poptind = variables->poptind;
   process->popterr = variables->popterr;
   process->poptopt = variables->poptopt;
 

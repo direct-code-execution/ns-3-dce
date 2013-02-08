@@ -58,7 +58,9 @@ ssize_t my_write (_IO_FILE *file, const void *buffer, ssize_t size)
       errno = Current ()->err;
     }
   if (file->_offset >= 0)
-    file->_offset += data_written;
+    {
+      file->_offset += data_written;
+    }
   return data_written;
 }
 off64_t my_seek (_IO_FILE *file, off64_t where, int whence)
@@ -175,7 +177,7 @@ void mode_setup (FILE *file, int fd, const char *mode)
 
 } // namespace
 
-FILE *dce_fdopen (int fildes, const char *mode)
+FILE * dce_fdopen (int fildes, const char *mode)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << fildes << mode);
   NS_ASSERT (Current () != 0);
@@ -199,12 +201,12 @@ FILE *dce_fdopen (int fildes, const char *mode)
   close (file->_fileno);
   file->_fileno = fildes;
   current->process->openStreams.push_back (file);
-  dce_fseek (file, dce_lseek(fildes, 0, SEEK_CUR), SEEK_SET);
+  dce_fseek (file, dce_lseek (fildes, 0, SEEK_CUR), SEEK_SET);
 
   return file;
 }
 
-FILE *dce_fopen64 (const char *path, const char *mode)
+FILE * dce_fopen64 (const char *path, const char *mode)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << path << mode);
   NS_ASSERT (Current () != 0);
@@ -214,7 +216,7 @@ FILE *dce_fopen64 (const char *path, const char *mode)
       current->err = EINVAL;
       return 0;
     }
-  int fd = dce_open (path, mode_posix_flags (mode)|O_LARGEFILE , 0666 & ~(current->process->uMask) );
+  int fd = dce_open (path, mode_posix_flags (mode) | O_LARGEFILE, 0666 & ~(current->process->uMask));
   if (fd == -1)
     {
       current->err = errno;
@@ -228,7 +230,7 @@ FILE *dce_fopen64 (const char *path, const char *mode)
   mode_setup (file, fd, mode);
   return file;
 }
-FILE *dce_fopen (const char *path, const char *mode)
+FILE * dce_fopen (const char *path, const char *mode)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << path << mode);
   NS_ASSERT (Current () != 0);
@@ -238,7 +240,7 @@ FILE *dce_fopen (const char *path, const char *mode)
       current->err = EINVAL;
       return 0;
     }
-  int fd = dce_open (path, mode_posix_flags (mode), 0666 & ~(current->process->uMask) );
+  int fd = dce_open (path, mode_posix_flags (mode), 0666 & ~(current->process->uMask));
   if (fd == -1)
     {
       current->err = errno;
@@ -252,7 +254,7 @@ FILE *dce_fopen (const char *path, const char *mode)
   mode_setup (file, fd, mode);
   return file;
 }
-FILE *dce_freopen (const char *path, const char *mode, FILE *stream)
+FILE * dce_freopen (const char *path, const char *mode, FILE *stream)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << path << mode << stream);
   NS_ASSERT (Current () != 0);
@@ -315,7 +317,7 @@ remove_stream (FILE *fp)
 {
   Thread *current = Current ();
   bool found = false;
-  for (std::vector<FILE*>::iterator  i = current->process->openStreams.begin (); 
+  for (std::vector<FILE*>::iterator  i = current->process->openStreams.begin ();
        i != current->process->openStreams.end (); ++i)
     {
       if (*i == fp)
@@ -364,9 +366,9 @@ int dce_fclose (FILE *fp)
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
 
-  if (fp == *current->process->pstdout ||
-      fp == *current->process->pstderr ||
-      fp == *current->process->pstdin)
+  if (fp == *current->process->pstdout
+      || fp == *current->process->pstderr
+      || fp == *current->process->pstdin)
     {
       return 0;
     }
@@ -463,7 +465,7 @@ int dce_fileno (FILE *stream)
 }
 
 // stdio.h
-int dce_printf(const char *format, ...)
+int dce_printf (const char *format, ...)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << format);
   NS_ASSERT (Current () != 0);
@@ -475,7 +477,7 @@ int dce_printf(const char *format, ...)
   return status;
 }
 // stdarg.h
-int dce_vprintf(const char *format, va_list ap)
+int dce_vprintf (const char *format, va_list ap)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << format);
   NS_ASSERT (Current () != 0);
@@ -517,7 +519,10 @@ int dce_puts (const char *__s)
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << __s);
   NS_ASSERT (Current () != 0);
   int ret = fputs (__s, *Current ()->process->pstdout);
-  if (ret < 0) return ret;
+  if (ret < 0)
+    {
+      return ret;
+    }
   fputc ('\n', *Current ()->process->pstdout);
   return ret;
 }
@@ -661,17 +666,17 @@ int dce_setvbuf (FILE *stream, char *buf, int mode, size_t size)
   return status;
 }
 
-void dce_setbuf(FILE *stream, char *buf)
+void dce_setbuf (FILE *stream, char *buf)
 {
   dce_setvbuf (stream, buf, buf ? _IOFBF : _IONBF, BUFSIZ);
 }
 
-void dce_setbuffer(FILE *stream, char *buf, size_t size)
+void dce_setbuffer (FILE *stream, char *buf, size_t size)
 {
   dce_setvbuf (stream, buf, buf ? _IOFBF : _IONBF, size);
 }
 
-void dce_setlinebuf(FILE *stream)
+void dce_setlinebuf (FILE *stream)
 {
   dce_setvbuf (stream, (char *) NULL, _IOLBF, 0);
 }
@@ -695,7 +700,7 @@ int dce_remove (const char *pathname)
   return status;
 }
 
-void dce_perror(const char *s)
+void dce_perror (const char *s)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -707,7 +712,7 @@ int dce___printf_chk (int __flag, __const char *__restrict __format, ...)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
-  
+
   va_list ap;
   va_start (ap, __format);
   int retval = vfprintf (*Current ()->process->pstdout, __format, ap);
@@ -716,7 +721,7 @@ int dce___printf_chk (int __flag, __const char *__restrict __format, ...)
 }
 
 int dce___vfprintf_chk (FILE *__restrict __stream, int __flag,
-						__const char *__restrict __format, _G_va_list __ap)
+                        __const char *__restrict __format, _G_va_list __ap)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -725,7 +730,7 @@ int dce___vfprintf_chk (FILE *__restrict __stream, int __flag,
 }
 
 int dce___fprintf_chk (FILE *__restrict __stream, int __flag,
-					   __const char *__restrict __format, ...)
+                       __const char *__restrict __format, ...)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -738,7 +743,7 @@ int dce___fprintf_chk (FILE *__restrict __stream, int __flag,
 }
 
 int dce___snprintf_chk (char *__restrict __s, size_t __n, int __flag,
-						size_t __slen, __const char *__restrict __format, ...)
+                        size_t __slen, __const char *__restrict __format, ...)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -753,7 +758,7 @@ void dce___fpurge (FILE *stream)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream);
   NS_ASSERT (Current () != 0);
- __fpurge (stream);
+  __fpurge (stream);
 }
 size_t dce___fpending (FILE *stream)
 {
@@ -772,36 +777,36 @@ int dce_asprintf (char **strp, const char *fmt, ...)
 
 int dce_vasprintf (char **strp, const char *fmt, va_list ap)
 {
-  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () );
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
 
   char *res = 0;
   int ret = 0;
 
-  if ( !strp || ! fmt )
+  if (!strp || !fmt)
     {
       Current ()->err = ENOMEM;
       return -1;
     }
 
-  ret = vasprintf( &res, fmt , ap);
+  ret = vasprintf (&res, fmt, ap);
 
   if (ret > 0)
     {
-        char *tmp = (char*) dce_malloc (ret);
+      char *tmp = (char*) dce_malloc (ret);
 
-        if (tmp)
-          {
-            memcpy (tmp, res, ret);
+      if (tmp)
+        {
+          memcpy (tmp, res, ret);
 
-            *strp = tmp;
-            free (res);
+          *strp = tmp;
+          free (res);
 
-            return ret;
-          }
-        free (res);
-        Current ()->err = ENOMEM;
-        return -1;
+          return ret;
+        }
+      free (res);
+      Current ()->err = ENOMEM;
+      return -1;
     }
   Current ()->err = errno;
 

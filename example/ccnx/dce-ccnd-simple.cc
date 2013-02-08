@@ -8,7 +8,7 @@ using namespace ns3;
 void
 CreateReadme ()
 {
-  std::ofstream osf("/tmp/README", std::fstream::trunc);
+  std::ofstream osf ("/tmp/README", std::fstream::trunc);
 
   osf << "The wanted data is here :)" ;
 
@@ -29,42 +29,42 @@ int main (int argc, char *argv[])
   DceManagerHelper dceManager;
   dceManager.Install (nodes);
 
-  CcnClientHelper dce; 
+  CcnClientHelper dce;
   ApplicationContainer apps, putter, getter;
 
-  dce.SetStackSize (1<<20);
+  dce.SetStackSize (1 << 20);
 
   dce.SetBinary ("ccnd");
-  dce.ResetArguments();
-  dce.ResetEnvironment();
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
 
-  dce.AddEnvironment("CCND_CAP", "50000");
-  dce.AddEnvironment("CCND_DEBUG", "-1");
-  dce.AddEnvironment("CCN_LOCAL_PORT", "");
+  dce.AddEnvironment ("CCND_CAP", "50000");
+  dce.AddEnvironment ("CCND_DEBUG", "-1");
+  dce.AddEnvironment ("CCN_LOCAL_PORT", "");
 
-  dce.AddEnvironment("CCND_CAP", "");
-  dce.AddEnvironment("CCND_AUTOREG", "");
-  dce.AddEnvironment("CCND_LISTEN_ON", "");
-  dce.AddEnvironment("CCND_MTU", "");
-  dce.AddEnvironment("CCND_LOCAL_SOCKNAME", "");
-  dce.AddEnvironment("CCND_DATA_PAUSE_MICROSEC", "");
-  dce.AddEnvironment("CCND_KEYSTORE_DIRECTORY", "");
+  dce.AddEnvironment ("CCND_CAP", "");
+  dce.AddEnvironment ("CCND_AUTOREG", "");
+  dce.AddEnvironment ("CCND_LISTEN_ON", "");
+  dce.AddEnvironment ("CCND_MTU", "");
+  dce.AddEnvironment ("CCND_LOCAL_SOCKNAME", "");
+  dce.AddEnvironment ("CCND_DATA_PAUSE_MICROSEC", "");
+  dce.AddEnvironment ("CCND_KEYSTORE_DIRECTORY", "");
 
   apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds (0.0));
 
-  dce.ResetArguments();
+  dce.ResetArguments ();
   dce.SetBinary ("ccnpoke");
   dce.SetStdinFile ("/tmp/README");
   dce.AddFile ("/tmp/README", "/tmp/README");
   dce.AddArgument ("ccnx:/LeReadme");
-  dce.AddEnvironment("HOME", "/root");
+  dce.AddEnvironment ("HOME", "/root");
 
   putter = dce.Install (nodes.Get (0));
   putter.Start (Seconds (1.0));
-  
+
   CreateReadme ();
-  dce.ResetArguments();
+  dce.ResetArguments ();
   dce.SetBinary ("ccnpeek");
   dce.SetStdinFile ("");
   dce.AddArgument ("-c");
@@ -74,15 +74,15 @@ int main (int argc, char *argv[])
   getter.Start (Seconds (2.0));
 
   // Stop ccnd
-  dce.ResetArguments();
-  dce.ResetEnvironment();
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
   dce.SetBinary ("ccndsmoketest");
   dce.SetStdinFile ("");
   dce.AddArgument ("kill");
   apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds (59.0));
 
-  Simulator::Stop (Seconds(60.0));
+  Simulator::Stop (Seconds (60.0));
   Simulator::Run ();
   Simulator::Destroy ();
 

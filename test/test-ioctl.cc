@@ -29,7 +29,7 @@ int main (int argc, char *argv[])
   //SIOCGIFFLAGS
   ioctlres = ioctl (sock, SIOCGIFFLAGS, &m_ifreq);
   TEST_ASSERT_UNEQUAL (ioctlres, -1);
-  TEST_ASSERT_UNEQUAL (m_ifreq.ifr_flags & (IFF_UP | IFF_BROADCAST), 0 );
+  TEST_ASSERT_UNEQUAL (m_ifreq.ifr_flags & (IFF_UP | IFF_BROADCAST), 0);
 
   //SIOCGIWNAME
   ioctlres = ioctl (sock, SIOCGIWNAME, &m_iwreq);

@@ -27,7 +27,7 @@ NS_LOG_COMPONENT_DEFINE ("Alloc");
 
 
 KingsleyAlloc::KingsleyAlloc ()
-  : m_defaultMmapSize (1<<15)
+  : m_defaultMmapSize (1 << 15)
 {
   NS_LOG_FUNCTION (this);
   memset (m_buckets, 0, sizeof(m_buckets));
@@ -35,7 +35,7 @@ KingsleyAlloc::KingsleyAlloc ()
 KingsleyAlloc::~KingsleyAlloc ()
 {
   NS_LOG_FUNCTION (this);
- // return;
+  // return;
   for (std::list<struct KingsleyAlloc::MmapChunk>::iterator i = m_chunks.begin ();
        i != m_chunks.end (); ++i)
     {
@@ -47,7 +47,7 @@ KingsleyAlloc::~KingsleyAlloc ()
           // buffer.
           free (i->copy);
 
-          if ( i->copy == i->mmap->current )
+          if (i->copy == i->mmap->current)
             {
               // Current must be nullify because we the next switch of context do not need to save our heap.
               i->mmap->current = 0;
@@ -83,7 +83,7 @@ KingsleyAlloc::Dispose ()
 KingsleyAlloc *
 KingsleyAlloc::Clone (void)
 {
-  NS_LOG_FUNCTION (this << "begin" );
+  NS_LOG_FUNCTION (this << "begin");
   KingsleyAlloc *clone = new KingsleyAlloc ();
   *clone->m_buckets = *m_buckets;
   for (std::list<struct KingsleyAlloc::MmapChunk>::iterator i = m_chunks.begin ();
@@ -108,23 +108,23 @@ KingsleyAlloc::Clone (void)
   return clone;
 }
 
-void 
+void
 KingsleyAlloc::SwitchTo (void)
 {
   NS_LOG_FUNCTION (this);
   for (std::list<struct KingsleyAlloc::MmapChunk>::const_iterator i = m_chunks.begin ();
-      i != m_chunks.end (); ++i)
+       i != m_chunks.end (); ++i)
     {
       struct KingsleyAlloc::MmapChunk chunk = *i;
 
       // save the previous user's heap if necessary
-      if ( chunk.mmap->current && ( chunk.mmap->current!=chunk.mmap->buffer ))
+      if (chunk.mmap->current && (chunk.mmap->current != chunk.mmap->buffer))
         {
           memcpy (chunk.mmap->current, chunk.mmap->buffer, chunk.mmap->size);
         }
 
       // swap in our own copy of the heap if necessary
-      if ( chunk.copy && ( chunk.mmap->buffer != chunk.copy ))
+      if (chunk.copy && (chunk.mmap->buffer != chunk.copy))
         {
           memcpy (chunk.mmap->buffer, chunk.copy, chunk.mmap->size);
         }
@@ -148,14 +148,14 @@ KingsleyAlloc::MmapAlloc (uint32_t size)
   struct Mmap *mmap_struct = new Mmap ();
   mmap_struct->refcount = 1;
   mmap_struct->size = size;
-  mmap_struct->buffer = (uint8_t*)::mmap (0, size, PROT_READ | PROT_WRITE, 
+  mmap_struct->buffer = (uint8_t*)::mmap (0, size, PROT_READ | PROT_WRITE,
                                           MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
   NS_ASSERT_MSG (mmap_struct->buffer != MAP_FAILED, "Unable to mmap memory buffer");
   mmap_struct->current = mmap_struct->buffer;
   struct MmapChunk chunk;
   chunk.mmap = mmap_struct;
   chunk.brk = 0;
-  chunk.copy = 0;// no clone yet, no copy yet.
+  chunk.copy = 0; // no clone yet, no copy yet.
 
   m_chunks.push_front (chunk);
   NS_LOG_DEBUG ("mmap alloced=" << size << " at=" << (void*)mmap_struct->buffer);
@@ -182,7 +182,7 @@ KingsleyAlloc::Brk (uint32_t needed)
   MmapAlloc (m_defaultMmapSize);
   return Brk (needed);
 }
-uint8_t 
+uint8_t
 KingsleyAlloc::SizeToBucket (uint32_t sz)
 {
   NS_LOG_FUNCTION (this << sz);
@@ -195,18 +195,18 @@ KingsleyAlloc::SizeToBucket (uint32_t sz)
       bucket++;
     }
   NS_ASSERT (bucket < 32);
-  NS_LOG_DEBUG ("size=" << sz << ", bucket=" << (uint32_t)bucket << ", size=" << 
+  NS_LOG_DEBUG ("size=" << sz << ", bucket=" << (uint32_t)bucket << ", size=" <<
                 BucketToSize (bucket));
   return bucket;
 }
 uint32_t
 KingsleyAlloc::BucketToSize (uint8_t bucket)
 {
-  uint32_t size = (1<<(bucket+3));
+  uint32_t size = (1 << (bucket + 3));
   return size;
 }
 
-uint8_t * 
+uint8_t *
 KingsleyAlloc::Malloc (uint32_t size)
 {
   NS_LOG_FUNCTION (this << size);
@@ -237,7 +237,7 @@ KingsleyAlloc::Malloc (uint32_t size)
       return buffer;
     }
 }
-void 
+void
 KingsleyAlloc::Free (uint8_t *buffer, uint32_t size)
 {
   NS_LOG_FUNCTION (this << (void*)buffer << size);

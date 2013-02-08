@@ -56,12 +56,12 @@ UnixDatagramSocketFd::UnixDatagramSocketFd (Ptr<Socket> sock)
   m_socket->SetAttributeFailSafe ("IcmpCallback", CallbackValue (MakeCallback (&UnixDatagramSocketFd::IcmpCallback, this)));
 }
 
-bool 
+bool
 UnixDatagramSocketFd::CanRecv (void) const
 {
   return m_socket != 0 && m_socket->GetRxAvailable () != 0;
 }
-bool 
+bool
 UnixDatagramSocketFd::CanSend (void) const
 {
   return m_socket != 0 && m_socket->GetTxAvailable () != 0;
@@ -71,7 +71,7 @@ UnixDatagramSocketFd::HangupReceived (void) const
 {
   return false;
 }
-void 
+void
 UnixDatagramSocketFd::QueueErr (sock_extended_err ee, struct sockaddr_in offender, uint8_t ttl)
 {
   NS_LOG_FUNCTION (this);
@@ -87,7 +87,7 @@ UnixDatagramSocketFd::QueueErr (sock_extended_err ee, struct sockaddr_in offende
 }
 
 void
-UnixDatagramSocketFd::IcmpCallback (Ipv4Address icmpSource, uint8_t icmpTtl, 
+UnixDatagramSocketFd::IcmpCallback (Ipv4Address icmpSource, uint8_t icmpTtl,
                                     uint8_t icmpType, uint8_t icmpCode,
                                     uint32_t icmpInfo)
 {
@@ -99,23 +99,23 @@ UnixDatagramSocketFd::IcmpCallback (Ipv4Address icmpSource, uint8_t icmpTtl,
   sock_extended_err ee;
   struct sockaddr_in offender;
 
-  if (icmpType == Icmpv4Header::DEST_UNREACH &&
-      icmpCode == Icmpv4DestinationUnreachable::FRAG_NEEDED)
+  if (icmpType == Icmpv4Header::DEST_UNREACH
+      && icmpCode == Icmpv4DestinationUnreachable::FRAG_NEEDED)
     {
       ee.ee_errno = EMSGSIZE;
     }
-  else if (icmpType == Icmpv4Header::DEST_UNREACH &&
-           icmpCode == Icmpv4DestinationUnreachable::PORT_UNREACHABLE)
+  else if (icmpType == Icmpv4Header::DEST_UNREACH
+           && icmpCode == Icmpv4DestinationUnreachable::PORT_UNREACHABLE)
     {
       ee.ee_errno = EHOSTUNREACH;
     }
-  else if (icmpType == Icmpv4Header::TIME_EXCEEDED &&
-           icmpCode == Icmpv4TimeExceeded::TIME_TO_LIVE)
+  else if (icmpType == Icmpv4Header::TIME_EXCEEDED
+           && icmpCode == Icmpv4TimeExceeded::TIME_TO_LIVE)
     {
       ee.ee_errno = EHOSTUNREACH;
     }
-  else if (icmpType == Icmpv4Header::TIME_EXCEEDED &&
-           icmpCode == Icmpv4TimeExceeded::FRAGMENT_REASSEMBLY)
+  else if (icmpType == Icmpv4Header::TIME_EXCEEDED
+           && icmpCode == Icmpv4TimeExceeded::FRAGMENT_REASSEMBLY)
     {
       ee.ee_errno = ETIMEDOUT;
     }
@@ -137,7 +137,7 @@ UnixDatagramSocketFd::IcmpCallback (Ipv4Address icmpSource, uint8_t icmpTtl,
   QueueErr (ee, offender, icmpTtl);
 }
 
-ssize_t 
+ssize_t
 UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
 {
   Thread *current = Current ();
@@ -193,7 +193,7 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
     }
   if ((PacketSocketAddress::IsMatchingType (from)))
     {
-      if ( msg->msg_namelen < sizeof (sockaddr_ll) )
+      if (msg->msg_namelen < sizeof (sockaddr_ll))
         {
           current->err = EINVAL;
           return -1;
@@ -204,7 +204,7 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
       NS_ASSERT (packet->GetSize () + 14 <= count);
 
       memset (buf, 0, count);
-      l = packet->CopyData (buf+14, count-14) + 14;
+      l = packet->CopyData (buf + 14, count - 14) + 14;
 
       SocketAddressTag sat;
       PacketSocketTag pst;
@@ -213,18 +213,18 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
       found = packet->PeekPacketTag (pst);
       if (found)
         {
-          CopyMacAddress (pst.GetDestAddress (), buf );
+          CopyMacAddress (pst.GetDestAddress (), buf);
         }
       found = packet->PeekPacketTag (sat);
       if (found)
         {
-          if (PacketSocketAddress::IsMatchingType ( sat.GetAddress () ) )
+          if (PacketSocketAddress::IsMatchingType (sat.GetAddress ()))
             {
-              PacketSocketAddress psa = PacketSocketAddress::ConvertFrom (sat.GetAddress () );
-              CopyMacAddress (psa.GetPhysicalAddress (), buf );
+              PacketSocketAddress psa = PacketSocketAddress::ConvertFrom (sat.GetAddress ());
+              CopyMacAddress (psa.GetPhysicalAddress (), buf);
             }
         }
-      memcpy (buf+12, &(((struct sockaddr_ll *)msg->msg_name)->sll_protocol), 2);
+      memcpy (buf + 12, &(((struct sockaddr_ll *)msg->msg_name)->sll_protocol), 2);
     }
   else
     {
@@ -238,7 +238,7 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
               NS_LOG_DEBUG ("RecvPktInfo requested");
 
               Ptr<Node> node = current->process->manager->GetObject<Node> ();
-              
+
               Ipv4PacketInfoTag ipv4Tag;
               bool isTagPresent = packet->PeekPacketTag (ipv4Tag);
               if (isTagPresent)
@@ -251,8 +251,8 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
                       memcpy (&pkt.ipi_addr, msg->msg_name, sizeof (pkt.ipi_addr));
                     }
                   cmsg.Add (SOL_IP, IP_PKTINFO, sizeof (struct in_pktinfo), (const uint8_t *)&pkt);
-                  
-                  NS_LOG_DEBUG ("ipv4 tag, iface: " <<  pkt.ipi_ifindex );
+
+                  NS_LOG_DEBUG ("ipv4 tag, iface: " <<  pkt.ipi_ifindex);
                 }
 
               Ipv6PacketInfoTag ipv6Tag;
@@ -268,21 +268,21 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
                     }
                   cmsg.Add (SOL_IPV6, IPV6_PKTINFO, sizeof (struct in6_pktinfo), (const uint8_t *)&pkt6);
                 }
-              
+
             }
           cmsg.Finish ();
         }
-      
+
       // XXX: we ignore MSG_TRUNC for the return value.
       NS_ASSERT (packet->GetSize ()  <= count);
       l = packet->CopyData (buf, count);
-      NS_ASSERT ( l == packet->GetSize () );
+      NS_ASSERT (l == packet->GetSize ());
     }
 
   return l;
 }
 
-ssize_t 
+ssize_t
 UnixDatagramSocketFd::DoSendmsg (const struct msghdr *msg, int flags)
 {
   Thread *current = Current ();
@@ -291,7 +291,7 @@ UnixDatagramSocketFd::DoSendmsg (const struct msghdr *msg, int flags)
 
   BooleanValue isIpHeaderIncluded (false);
   m_socket->GetAttributeFailSafe ("IpHeaderInclude", isIpHeaderIncluded);
-  
+
   ssize_t retval = 0;
   Ipv4Header ipHeader;
   for (uint32_t i = 0; i < msg->msg_iovlen; ++i)
@@ -304,7 +304,7 @@ UnixDatagramSocketFd::DoSendmsg (const struct msghdr *msg, int flags)
           struct ip *iph = (struct ip *)buf;
           NS_ASSERT_MSG (m_socket->GetInstanceTypeId () == TypeId::LookupByName ("ns3::Ipv4RawSocketImpl"),
                          "IsIpHdrIncl==TRUE make sense only for Ipv4RawSocketImpl sockets");
-		  
+
           ipHeader.SetSource (Ipv4Address (htonl (iph->ip_src.s_addr)));
           ipHeader.SetDestination (Ipv4Address (htonl (iph->ip_dst.s_addr)));
           ipHeader.SetProtocol (iph->ip_p);
@@ -312,13 +312,13 @@ UnixDatagramSocketFd::DoSendmsg (const struct msghdr *msg, int flags)
           ipHeader.SetTtl (iph->ip_ttl);
           continue;
         }
-	  
+
       Ptr<Packet> packet = Create<Packet> (buf, len);
       if (isIpHeaderIncluded)
         {
           packet->AddHeader (ipHeader);
         }
-	  
+
       int result;
       if (msg->msg_name != 0 && msg->msg_namelen != 0)
         {
@@ -337,15 +337,15 @@ UnixDatagramSocketFd::DoSendmsg (const struct msghdr *msg, int flags)
               // Retrieve binded protocol
               Address binded = pad;
               s->GetSockName (binded);
-              if ( PacketSocketAddress::IsMatchingType (binded) )
+              if (PacketSocketAddress::IsMatchingType (binded))
                 {
                   PacketSocketAddress pad2 = PacketSocketAddress::ConvertFrom (binded);
 
-                  pad.SetProtocol (pad2.GetProtocol () );
+                  pad.SetProtocol (pad2.GetProtocol ());
                 }
 
               // Set Interface index
-              if (addr->sll_ifindex>0)
+              if (addr->sll_ifindex > 0)
                 {
                   pad.SetSingleDevice (addr->sll_ifindex - 1);
                 }
@@ -377,7 +377,7 @@ UnixDatagramSocketFd::DoSendmsg (const struct msghdr *msg, int flags)
     }
   return retval;
 }
-int 
+int
 UnixDatagramSocketFd::Listen (int backlog)
 {
   Thread *current = Current ();
@@ -386,7 +386,7 @@ UnixDatagramSocketFd::Listen (int backlog)
   current->err = EOPNOTSUPP;
   return -1;
 }
-int 
+int
 UnixDatagramSocketFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
 {
   Thread *current = Current ();
@@ -395,13 +395,13 @@ UnixDatagramSocketFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
   current->err = EOPNOTSUPP;
   return -1;
 }
-int 
+int
 UnixDatagramSocketFd::Shutdown (int how)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current << how);
   NS_ASSERT (current != 0);
-  // XXX: linux does not generate EOPNOTSUPP for this. I _think_ it 
+  // XXX: linux does not generate EOPNOTSUPP for this. I _think_ it
   // generates ENOTCONN which, honestly, makes _zero_ sense.
   current->err = EOPNOTSUPP;
   return -1;
@@ -409,12 +409,12 @@ UnixDatagramSocketFd::Shutdown (int how)
 void
 UnixDatagramSocketFd::CopyMacAddress (const Address &a,  uint8_t* const buf)
 {
-  if (Mac48Address::IsMatchingType (  a ) )
+  if (Mac48Address::IsMatchingType (a))
     {
       uint8_t addr[8];
       uint32_t l = a.CopyAllTo (addr, sizeof (addr));
 
-      if ( ( sizeof (addr) == l )  && ( addr[1] == 6 ) )
+      if ((sizeof (addr) == l)  && (addr[1] == 6))
         {
           memcpy (buf, addr + 2, 6);
         }
@@ -433,7 +433,7 @@ UnixDatagramSocketFd::Poll (PollTable* ptable)
     {
       ret |= POLLOUT;
     }
-  if (HangupReceived () )
+  if (HangupReceived ())
     {
       ret |= POLLHUP;
     }

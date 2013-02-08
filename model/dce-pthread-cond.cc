@@ -22,7 +22,7 @@ CondToCid (const pthread_cond_t *cond)
     }
   return 0;
 }
-static void 
+static void
 CidToCond (uint32_t cid, pthread_cond_t *cond)
 {
   uint32_t *pcid = (uint32_t *)cond;
@@ -95,7 +95,7 @@ int dce_pthread_cond_destroy (pthread_cond_t *cond)
       return EINVAL;
     }
 
-  for (std::vector<struct Condition *>::iterator i = current->process->conditions.begin (); 
+  for (std::vector<struct Condition *>::iterator i = current->process->conditions.begin ();
        i != current->process->conditions.end (); ++i)
     {
       if (condition == *i)

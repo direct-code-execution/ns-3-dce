@@ -24,7 +24,7 @@ public:
   virtual ssize_t Recvmsg (struct msghdr *msg, int flags) = 0;
   virtual ssize_t Sendmsg (const struct msghdr *msg, int flags) = 0;
   virtual bool Isatty (void) const = 0;
-  virtual char *Ttyname (void);
+  virtual char * Ttyname (void);
   virtual int Setsockopt (int level, int optname,
                           const void *optval, socklen_t optlen) = 0;
   virtual int Getsockopt (int level, int optname,
@@ -37,7 +37,7 @@ public:
   virtual int Listen (int backlog) = 0;
   virtual int Shutdown (int how) = 0;
   virtual int Accept (struct sockaddr *my_addr, socklen_t *addrlen) = 0;
-  virtual void *Mmap (void *start, size_t length, int prot, int flags, off64_t offset) = 0;
+  virtual void * Mmap (void *start, size_t length, int prot, int flags, off64_t offset) = 0;
   virtual off64_t Lseek (off64_t offset, int whence) = 0;
   virtual int Fxstat (int ver, struct ::stat *buf) = 0;
   virtual int Fxstat64 (int ver, struct ::stat64 *buf) = 0;

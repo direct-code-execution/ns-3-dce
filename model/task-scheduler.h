@@ -38,7 +38,7 @@ public:
    * \returns the task which will be removed by
    *          TaskScheduler::DequeueNext
    */
-  virtual struct Task *PeekNext (void) = 0;
+  virtual struct Task * PeekNext (void) = 0;
   /**
    * Remove the 'active' task most eligible to become
    * the new 'current' task.

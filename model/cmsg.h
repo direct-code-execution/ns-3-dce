@@ -3,7 +3,7 @@
 
 namespace ns3 {
 
-class Cmsg 
+class Cmsg
 {
 public:
   Cmsg (struct msghdr *msg);

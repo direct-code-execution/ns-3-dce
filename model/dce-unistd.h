@@ -22,8 +22,8 @@ pid_t dce_getpid (void);
 pid_t dce_getppid (void);
 int dce_pause (void);
 int dce_getopt (int argc, char * const argv[], const char *optstringt);
-int dce_getopt_long (int argc, char * const argv[], const char *optstring, 
-					 const struct option *longopts, int *longindex);
+int dce_getopt_long (int argc, char * const argv[], const char *optstring,
+                     const struct option *longopts, int *longindex);
 uid_t dce_getuid (void);
 uid_t dce_geteuid (void);
 int dce_setuid (uid_t uid);
@@ -37,9 +37,9 @@ int dce_setresgid (gid_t rgid, gid_t egid, gid_t sgid);
 
 int dce_isatty (int desc);
 char* dce_ttyname (int fd);
-char *dce_getcwd (char *buf, size_t size);
-char *dce_getwd (char *buf);
-char *dce_get_current_dir_name (void);
+char * dce_getcwd (char *buf, size_t size);
+char * dce_getwd (char *buf);
+char * dce_get_current_dir_name (void);
 
 int dce_chdir (const char *path);
 int dce_fchdir (int fd);
@@ -61,8 +61,8 @@ int dce_execle (const char *path, const char *arg, ...);
 int dce_truncate (const char *path, off_t length);
 int dce_ftruncate (int fd, off_t length);
 int dce_ftruncate64 (int fd, off_t length);
-	
-void *dce_sbrk (intptr_t increment);
+
+void * dce_sbrk (intptr_t increment);
 int dce_getpagesize (void);
 
 gid_t dce_getgid (void);

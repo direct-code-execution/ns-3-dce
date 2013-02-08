@@ -16,9 +16,9 @@ static void RunIp (Ptr<Node> node, Time at, std::string str)
   DceApplicationHelper process;
   ApplicationContainer apps;
   process.SetBinary ("ip");
-  process.SetStackSize (1<<16);
-  process.ResetArguments();
-  process.ParseArguments(str.c_str ());
+  process.SetStackSize (1 << 16);
+  process.ResetArguments ();
+  process.ParseArguments (str.c_str ());
   apps = process.Install (node);
   apps.Start (at);
 }
@@ -35,12 +35,12 @@ int main (int argc, char *argv[])
   char linkType = 'p'; // P2P
   bool reliable = true;
 
-  cmd.AddValue ("linkType" , "Link type: ie : C for CSMA, P for Point to Point and w for Wifi, default to P2P", linkType);
-  cmd.AddValue ("reliable" , "If true use TCP transport else UDP, default is TCP", reliable);
+  cmd.AddValue ("linkType", "Link type: ie : C for CSMA, P for Point to Point and w for Wifi, default to P2P", linkType);
+  cmd.AddValue ("reliable", "If true use TCP transport else UDP, default is TCP", reliable);
   cmd.Parse (argc, argv);
   linkType = tolower (linkType);
-  switch ( linkType )
-  {
+  switch (linkType)
+    {
     case 'c':
     case 'p':
     case 'w':
@@ -48,15 +48,15 @@ int main (int argc, char *argv[])
     default:
       std::cout << "Unknown link type : " << linkType << " ?" << std::endl;
       return 1;
-  }
+    }
 
   NodeContainer nodes;
   nodes.Create (2);
 
   NetDeviceContainer devices;
 
-  switch ( linkType )
-  {
+  switch (linkType)
+    {
     case 'c':
       {
         CsmaHelper csma;
@@ -99,12 +99,13 @@ int main (int argc, char *argv[])
       }
       break;
 
-    default: break;
-  }
+    default:
+      break;
+    }
 
   DceManagerHelper processManager;
   // processManager.SetLoader ("ns3::DlmLoaderFactory");
-  processManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
+  processManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
   LinuxStackHelper stack;
   stack.Install (nodes);
 
@@ -115,7 +116,7 @@ int main (int argc, char *argv[])
   processManager.Install (nodes);
 
 
-  for (int n=0; n < 2; n++)
+  for (int n = 0; n < 2; n++)
     {
       RunIp (nodes.Get (n), Seconds (0.2), "link show");
       RunIp (nodes.Get (n), Seconds (0.3), "route show table all");
@@ -129,7 +130,7 @@ int main (int argc, char *argv[])
     {
       process.SetBinary ("tcp-server");
       process.ResetArguments ();
-      process.SetStackSize (1<<16);
+      process.SetStackSize (1 << 16);
       apps = process.Install (nodes.Get (0));
       apps.Start (Seconds (1.0));
 
@@ -143,7 +144,7 @@ int main (int argc, char *argv[])
     {
       process.SetBinary ("udp-server");
       process.ResetArguments ();
-      process.SetStackSize (1<<16);
+      process.SetStackSize (1 << 16);
       apps = process.Install (nodes.Get (0));
       apps.Start (Seconds (1.0));
 
@@ -155,7 +156,7 @@ int main (int argc, char *argv[])
     }
 
   // print tcp sysctl value
-  LinuxStackHelper::SysctlGet (nodes.Get (0), Seconds (1.0), 
+  LinuxStackHelper::SysctlGet (nodes.Get (0), Seconds (1.0),
                                ".net.ipv4.tcp_available_congestion_control", &PrintTcpFlags);
 
   Simulator::Stop (Seconds (2000000.0));

@@ -40,18 +40,18 @@ class NetlinkSocketAddress;
 class Ipv4DceRouting;
 
 /**
-* \brief A NetlinkSocket is  used  to transfer information 
+* \brief A NetlinkSocket is  used  to transfer information
 between kernel and userspace processes .
 *
 * here we focus on NETLINK_ROUTE: Receives routing and link
-* updates and may be used to modify  the  routing  tables 
+* updates and may be used to modify  the  routing  tables
 * (both IPv4 and IPv6), IP addresses, link parame- ters, neighbor
-* setups, queueing disciplines, traffic classes and packet 
+* setups, queueing disciplines, traffic classes and packet
 * classifiers (see rtnetlink (7)). This socket type is very similar
 * to the linux and BSD "packet" sockets.
 *
 * Here is a summary of the semantics of this class:
-* - Bind: Bind uses only the protocol and device fields of the 
+* - Bind: Bind uses only the protocol and device fields of the
 *       NetlinkSocketAddress.
 *
 * - Send: send the input packet to the underlying kernel space
@@ -85,23 +85,23 @@ public:
   virtual int Listen (void);
   virtual uint32_t GetTxAvailable (void) const;
   virtual int Send (Ptr<Packet> p, uint32_t flags);
-  virtual int SendTo(Ptr<Packet> p, uint32_t flags, const Address &toAddress);
+  virtual int SendTo (Ptr<Packet> p, uint32_t flags, const Address &toAddress);
   virtual uint32_t GetRxAvailable (void) const;
   virtual Ptr<Packet> Recv (uint32_t maxSize, uint32_t flags);
-  virtual Ptr<Packet> RecvFrom (uint32_t maxSize, uint32_t flags, 
+  virtual Ptr<Packet> RecvFrom (uint32_t maxSize, uint32_t flags,
                                 Address &fromAddress);
-  virtual int GetSockName (Address &address) const; 
+  virtual int GetSockName (Address &address) const;
   virtual int GetPeerName (Address &address) const;
   virtual bool SetAllowBroadcast (bool allowBroadcast);
   virtual bool GetAllowBroadcast () const;
 
   uint32_t GetPid (void) const;
-  uint32_t GetGroups (void)const;
+  uint32_t GetGroups (void) const;
 
-  static const uint32_t m_kernelPid = 0; // NS3 pretends to be kernel 
+  static const uint32_t m_kernelPid = 0; // NS3 pretends to be kernel
 
   /**
-   * \brief Notify subscribed applications about interface info change 
+   * \brief Notify subscribed applications about interface info change
    *
    * This notification is send upon Up and Down calls to Ipv4 protocol
    * stack. What it does is simply dumping on the wire the current
@@ -115,7 +115,7 @@ public:
    * changes (new IP address or removal of IP address)
    */
   // int32_t NotifyIfAddrMessage (uint32_t interface_num);
-  
+
   //  int32_t NotifyRouteMessage(Ojbect route, uint16_t type, uint8_t family);
 
 private:
@@ -144,7 +144,7 @@ private:
   * \param nlmsg the netlink message to transmit
   * \param nonbloack always true
   */
-  int32_t SendMessageUnicast (const MultipartNetlinkMessage &nlmsg, 
+  int32_t SendMessageUnicast (const MultipartNetlinkMessage &nlmsg,
                               int32_t nonblock);
   /**
   * \brief spread message to netlink group user
@@ -152,33 +152,33 @@ private:
   * \param group multicast group id
   * \param node ?
   */
-  static int32_t SendMessageBroadcast (const MultipartNetlinkMessage &nlmsg, 
+  static int32_t SendMessageBroadcast (const MultipartNetlinkMessage &nlmsg,
                                        uint32_t group, Ptr<Node> node);
 
   /**
-  * these functions below are for NETLINK_ROUTE protocol, it handle the netlink 
-  * message like linux kernel work.  this implementation follows the kernel code 
+  * these functions below are for NETLINK_ROUTE protocol, it handle the netlink
+  * message like linux kernel work.  this implementation follows the kernel code
   * linux/rtnetlink.c, focus on "interface address, interface info and route entry",
-  * now we will only simply support three types operations of  NETLINK_ROUTE 
+  * now we will only simply support three types operations of  NETLINK_ROUTE
   * protocol
   */
-  
+
   /**
   * \returns 0 if messge not processed, < 0 for success or an error.
-  * this function would call dumping/doing functions to  
+  * this function would call dumping/doing functions to
   */
   int32_t HandleNetlinkRouteMessage (const NetlinkMessage &nlmsg);
-  
+
   /**
   * \returns 0 if dumping operation is OK, < 0 for an error.
-  */ 
+  */
   int32_t
-  DumpNetlinkRouteMessage (const NetlinkMessage &nlmsg, 
+  DumpNetlinkRouteMessage (const NetlinkMessage &nlmsg,
                            uint16_t type, uint8_t family);
 
   MultipartNetlinkMessage
   BuildInterfaceAddressDumpMessages ();
-  
+
   /**
    * \brief Build an InterfaceInfo message corresponding to n-th interface
    */
@@ -200,11 +200,11 @@ private:
   */
   int32_t DoNetlinkRouteMessage (const NetlinkMessage &nlmsg,
                                  uint16_t type, uint8_t family);
-  int32_t DoInterfaceAddressMessage (const NetlinkMessage &nlmsg, 
+  int32_t DoInterfaceAddressMessage (const NetlinkMessage &nlmsg,
                                      uint16_t type, uint8_t family);
-  int32_t DoInterfaceInfoMessage (const NetlinkMessage &nlmsg, 
+  int32_t DoInterfaceInfoMessage (const NetlinkMessage &nlmsg,
                                   uint16_t type, uint8_t family);
-  int32_t DoRouteMessage (const NetlinkMessage &nlmsg, 
+  int32_t DoRouteMessage (const NetlinkMessage &nlmsg,
                           uint16_t type, uint8_t family);
 
   int ErrnoToSimuErrno (void);
@@ -213,7 +213,7 @@ private:
   Ptr<Node> m_node;
   Ptr<Ipv4DceRouting> m_ipv4Routing;
   // Ptr<Ipv6DceRouting> m_ipv6Routing; //not implemented yet
-  
+
   enum SocketErrno m_errno;
   bool m_shutdownSend;
   bool m_shutdownRecv;
@@ -229,7 +229,7 @@ private:
   Callback<void, Ipv4Address,uint8_t,uint8_t,uint8_t,uint32_t> m_icmpCallback;
 };
 
-}//namespace ns3
+} //namespace ns3
 
 #endif /* NETLINK_SOCKET_H */
 

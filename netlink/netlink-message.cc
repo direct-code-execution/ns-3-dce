@@ -39,7 +39,8 @@ NetlinkMessageHeader::NetlinkMessageHeader ()
     m_nlmsgFlags (0),
     m_nlmsgSeq (0),
     m_nlmsgPid (0)
-{}
+{
+}
 
 NetlinkMessageHeader::NetlinkMessageHeader (uint16_t type, uint16_t flags, uint32_t seq, uint32_t pid)
   : m_nlmsgLen (16),
@@ -47,7 +48,8 @@ NetlinkMessageHeader::NetlinkMessageHeader (uint16_t type, uint16_t flags, uint3
     m_nlmsgFlags (flags),
     m_nlmsgSeq (seq),
     m_nlmsgPid (pid)
-{}
+{
+}
 
 void
 NetlinkMessageHeader::SetMsgLen (uint32_t v)
@@ -79,12 +81,12 @@ NetlinkMessageHeader::GetMsgFlags (void) const
 {
   return m_nlmsgFlags;
 }
-uint32_t 
+uint32_t
 NetlinkMessageHeader::GetMsgLen (void) const
 {
   return m_nlmsgLen;
 }
-uint16_t 
+uint16_t
 NetlinkMessageHeader::GetMsgType (void) const
 {
   return m_nlmsgType;
@@ -94,7 +96,7 @@ NetlinkMessageHeader::GetMsgSeq (void) const
 {
   return m_nlmsgSeq;
 }
-uint32_t 
+uint32_t
 NetlinkMessageHeader::GetMsgPid (void) const
 {
   return m_nlmsgPid;
@@ -110,21 +112,21 @@ NetlinkMessageHeader::GetPayloadSize (void) const
   return NETLINK_MSG_ALIGN (m_nlmsgLen - NETLINK_MSG_HEADER_SIZE);
 }
 
-TypeId 
+TypeId
 NetlinkMessageHeader::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::NetlinkMessageHeader")
     .SetParent<Header> ()
     .AddConstructor<NetlinkMessageHeader> ()
-    ;
+  ;
   return tid;
 }
-TypeId 
+TypeId
 NetlinkMessageHeader::GetInstanceTypeId (void) const
 {
   return GetTypeId ();
 }
-void 
+void
 NetlinkMessageHeader::Print (std::ostream &os) const
 {
   os << "NetlinkMessageHeader "
@@ -135,7 +137,7 @@ NetlinkMessageHeader::Print (std::ostream &os) const
      << "pid: " << m_nlmsgPid;
 }
 
-uint32_t 
+uint32_t
 NetlinkMessageHeader::GetSerializedSize (void) const
 {
   /* this is the size of an nlmsghdr payload. */
@@ -176,8 +178,9 @@ NetlinkMessageError::NetlinkMessageError ()
 {
 }
 NetlinkMessageError::~NetlinkMessageError ()
-{}
-void 
+{
+}
+void
 NetlinkMessageError::SetError (int32_t v)
 {
   m_error = v;
@@ -198,32 +201,32 @@ NetlinkMessageError::GetMsg (void) const
   return m_msg;
 }
 
-TypeId 
+TypeId
 NetlinkMessageError::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::NetlinkMessageError")
     .SetParent<NetlinkPayload> ()
     .AddConstructor<NetlinkMessageError> ()
-    ;
+  ;
   return tid;
 }
 
-TypeId 
+TypeId
 NetlinkMessageError::GetInstanceTypeId (void) const
 {
   return GetTypeId ();
 }
-void 
+void
 NetlinkMessageError::Print (std::ostream &os) const
-{  
+{
   os << "----NetlinkMessageError "
      << "error: " << m_error << " "
      << "msg:( ";
-  m_msg.Print(os);
+  m_msg.Print (os);
   os << " )";
 }
 
-uint32_t 
+uint32_t
 NetlinkMessageError::GetSerializedSize (void) const
 {
   /* this is the size of an nlmsgerr payload. */
@@ -239,10 +242,10 @@ NetlinkMessageError::Serialize (Buffer::Iterator& start) const
 
 uint32_t
 NetlinkMessageError::Deserialize (Buffer::Iterator& start)
-{  
+{
   m_error = start.ReadU32 ();
   m_msg.Deserialize (start);
-  
+
   return GetSerializedSize ();
 }
 
@@ -253,7 +256,8 @@ NetlinkMessageError::Deserialize (Buffer::Iterator& start)
 * \ NetlinkMessage
 ***********************************************************************************/
 NetlinkMessage::NetlinkMessage ()
-{}
+{
+}
 
 void
 NetlinkMessage::SetHeader (NetlinkMessageHeader hdr)
@@ -261,7 +265,7 @@ NetlinkMessage::SetHeader (NetlinkMessageHeader hdr)
   m_hdr = hdr;
 }
 NetlinkMessageHeader
-NetlinkMessage::GetHeader (void)const
+NetlinkMessage::GetHeader (void) const
 {
   return m_hdr;
 }
@@ -275,7 +279,7 @@ void
 NetlinkMessage::SetErrorMessage (NetlinkMessageError errmsg)
 {
   m_errorMessage = errmsg;
-  m_hdr.SetMsgLen(m_hdr.GetSerializedSize () + errmsg.GetSerializedSize ());
+  m_hdr.SetMsgLen (m_hdr.GetSerializedSize () + errmsg.GetSerializedSize ());
 }
 // the type is one of RTM_NEWLINK,RTM_DELLINK,RTM_GETLINK
 void
@@ -349,7 +353,7 @@ NetlinkMessage::IsMessageRoute (uint16_t type)
 bool
 NetlinkMessage::IsMessageTypeGet (uint16_t type)
 {
-  return ((( type - NETLINK_RTM_BASE)&3) == 2);
+  return (((type - NETLINK_RTM_BASE) & 3) == 2);
 }
 bool
 NetlinkMessage::IsMessageFlagsAck (uint16_t flags)
@@ -374,16 +378,16 @@ NetlinkMessage::operator MultipartNetlinkMessage (void) const
   return multi_nlmsg;
 }
 
-TypeId 
+TypeId
 NetlinkMessage::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::NetlinkMessage")
     .SetParent<Header> ()
     .AddConstructor<NetlinkMessage> ()
-    ;
+  ;
   return tid;
 }
-TypeId 
+TypeId
 NetlinkMessage::GetInstanceTypeId (void) const
 {
   return GetTypeId ();
@@ -413,7 +417,7 @@ NetlinkMessage::GetMsgType (void) const
 }
 
 uint8_t
-NetlinkMessage::GetFamily(void) const
+NetlinkMessage::GetFamily (void) const
 {
   if (IsMessageTypeGet (GetMsgType ()))
     {
@@ -423,11 +427,11 @@ NetlinkMessage::GetFamily(void) const
     {
       return m_addressTemplate.GetFamily ();
     }
-  else if (IsMessageInterface(m_hdr.GetMsgType ()))
+  else if (IsMessageInterface (m_hdr.GetMsgType ()))
     {
       return m_interfaceTemplate.GetFamily ();
     }
-  else if (IsMessageRoute(m_hdr.GetMsgType ()))
+  else if (IsMessageRoute (m_hdr.GetMsgType ()))
     {
       return m_routeTemplate.GetFamily ();
     }
@@ -442,28 +446,28 @@ NetlinkMessage::GetFamily(void) const
     }
 }
 
-void 
+void
 NetlinkMessage::Print (std::ostream &os) const
 {
   uint16_t type = m_hdr.GetMsgType ();
 
   os << "NetlinkMessage  ";
   os << " ----Header:(";
-  m_hdr.Print(os);
+  m_hdr.Print (os);
   os << ")";
 
-  if (type == NETLINK_MSG_DONE )
+  if (type == NETLINK_MSG_DONE)
     {
       os << "multipart message ends here";
     }
-  else if (type == NETLINK_MSG_ERROR )
+  else if (type == NETLINK_MSG_ERROR)
     {
       m_errorMessage.Print (os);
     }
   else if (type == NETLINK_RTM_GETROUTE || type == NETLINK_RTM_GETADDR || type == NETLINK_RTM_GETLINK)
     {
       m_genmsg.Print (os);
-    }  
+    }
   else if (type == NETLINK_RTM_NEWROUTE || type == NETLINK_RTM_DELROUTE)
     {
       m_routeTemplate.Print (os);
@@ -478,10 +482,10 @@ NetlinkMessage::Print (std::ostream &os) const
     }
   else
     {
-      os << "service not supported yet( " << type <<")";
+      os << "service not supported yet( " << type << ")";
     }
 }
-uint32_t 
+uint32_t
 NetlinkMessage::GetSerializedSize (void) const
 {
   return NETLINK_MSG_ALIGN (m_hdr.GetMsgLen ());
@@ -503,12 +507,12 @@ NetlinkMessage::Serialize (Buffer::Iterator& start) const
   else if (type == NETLINK_MSG_ERROR)
     {
       m_errorMessage.Serialize (start);
-    }  
-  else if (NetlinkMessage::IsMessageFlagsDump (m_hdr.GetMsgFlags ()) && 
-           (type == NETLINK_RTM_GETROUTE || type == NETLINK_RTM_GETADDR || type == NETLINK_RTM_GETLINK))
+    }
+  else if (NetlinkMessage::IsMessageFlagsDump (m_hdr.GetMsgFlags ())
+           && (type == NETLINK_RTM_GETROUTE || type == NETLINK_RTM_GETADDR || type == NETLINK_RTM_GETLINK))
     {
       m_genmsg.Serialize (start);
-    }  
+    }
   else if (type == NETLINK_RTM_NEWROUTE || type == NETLINK_RTM_DELROUTE || type == NETLINK_RTM_GETROUTE)
     {
       m_routeTemplate.Serialize (start);
@@ -523,7 +527,7 @@ NetlinkMessage::Serialize (Buffer::Iterator& start) const
     }
   else
     {
-    }  
+    }
 }
 
 
@@ -534,11 +538,11 @@ NetlinkMessage::Deserialize (Buffer::Iterator&start)
 
   m_hdr.Deserialize (start);
   remaining = NETLINK_MSG_ALIGN (m_hdr.GetMsgLen ()) - m_hdr.GetSerializedSize ();
-  
+
   //Deserialize service module
   uint16_t type = GetMsgType ();
   if (remaining)
-    {        
+    {
       if (type == NETLINK_MSG_DONE)
         {
           //do nothing
@@ -546,9 +550,9 @@ NetlinkMessage::Deserialize (Buffer::Iterator&start)
       else if (type == NETLINK_MSG_ERROR)
         {
           remaining -= m_errorMessage.Deserialize (start);
-        }      
-      else if (NetlinkMessage::IsMessageFlagsDump (m_hdr.GetMsgFlags()) &&
-               (type == NETLINK_RTM_GETROUTE || type == NETLINK_RTM_GETADDR || type == NETLINK_RTM_GETLINK))
+        }
+      else if (NetlinkMessage::IsMessageFlagsDump (m_hdr.GetMsgFlags ())
+               && (type == NETLINK_RTM_GETROUTE || type == NETLINK_RTM_GETADDR || type == NETLINK_RTM_GETLINK))
         {
           remaining -= m_genmsg.Deserialize (start, remaining);
         }
@@ -578,18 +582,19 @@ NetlinkMessage::Deserialize (Buffer::Iterator&start)
 * \ MultipartNetlinkMessage
 ***********************************************************************************/
 MultipartNetlinkMessage::MultipartNetlinkMessage ()
-{}
+{
+}
 
-TypeId 
+TypeId
 MultipartNetlinkMessage::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::MultipartNetlinkMessage")
     .SetParent<Header> ()
     .AddConstructor<MultipartNetlinkMessage> ()
-    ;
+  ;
   return tid;
 }
-TypeId 
+TypeId
 MultipartNetlinkMessage::GetInstanceTypeId (void) const
 {
   return GetTypeId ();
@@ -598,7 +603,7 @@ MultipartNetlinkMessage::GetInstanceTypeId (void) const
 void
 MultipartNetlinkMessage::Print (std::ostream &os) const
 {
-  for (uint32_t i = 0; i <  m_netlinkMessages.size (); i ++)
+  for (uint32_t i = 0; i <  m_netlinkMessages.size (); i++)
     {
       m_netlinkMessages[i].Print (os);
     }
@@ -608,7 +613,7 @@ MultipartNetlinkMessage::GetSerializedSize (void) const
 {
   uint32_t len = 0;
 
-  for (uint32_t i = 0; i <  m_netlinkMessages.size (); i ++)
+  for (uint32_t i = 0; i <  m_netlinkMessages.size (); i++)
     {
       len +=  m_netlinkMessages[i].GetSerializedSize ();
     }
@@ -618,7 +623,7 @@ void
 MultipartNetlinkMessage::Serialize (Buffer::Iterator start) const
 {
   NS_LOG_FUNCTION ("Multi" << this);
-  for (uint32_t i = 0; i <  m_netlinkMessages.size (); i ++)
+  for (uint32_t i = 0; i <  m_netlinkMessages.size (); i++)
     {
       m_netlinkMessages[i].Serialize (start);
     }
@@ -637,7 +642,7 @@ MultipartNetlinkMessage::Deserialize (Buffer::Iterator start)
           break;
         }
 
-      if (nlmsg.GetHeader ().GetMsgType() == NETLINK_MSG_DONE)
+      if (nlmsg.GetHeader ().GetMsgType () == NETLINK_MSG_DONE)
         {
           break;
         }
@@ -665,7 +670,7 @@ MultipartNetlinkMessage::GetNMessages (void) const
 NetlinkMessage
 MultipartNetlinkMessage::GetMessage (uint32_t index) const
 {
-  NS_ASSERT(index < m_netlinkMessages.size ());
+  NS_ASSERT (index < m_netlinkMessages.size ());
   return m_netlinkMessages[index];
 }
 

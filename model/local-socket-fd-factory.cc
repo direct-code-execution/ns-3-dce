@@ -28,8 +28,7 @@
 
 NS_LOG_COMPONENT_DEFINE ("LocalSocketFdFactory");
 
-namespace ns3
-{
+namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (LocalSocketFdFactory);
 
@@ -46,8 +45,8 @@ LocalSocketFdFactory::GetInstanceTypeId (void) const
 {
   return LocalSocketFdFactory::GetTypeId ();
 }
-LocalSocketFdFactory::LocalSocketFdFactory () :
-  m_totalBuffersSize (0)
+LocalSocketFdFactory::LocalSocketFdFactory ()
+  : m_totalBuffersSize (0)
 {
 }
 
@@ -68,13 +67,13 @@ LocalSocketFdFactory::CreateSocket (int domain, int type, int protocol)
 {
   NS_ASSERT (domain == AF_UNIX);
 
-  if ( SOCK_STREAM == type)
+  if (SOCK_STREAM == type)
     {
       UnixFd *fd = new LocalStreamSocketFd (this);
 
       return fd;
     }
-  if ( SOCK_DGRAM == type)
+  if (SOCK_DGRAM == type)
     {
       UnixFd *fd = new LocalDatagramSocketFd (this);
 
@@ -88,11 +87,17 @@ LocalSocketFd*
 LocalSocketFdFactory::FindBinder (std::string path, TypeId type) const
 {
   BindMap::const_iterator i = m_bindByPath.find (path);
-  if (m_bindByPath.end () == i) return 0;
+  if (m_bindByPath.end () == i)
+    {
+      return 0;
+    }
 
   LocalSocketFd* winner = i->second;
 
-  if ( ( winner != 0 ) && ( winner->GetInstanceTypeId () == type ) ) return winner;
+  if ((winner != 0) && (winner->GetInstanceTypeId () == type))
+    {
+      return winner;
+    }
 
   return 0;
 }
@@ -106,7 +111,10 @@ LocalSocketFdFactory::RegisterBinder (std::string path, LocalSocketFd* socket)
 void
 LocalSocketFdFactory::UnRegisterBinder (std::string path)
 {
-  if (0 == m_bindByPath.count (path)) return;
+  if (0 == m_bindByPath.count (path))
+    {
+      return;
+    }
   m_bindByPath.erase (path);
 }
 void

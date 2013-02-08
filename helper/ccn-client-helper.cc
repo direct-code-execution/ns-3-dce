@@ -11,7 +11,8 @@ NS_LOG_COMPONENT_DEFINE ("CcnClientHelper");
 namespace ns3 {
 
 CcnClientHelper::CcnClientHelper ()
-{}
+{
+}
 
 ApplicationContainer
 CcnClientHelper::Install (NodeContainer c)
@@ -20,33 +21,33 @@ CcnClientHelper::Install (NodeContainer c)
   ApplicationContainer apps;
   for (NodeContainer::Iterator j = c.Begin (); j != c.End (); ++j)
     {
-        int nodeId = (*j)->GetId ();
-        CreateKeystore ();
-        std::stringstream oss;
+      int nodeId = (*j)->GetId ();
+      CreateKeystore ();
+      std::stringstream oss;
 
-        oss << "files-" << nodeId << "/root/.ccnx/";
-        UtilsEnsureAllDirectoriesExist (oss.str ());
-        oss << ".ccnx_keystore";
+      oss << "files-" << nodeId << "/root/.ccnx/";
+      UtilsEnsureAllDirectoriesExist (oss.str ());
+      oss << ".ccnx_keystore";
 
-        CopyFile (GetKeystoreTemplate (), oss.str ());
+      CopyFile (GetKeystoreTemplate (), oss.str ());
 
-        oss.str ("");
-        oss.clear ();
+      oss.str ("");
+      oss.clear ();
 
-        oss << "files-" << nodeId;
-        UtilsEnsureDirectoryExists (oss.str ());
+      oss << "files-" << nodeId;
+      UtilsEnsureDirectoryExists (oss.str ());
 
-        oss << "/var/";
-        UtilsEnsureDirectoryExists (oss.str ());
+      oss << "/var/";
+      UtilsEnsureDirectoryExists (oss.str ());
 
-        oss << "tmp";
-        UtilsEnsureDirectoryExists (oss.str ());
+      oss << "tmp";
+      UtilsEnsureDirectoryExists (oss.str ());
 
-        for (std::vector <std::pair <std::string, std::string> >::iterator i = m_files.begin ();
-            i != m_files.end (); ++i)
-          {
-            CopyRealFileToVirtual (nodeId, (*i).first, (*i).second);
-          }
+      for (std::vector <std::pair <std::string, std::string> >::iterator i = m_files.begin ();
+           i != m_files.end (); ++i)
+        {
+          CopyRealFileToVirtual (nodeId, (*i).first, (*i).second);
+        }
     }
   return DceApplicationHelper::Install (c);
 }
@@ -55,7 +56,7 @@ std::string
 CcnClientHelper::GetKeystoreDir (void)
 {
   std::stringstream oss;
-  oss << "/tmp/.dck" << ::getpid() << "/";
+  oss << "/tmp/.dck" << ::getpid () << "/";
   UtilsEnsureAllDirectoriesExist (oss.str ());
   return oss.str ();
 }
@@ -73,9 +74,9 @@ CcnClientHelper::GetKeystoreTemplate (void)
 void
 CcnClientHelper::CopyFile (std::string from, std::string to)
 {
-  std::ifstream f1(from.c_str (), std::fstream::binary);
-  std::ofstream f2(to.c_str (), std::fstream::trunc|std::fstream::binary);
-  f2 << f1.rdbuf();
+  std::ifstream f1 (from.c_str (), std::fstream::binary);
+  std::ofstream f2 (to.c_str (), std::fstream::trunc | std::fstream::binary);
+  f2 << f1.rdbuf ();
   f2.close ();
   f1.close ();
 }
@@ -88,7 +89,10 @@ CcnClientHelper::CreateKeystore ()
 
   os << GetKeystoreDir () << ".ccnx_keystore";
 
-  if (0 == stat( os.str ().c_str (), &st)) return;
+  if (0 == stat (os.str ().c_str (), &st))
+    {
+      return;
+    }
 
   std::stringstream oss;
 
@@ -113,18 +117,18 @@ CcnClientHelper::CreateKeystore ()
   std::stringstream oss2;
 
   oss2 << "openssl req -config " << oss.str () <<
-      " -newkey rsa:1024 -x509 -keyout " <<  GetKeystoreDir () << "private_key.pem -out "
-      << GetKeystoreDir () << "certout.pem -subj /CN=foo -nodes 2>/dev/null";
+  " -newkey rsa:1024 -x509 -keyout " <<  GetKeystoreDir () << "private_key.pem -out "
+       << GetKeystoreDir () << "certout.pem -subj /CN=foo -nodes 2>/dev/null";
 
   int ret = ::system (oss2.str ().c_str ());
 
   std::stringstream oss3;
 
   oss3 << "openssl pkcs12 -export -name ccnxuser -out " <<  GetKeystoreDir ()
-          << ".ccnx_keystore -in " <<  GetKeystoreDir () << "certout.pem -inkey "
-          <<  GetKeystoreDir () <<  "private_key.pem -password pass:'Th1s1sn0t8g00dp8ssw0rd.'";
+       << ".ccnx_keystore -in " <<  GetKeystoreDir () << "certout.pem -inkey "
+       <<  GetKeystoreDir () <<  "private_key.pem -password pass:'Th1s1sn0t8g00dp8ssw0rd.'";
 
-  //NS_LOG_FUNCTION ( oss3.str ());
+  //NS_LOG_FUNCTION (oss3.str ());
 
   ret =  ::system (oss3.str ().c_str ());
 
@@ -153,7 +157,7 @@ CcnClientHelper::CreateKeystore ()
 void
 CcnClientHelper::AddFile (std::string from, std::string to)
 {
-  m_files.push_back (std::make_pair ( from, to) );
+  m_files.push_back (std::make_pair (from, to));
 }
 void
 CcnClientHelper::CopyRealFileToVirtual (int nodeId, std::string from, std::string to)

@@ -21,11 +21,11 @@ dce_openlog (const char *ident, int logopt, int facility)
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << ident << logopt << facility);
   NS_ASSERT (Current () != 0);
   Process *process = Current ()->process;
-  
+
   std::ostringstream os; // form the syslog filename
   os << "/var/log/" << process->pid << "/syslog";
   process->syslog = dce_fopen (os.str ().c_str (), "w");
-  NS_ASSERT_MSG (process->syslog != 0, "Cannot open " << os.str() << " file to output all syslog messages"); 
+  NS_ASSERT_MSG (process->syslog != 0, "Cannot open " << os.str () << " file to output all syslog messages");
 }
 
 void

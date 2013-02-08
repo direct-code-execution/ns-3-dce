@@ -26,7 +26,7 @@ namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (RrTaskScheduler);
 
-TypeId 
+TypeId
 RrTaskScheduler::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::RrTaskScheduler")
@@ -36,7 +36,8 @@ RrTaskScheduler::GetTypeId (void)
   return tid;
 }
 RrTaskScheduler::RrTaskScheduler ()
-{}
+{
+}
 
 struct Task *
 RrTaskScheduler::PeekNext (void)
@@ -49,20 +50,20 @@ RrTaskScheduler::PeekNext (void)
   NS_LOG_DEBUG ("next=" << task);
   return task;
 }
-void 
+void
 RrTaskScheduler::DequeueNext (void)
 {
   NS_LOG_FUNCTION (this);
   NS_ASSERT (!m_active.empty ());
   m_active.pop_front ();
 }
-void 
+void
 RrTaskScheduler::Enqueue (struct Task *task)
 {
   NS_LOG_FUNCTION (this << task);
   m_active.push_back (task);
 }
-void 
+void
 RrTaskScheduler::Dequeue (struct Task *task)
 {
   NS_LOG_FUNCTION (this << task);

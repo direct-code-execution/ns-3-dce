@@ -27,8 +27,8 @@ public:
   virtual int Listen (int backlog);
   virtual int Accept (struct sockaddr *my_addr, socklen_t *addrlen);
   virtual int Shutdown (int how);
-  virtual void *Mmap (void *start, size_t length, int prot, int flags,
-                      off64_t offset);
+  virtual void * Mmap (void *start, size_t length, int prot, int flags,
+                       off64_t offset);
   virtual off64_t Lseek (off64_t offset, int whence);
   virtual int Fxstat (int ver, struct ::stat *buf);
   virtual int Fxstat64 (int ver, struct ::stat64 *buf);

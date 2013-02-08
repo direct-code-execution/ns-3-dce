@@ -36,7 +36,7 @@
 #else
 # define VALGRIND_STACK_REGISTER(start,end) (0)
 # define VALGRIND_STACK_DEREGISTER(id)
-# define VALGRIND_MAKE_MEM_DEFINED(start,sz) 
+# define VALGRIND_MAKE_MEM_DEFINED(start,sz)
 #endif
 
 
@@ -44,7 +44,8 @@ namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE ("PthreadFiberManager");
 
-enum PthreadFiberState {
+enum PthreadFiberState
+{
   RUNNING,
   SLEEP,
   DESTROY
@@ -53,15 +54,18 @@ enum PthreadFiberState {
 class MemoryBounds
 {
 public:
-  MemoryBounds () 
-    : m_min (~0), m_max (0) {}
+  MemoryBounds ()
+    : m_min (~0),
+      m_max (0)
+  {
+  }
   void AddBound (void *address)
   {
     unsigned long v = (unsigned long) address;
     m_min = std::min (v, m_min);
     m_max = std::max (v, m_max);
   }
-  void *GetStart (void) const
+  void * GetStart (void) const
   {
     int size = getpagesize ();
     long start = m_min - (m_min % size);
@@ -71,7 +75,7 @@ public:
   {
     int size = getpagesize ();
     unsigned long start = m_min - (m_min % size);
-    unsigned long end = ((m_max % size) == 0) ? m_max : (m_max+(size-(m_max %size)));
+    unsigned long end = ((m_max % size) == 0) ? m_max : (m_max + (size - (m_max % size)));
     return end - start;
   }
 private:
@@ -125,9 +129,9 @@ public:
     newstack.ss_sp = m_stack;
     newstack.ss_size = SIGSTKSZ;
     newstack.ss_flags = 0;
-    m_vgId = VALGRIND_STACK_REGISTER (m_stack,((unsigned long)m_stack)+SIGSTKSZ);
+    m_vgId = VALGRIND_STACK_REGISTER (m_stack,((unsigned long)m_stack) + SIGSTKSZ);
     status = sigaltstack (&newstack, &oldstack);
-    NS_ASSERT_MSG (status == 0, "first sigaltstack failed stack=" << m_stack << 
+    NS_ASSERT_MSG (status == 0, "first sigaltstack failed stack=" << m_stack <<
                    " stacksize=" << SIGSTKSZ);
     struct sigaction newact;
     struct sigaction oldact;
@@ -273,14 +277,14 @@ PthreadFiberManager::Clone (struct Fiber *fib)
     NS_LOG_DEBUG ("save start=" << clone->stack_bounds.GetStart () <<
                   " size=" << clone->stack_bounds.GetSize ());
 
-//    dst = clone->stack_copy = malloc ( sz );
+//    dst = clone->stack_copy = malloc (sz);
 
     memcpy (dst, src, sz);
 
-//    NS_ASSERT ( sz >=  fiber->thread->stack_size );
+//    NS_ASSERT (sz >=  fiber->thread->stack_size);
 
   }
-  // save the current state in jmp_buf so that the next call to 
+  // save the current state in jmp_buf so that the next call to
   // SwitchTo on the clone comes back here.
   if (setjmp (clone->yield_env) == 0)
     {
@@ -309,10 +313,10 @@ PthreadFiberManager::Start (struct PthreadFiber *fiber)
   pthread_attr_t attr;
   error = pthread_attr_init (&attr);
   NS_ASSERT_MSG (error == 0, "error=" << strerror (error));
-  error = pthread_attr_setstacksize (&attr, std::max (fiber->thread->stack_size, 
+  error = pthread_attr_setstacksize (&attr, std::max (fiber->thread->stack_size,
                                                       (size_t)PTHREAD_STACK_MIN));
   NS_ASSERT_MSG (error == 0, "error=" << strerror (error));
-  error = pthread_create (&fiber->thread->thread, &attr, &PthreadFiberManager::Run, 
+  error = pthread_create (&fiber->thread->thread, &attr, &PthreadFiberManager::Run,
                           (void*) fiber);
   NS_ASSERT_MSG (error == 0, "error=" << strerror (error));
   error = pthread_attr_destroy (&attr);
@@ -327,12 +331,12 @@ PthreadFiberManager::Wakeup (struct PthreadFiber *fiber)
   pthread_mutex_lock (&fiber->thread->mutex);
   fiber->state = RUNNING;
   fiber->thread->next = fiber;
-  if (fiber->thread->thread_started) 
+  if (fiber->thread->thread_started)
     {
       // and now we can wakup the target thread. yay !
       pthread_cond_signal (&fiber->thread->condvar);
-    } 
-  else 
+    }
+  else
     {
       Start (fiber);
     }
@@ -440,7 +444,7 @@ PthreadFiberManager::CreateFromCaller (void)
   fiber->stack_copy = 0;
   return fiber;
 }
-void 
+void
 PthreadFiberManager::Delete (struct Fiber *fib)
 {
   struct PthreadFiber *fiber = (struct PthreadFiber *)fib;
@@ -478,18 +482,18 @@ PthreadFiberManager::Delete (struct Fiber *fib)
     }
   delete fiber;
 }
-void 
+void
 PthreadFiberManager::SwitchTo (struct Fiber *fromFiber,
                                const struct Fiber *toFiber)
 {
   struct PthreadFiber *from = (struct PthreadFiber *)fromFiber;
   struct PthreadFiber *to = (struct PthreadFiber *)toFiber;
-  if (from->thread->func != NULL) 
+  if (from->thread->func != NULL)
     {
       // We're in an application thread, and we know our mutexes are locked
       Yield (from);
-    } 
-  else 
+    }
+  else
     {
       // We're the controller (main) thread
       Wakeup (to);
@@ -499,13 +503,13 @@ PthreadFiberManager::SwitchTo (struct Fiber *fromFiber,
       m_notifySwitch ();
     }
 }
-uint32_t 
+uint32_t
 PthreadFiberManager::GetStackSize (struct Fiber *fib) const
 {
   struct PthreadFiber *fiber = (struct PthreadFiber *)fib;
   return fiber->thread->stack_size;
 }
-void 
+void
 PthreadFiberManager::SetSwitchNotification (void (*fn)(void))
 {
   m_notifySwitch = fn;

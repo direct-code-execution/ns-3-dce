@@ -8,9 +8,9 @@
 extern "C" {
 #endif
 
-struct passwd *dce_getpwnam (const char *name);
+struct passwd * dce_getpwnam (const char *name);
 
-struct passwd *dce_getpwuid (uid_t uid);
+struct passwd * dce_getpwuid (uid_t uid);
 
 void dce_endpwent (void);
 

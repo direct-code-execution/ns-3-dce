@@ -32,8 +32,7 @@
 
 NS_LOG_COMPONENT_DEFINE ("DceNodeContext");
 
-namespace ns3
-{
+namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (DceNodeContext);
 
@@ -52,7 +51,7 @@ DceNodeContext::GetInstanceTypeId (void) const
 }
 DceNodeContext::DceNodeContext ()
 {
-  m_randomCtx = NormalVariable (0, 2^32 - 1 );
+  m_randomCtx = NormalVariable (0, 2 ^ 32 - 1);
   m_rndBuffer = m_randomCtx.GetInteger ();
   m_rndOffset = 0;
 }
@@ -64,7 +63,7 @@ DceNodeContext::~DceNodeContext ()
 int
 DceNodeContext::UName (struct utsname *buf)
 {
-  if ( 0 == m_sysName.length () )
+  if (0 == m_sysName.length ())
     {
       uint32_t nodeId = UtilsGetNodeId ();
       Ptr<Node> node = NodeList::GetNode (nodeId);
@@ -80,20 +79,20 @@ DceNodeContext::UName (struct utsname *buf)
           oss.str ("");
           oss.clear ();
         }
-      m_sysName = nn +"'s OS";
+      m_sysName = nn + "'s OS";
       m_nodeName = nn;
       m_release = "3"; // XXX
       m_version = "12"; // XXX
       oss << nodeId;
       m_hardId = oss.str ();
     }
-  memset (buf, 0, sizeof(struct utsname) );
+  memset (buf, 0, sizeof (struct utsname));
 
-  memcpy (buf->sysname, m_sysName.c_str (), std::min ( (int) m_sysName.length (), 64) );
-  memcpy (buf->nodename, m_nodeName.c_str (), std::min ( (int) m_nodeName.length (), 64) );
-  memcpy (buf->release, m_release.c_str (), std::min ( (int) m_release.length (), 64) );
-  memcpy (buf->version, m_version.c_str (), std::min ( (int) m_version.length (), 64) );
-  memcpy (buf->machine, m_hardId.c_str (), std::min ( (int) m_hardId.length (), 64) );
+  memcpy (buf->sysname, m_sysName.c_str (), std::min ((int) m_sysName.length (), 64));
+  memcpy (buf->nodename, m_nodeName.c_str (), std::min ((int) m_nodeName.length (), 64));
+  memcpy (buf->release, m_release.c_str (), std::min ((int) m_release.length (), 64));
+  memcpy (buf->version, m_version.c_str (), std::min ((int) m_version.length (), 64));
+  memcpy (buf->machine, m_hardId.c_str (), std::min ((int) m_hardId.length (), 64));
 
   return 0;
 }
@@ -124,8 +123,8 @@ DceNodeContext::RandomRead (void *buf, size_t count)
 uint8_t
 DceNodeContext::GetNextRnd ()
 {
-  uint8_t v = ( (uint8_t *)  &m_rndBuffer) [ m_rndOffset++ ];
-  if ( m_rndOffset >= 4 )
+  uint8_t v = ((uint8_t *)  &m_rndBuffer) [ m_rndOffset++ ];
+  if (m_rndOffset >= 4)
     {
       m_rndOffset = 0;
       m_rndBuffer = m_randomCtx.GetInteger ();

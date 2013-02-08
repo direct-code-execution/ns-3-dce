@@ -25,13 +25,14 @@ private:
   virtual bool CanSend (void) const;
   virtual bool HangupReceived (void) const;
   virtual int Poll (PollTable* ptable);
-  void IcmpCallback (Ipv4Address icmpSource, uint8_t icmpTtl, 
+  void IcmpCallback (Ipv4Address icmpSource, uint8_t icmpTtl,
                      uint8_t icmpType, uint8_t icmpCode,
                      uint32_t icmpInfo);
   void QueueErr (sock_extended_err ee, struct sockaddr_in offender, uint8_t ttl);
   void CopyMacAddress (const Address &a,  uint8_t* const buf);
 
-  struct Error {
+  struct Error
+  {
     sock_extended_err ee;
     struct sockaddr_in offender;
     uint8_t ttl;

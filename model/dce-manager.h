@@ -72,7 +72,7 @@ class Loader;
  */
 class DceManager : public Object
 {
-public:	
+public:
   typedef Callback<void> Runnable;
   typedef enum
   {
@@ -97,12 +97,12 @@ public:
   void Stop (uint16_t pid);
 
   // internal methods
-  struct Thread *CreateThread (struct Process *process);
+  struct Thread * CreateThread (struct Process *process);
   void DeleteProcess (struct Process *process, ProcessEndCause type);
   void DeleteThread (struct Thread *thread);
 
-  Thread *SearchThread (uint16_t pid, uint16_t tid);
-  Process *SearchProcess (uint16_t pid);
+  Thread * SearchThread (uint16_t pid, uint16_t tid);
+  Process * SearchProcess (uint16_t pid);
   void FinishChild (uint16_t pid); // A wait success on this proc
 
   void Exit (void);
@@ -123,9 +123,9 @@ private:
   // inherited from Object.
   virtual void DoDispose (void);
 
-  struct Process *CreateProcess (std::string name, std::string stdinfilename, std::vector<std::string> args,
-                                 std::vector<std::pair<std::string,std::string> > envs, int pid);
-  static int (*PrepareDoStartProcess(Thread *current))(int, char **);
+  struct Process * CreateProcess (std::string name, std::string stdinfilename, std::vector<std::string> args,
+                                  std::vector<std::pair<std::string,std::string> > envs, int pid);
+  static int (*PrepareDoStartProcess (Thread * current)) (int, char **);
   static void DoStartProcess (void *context);
   bool CheckProcessContext (void) const;
   uint16_t AllocatePid (void);
@@ -133,7 +133,7 @@ private:
   static void SigkillHandler (int signal);
   static void SigabrtHandler (int signal);
   bool ThreadExists (Thread *thread);
-  static struct ::Libc *GetLibc (void);
+  static struct ::Libc * GetLibc (void);
   void SetArgv (struct Process *process, std::string filename, std::vector<std::string> args);
   void SetEnvp (struct Process *process, std::vector<std::pair<std::string,std::string> > envp);
   static void EnsureDirectoryExists (struct Thread *current, std::string dirName);

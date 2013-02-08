@@ -30,19 +30,24 @@ NS_LOG_COMPONENT_DEFINE ("PipeFd");
 
 #define PIPE_CAPACITY 65536
 
-namespace ns3
-{
-PipeFd::PipeFd () : m_peer (0), m_readSide (1), m_statusFlags (0), m_buf (PIPE_CAPACITY)
+namespace ns3 {
+PipeFd::PipeFd () : m_peer (0),
+                    m_readSide (1),
+                    m_statusFlags (0),
+                    m_buf (PIPE_CAPACITY)
 {
 }
 
-PipeFd::PipeFd (PipeFd *peer) : m_peer (peer), m_readSide (0), m_statusFlags (0), m_buf (0)
+PipeFd::PipeFd (PipeFd *peer) : m_peer (peer),
+                                m_readSide (0),
+                                m_statusFlags (0),
+                                m_buf (0)
 {
   m_peer->m_peer = this;
 }
 
 int
-PipeFd::Close (void) 
+PipeFd::Close (void)
 {
   NS_LOG_FUNCTION (this);
   if (m_peer)
@@ -70,7 +75,7 @@ PipeFd::Write (const void *buf, size_t count)
           return -1;
         }
       size_t r = m_peer->DoRecvPacket ((uint8_t*)buf, count);
-      if ( r > 0 )
+      if (r > 0)
         {
           short po = POLLOUT;
           WakeWaiters (&po); // WakeUp
@@ -94,14 +99,14 @@ PipeFd::DoRecvPacket (uint8_t* buf, size_t len)
   while (true)
     {
       ssize_t r = m_buf.Write (buf, len);
-      if ( r > 0 )
+      if (r > 0)
         {
           short pi = POLLIN;
           WakeWaiters (&pi); // WakeUp reader or poller for read or select for read
 
           RETURNFREE (r);
         }
-      if ( m_peer->m_statusFlags & O_NONBLOCK )
+      if (m_peer->m_statusFlags & O_NONBLOCK)
         {
           Current ()->err = EAGAIN;
           RETURNFREE (-1);
@@ -116,7 +121,7 @@ PipeFd::DoRecvPacket (uint8_t* buf, size_t len)
       RemoveWaitQueue (wq, true);
 
       switch (res)
-      {
+        {
         case PollTable::OK:
           break;
         case PollTable::INTERRUPTED:
@@ -133,7 +138,7 @@ PipeFd::DoRecvPacket (uint8_t* buf, size_t len)
             RETURNFREE (-1);
           }
           break;
-      }
+        }
     }
 }
 
@@ -154,7 +159,7 @@ PipeFd::Read (void *buf, size_t count)
   while (true)
     {
       ssize_t r = m_buf.Read ((uint8_t*)buf, count);
-      if (r>0)
+      if (r > 0)
         {
           short po = POLLOUT;
           if (m_peer)
@@ -166,7 +171,7 @@ PipeFd::Read (void *buf, size_t count)
 
           RETURNFREE (r);
         }
-      if (0==m_peer)
+      if (0 == m_peer)
         {
           Current ()->err = EPIPE;
           RETURNFREE (-1);
@@ -185,7 +190,7 @@ PipeFd::Read (void *buf, size_t count)
       RemoveWaitQueue (wq, true);
 
       switch (res)
-      {
+        {
         case PollTable::OK:
           break;
         case PollTable::INTERRUPTED:
@@ -201,7 +206,7 @@ PipeFd::Read (void *buf, size_t count)
             RETURNFREE (-1);
           }
           break;
-      }
+        }
     }
 }
 
@@ -227,7 +232,7 @@ PipeFd::Sendmsg (const struct msghdr *msg, int flags)
 
 int
 PipeFd::Setsockopt (int level, int optname,
-                        const void *optval, socklen_t optlen) 
+                    const void *optval, socklen_t optlen)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current);
@@ -238,7 +243,7 @@ PipeFd::Setsockopt (int level, int optname,
 
 int
 PipeFd::Getsockopt (int level, int optname,
-                        void *optval, socklen_t *optlen) 
+                    void *optval, socklen_t *optlen)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current);
@@ -248,7 +253,7 @@ PipeFd::Getsockopt (int level, int optname,
 }
 
 int
-PipeFd::Getsockname (struct sockaddr *name, socklen_t *namelen) 
+PipeFd::Getsockname (struct sockaddr *name, socklen_t *namelen)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current);
@@ -258,7 +263,7 @@ PipeFd::Getsockname (struct sockaddr *name, socklen_t *namelen)
 }
 
 int
-PipeFd::Getpeername (struct sockaddr *name, socklen_t *namelen) 
+PipeFd::Getpeername (struct sockaddr *name, socklen_t *namelen)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current);
@@ -268,7 +273,7 @@ PipeFd::Getpeername (struct sockaddr *name, socklen_t *namelen)
 }
 
 int
-PipeFd::Ioctl (int request, char *argp) 
+PipeFd::Ioctl (int request, char *argp)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current);
@@ -278,7 +283,7 @@ PipeFd::Ioctl (int request, char *argp)
 }
 
 int
-PipeFd::Bind (const struct sockaddr *my_addr, socklen_t addrlen) 
+PipeFd::Bind (const struct sockaddr *my_addr, socklen_t addrlen)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current);
@@ -288,7 +293,7 @@ PipeFd::Bind (const struct sockaddr *my_addr, socklen_t addrlen)
 }
 
 int
-PipeFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen) 
+PipeFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current);
@@ -298,7 +303,7 @@ PipeFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
 }
 
 int
-PipeFd::Listen (int backlog) 
+PipeFd::Listen (int backlog)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current);
@@ -308,7 +313,7 @@ PipeFd::Listen (int backlog)
 }
 
 int
-PipeFd::Shutdown (int how) 
+PipeFd::Shutdown (int how)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current);
@@ -318,7 +323,7 @@ PipeFd::Shutdown (int how)
 }
 
 int
-PipeFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen) 
+PipeFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current);
@@ -348,17 +353,7 @@ PipeFd::Lseek (off64_t offset, int whence)
 }
 
 int
-PipeFd::Fxstat (int ver, struct ::stat *buf) 
-{
-  Thread *current = Current ();
-NS_LOG_FUNCTION (this << current);
-NS_ASSERT (current != 0);
-current->err = EBADF;
-return -1;
-}
-
-int
-PipeFd::Fxstat64 (int ver, struct ::stat64 *buf) 
+PipeFd::Fxstat (int ver, struct ::stat *buf)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current);
@@ -368,7 +363,17 @@ PipeFd::Fxstat64 (int ver, struct ::stat64 *buf)
 }
 
 int
-PipeFd::Fcntl (int cmd, unsigned long arg) 
+PipeFd::Fxstat64 (int ver, struct ::stat64 *buf)
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (this << current);
+  NS_ASSERT (current != 0);
+  current->err = EBADF;
+  return -1;
+}
+
+int
+PipeFd::Fcntl (int cmd, unsigned long arg)
 {
   switch (cmd)
     {
@@ -387,8 +392,8 @@ PipeFd::Fcntl (int cmd, unsigned long arg)
 
 int
 PipeFd::Settime (int flags,
-                     const struct itimerspec *new_value,
-                     struct itimerspec *old_value) 
+                 const struct itimerspec *new_value,
+                 struct itimerspec *old_value)
 {
   NS_LOG_FUNCTION (this << Current () << flags << new_value << old_value);
   NS_ASSERT (Current () != 0);
@@ -398,7 +403,7 @@ PipeFd::Settime (int flags,
 }
 
 int
-PipeFd::Gettime (struct itimerspec *cur_value) const 
+PipeFd::Gettime (struct itimerspec *cur_value) const
 {
   NS_LOG_FUNCTION (this << Current ());
   NS_ASSERT (Current () != 0);
@@ -408,7 +413,7 @@ PipeFd::Gettime (struct itimerspec *cur_value) const
 }
 
 int
-PipeFd::Ftruncate (off_t length) 
+PipeFd::Ftruncate (off_t length)
 {
   NS_LOG_FUNCTION (this << Current ());
   NS_ASSERT (Current () != 0);
@@ -419,9 +424,9 @@ PipeFd::Ftruncate (off_t length)
 
 // Return true if a select on this fd should return POLLHUP
 bool
-PipeFd::HangupReceived (void) const 
+PipeFd::HangupReceived (void) const
 {
-  return ( 0 == m_peer );
+  return (0 == m_peer);
 }
 bool
 PipeFd::Isatty (void) const
@@ -430,16 +435,16 @@ PipeFd::Isatty (void) const
 }
 
 int
-PipeFd::Poll (PollTable* ptable) 
+PipeFd::Poll (PollTable* ptable)
 {
   int ret = 0;
 
   if (m_readSide)
     {
-       if (m_buf.GetSize () > 0)
-         {
-           ret |= POLLIN;
-         }
+      if (m_buf.GetSize () > 0)
+        {
+          ret |= POLLIN;
+        }
     }
   else
     {
@@ -459,20 +464,20 @@ PipeFd::Poll (PollTable* ptable)
 #ifdef TODO
   if (m_readSide)
     {
-      if (m_buffer.GetSize () < PIPE_CAPACITY )
+      if (m_buffer.GetSize () < PIPE_CAPACITY)
         {
           ret |= POLLIN;
         }
     }
   else
     {
-      if ( m_peer &&  (m_peer->m_buffer.GetSize () < PIPE_CAPACITY ) )
+      if (m_peer &&  (m_peer->m_buffer.GetSize () < PIPE_CAPACITY))
         {
           ret |= POLLOUT;
         }
     }
 
-  if (HangupReceived () )
+  if (HangupReceived ())
     {
       ret |= POLLHUP;
     }

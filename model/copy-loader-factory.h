@@ -11,7 +11,7 @@ namespace ns3 {
 
 /**
  * The goal of the elf loader is two-fold:
- *   1) it must virtualize the global data of a program when it is 
+ *   1) it must virtualize the global data of a program when it is
  *     loaded in memory (as well as the global data of each of the libraries
  *     the main binary depends on)
  *   2) it must allow you to replace the system libc with a new libc
@@ -19,13 +19,13 @@ namespace ns3 {
  *
  * In ELF systems, all per-binary global data is accessed as relative offsets
  * from the base address of the code so, all you need to do to virtualize
- * the data global data area (that is, achieve 1) of a binary is to load 
- * it multiple times in memory and, each time, at a different base address. 
+ * the data global data area (that is, achieve 1) of a binary is to load
+ * it multiple times in memory and, each time, at a different base address.
  *
  * To replace the system libc, you need to make the ELF loader look for a
  * libc.so.6 in a new location.
  *
- * Achieving both of the above could be done by re-implementing a new ELF 
+ * Achieving both of the above could be done by re-implementing a new ELF
  * loader or by using a modified version of the glibc ELF loader. The latter
  * is much harder than it seems and the former would require quite a bit of
  * platform-specific code so, this class implements another option which is
@@ -40,12 +40,12 @@ namespace ns3 {
  * and the only way to do this is to physically copy the file on the hard disk
  * before loading it.
  *
- * To ensure that we can precisely control which libraries are (re)loaded in 
+ * To ensure that we can precisely control which libraries are (re)loaded in
  * memory and that we can thus replace the system libc with a simulation libc,
- * we also modify the copied elf files by changing the set of libraries they 
+ * we also modify the copied elf files by changing the set of libraries they
  * depend upon. To do this, we have to change the values referenced by the
  * DT_NEEDED entries of the SHT_DYNAMIC section. Unfortunately, we can't just
- * add a new string table section, copy the data from the old string table 
+ * add a new string table section, copy the data from the old string table
  * section, and add new entries for the new filenames because doing this
  * would require a lot of ajustement to the elf data structures. So, instead,
  * we edit in-place the content of the string table pointed to by DT_STRTAB and,
@@ -70,7 +70,7 @@ public:
 
   CopyLoaderFactory ();
   virtual ~CopyLoaderFactory ();
-  virtual Loader *Create (int argc, char **argv, char **envp);
+  virtual Loader * Create (int argc, char **argv, char **envp);
 
 private:
   static uint32_t AllocateUid (void);

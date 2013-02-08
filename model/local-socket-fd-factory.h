@@ -41,7 +41,7 @@ public:
   LocalSocketFdFactory ();
   virtual void DoDispose ();
   virtual ~LocalSocketFdFactory ();
-  virtual UnixFd *CreateSocket (int domain, int type, int protocol);
+  virtual UnixFd * CreateSocket (int domain, int type, int protocol);
   virtual void UnlinkNotify (std::string path);
   LocalSocketFd* FindBinder (std::string path, TypeId type) const;
   void RegisterBinder (std::string path, LocalSocketFd* socket);

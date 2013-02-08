@@ -41,7 +41,7 @@ main (int argc, char *argv[])
       address.sun_family = AF_UNIX;
       strcpy (address.sun_path, SOCK_PATH);
 
-      int status = bind (sock, (struct sockaddr *) &address, SUN_LEN(&address));
+      int status = bind (sock, (struct sockaddr *) &address, SUN_LEN (&address));
 
       if (status < 0)
         {
@@ -67,8 +67,8 @@ main (int argc, char *argv[])
           fd_set lect;
           struct timeval timeOut;
 
-          FD_ZERO(&lect);
-          FD_SET(sock, &lect);
+          FD_ZERO (&lect);
+          FD_SET (sock, &lect);
 
           timeOut.tv_sec = 10;
           timeOut.tv_usec = 0;
@@ -84,20 +84,20 @@ main (int argc, char *argv[])
             }
         }
 
-      std::cout << "Server: " << time(0)  << " sleeping 15s before accepting ! " << std::endl;
+      std::cout << "Server: " << time (0)  << " sleeping 15s before accepting ! " << std::endl;
 
-      sleep(15);
+      sleep (15);
 
       std::cout << "before accept " << std::endl;
 
       sockin = accept (sock, NULL, NULL);
 
-      std::cout <<  "Server: " << time(0)  << " Unix-Server: after accept : " << sockin << std::endl;
+      std::cout <<  "Server: " << time (0)  << " Unix-Server: after accept : " << sockin << std::endl;
 
       if (sockin < 0)
         {
           perror ("accept() failed");
-          break;;
+          break;
         }
 
       lg = BUF_LEN;

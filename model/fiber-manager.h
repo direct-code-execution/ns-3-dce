@@ -13,10 +13,13 @@ class FiberManager
 public:
   virtual ~FiberManager ();
 
-  virtual struct Fiber *Clone (struct Fiber *fiber) {return 0; };
+  virtual struct Fiber * Clone (struct Fiber *fiber)
+  {
+    return 0;
+  }
 
   /**
-   * \param callback function to use as main loop for the 
+   * \param callback function to use as main loop for the
    *        newly-created fiber
    * \param stackSize size of the stack to allocate for this
    *        fiber.
@@ -35,13 +38,13 @@ public:
    * initially managed by the underlying kernel which
    * runs on the kernel-managed stack.
    */
-  virtual struct Fiber *CreateFromCaller (void) = 0;
+  virtual struct Fiber * CreateFromCaller (void) = 0;
 
   /**
    * \param context to delete
    *
    * Release any ressource associated to this context.
-   * Obviously, this method must be called from another 
+   * Obviously, this method must be called from another
    * context than the one which is being deleted.
    */
   virtual void Delete (struct Fiber *fiber) = 0;
@@ -57,7 +60,7 @@ public:
    * through CreateFromCaller and with a to set to a context
    * obtained through Create.
    */
-  virtual void SwitchTo (struct Fiber *from, 
+  virtual void SwitchTo (struct Fiber *from,
                          const struct Fiber *to) = 0;
 
   /**

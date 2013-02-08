@@ -35,7 +35,7 @@ NS_LOG_COMPONENT_DEFINE ("Ipv4DceRoutingHelper");
 
 namespace ns3 {
 
-Ipv4DceRoutingHelper::Ipv4DceRoutingHelper()
+Ipv4DceRoutingHelper::Ipv4DceRoutingHelper ()
 {
 }
 

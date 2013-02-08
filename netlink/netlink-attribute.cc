@@ -154,22 +154,22 @@ NetlinkAttributeValue::Serialize (Buffer::Iterator& start) const
       start.WriteU8 (m_u8);
       len = 1;
     }
-  else if(m_type == U16)
+  else if (m_type == U16)
     {
       start.WriteU16 (m_u16);
       len = 2;
     }
-  else if(m_type == U32)
+  else if (m_type == U32)
     {
       start.WriteU32 (m_u32);
       len = 4;
     }
-  else if(m_type == STRING)
+  else if (m_type == STRING)
     {
-      start.Write ((const uint8_t *)m_string.c_str (), (uint32_t)m_string.size ()+1);
+      start.Write ((const uint8_t *)m_string.c_str (), (uint32_t)m_string.size () + 1);
       len = (uint32_t)m_string.size () + 1;
     }
-  else if(m_type == ADDRESS)
+  else if (m_type == ADDRESS)
     {
       WriteTo (start, m_address);
       len = m_address.GetLength ();
@@ -183,11 +183,11 @@ NetlinkAttributeValue::Serialize (Buffer::Iterator& start) const
 }
 
 uint32_t
-NetlinkAttributeValue::DeserializeWithType (Buffer::Iterator& start, 
+NetlinkAttributeValue::DeserializeWithType (Buffer::Iterator& start,
                                             NetlinkAttributeValueType_e type, uint16_t remaining)
 {
-  uint32_t len =0;
-  m_type = type;  
+  uint32_t len = 0;
+  m_type = type;
 
   if (m_type == U8)
     {
@@ -207,16 +207,17 @@ NetlinkAttributeValue::DeserializeWithType (Buffer::Iterator& start,
   else if (m_type == U64)
     {
       m_u64 = start.ReadU64 ();
-    }  
+    }
   else if (m_type == STRING)
     {
       char buf[512];
       uint32_t i = 0;
-      do 
-      {
-        buf[i] = start.ReadU8 ();
-      } while (buf[i++]);
-      
+      do
+        {
+          buf[i] = start.ReadU8 ();
+        }
+      while (buf[i++]);
+
       m_string = std::string (buf);
       len = (uint32_t)m_string.size () + 1;
     }
@@ -233,12 +234,12 @@ NetlinkAttributeValue::DeserializeWithType (Buffer::Iterator& start,
   //netlink align
   uint8_t buf[4];
   start.Read (buf, NETLINK_MSG_ALIGN (len) - len);
-  
+
   return NETLINK_MSG_ALIGN (len);
 }
 
 uint32_t
-NetlinkAttributeValue::GetSerializedSize ()const
+NetlinkAttributeValue::GetSerializedSize () const
 {
   return NETLINK_MSG_ALIGN (GetSize ());
 }
@@ -252,11 +253,11 @@ NetlinkAttributeValue::GetSize () const
     {
       len = 1;
     }
-  else if(m_type == U16)
+  else if (m_type == U16)
     {
       len =  2;
     }
-  else if(m_type == U32)
+  else if (m_type == U32)
     {
       len =  4;
     }
@@ -273,13 +274,13 @@ NetlinkAttributeValue::GetSize () const
       len = 0;
     }
 
-    return len;
+  return len;
 }
 
 void
 NetlinkAttributeValue::Print (std::ostream &os) const
 {
-  os << "NetlinkAttributeValue (type= " << m_type <<", v= ";
+  os << "NetlinkAttributeValue (type= " << m_type << ", v= ";
   if (m_type == U8)
     {
       os << m_u8;
@@ -295,20 +296,20 @@ NetlinkAttributeValue::Print (std::ostream &os) const
   else if (m_type == U64)
     {
       os << m_u64;
-    }  
+    }
   else if (m_type == STRING)
     {
       os << m_string;
     }
   else if (m_type == ADDRESS)
     {
-      os << "address(" << m_address <<")";
+      os << "address(" << m_address << ")";
     }
   else
     {
       os << "NULL";
     }
-  os <<")";
+  os << ")";
 }
 
 
@@ -317,7 +318,7 @@ NetlinkAttributeValue::Print (std::ostream &os) const
 ***********************************************************************************/
 
 NetlinkAttribute::NetlinkAttribute ()
-  : m_len(4),
+  : m_len (4),
     m_type (0)
 {
 }
@@ -339,7 +340,7 @@ NetlinkAttribute::NetlinkAttribute (uint16_t type, NetlinkAttributeValueType pay
 {
   m_payload = NetlinkAttributeValue (payloadtype, payload);
   m_len = NETLINK_MSG_ATTR_SIZE + m_payload.GetSize ();
-  m_type = type;;
+  m_type = type;
 }
 NetlinkAttribute::NetlinkAttribute (uint16_t type, NetlinkAttributeValueType payloadtype,  uint64_t payload)
 {
@@ -365,7 +366,7 @@ NetlinkAttribute::SetAttrLen (uint16_t v)
 {
   m_len = v;
 }
-void 
+void
 NetlinkAttribute::SetAttrType (uint16_t v)
 {
   m_type = v;
@@ -386,23 +387,23 @@ NetlinkAttribute::GetAttrType () const
   return m_type;
 }
 NetlinkAttributeValue
-NetlinkAttribute::GetAttrPayload() const
+NetlinkAttribute::GetAttrPayload () const
 {
   return m_payload;
 }
 
-void 
+void
 NetlinkAttribute::Print (std::ostream &os) const
-{  
+{
   os << "NetlinkAttribute "
      << "len: " << m_len << " "
-     << "type: " << m_type<<" "
+     << "type: " << m_type << " "
      << "payload:[";
-  m_payload.Print(os);
-  os<<"]";
+  m_payload.Print (os);
+  os << "]";
 }
 
-uint32_t 
+uint32_t
 NetlinkAttribute::GetSerializedSize (void) const
 {
   /* this is the size of an nlattr payload. */

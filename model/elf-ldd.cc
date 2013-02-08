@@ -43,7 +43,7 @@
 namespace ns3 {
 using namespace std;
 
-NS_LOG_COMPONENT_DEFINE("ElfLdd");
+NS_LOG_COMPONENT_DEFINE ("ElfLdd");
 
 class SharedLibrary
 {
@@ -80,15 +80,18 @@ private:
   int m_depth;
 };
 
-SharedLibrary::SharedLibrary (string s,string f) : m_fullName (f), m_sName (s),
-    m_arch32 (0), m_arch64 (0), m_depth (-1)
+SharedLibrary::SharedLibrary (string s,string f) : m_fullName (f),
+                                                   m_sName (s),
+                                                   m_arch32 (0),
+                                                   m_arch64 (0),
+                                                   m_depth (-1)
 {
 }
 
 void
 SharedLibrary::AddLibrary (string l)
 {
-  m_libs.insert ( make_pair (l, ""));
+  m_libs.insert (make_pair (l, ""));
 }
 
 void
@@ -102,7 +105,7 @@ SharedLibrary::AddPath (string p)
       char *f = crsr;
       char prec = 0;
 
-      while ( *crsr && (*crsr != ':') )
+      while (*crsr && (*crsr != ':'))
         {
           prec = *crsr;
           crsr++;
@@ -112,7 +115,7 @@ SharedLibrary::AddPath (string p)
       if (l > f)
         {
           string res = string (f, l - f);
-          if ( (prec != 0) && (prec != '/') )
+          if ((prec != 0) && (prec != '/'))
             {
               res += '/';
             }
@@ -204,7 +207,7 @@ SharedLibrary::SearchLibs ()
           if (!stat (fullPath.c_str (), &st))
             {
               p.second = fullPath;
-              n.insert(p);
+              n.insert (p);
               count++;
               f = 1;
               break;
@@ -215,7 +218,7 @@ SharedLibrary::SearchLibs ()
           NS_LOG_DEBUG (p.first << " NOT FOUND");
         }
     }
-  if (m_libs.size() == count)
+  if (m_libs.size () == count)
     {
       m_libs = n;
       return 1;
@@ -225,7 +228,7 @@ SharedLibrary::SearchLibs ()
 bool
 SharedLibrary::CalcDepth (int max, map <string, SharedLibrary*> &mapScanned)
 {
-  if (m_depth >= 0 )
+  if (m_depth >= 0)
     {
       return 1;
     }
@@ -233,7 +236,7 @@ SharedLibrary::CalcDepth (int max, map <string, SharedLibrary*> &mapScanned)
     {
       return 0;
     }
-  if (m_libs.size()==0)
+  if (m_libs.size () == 0)
     {
       m_depth = 0;
       return 1;
@@ -241,13 +244,13 @@ SharedLibrary::CalcDepth (int max, map <string, SharedLibrary*> &mapScanned)
   int calc = 0;
   for (set< pair<string,string> >::const_iterator i = m_libs.begin (); i != m_libs.end (); ++i)
     {
-      if (!mapScanned[(*i).second]->CalcDepth(max-1, mapScanned))
+      if (!mapScanned[(*i).second]->CalcDepth (max - 1, mapScanned))
         {
           return 0;
         }
-      if ( mapScanned[(*i).second]->GetDepth() > calc -1 )
+      if (mapScanned[(*i).second]->GetDepth () > calc - 1)
         {
-          calc = mapScanned[(*i).second]->GetDepth() + 1;
+          calc = mapScanned[(*i).second]->GetDepth () + 1;
         }
     }
   m_depth = calc;
@@ -259,13 +262,13 @@ SharedLibrary::GetDepth () const
   return m_depth;
 }
 // Convert a virtual address to an offset within the file
-ElfW (Addr) vaddr_2_foffset (const ElfW (Ehdr) *he, const ElfW (Phdr) *pr, const ElfW (Addr) vma )
+ElfW (Addr) vaddr_2_foffset (const ElfW (Ehdr) * he, const ElfW (Phdr) * pr, const ElfW (Addr) vma)
 {
-  for ( int p=0; p < he->e_phnum; p++)
+  for (int p = 0; p < he->e_phnum; p++)
     {
-      if ( pr[p].p_type == PT_LOAD )
+      if (pr[p].p_type == PT_LOAD)
         {
-          if ( ( vma >=  pr[p].p_vaddr ) )
+          if ((vma >=  pr[p].p_vaddr))
             {
               return vma - pr[p].p_vaddr + pr[p].p_offset;
             }
@@ -277,56 +280,56 @@ ElfW (Addr) vaddr_2_foffset (const ElfW (Ehdr) *he, const ElfW (Phdr) *pr, const
 SharedLibrary*
 ElfLdd::ExtractLibraries (std::string sName, std::string fullPath)
 {
-  NS_LOG_FUNCTION ( sName << fullPath );
+  NS_LOG_FUNCTION (sName << fullPath);
   int fd = open (fullPath.c_str (), O_RDONLY);
   if (fd == -1)
     {
-      NS_LOG_ERROR (fullPath << ": unable to open file errno: " << errno );
+      NS_LOG_ERROR (fullPath << ": unable to open file errno: " << errno);
       return 0;
     }
   struct stat st;
   int retval = fstat (fd, &st);
   if (retval)
     {
-      NS_LOG_ERROR (fullPath << ": unable to fstat file errno: " << errno );
+      NS_LOG_ERROR (fullPath << ": unable to fstat file errno: " << errno);
       return 0;
     }
   uint64_t size = st.st_size;
   uint8_t *buffer = (uint8_t *) mmap (0, size, PROT_READ, MAP_PRIVATE, fd, 0);
-  if ( ((void*)-1) == buffer )
+  if (((void*)-1) == buffer)
     {
-      NS_LOG_ERROR (fullPath << ": unable to mmap file errno: " << errno );
+      NS_LOG_ERROR (fullPath << ": unable to mmap file errno: " << errno);
       return 0;
     }
   close (fd);
-  SharedLibrary *res = new SharedLibrary ( sName, fullPath);
-  const ElfW (Ehdr) *header = (ElfW (Ehdr) *)buffer;
-  if ( header->e_ident [EI_CLASS] == ELFCLASS64)
+  SharedLibrary *res = new SharedLibrary (sName, fullPath);
+  const ElfW (Ehdr) * header = (ElfW (Ehdr) *)buffer;
+  if (header->e_ident [EI_CLASS] == ELFCLASS64)
     {
       res->SetArch64 ();
     }
-  if ( header->e_ident [EI_CLASS] == ELFCLASS32)
+  if (header->e_ident [EI_CLASS] == ELFCLASS32)
     {
       res->SetArch32 ();
     }
-  const ElfW (Phdr) *programTable = (ElfW (Phdr) *) (buffer + header->e_phoff);
-  const ElfW (Shdr) *sectionTable = (ElfW (Shdr) *) (buffer + header->e_shoff);
-  for (int s=0; s < header->e_shnum ; s++ )
+  const ElfW (Phdr) * programTable = (ElfW (Phdr) *)(buffer + header->e_phoff);
+  const ElfW (Shdr) * sectionTable = (ElfW (Shdr) *)(buffer + header->e_shoff);
+  for (int s = 0; s < header->e_shnum ; s++)
     {
-      if ( SHT_DYNAMIC == sectionTable [s].sh_type )
+      if (SHT_DYNAMIC == sectionTable [s].sh_type)
         {
           int n = 0;
-          ElfW (Dyn) *dynamics = (ElfW (Dyn) *)(buffer + sectionTable [s].sh_offset);
+          ElfW (Dyn) * dynamics = (ElfW (Dyn) *)(buffer + sectionTable [s].sh_offset);
           bool turn = 1;
           ElfW (Addr) dt_strtab = 0;
           do
             {
-              if (dynamics [n].d_tag == DT_STRTAB )
+              if (dynamics [n].d_tag == DT_STRTAB)
                 {
                   turn = 0;
                   dt_strtab = vaddr_2_foffset (header, programTable, dynamics [n].d_un.d_ptr);
                 }
-              if (dynamics [n].d_tag == DT_NULL )
+              if (dynamics [n].d_tag == DT_NULL)
                 {
                   turn = 0;
                 }
@@ -338,7 +341,7 @@ ElfLdd::ExtractLibraries (std::string sName, std::string fullPath)
           do
             {
               switch (dynamics [n].d_tag)
-              {
+                {
                 case DT_NULL:
                   {
                     turn = 0;
@@ -363,7 +366,7 @@ ElfLdd::ExtractLibraries (std::string sName, std::string fullPath)
                     res->SetSoName (string ((char*)(buffer + dt_strtab + dynamics [n].d_un.d_ptr)));
                   }
                   break;
-              }
+                }
               n++;
             }
           while (turn);
@@ -380,14 +383,14 @@ ElfLdd::Loop (std::string s, std::string f)
   set< pair<string,string> > todo;
   set<string> done;
   map <string, SharedLibrary*> mapScanned;
-  todo.insert ( make_pair(s,f));
+  todo.insert (make_pair (s,f));
   vector<SharedLibrary*> toFree;
 
-  while (todo.size() > 0)
+  while (todo.size () > 0)
     {
       const pair<string,string> name = *(todo.begin ());
-      todo.erase ( name );
-      SharedLibrary* l =  ExtractLibraries ( name.first, name.second );
+      todo.erase (name);
+      SharedLibrary* l =  ExtractLibraries (name.first, name.second);
       if (l)
         {
           toFree.push_back (l);
@@ -409,14 +412,14 @@ ElfLdd::Loop (std::string s, std::string f)
               mapScanned [name.second] = l;
               set < pair<string,string> > full = l->GetLibs ();
 
-              for ( set < pair<string,string> >::const_iterator ii = full.begin ();
-                  ii != full.end (); ++ii)
+              for (set < pair<string,string> >::const_iterator ii = full.begin ();
+                   ii != full.end (); ++ii)
                 {
                   string lalib = (*ii).second;
 
-                  if (( todo.find (*ii) == todo.end () )
+                  if ((todo.find (*ii) == todo.end ())
                       &&
-                      ( done.end () == done.find (lalib) ))
+                      (done.end () == done.find (lalib)))
                     {
                       todo.insert (*ii);
                     }
@@ -425,7 +428,7 @@ ElfLdd::Loop (std::string s, std::string f)
         }
     }
 
-  if ( 0==mapScanned[f] )
+  if (0 == mapScanned[f])
     {
       NS_LOG_DEBUG ("No libraries found for " << f);
       return;
@@ -436,10 +439,10 @@ ElfLdd::Loop (std::string s, std::string f)
       NS_LOG_ERROR ("There is a loop in dependencies of " << f);
       return;
     }
-  map <int , vector <SharedLibrary*> > tri;
+  map <int, vector <SharedLibrary*> > tri;
   int maxi = 0;
-  for ( map <string, SharedLibrary*>::const_iterator i = mapScanned.begin ();
-      i != mapScanned.end (); i++)
+  for (map <string, SharedLibrary*>::const_iterator i = mapScanned.begin ();
+       i != mapScanned.end (); i++)
     {
       int p = i->second->GetDepth ();
 
@@ -447,14 +450,14 @@ ElfLdd::Loop (std::string s, std::string f)
         {
           maxi = p;
         }
-      if ( tri.find (p) == tri.end () )
+      if (tri.find (p) == tri.end ())
         {
           vector <SharedLibrary*> vide;
           tri [p] = vide;
         }
       tri [p].push_back (i->second);
     }
-    for (int j = 0 ; j <= maxi ; j++ )
+  for (int j = 0 ; j <= maxi ; j++)
     {
       vector <SharedLibrary*> vectore = tri [j];
       for (vector<SharedLibrary*>::const_iterator s = vectore.begin (); s != vectore.end (); s++)
@@ -467,7 +470,7 @@ ElfLdd::Loop (std::string s, std::string f)
     }
   for (vector<SharedLibrary*>::const_iterator s = toFree.begin (); s != toFree.end (); s++)
     {
-        delete (*s);
+      delete (*s);
     }
 }
 

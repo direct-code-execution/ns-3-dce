@@ -28,14 +28,14 @@ client1 (void *arg)
   sleep (1);
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
   strcpy (address.sun_path, SOCK_PATH);
 
   status = connect (sock, (struct sockaddr *) &address, SUN_LEN (&address));
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   char *crsr = sendBuffer;
   for (size_t i = 0; i < BUF_LEN; i++)
@@ -48,24 +48,24 @@ client1 (void *arg)
       status = send (sock, sendBuffer + tot, BUF_LEN - tot, 0);
       printf ("Client1: send %d / %ld\n", status, BUF_LEN - tot);
 
-      TEST_ASSERT ( status > 0 );
+      TEST_ASSERT (status > 0);
       tot += status;
     }
-  TEST_ASSERT_EQUAL ( tot, BUF_LEN);
+  TEST_ASSERT_EQUAL (tot, BUF_LEN);
 
   tot = 0;
 
   while (tot < BUF_LEN)
     {
       status = recv (sock, readBuffer + tot, BUF_LEN - tot, 0);
-      TEST_ASSERT ( status > 0 );
+      TEST_ASSERT (status > 0);
       tot += status;
     }
-  TEST_ASSERT_EQUAL ( tot, BUF_LEN);
+  TEST_ASSERT_EQUAL (tot, BUF_LEN);
 
   for (size_t i = 0; i < BUF_LEN; i++)
     {
-      TEST_ASSERT_EQUAL ( readBuffer[i], sendBuffer[i] );
+      TEST_ASSERT_EQUAL (readBuffer[i], sendBuffer[i]);
     }
 
   status = close (sock);
@@ -89,7 +89,7 @@ server1 (void *arg)
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   struct sockaddr_un address;
 
@@ -105,7 +105,7 @@ server1 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -114,19 +114,19 @@ server1 (void *arg)
     {
       status = recv (sockin, buffer + tot, BUF_LEN - tot, 0);
       printf ("Server1: received %d / %ld\n", status, BUF_LEN - tot);
-      TEST_ASSERT ( status > 0 );
+      TEST_ASSERT (status > 0);
       tot += status;
     }
-  TEST_ASSERT_EQUAL ( tot, BUF_LEN);
+  TEST_ASSERT_EQUAL (tot, BUF_LEN);
 
   tot = 0;
   while (tot < BUF_LEN)
     {
       status = send (sockin, buffer + tot, BUF_LEN - tot, 0);
-      TEST_ASSERT ( status > 0 );
+      TEST_ASSERT (status > 0);
       tot += status;
     }
-  TEST_ASSERT_EQUAL ( tot, BUF_LEN);
+  TEST_ASSERT_EQUAL (tot, BUF_LEN);
 
   status = close (sockin);
   TEST_ASSERT_EQUAL (status, 0);
@@ -156,7 +156,7 @@ client2 (void *arg)
   sleep (1);
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
@@ -174,10 +174,10 @@ client2 (void *arg)
 
   tot = 0;
   status = recv (sock, readBuffer, BUF_LEN, 0);
-  TEST_ASSERT ( ( status == -1 ) && (errno == EAGAIN) );
+  TEST_ASSERT ((status == -1) && (errno == EAGAIN));
 
   status = recv (sock, readBuffer, BUF_LEN, 0);
-  TEST_ASSERT ( status > 0 );
+  TEST_ASSERT (status > 0);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -197,7 +197,7 @@ server2 (void *arg)
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   struct sockaddr_un address;
 
@@ -213,7 +213,7 @@ server2 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -227,7 +227,7 @@ server2 (void *arg)
   sleep (5);
 
   status = send (sockin, buffer, BUF_LEN, 0);
-  TEST_ASSERT ( status > 0 );
+  TEST_ASSERT (status > 0);
   tot += status;
 
   // Close after send : client must receive last data
@@ -254,7 +254,7 @@ client3 (void *arg)
   sleep (1);
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
@@ -290,7 +290,7 @@ server3 (void *arg)
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   struct sockaddr_un address;
 
@@ -306,7 +306,7 @@ server3 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -329,7 +329,7 @@ server3 (void *arg)
       status = send (sockin, buffer, BUF_LEN, 0);
     }
   while (status > 0);
-  TEST_ASSERT ( ( status == -1 ) && (errno == EAGAIN) );
+  TEST_ASSERT ((status == -1) && (errno == EAGAIN));
 
   status = close (sockin);
   TEST_ASSERT_EQUAL (status, 0);
@@ -350,7 +350,7 @@ client4 (void *arg)
   char readBuffer[BUF_LEN];
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
@@ -359,12 +359,12 @@ client4 (void *arg)
   status = recv (sock, readBuffer, BUF_LEN, 0);
   printf ("Client4: recv status %d and errno %d\n", status, errno);
   TEST_ASSERT_EQUAL (status, -1);
-  TEST_ASSERT_EQUAL (errno, EINVAL );
+  TEST_ASSERT_EQUAL (errno, EINVAL);
 
   status = send (sock, readBuffer, BUF_LEN, 0);
   printf ("Client4: send status %d and errno %d\n", status, errno);
   TEST_ASSERT_EQUAL (status, -1);
-  TEST_ASSERT_EQUAL (errno, ENOTCONN );
+  TEST_ASSERT_EQUAL (errno, ENOTCONN);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -390,7 +390,7 @@ client5 (void *arg)
   sleep (1);
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
@@ -407,8 +407,8 @@ client5 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   status = connect (sock, (struct sockaddr *) &address, SUN_LEN (&address));
-  TEST_ASSERT ( status == -1 );
-  TEST_ASSERT_EQUAL (errno, EAGAIN );
+  TEST_ASSERT (status == -1);
+  TEST_ASSERT_EQUAL (errno, EAGAIN);
 
   sleep (15);
 
@@ -433,7 +433,7 @@ server5 (void *arg)
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   struct sockaddr_un address;
 
@@ -452,7 +452,7 @@ server5 (void *arg)
 
   printf ("Server5: accepting...\n");
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -480,27 +480,27 @@ client6 (void *arg)
   sleep (1);
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
   strcpy (address.sun_path, SOCK_PATH);
 
   status = connect (sock, (struct sockaddr *) &address, SUN_LEN (&address));
-  TEST_ASSERT_EQUAL (status, 0 );
+  TEST_ASSERT_EQUAL (status, 0);
 
   status = unlink (SOCK_PATH);
 
   sock2 = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock2 >= 0 );
+  TEST_ASSERT (sock2 >= 0);
 
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
   strcpy (address.sun_path, SOCK_PATH);
 
   status = connect (sock2, (struct sockaddr *) &address, SUN_LEN (&address));
-  TEST_ASSERT_EQUAL (status, -1 );
-  TEST_ASSERT_EQUAL (errno, ENOENT );
+  TEST_ASSERT_EQUAL (status, -1);
+  TEST_ASSERT_EQUAL (errno, ENOENT);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -522,7 +522,7 @@ server6 (void *arg)
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   struct sockaddr_un address;
 
@@ -538,7 +538,7 @@ server6 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   sleep (10);
 
@@ -564,14 +564,14 @@ client7 (void *arg)
   sleep (1);
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
   strcpy (address.sun_path, SOCK_PATH);
 
   status = connect (sock, (struct sockaddr *) &address, SUN_LEN (&address));
-  TEST_ASSERT_EQUAL (status, 0 );
+  TEST_ASSERT_EQUAL (status, 0);
 
   int val = 42;
   socklen_t sz = sizeof(val);
@@ -614,7 +614,7 @@ server7 (void *arg)
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   struct sockaddr_un address;
 
@@ -637,7 +637,7 @@ server7 (void *arg)
   TEST_ASSERT_UNEQUAL (val, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   val = 0;
   sz = sizeof(val);
@@ -672,37 +672,37 @@ client8 (void *arg)
   sleep (1);
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
   strcpy (address.sun_path, SOCK_PATH);
 
   status = connect (sock, (struct sockaddr *) &address, SUN_LEN (&address));
-  TEST_ASSERT_EQUAL (status, 0 );
+  TEST_ASSERT_EQUAL (status, 0);
 
   socklen_t len = sizeof(struct sockaddr_un);
   status = getpeername (sock, (struct sockaddr *) &addr2, &len);
-  TEST_ASSERT_EQUAL ( status, 0 );
-  TEST_ASSERT_EQUAL ( address.sun_family, addr2.sun_family );
-  TEST_ASSERT_EQUAL ( strcmp (address.sun_path, addr2.sun_path), 0 );
+  TEST_ASSERT_EQUAL (status, 0);
+  TEST_ASSERT_EQUAL (address.sun_family, addr2.sun_family);
+  TEST_ASSERT_EQUAL (strcmp (address.sun_path, addr2.sun_path), 0);
 
   len = sizeof(struct sockaddr_un);
   memset (&addr2, 0, len);
   status = getsockname (sock, (struct sockaddr *) &addr2, &len);
-  TEST_ASSERT_EQUAL ( status, 0 );
-  TEST_ASSERT_EQUAL ( address.sun_family, addr2.sun_family );
-  TEST_ASSERT_EQUAL ( strlen ( addr2.sun_path), 0 );
+  TEST_ASSERT_EQUAL (status, 0);
+  TEST_ASSERT_EQUAL (address.sun_family, addr2.sun_family);
+  TEST_ASSERT_EQUAL (strlen (addr2.sun_path), 0);
 
   sleep (3);
 
   status = shutdown (sock, SHUT_RD);
-  TEST_ASSERT_EQUAL (status, 0 );
+  TEST_ASSERT_EQUAL (status, 0);
 
   printf ("client8: 2 reads\n");
 
   status = read (sock, buf, 1024);
-  TEST_ASSERT_EQUAL (status, sizeof(int) );
+  TEST_ASSERT_EQUAL (status, sizeof(int));
 
   status = read (sock, buf, 1024);
   TEST_ASSERT_EQUAL (status, 0);
@@ -711,24 +711,24 @@ client8 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
   strcpy (address.sun_path, SOCK_PATH);
 
   status = connect (sock, (struct sockaddr *) &address, SUN_LEN (&address));
-  TEST_ASSERT_EQUAL (status, 0 );
+  TEST_ASSERT_EQUAL (status, 0);
 
   status = write (sock, &status, sizeof(status));
   TEST_ASSERT_EQUAL (status, sizeof(status));
 
   status = shutdown (sock, SHUT_WR);
-  TEST_ASSERT_EQUAL (status, 0 );
+  TEST_ASSERT_EQUAL (status, 0);
 
   status = write (sock, &status, sizeof(status));
   TEST_ASSERT_EQUAL (status, -1);
-  TEST_ASSERT_EQUAL (errno, EPIPE );
+  TEST_ASSERT_EQUAL (errno, EPIPE);
 
   sleep (5);
 
@@ -751,7 +751,7 @@ server8 (void *arg)
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   struct sockaddr_un address, addr2;
 
@@ -766,29 +766,29 @@ server8 (void *arg)
   socklen_t len = sizeof(struct sockaddr_un);
   memset (&addr2, 0, len);
   status = getsockname (sock, (struct sockaddr *) &addr2, &len);
-  TEST_ASSERT_EQUAL ( status, 0 );
-  TEST_ASSERT_EQUAL ( address.sun_family, addr2.sun_family );
-  TEST_ASSERT_EQUAL ( strcmp (address.sun_path, addr2.sun_path), 0 );
+  TEST_ASSERT_EQUAL (status, 0);
+  TEST_ASSERT_EQUAL (address.sun_family, addr2.sun_family);
+  TEST_ASSERT_EQUAL (strcmp (address.sun_path, addr2.sun_path), 0);
 
   status = listen (sock, 1);
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   len = sizeof(struct sockaddr_un);
   memset (&addr2, 0, len);
   status = getpeername (sockin, (struct sockaddr *) &addr2, &len);
-  TEST_ASSERT_EQUAL ( status, 0 );
-  TEST_ASSERT_EQUAL ( address.sun_family, addr2.sun_family );
-  TEST_ASSERT_EQUAL ( strlen (addr2.sun_path), 0 );
+  TEST_ASSERT_EQUAL (status, 0);
+  TEST_ASSERT_EQUAL (address.sun_family, addr2.sun_family);
+  TEST_ASSERT_EQUAL (strlen (addr2.sun_path), 0);
 
   len = sizeof(struct sockaddr_un);
   memset (&addr2, 0, len);
   status = getsockname (sockin, (struct sockaddr *) &addr2, &len);
-  TEST_ASSERT_EQUAL ( status, 0 );
-  TEST_ASSERT_EQUAL ( address.sun_family, addr2.sun_family );
-  TEST_ASSERT_EQUAL ( strcmp (address.sun_path, addr2.sun_path), 0 );
+  TEST_ASSERT_EQUAL (status, 0);
+  TEST_ASSERT_EQUAL (address.sun_family, addr2.sun_family);
+  TEST_ASSERT_EQUAL (strcmp (address.sun_path, addr2.sun_path), 0);
 
   status = write (sockin, &status, sizeof(status));
   TEST_ASSERT_EQUAL (status, sizeof(status));
@@ -796,23 +796,23 @@ server8 (void *arg)
   sleep (4);
   status = write (sockin, &status, sizeof(status));
   TEST_ASSERT_EQUAL (status, -1);
-  TEST_ASSERT_EQUAL (errno, EPIPE );
+  TEST_ASSERT_EQUAL (errno, EPIPE);
 
   status = close (sockin);
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   sleep (1);
 
   status = read (sockin, &status, sizeof(status));
   //  printf("server8: read %d errno %d\n",status, errno);
-  TEST_ASSERT_EQUAL (status, sizeof(status) );
+  TEST_ASSERT_EQUAL (status, sizeof(status));
 
   status = read (sockin, &status, sizeof(status));
   //  printf("server8: read %d errno %d\n",status, errno);
-  TEST_ASSERT_EQUAL (status, 0 );
+  TEST_ASSERT_EQUAL (status, 0);
 
   status = close (sockin);
   TEST_ASSERT_EQUAL (status, 0);
@@ -841,7 +841,7 @@ server9 (void *arg)
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   struct sockaddr_un address;
 
@@ -865,8 +865,8 @@ server9 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT_EQUAL ( sockin, -1 );
-  TEST_ASSERT_EQUAL ( errno, EAGAIN );
+  TEST_ASSERT_EQUAL (sockin, -1);
+  TEST_ASSERT_EQUAL (errno, EAGAIN);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -892,7 +892,7 @@ client10 (void *arg)
 
   sleep (3);
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
   int flag = 0;
   flag = fcntl (sock, F_GETFL, &flag);
   flag |= O_NONBLOCK;
@@ -905,7 +905,7 @@ client10 (void *arg)
 
   status = connect (sock, (struct sockaddr *) &address, SUN_LEN (&address));
   printf ("Client10: 1st connect -> %d errno:%d\n", status, errno);
-  TEST_ASSERT_EQUAL (status, 0 );
+  TEST_ASSERT_EQUAL (status, 0);
 
   do
     {
@@ -972,7 +972,7 @@ server10 (void *arg)
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   struct sockaddr_un address;
 
@@ -1000,7 +1000,7 @@ server10 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
   sleep (2);
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   do
     {
@@ -1038,14 +1038,14 @@ client11 (void *arg)
   sleep (1);
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
   strcpy (address.sun_path, SOCK_PATH);
 
   status = connect (sock, (struct sockaddr *) &address, SUN_LEN (&address));
-  TEST_ASSERT_EQUAL ( status,0 );
+  TEST_ASSERT_EQUAL (status, 0);
 
   sleep (1);
 
@@ -1066,7 +1066,7 @@ server11 (void *arg)
   struct sockaddr_un address;
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
@@ -1078,11 +1078,11 @@ server11 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   char *buffer = (char*) malloc (BUF_LEN);
   status = send (sockin, buffer, BUF_LEN, 0);
-  TEST_ASSERT ( status >= 0 );
+  TEST_ASSERT (status >= 0);
 
   status = close (sockin);
   TEST_ASSERT_EQUAL (status, 0);
@@ -1123,14 +1123,14 @@ client13 (void *arg)
   sleep (1);
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
   strcpy (address.sun_path, SOCK_PATH);
 
   status = connect (sock, (struct sockaddr *) &address, SUN_LEN (&address));
-  TEST_ASSERT_EQUAL ( status, 0 );
+  TEST_ASSERT_EQUAL (status, 0);
 
   sleep (1);
 
@@ -1139,14 +1139,14 @@ client13 (void *arg)
   int maxFd = sock + 1;
 
   FD_ZERO (&readFd);
-  FD_SET ( sock, &readFd );
+  FD_SET (sock, &readFd);
   FD_ZERO (&writeFd);
-  FD_SET ( 1, &writeFd );
-  FD_SET ( sock, &writeFd );
+  FD_SET (1, &writeFd);
+  FD_SET (sock, &writeFd);
 
   status = select (maxFd, &readFd, &writeFd, NULL, NULL);
-  TEST_ASSERT ( status >= 2 );
-  TEST_ASSERT ( FD_ISSET (sock, &readFd) );
+  TEST_ASSERT (status >= 2);
+  TEST_ASSERT (FD_ISSET (sock, &readFd));
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -1168,7 +1168,7 @@ server13 (void *arg)
   printf ("Server13: BUF_LEN:%ld\n", BUF_LEN);
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
@@ -1180,10 +1180,10 @@ server13 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   status = send (sockin, buffer, BUF_LEN, 0);
-  TEST_ASSERT ( status >= 0 );
+  TEST_ASSERT (status >= 0);
 
   status = close (sockin);
   TEST_ASSERT_EQUAL (status, 0);
@@ -1210,14 +1210,14 @@ client14 (void *arg)
   sleep (1);
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
   strcpy (address.sun_path, SOCK_PATH);
 
   status = connect (sock, (struct sockaddr *) &address, SUN_LEN (&address));
-  TEST_ASSERT_EQUAL ( status, 0 );
+  TEST_ASSERT_EQUAL (status, 0);
 
   fd_set readFd;
 
@@ -1229,8 +1229,8 @@ client14 (void *arg)
   timeOut.tv_sec = 1;
   timeOut.tv_usec = 0;
 
-  FD_SET ( sock, &readFd );
-  FD_SET ( 0, &readFd );
+  FD_SET (sock, &readFd);
+  FD_SET (0, &readFd);
 
   status = select (maxFd, &readFd, NULL, NULL, &timeOut);
   printf ("Client14: select -> %d, errno: %d \n", status, errno);
@@ -1258,7 +1258,7 @@ server14 (void *arg)
   printf ("Server14: BUF_LEN:%ld\n", BUF_LEN);
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
@@ -1270,12 +1270,12 @@ server14 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   sleep (2);
 
   status = send (sockin, buffer, BUF_LEN, 0);
-  TEST_ASSERT ( status >= 0 );
+  TEST_ASSERT (status >= 0);
 
   status = close (sockin);
   TEST_ASSERT_EQUAL (status, 0);
@@ -1351,7 +1351,7 @@ server15 (void *arg)
   std::vector<int> closeList;
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
@@ -1364,7 +1364,7 @@ server15 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   closeList.push_back (sockin);
 
@@ -1375,27 +1375,27 @@ server15 (void *arg)
 
       FD_ZERO (&readFd);
 
-      FD_SET ( sock, &readFd );
-      FD_SET ( sockin, &readFd );
+      FD_SET (sock, &readFd);
+      FD_SET (sockin, &readFd);
 
       printf ("Server15: selecting ... \n ");
 
-      status = select ( 1 + maxFd, &readFd, NULL, NULL, NULL);
+      status = select (1 + maxFd, &readFd, NULL, NULL, NULL);
       printf ("Server15: select -> %d \n ", status);
       if (status > 0)
         {
-          if ( FD_ISSET ( sockin, &readFd) )
+          if (FD_ISSET (sockin, &readFd))
             {
               // The client close it !
               break;
             }
-          if ( FD_ISSET ( sock, &readFd) )
+          if (FD_ISSET (sock, &readFd))
             {
               // Incoming Connexion
               int newSock = accept (sock, NULL, NULL);
-              if ( newSock >= 0 )
+              if (newSock >= 0)
                 {
-                  closeList.push_back ( newSock );
+                  closeList.push_back (newSock);
                 }
             }
         }
@@ -1477,11 +1477,11 @@ client16 (void *arg)
 
   sleep (1);
   sock = CreateDgramBind ();
-  TEST_ASSERT_EQUAL ( sock, -1 );
-  TEST_ASSERT_EQUAL ( errno, EADDRINUSE );
+  TEST_ASSERT_EQUAL (sock, -1);
+  TEST_ASSERT_EQUAL (errno, EADDRINUSE);
 
   sock = CreateDgramConnect ();
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -1499,7 +1499,7 @@ server16 (void *arg)
   int buf = -1;
   int status;
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   status = listen (sock, 12);
   TEST_ASSERT_EQUAL (status, -1);
@@ -1539,7 +1539,7 @@ client17 (void *arg)
 
   sleep (1);
   sock = CreateDgramConnect ();
-  TEST_ASSERT ( sock > 0 );
+  TEST_ASSERT (sock > 0);
 
   memset (sendBuf17, 17, sizeof(sendBuf17));
 
@@ -1562,9 +1562,9 @@ server17 (void *arg)
   int sock = CreateDgramBind ();
   int status;
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
-  status = read ( sock, readBuf17, sizeof ( readBuf17 ));
+  status = read (sock, readBuf17, sizeof (readBuf17));
   TEST_ASSERT_EQUAL (status, sizeof(readBuf17));
 
   status = close (sock);
@@ -1602,11 +1602,11 @@ client18 (void *arg)
 
   sleep (1);
   sock = socket (AF_UNIX, SOCK_DGRAM, 0);
-  TEST_ASSERT ( sock > 0 );
+  TEST_ASSERT (sock > 0);
 
   memset (sendBuf18, 18, sizeof(sendBuf18));
 
-  status = sendto (sock, sendBuf18, sizeof(sendBuf18), 0, PrepAddr (), sizeof(sockaddr_un) );
+  status = sendto (sock, sendBuf18, sizeof(sendBuf18), 0, PrepAddr (), sizeof(sockaddr_un));
   printf ("Server18: sendto -> %d, errno: %d \n \n ", status, errno);
   TEST_ASSERT_EQUAL (status, sizeof(sendBuf18));
 
@@ -1629,13 +1629,13 @@ server18 (void *arg)
   struct sockaddr_un exp;
 
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
-  memset ( &exp, 0, l);
+  memset (&exp, 0, l);
 
-  status = recvfrom ( sock, readBuf18, sizeof(readBuf18), 0, (struct sockaddr *) &exp, &l );
-  printf ("Server18: recvfrom -> %d, errno: %d FROM: %s \n \n ", status, errno, exp.sun_path );
-  TEST_ASSERT_EQUAL (status, sizeof(readBuf18));
+  status = recvfrom (sock, readBuf18, sizeof (readBuf18), 0, (struct sockaddr *) &exp, &l);
+  printf ("Server18: recvfrom -> %d, errno: %d FROM: %s \n \n ", status, errno, exp.sun_path);
+  TEST_ASSERT_EQUAL (status, sizeof (readBuf18));
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -1661,7 +1661,7 @@ client19 (void *arg)
 
   sleep (1);
   sock = socket (AF_UNIX, SOCK_DGRAM, 0);
-  TEST_ASSERT ( sock > 0 );
+  TEST_ASSERT (sock > 0);
 
   memset (sendBuf19, 19, sizeof(sendBuf19));
 
@@ -1676,9 +1676,9 @@ client19 (void *arg)
   mes.msg_controllen = 0;
   mes.msg_flags = 0;
 
-  ssize_t res =  sendmsg ( sock, &mes, 0);
+  ssize_t res =  sendmsg (sock, &mes, 0);
   printf ("sendmsg --> %ld, errno: %d \n \n ", res, errno);
-  TEST_ASSERT_EQUAL ( res, sizeof(sendBuf19) );
+  TEST_ASSERT_EQUAL (res, sizeof(sendBuf19));
 
   sleep (1);
   status = close (sock);
@@ -1698,14 +1698,14 @@ server19 (void *arg)
   struct msghdr mes;
   struct iovec msgs[3];
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
-  msgs[0].iov_base = &(readBuf19[ sizeof( readBuf19 ) / 2  ]);
-  msgs[0].iov_len = sizeof( readBuf19 ) / 2;
+  msgs[0].iov_base = &(readBuf19[sizeof (readBuf19) / 2  ]);
+  msgs[0].iov_len = sizeof (readBuf19) / 2;
   msgs[1].iov_base = readBuf19;
-  msgs[1].iov_len = sizeof( readBuf19 ) / 2;
+  msgs[1].iov_len = sizeof (readBuf19) / 2;
   msgs[2].iov_base = readBuf19;
-  msgs[2].iov_len = sizeof( readBuf19 ) / 2;
+  msgs[2].iov_len = sizeof (readBuf19) / 2;
   mes.msg_name = 0;
   mes.msg_namelen = 0;
   mes.msg_iov = msgs;
@@ -1714,9 +1714,9 @@ server19 (void *arg)
   mes.msg_controllen = 0;
   mes.msg_flags = 0;
 
-  ssize_t lu = recvmsg ( sock, &mes, 0);
+  ssize_t lu = recvmsg (sock, &mes, 0);
   printf ("recvmsg -> %ld, errno: %d \n\n ", lu, errno);
-  TEST_ASSERT_EQUAL ( lu, sizeof(sendBuf19) );
+  TEST_ASSERT_EQUAL (lu, sizeof (sendBuf19));
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -1742,7 +1742,7 @@ client20 (void *arg)
   struct msghdr mes;
   struct iovec msg1;
 
-  TEST_ASSERT ( sock > 0 );
+  TEST_ASSERT (sock > 0);
 
   memset (sendBuf20, 20, sizeof(sendBuf20));
   msg1.iov_base = &sendBuf20;
@@ -1756,9 +1756,9 @@ client20 (void *arg)
   mes.msg_controllen = 0;
   mes.msg_flags = 0;
 
-  ssize_t res =  sendmsg ( sock, &mes, 0);
+  ssize_t res =  sendmsg (sock, &mes, 0);
   printf ("sendmsg --> %ld, errno: %d \n \n ", res, errno);
-  TEST_ASSERT_EQUAL ( res, sizeof(sendBuf20) );
+  TEST_ASSERT_EQUAL (res, sizeof (sendBuf20));
 
   sleep (1);
   status = close (sock);
@@ -1778,10 +1778,10 @@ server20 (void *arg)
   struct msghdr mes;
   struct iovec msgs[2];
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
-  msgs[0].iov_base = &(readBuf20[ sizeof( readBuf20 ) / 2  ]);
-  msgs[0].iov_len = sizeof( readBuf20 ) / 2;
+  msgs[0].iov_base = &(readBuf20[ sizeof(readBuf20) / 2  ]);
+  msgs[0].iov_len = sizeof (readBuf20) / 2;
 
   mes.msg_name = 0;
   mes.msg_namelen = 0;
@@ -1790,10 +1790,10 @@ server20 (void *arg)
   mes.msg_control = 0;
   mes.msg_controllen = 0;
   mes.msg_flags = 0;
-  ssize_t lu = recvmsg ( sock, &mes, 0);
+  ssize_t lu = recvmsg (sock, &mes, 0);
   printf ("recvmsg -> %ld, errno: %d \n\n ", lu, errno);
-  TEST_ASSERT_EQUAL ( lu, sizeof(sendBuf20) / 2 );
-  TEST_ASSERT_EQUAL ( mes.msg_flags & MSG_TRUNC, MSG_TRUNC);
+  TEST_ASSERT_EQUAL (lu, sizeof (sendBuf20) / 2);
+  TEST_ASSERT_EQUAL (mes.msg_flags & MSG_TRUNC, MSG_TRUNC);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -1818,7 +1818,7 @@ client21 (void *arg)
   struct msghdr mes;
   struct iovec msg1;
 
-  TEST_ASSERT ( sock > 0 );
+  TEST_ASSERT (sock > 0);
 
   memset (sendBuf21, 21, sizeof(sendBuf21));
   msg1.iov_base = &sendBuf21;
@@ -1832,9 +1832,9 @@ client21 (void *arg)
   mes.msg_controllen = 0;
   mes.msg_flags = 0;
 
-  ssize_t res =  sendmsg ( sock, &mes, 0);
+  ssize_t res =  sendmsg (sock, &mes, 0);
   printf ("sendmsg --> %ld, errno: %d \n \n ", res, errno);
-  TEST_ASSERT_EQUAL ( res, sizeof(sendBuf21) );
+  TEST_ASSERT_EQUAL (res, sizeof (sendBuf21));
 
   sleep (1);
   status = close (sock);
@@ -1854,10 +1854,10 @@ server21 (void *arg)
   struct msghdr mes;
   struct iovec msgs[2];
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   msgs[0].iov_base = readBuf21;
-  msgs[0].iov_len = sizeof( readBuf21 );
+  msgs[0].iov_len = sizeof(readBuf21);
 
   mes.msg_name = 0;
   mes.msg_namelen = 0;
@@ -1866,13 +1866,13 @@ server21 (void *arg)
   mes.msg_control = 0;
   mes.msg_controllen = 0;
   mes.msg_flags = 0;
-  ssize_t lu = recvmsg ( sock, &mes, MSG_PEEK);
+  ssize_t lu = recvmsg (sock, &mes, MSG_PEEK);
   printf ("First recvmsg -> %ld, errno: %d \n\n ", lu, errno);
-  TEST_ASSERT_EQUAL ( lu, sizeof(sendBuf21));
-  TEST_ASSERT_EQUAL ( mes.msg_flags & MSG_TRUNC, 0);
+  TEST_ASSERT_EQUAL (lu, sizeof(sendBuf21));
+  TEST_ASSERT_EQUAL (mes.msg_flags & MSG_TRUNC, 0);
 
   msgs[0].iov_base = readBuf21;
-  msgs[0].iov_len = sizeof( readBuf21 );
+  msgs[0].iov_len = sizeof(readBuf21);
 
   mes.msg_name = 0;
   mes.msg_namelen = 0;
@@ -1881,13 +1881,13 @@ server21 (void *arg)
   mes.msg_control = 0;
   mes.msg_controllen = 0;
   mes.msg_flags = 0;
-  lu = recvmsg ( sock, &mes, 0);
+  lu = recvmsg (sock, &mes, 0);
   printf ("Second recvmsg -> %ld, errno: %d \n\n ", lu, errno);
-  TEST_ASSERT_EQUAL ( lu, sizeof(sendBuf21));
-  TEST_ASSERT_EQUAL ( mes.msg_flags & MSG_TRUNC, 0);
+  TEST_ASSERT_EQUAL (lu, sizeof(sendBuf21));
+  TEST_ASSERT_EQUAL (mes.msg_flags & MSG_TRUNC, 0);
 
   msgs[0].iov_base = readBuf21;
-  msgs[0].iov_len = sizeof( readBuf21 );
+  msgs[0].iov_len = sizeof(readBuf21);
 
   mes.msg_name = 0;
   mes.msg_namelen = 0;
@@ -1896,10 +1896,10 @@ server21 (void *arg)
   mes.msg_control = 0;
   mes.msg_controllen = 0;
   mes.msg_flags = 0;
-  lu = recvmsg ( sock, &mes, MSG_DONTWAIT);
+  lu = recvmsg (sock, &mes, MSG_DONTWAIT);
   printf ("Third recvmsg -> %ld, errno: %d \n\n ", lu, errno);
-  TEST_ASSERT_EQUAL ( lu, -1);
-  TEST_ASSERT_EQUAL ( errno, EAGAIN);
+  TEST_ASSERT_EQUAL (lu, -1);
+  TEST_ASSERT_EQUAL (errno, EAGAIN);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -1932,7 +1932,7 @@ server22 (void *arg)
   struct msghdr mes;
   struct iovec msgs[2];
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
   struct timeval tiout;
 
   tiout.tv_sec = 3;
@@ -1941,7 +1941,7 @@ server22 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   msgs[0].iov_base = readBuf22;
-  msgs[0].iov_len = sizeof( readBuf22 );
+  msgs[0].iov_len = sizeof(readBuf22);
 
   mes.msg_name = 0;
   mes.msg_namelen = 0;
@@ -1950,10 +1950,10 @@ server22 (void *arg)
   mes.msg_control = 0;
   mes.msg_controllen = 0;
   mes.msg_flags = 0;
-  ssize_t lu = recvmsg ( sock, &mes, 0);
+  ssize_t lu = recvmsg (sock, &mes, 0);
   printf ("First recvmsg -> %ld, errno: %d \n\n ", lu, errno);
-  TEST_ASSERT_EQUAL ( lu, -1);
-  TEST_ASSERT_EQUAL ( errno, EAGAIN );
+  TEST_ASSERT_EQUAL (lu, -1);
+  TEST_ASSERT_EQUAL (errno, EAGAIN);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -1972,14 +1972,14 @@ static char sendBuf23[BUF_LEN23];
 static void *
 client23 (void *arg)
 {
-  sleep ( 1 );
+  sleep (1);
 
   int sock = CreateDgramConnect ();
   int status = 0;
   struct msghdr mes;
   struct iovec msg1;
 
-  TEST_ASSERT ( sock > 0 );
+  TEST_ASSERT (sock > 0);
   struct timeval tiout;
 
   tiout.tv_sec = 1;
@@ -2001,7 +2001,7 @@ client23 (void *arg)
       mes.msg_controllen = 0;
       mes.msg_flags = 0;
 
-      ssize_t res = sendmsg ( sock, &mes, 0);
+      ssize_t res = sendmsg (sock, &mes, 0);
       printf ("sendmsg --> %ld, errno: %d \n \n ", res, errno);
 
       if (res < 0)
@@ -2010,7 +2010,7 @@ client23 (void *arg)
         }
 
     }
-  TEST_ASSERT_EQUAL ( errno, EAGAIN );
+  TEST_ASSERT_EQUAL (errno, EAGAIN);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -2029,7 +2029,7 @@ server23 (void *arg)
   struct msghdr mes;
   struct iovec msgs[2];
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
   struct timeval tiout;
 
   tiout.tv_sec = 2;
@@ -2040,7 +2040,7 @@ server23 (void *arg)
   while (true)
     {
       msgs[0].iov_base = readBuf22;
-      msgs[0].iov_len = sizeof( readBuf22 );
+      msgs[0].iov_len = sizeof(readBuf22);
 
       mes.msg_name = 0;
       mes.msg_namelen = 0;
@@ -2049,9 +2049,9 @@ server23 (void *arg)
       mes.msg_control = 0;
       mes.msg_controllen = 0;
       mes.msg_flags = 0;
-      ssize_t lu = recvmsg ( sock, &mes, 0);
+      ssize_t lu = recvmsg (sock, &mes, 0);
       printf ("recvmsg -> %ld, errno: %d \n\n ", lu, errno);
-      if ( lu < 0 )
+      if (lu < 0)
         {
           break;
         }
@@ -2075,13 +2075,13 @@ static char sendBuf24[BUF_LEN24];
 static void *
 client24 (void *arg)
 {
-  sleep ( 1 );
+  sleep (1);
   int sock = CreateDgramConnect ();
   int status = 0;
   struct msghdr mes;
   struct iovec msg1;
 
-  TEST_ASSERT ( sock > 0 );
+  TEST_ASSERT (sock > 0);
 
   struct timeval tiout;
 
@@ -2104,7 +2104,7 @@ client24 (void *arg)
       mes.msg_controllen = 0;
       mes.msg_flags = 0;
 
-      ssize_t res = sendmsg ( sock, &mes, 0);
+      ssize_t res = sendmsg (sock, &mes, 0);
       printf ("C24: sendmsg --> %ld, errno: %d \n \n ", res, errno);
 
       if (res < 0)
@@ -2121,13 +2121,13 @@ client24 (void *arg)
           mes.msg_controllen = 0;
           mes.msg_flags = 0;
 
-          ssize_t res = sendmsg ( sock, &mes, 0);
+          ssize_t res = sendmsg (sock, &mes, 0);
           printf ("C24: LAST sendmsg --> %ld, errno: %d \n \n ", res, errno);
           break;
         }
 
     }
-  TEST_ASSERT_EQUAL ( errno, ECONNREFUSED );
+  TEST_ASSERT_EQUAL (errno, ECONNREFUSED);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -2144,7 +2144,7 @@ server24 (void *arg)
   int sock = CreateDgramBind ();
   int status;
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   sleep (30);
 
@@ -2165,13 +2165,13 @@ static char sendBuf25[BUF_LEN25];
 static void *
 client25 (void *arg)
 {
-  sleep ( 1 );
+  sleep (1);
   int sock = CreateDgramConnect ();
   int status = 0;
   struct msghdr mes;
   struct iovec msg1;
 
-  TEST_ASSERT ( sock > 0 );
+  TEST_ASSERT (sock > 0);
 
   sleep (4);
 
@@ -2187,7 +2187,7 @@ client25 (void *arg)
   mes.msg_controllen = 0;
   mes.msg_flags = 0;
 
-  ssize_t res = sendmsg ( sock, &mes, 0);
+  ssize_t res = sendmsg (sock, &mes, 0);
   printf ("C25: sendmsg --> %ld, errno: %d \n \n ", res, errno);
 
   status = close (sock);
@@ -2205,7 +2205,7 @@ server25 (void *arg)
   int sock = CreateDgramBind ();
   int status;
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   sleep (2);
 
@@ -2214,7 +2214,7 @@ server25 (void *arg)
 
   unlink (SOCK_PATH);
   sock = CreateDgramBind ();
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   sleep (10);
 
@@ -2255,7 +2255,7 @@ client26 (void *arg)
       status = connect (sock, (struct sockaddr *) &address, SUN_LEN (&address));
       printf ("Client26: connect -> %d \n ", status);
 
-      if ( first )
+      if (first)
         {
           first = 0;
           first_socket = sock;
@@ -2283,7 +2283,7 @@ server26 (void *arg)
   std::vector<int> closeList;
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
@@ -2296,7 +2296,7 @@ server26 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   closeList.push_back (sockin);
 
@@ -2307,27 +2307,27 @@ server26 (void *arg)
 
       FD_ZERO (&readFd);
 
-      FD_SET ( sock, &readFd );
-      FD_SET ( sockin, &readFd );
+      FD_SET (sock, &readFd);
+      FD_SET (sockin, &readFd);
 
       printf ("Server26: selecting ... \n ");
 
-      status = select ( 1 + maxFd, &readFd, NULL, NULL, NULL);
+      status = select (1 + maxFd, &readFd, NULL, NULL, NULL);
       printf ("Server26: select -> %d \n ", status);
       if (status > 0)
         {
-          if ( FD_ISSET ( sockin, &readFd) )
+          if (FD_ISSET (sockin, &readFd))
             {
               // The client close it !
               break;
             }
-          if ( FD_ISSET ( sock, &readFd) )
+          if (FD_ISSET (sock, &readFd))
             {
               // Incoming Connexion
               int newSock = accept (sock, NULL, NULL);
-              if ( newSock >= 0 )
+              if (newSock >= 0)
                 {
-                  closeList.push_back ( newSock );
+                  closeList.push_back (newSock);
                 }
             }
         }
@@ -2405,7 +2405,7 @@ server27 (void *arg)
 
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
@@ -2418,12 +2418,12 @@ server27 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   do
     {
       int r = read (sockin, &status, sizeof(status));
-      if (r <= 0 )
+      if (r <= 0)
         {
           break;
         }
@@ -2451,30 +2451,30 @@ client28 (void *arg)
 
   sleep (1);
   sock = CreateDgramConnect ();
-  TEST_ASSERT ( sock > 0 );
+  TEST_ASSERT (sock > 0);
 
 
   socklen_t len = sizeof(struct sockaddr_un);
   memset (&peerAddr, 0, sizeof(peerAddr));
   status = getpeername (sock, (struct sockaddr *) &peerAddr, &len);
-  printf ( "client28: getpeername -> %d, errno %d  %s  \n\n ", status, errno, peerAddr.sun_path);
-  TEST_ASSERT_EQUAL ( status, 0 );
-  TEST_ASSERT_EQUAL ( peerAddr.sun_family, AF_UNIX);
-  TEST_ASSERT_EQUAL ( strcmp ( peerAddr.sun_path, SOCK_PATH), 0);
+  printf ("client28: getpeername -> %d, errno %d  %s  \n\n ", status, errno, peerAddr.sun_path);
+  TEST_ASSERT_EQUAL (status, 0);
+  TEST_ASSERT_EQUAL (peerAddr.sun_family, AF_UNIX);
+  TEST_ASSERT_EQUAL (strcmp (peerAddr.sun_path, SOCK_PATH), 0);
 
   len = sizeof(struct sockaddr_un);
   memset (&locAddr, 0, len);
   status = getsockname (sock, (struct sockaddr *) &locAddr, &len);
-  printf ( "client28: getsockname -> %d, errno %d  %s  \n\n ", status, errno, locAddr.sun_path);
-  TEST_ASSERT_EQUAL ( status, 0 );
-  TEST_ASSERT_EQUAL ( locAddr.sun_family, AF_UNIX);
-  TEST_ASSERT_EQUAL ( strlen ( locAddr.sun_path), 0 );
+  printf ("client28: getsockname -> %d, errno %d  %s  \n\n ", status, errno, locAddr.sun_path);
+  TEST_ASSERT_EQUAL (status, 0);
+  TEST_ASSERT_EQUAL (locAddr.sun_family, AF_UNIX);
+  TEST_ASSERT_EQUAL (strlen (locAddr.sun_path), 0);
 
   status = write (sock, &data, sizeof(data));
   TEST_ASSERT_EQUAL (status, sizeof(data));
 
   status = shutdown (sock, SHUT_RD);
-  printf ( "client28: shutdown -> %d, errno %d\n\n ", status, errno);
+  printf ("client28: shutdown -> %d, errno %d\n\n ", status, errno);
   TEST_ASSERT_EQUAL (status, 0);
 
   status = write (sock, &data, sizeof(data));
@@ -2485,14 +2485,14 @@ client28 (void *arg)
   status = write (sock, &data, sizeof(data));
   TEST_ASSERT_EQUAL (status, -1);
   TEST_ASSERT_EQUAL (errno, EPIPE);
-  printf ( "client28: write -> %d, errno %d\n\n ", status, errno);
+  printf ("client28: write -> %d, errno %d\n\n ", status, errno);
 
   status = shutdown (sock, SHUT_RD);
-  printf ( "client28: shutdown -> %d, errno %d\n\n ", status, errno);
+  printf ("client28: shutdown -> %d, errno %d\n\n ", status, errno);
   TEST_ASSERT_EQUAL (status, 0);
 
   status = shutdown (sock, SHUT_WR);
-  printf ( "client28: shutdown -> %d, errno %d\n\n ", status, errno);
+  printf ("client28: shutdown -> %d, errno %d\n\n ", status, errno);
   TEST_ASSERT_EQUAL (status, 0);
 
   status = write (sock, &data, sizeof(data));
@@ -2500,7 +2500,7 @@ client28 (void *arg)
   TEST_ASSERT_EQUAL (errno, EPIPE);
 
   status = shutdown (sock, SHUT_WR);
-  printf ( "client28: shutdown -> %d, errno %d\n\n ", status, errno);
+  printf ("client28: shutdown -> %d, errno %d\n\n ", status, errno);
   TEST_ASSERT_EQUAL (status, 0);
 
   sleep (3);
@@ -2508,7 +2508,7 @@ client28 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   status = shutdown (sock, SHUT_WR);
-  printf ( "client28: shutdown -> %d, errno %d\n\n ", status, errno);
+  printf ("client28: shutdown -> %d, errno %d\n\n ", status, errno);
   TEST_ASSERT_EQUAL (status, -1);
   TEST_ASSERT_EQUAL (errno, EBADF);
 
@@ -2526,42 +2526,42 @@ server28 (void *arg)
   int data = 0;
   struct sockaddr_un peerAddr, locAddr;
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   socklen_t len = sizeof(struct sockaddr_un);
   memset (&peerAddr, 0, sizeof(peerAddr));
   status = getpeername (sock, (struct sockaddr *) &peerAddr, &len);
-  printf ( "server28: getpeername -> %d, errno %d  %s  \n\n ", status, errno, peerAddr.sun_path);
-  TEST_ASSERT_EQUAL ( status, -1 );
-  TEST_ASSERT_EQUAL ( errno, ENOTCONN );
+  printf ("server28: getpeername -> %d, errno %d  %s  \n\n ", status, errno, peerAddr.sun_path);
+  TEST_ASSERT_EQUAL (status, -1);
+  TEST_ASSERT_EQUAL (errno, ENOTCONN);
 
   len = sizeof(struct sockaddr_un);
   memset (&locAddr, 0, len);
   status = getsockname (sock, (struct sockaddr *) &locAddr, &len);
-  printf ( "server28: getsockname -> %d, errno %d  %s  \n\n ", status, errno, locAddr.sun_path);
-  TEST_ASSERT_EQUAL ( status, 0 );
-  TEST_ASSERT_EQUAL ( locAddr.sun_family, AF_UNIX);
-  TEST_ASSERT_EQUAL ( strcmp ( locAddr.sun_path, SOCK_PATH), 0);
+  printf ("server28: getsockname -> %d, errno %d  %s  \n\n ", status, errno, locAddr.sun_path);
+  TEST_ASSERT_EQUAL (status, 0);
+  TEST_ASSERT_EQUAL (locAddr.sun_family, AF_UNIX);
+  TEST_ASSERT_EQUAL (strcmp (locAddr.sun_path, SOCK_PATH), 0);
 
   status = shutdown (sock, SHUT_WR);
-  printf ( "server28: shutdown -> %d, errno %d\n\n ", status, errno);
+  printf ("server28: shutdown -> %d, errno %d\n\n ", status, errno);
   TEST_ASSERT_EQUAL (status, 0);
 
   status = shutdown (sock, SHUT_WR);
-  printf ( "server28: shutdown -> %d, errno %d\n\n ", status, errno);
+  printf ("server28: shutdown -> %d, errno %d\n\n ", status, errno);
   TEST_ASSERT_EQUAL (status, 0);
 
-  status = read ( sock, &data, sizeof(data));
+  status = read (sock, &data, sizeof(data));
   TEST_ASSERT_EQUAL (status, sizeof(data));
 
-  status = read ( sock, &data, sizeof(data));
+  status = read (sock, &data, sizeof(data));
   TEST_ASSERT_EQUAL (status, sizeof(data));
 
   status = shutdown (sock, SHUT_RD);
-  printf ( "server28: shutdown -> %d, errno %d\n\n ", status, errno);
+  printf ("server28: shutdown -> %d, errno %d\n\n ", status, errno);
   TEST_ASSERT_EQUAL (status, 0);
 
-  status = read ( sock, &data, sizeof(data));
+  status = read (sock, &data, sizeof(data));
   TEST_ASSERT_EQUAL (status, 0);
 
   sleep (5);
@@ -2570,16 +2570,16 @@ server28 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   status = shutdown (sock, SHUT_WR);
-  printf ( "server28: shutdown -> %d, errno %d\n\n ", status, errno);
+  printf ("server28: shutdown -> %d, errno %d\n\n ", status, errno);
   TEST_ASSERT_EQUAL (status, -1);
   TEST_ASSERT_EQUAL (errno, EBADF);
 
   sock = socket (AF_UNIX, SOCK_DGRAM, 0);
   status = shutdown (sock, SHUT_WR);
-  printf ( "server28: shutdown -> %d, errno %d\n\n ", status, errno);
+  printf ("server28: shutdown -> %d, errno %d\n\n ", status, errno);
   TEST_ASSERT_EQUAL (status, 0);
   status = shutdown (sock, SHUT_RD);
-  printf ( "server28: shutdown -> %d, errno %d\n\n ", status, errno);
+  printf ("server28: shutdown -> %d, errno %d\n\n ", status, errno);
   TEST_ASSERT_EQUAL (status, 0);
 
   unlink (SOCK_PATH);
@@ -2596,12 +2596,12 @@ static char sendBuf29[BUF_LEN29];
 static void *
 client29 (void *arg)
 {
-  sleep ( 1 );
+  sleep (1);
   int sock = CreateDgramConnect ();
   struct msghdr mes;
   struct iovec msg1;
 
-  TEST_ASSERT ( sock > 0 );
+  TEST_ASSERT (sock > 0);
 
   while (true)
     {
@@ -2617,7 +2617,7 @@ client29 (void *arg)
       mes.msg_controllen = 0;
       mes.msg_flags = 0;
 
-      ssize_t res = sendmsg ( sock, &mes, 0);
+      ssize_t res = sendmsg (sock, &mes, 0);
       if (res < 0)
         {
           sleep (1);
@@ -2636,7 +2636,7 @@ server29 (void *arg)
   int sock = CreateDgramBind ();
   int status = 0;
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   sleep (30000);
 
@@ -2682,7 +2682,7 @@ main (int argc, char *argv[])
 {
   signal (SIGPIPE, SIG_IGN);
 
-  if (  (1 < 2) )
+  if ((1 < 2))
     {
       launch (client1, server1);
       launch (client2, server2);
@@ -2722,7 +2722,7 @@ main (int argc, char *argv[])
 
     }
 
-  printf ("That's All Folks ....\n \n " );
+  printf ("That's All Folks ....\n \n ");
   fflush (stdout);
   fclose (stdout);
   sleep (1);

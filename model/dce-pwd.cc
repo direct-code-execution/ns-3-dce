@@ -7,12 +7,12 @@ NS_LOG_COMPONENT_DEFINE ("DcePwd");
 
 
 
-struct passwd *dce_getpwnam (const char *name)
+struct passwd * dce_getpwnam (const char *name)
 {
   return 0;
 }
 
-struct passwd *dce_getpwuid (uid_t uid)
+struct passwd * dce_getpwuid (uid_t uid)
 {
   return 0;
 }

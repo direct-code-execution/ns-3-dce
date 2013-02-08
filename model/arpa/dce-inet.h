@@ -7,8 +7,8 @@
 extern "C" {
 #endif
 
-const char *dce_inet_ntop(int af, const void *src,
-			   char *dst, socklen_t cnt);
+const char * dce_inet_ntop (int af, const void *src,
+                            char *dst, socklen_t cnt);
 
 #ifdef __cplusplus
 }

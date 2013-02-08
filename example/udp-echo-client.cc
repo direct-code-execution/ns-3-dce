@@ -27,30 +27,30 @@ int main (int argc, char *argv[])
   struct hostent *host = gethostbyname (argv[1]);
   memcpy (&addr.sin_addr.s_addr, host->h_addr_list[0], host->h_length);
 
-  size_t bLen = 1 + strlen (argv[2] );
-  char *buffer = (char * )malloc ( bLen );
+  size_t bLen = 1 + strlen (argv[2]);
+  char *buffer = (char *)malloc (bLen);
 
-  memset (buffer, 0 ,sizeof(buffer) );
+  memset (buffer, 0, sizeof (buffer));
 
   socklen_t aLen = sizeof(addr);
 
 //  while (true)
-    {
-      ssize_t wLen = sendto (sock, argv[2], bLen, 0, (struct sockaddr *)&addr, aLen);
+  {
+    ssize_t wLen = sendto (sock, argv[2], bLen, 0, (struct sockaddr *)&addr, aLen);
 
-      std::cout << "len:" << wLen << "errno:"<< errno << std::endl;
+    std::cout << "len:" << wLen << "errno:" << errno << std::endl;
 
-      if (wLen > 0)
-        {
-          memset (buffer, 0 ,sizeof(buffer) );
-          ssize_t n = read (sock, buffer, bLen);
+    if (wLen > 0)
+      {
+        memset (buffer, 0, sizeof(buffer));
+        ssize_t n = read (sock, buffer, bLen);
 
-          if (n > 0)
-            {
-              std::cout << "echo:" << buffer << std::endl;
-            }
-        }
-    }
+        if (n > 0)
+          {
+            std::cout << "echo:" << buffer << std::endl;
+          }
+      }
+  }
   close (sock);
 
   return 0;

@@ -12,11 +12,11 @@ extern "C" {
 #endif
 
 time_t dce_time (time_t *t);
-struct tm *dce_gmtime(const time_t *timep);
-struct tm *dce_localtime(const time_t *timep);
-char *dce_ctime(const time_t *timep);
-char *dce_asctime(const struct tm *tm);
-int dce_clock_gettime(clockid_t which_clock, struct timespec *tp);
+struct tm * dce_gmtime (const time_t *timep);
+struct tm * dce_localtime (const time_t *timep);
+char * dce_ctime (const time_t *timep);
+char * dce_asctime (const struct tm *tm);
+int dce_clock_gettime (clockid_t which_clock, struct timespec *tp);
 int dce_sysinfo (struct sysinfo *info);
 void dce_tzset (void);
 int dce_clock_getres (clockid_t c, struct timespec *r);

@@ -33,8 +33,7 @@
 
 NS_LOG_COMPONENT_DEFINE ("LocalSocketFd");
 
-namespace ns3
-{
+namespace ns3 {
 TypeId
 LocalSocketFd::GetTypeId (void)
 {
@@ -47,9 +46,16 @@ LocalSocketFd::GetInstanceTypeId (void) const
 {
   return LocalSocketFd::GetTypeId ();
 }
-LocalSocketFd::LocalSocketFd () : m_readBuffer (0), m_readBufferSize (0), m_sendTimeout (0), m_recvTimeout (0),
-                                  m_factory (0), m_linger (0), m_bindPath (""), m_connectPath (""),
-                                  m_shutRead (false), m_shutWrite (false)
+LocalSocketFd::LocalSocketFd () : m_readBuffer (0),
+                                  m_readBufferSize (0),
+                                  m_sendTimeout (0),
+                                  m_recvTimeout (0),
+                                  m_factory (0),
+                                  m_linger (0),
+                                  m_bindPath (""),
+                                  m_connectPath (""),
+                                  m_shutRead (false),
+                                  m_shutWrite (false)
 {
 }
 LocalSocketFd::~LocalSocketFd ()
@@ -145,7 +151,8 @@ LocalSocketFd::Setsockopt (int level, int optname, const void *optval, socklen_t
         return 0;
       }
 
-    default: break;
+    default:
+      break;
     }
   current->err = EINVAL;
   return -1;
@@ -229,9 +236,9 @@ LocalSocketFd::GetSendTimeout (void)
 ssize_t
 LocalSocketFd::DoRecvPacket (uint8_t* buf, size_t len)
 {
-  NS_LOG_FUNCTION (this << len << " shutRead:" << m_shutRead << "Closed:" << IsClosed () );
+  NS_LOG_FUNCTION (this << len << " shutRead:" << m_shutRead << "Closed:" << IsClosed ());
 
-  if ((m_shutRead)|| IsClosed () )
+  if ((m_shutRead)|| IsClosed ())
     {
       return -2;
     }
@@ -277,16 +284,19 @@ LocalSocketFd::ReadData (uint8_t* buf, size_t len, bool peek)
   size_t fill = 0;
   size_t rest = len;
 
-  if ( peek )
+  if (peek)
     {
-      for ( std::list<struct Buffer*>::iterator i = m_readBuffer.begin (); i != m_readBuffer.end (); ++i)
+      for (std::list<struct Buffer*>::iterator i = m_readBuffer.begin (); i != m_readBuffer.end (); ++i)
         {
-          if ( ( fill >= len ) || ( rest <= 0 ) ) break;
+          if ((fill >= len) || (rest <= 0))
+            {
+              break;
+            }
 
           struct Buffer* myBuf = *i;
 
           size_t avail = std::min (rest, myBuf->size - myBuf->readOffset);
-          NS_LOG_DEBUG ( "ReadData avail:" << avail << " offset:" <<  myBuf->readOffset << " size:" << myBuf->size );
+          NS_LOG_DEBUG ("ReadData avail:" << avail << " offset:" <<  myBuf->readOffset << " size:" << myBuf->size);
 
           if (avail > 0)
             {
@@ -303,7 +313,7 @@ LocalSocketFd::ReadData (uint8_t* buf, size_t len, bool peek)
           struct Buffer* myBuf = m_readBuffer.front ();
 
           size_t avail = std::min (rest, myBuf->size - myBuf->readOffset);
-          NS_LOG_DEBUG ( "ReadData avail:" << avail << " offset:" <<  myBuf->readOffset << " size:" << myBuf->size );
+          NS_LOG_DEBUG ("ReadData avail:" << avail << " offset:" <<  myBuf->readOffset << " size:" << myBuf->size);
 
           if (avail > 0)
             {
@@ -338,7 +348,10 @@ LocalSocketFd::ClearReadBuffer (void)
   for (std::list<struct Buffer *>::iterator i = m_readBuffer.begin (); i != m_readBuffer.end (); ++i)
     {
       struct Buffer *b = *i;
-      if (0 != b->data) free ( b->data);
+      if (0 != b->data)
+        {
+          free (b->data);
+        }
       b->data = 0;
       b->size = 0;
       b->readOffset = 0;

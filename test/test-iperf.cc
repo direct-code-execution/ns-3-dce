@@ -21,7 +21,7 @@ void sigresp (int sigNum)
 void* client (void *arg)
 {
 
-  while ( !gStop )
+  while (!gStop)
     {
       printf ("hello\n");
       sleep (1);
@@ -37,7 +37,7 @@ void* client (void *arg)
 void* reporter (void *arg)
 {
 
-  while ( !gStop2 )
+  while (!gStop2)
     {
       usleep (10000);
     }

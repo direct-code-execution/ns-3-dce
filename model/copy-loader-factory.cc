@@ -24,14 +24,17 @@ private:
   };
 
   virtual ~CopyLoader ();
-  virtual Loader *Clone (void) {return 0; /* XXX */}
+  virtual Loader * Clone (void)
+  {
+    return 0;                             /* XXX */
+  }
   virtual void UnloadAll (void);
-  virtual void *Load (std::string filename, int flag);
+  virtual void * Load (std::string filename, int flag);
   virtual void Unload (void *module);
-  virtual void *Lookup (void *module, std::string symbol);
+  virtual void * Lookup (void *module, std::string symbol);
 
-  struct CopyLoader::Module *SearchModule (uint32_t id);
-  struct CopyLoader::Module *LoadModule (std::string filename, int flag);
+  struct CopyLoader::Module * SearchModule (uint32_t id);
+  struct CopyLoader::Module * LoadModule (std::string filename, int flag);
 
   std::list<struct Module *> m_modules;
   ElfCache m_cache;
@@ -90,7 +93,7 @@ CopyLoader::LoadModule (std::string filename, int flag)
     }
   return module;
 }
-void 
+void
 CopyLoader::UnloadAll (void)
 {
   NS_LOG_FUNCTION (this);
@@ -102,7 +105,7 @@ CopyLoader::UnloadAll (void)
     }
   m_modules.clear ();
 }
-void 
+void
 CopyLoader::Unload (void *handle)
 {
   NS_LOG_FUNCTION (this << handle);
@@ -152,7 +155,7 @@ CopyLoader::~CopyLoader ()
 
 NS_OBJECT_ENSURE_REGISTERED (CopyLoaderFactory);
 
-TypeId 
+TypeId
 CopyLoaderFactory::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::CopyLoaderFactory")
@@ -162,9 +165,11 @@ CopyLoaderFactory::GetTypeId (void)
   return tid;
 }
 CopyLoaderFactory::CopyLoaderFactory ()
-{}
+{
+}
 CopyLoaderFactory::~CopyLoaderFactory ()
-{}
+{
+}
 Loader *
 CopyLoaderFactory::Create (int argc, char **argv, char **envp)
 {
@@ -178,7 +183,7 @@ CopyLoaderFactory::AllocateUid (void)
 {
 #ifdef DCE_MPI
   // 2^16 processes maximum per different system id.
-  static uint32_t uid = MpiInterface::GetSystemId () * ( 1 << 16 );
+  static uint32_t uid = MpiInterface::GetSystemId () * (1 << 16);
 #else
   static uint32_t uid = 0;
 #endif

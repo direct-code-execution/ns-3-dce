@@ -25,42 +25,45 @@ namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (ProcessDelayModel);
 
-TypeId 
+TypeId
 ProcessDelayModel::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::ProcessDelayModel")
     .SetParent<Object> ()
-    ;
+  ;
   return tid;
 }
 
 NS_OBJECT_ENSURE_REGISTERED (RandomProcessDelayModel);
 
-TypeId 
+TypeId
 RandomProcessDelayModel::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::RandomProcessDelayModel")
     .SetParent<ProcessDelayModel> ()
     .AddConstructor<RandomProcessDelayModel> ()
     .AddAttribute ("Variable", "Pick the process delay at random.",
-		   RandomVariableValue (ConstantVariable (0.0)),
-		   MakeRandomVariableAccessor (&RandomProcessDelayModel::m_variable),
-		   MakeRandomVariableChecker ())
-    ;
+                   RandomVariableValue (ConstantVariable (0.0)),
+                   MakeRandomVariableAccessor (&RandomProcessDelayModel::m_variable),
+                   MakeRandomVariableChecker ())
+  ;
   return tid;
 }
 
 RandomProcessDelayModel::RandomProcessDelayModel ()
-{}
+{
+}
 
-void 
+void
 RandomProcessDelayModel::SetVariable (RandomVariable variable)
-{}
+{
+}
 
-void 
+void
 RandomProcessDelayModel::RecordStart (void)
-{}
-Time 
+{
+}
+Time
 RandomProcessDelayModel::RecordEnd (void)
 {
   return Seconds (m_variable.GetValue ());
@@ -74,12 +77,13 @@ TimeOfDayProcessDelayModel::GetTypeId (void)
   static TypeId tid = TypeId ("ns3::TimeOfDayProcessDelayModel")
     .SetParent<ProcessDelayModel> ()
     .AddConstructor<TimeOfDayProcessDelayModel> ()
-    ;
+  ;
   return tid;
 }
 
 TimeOfDayProcessDelayModel::TimeOfDayProcessDelayModel ()
-{}
+{
+}
 
 Time
 TimeOfDayProcessDelayModel::GetTimeOfDay (void) const
@@ -92,12 +96,12 @@ TimeOfDayProcessDelayModel::GetTimeOfDay (void) const
   return s + us;
 }
 
-void 
+void
 TimeOfDayProcessDelayModel::RecordStart (void)
 {
   m_start = GetTimeOfDay ();
 }
-Time 
+Time
 TimeOfDayProcessDelayModel::RecordEnd (void)
 {
   Time delay = GetTimeOfDay () - m_start;

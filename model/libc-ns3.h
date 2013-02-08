@@ -27,7 +27,7 @@
 #endif
 
 #ifndef NATIVE_WITH_ALIAS2
-#define NATIVE_WITH_ALIAS2(name,internal) NATIVE_WITH_ALIAS(name)
+#define NATIVE_WITH_ALIAS2(name,internal) NATIVE_WITH_ALIAS (name)
 #endif
 
 #ifndef DCE_WITH_ALIAS
@@ -35,11 +35,11 @@
 #endif
 
 #ifndef DCE_WITH_ALIAS2
-#define DCE_WITH_ALIAS2(name,internal) DCE_WITH_ALIAS(name)
+#define DCE_WITH_ALIAS2(name,internal) DCE_WITH_ALIAS (name)
 #endif
 
 #ifndef NATIVE_EXPLICIT
-#define NATIVE_EXPLICIT(name,type) NATIVE(name)
+#define NATIVE_EXPLICIT(name,type) NATIVE (name)
 #endif
 
 // #ifndef ALIAS
@@ -50,7 +50,7 @@
 NATIVE (dce_global_variables_setup)
 
 // Not sure where it is defined and implemented
-// NATIVE (__xpg_strerror_r) 
+// NATIVE (__xpg_strerror_r)
 
 
 DCE    (__cxa_finalize)
@@ -114,8 +114,8 @@ NATIVE (memcpy)
 NATIVE (bcopy)
 NATIVE (memcmp)
 NATIVE (memmove)
-NATIVE_EXPLICIT (memchr, void * (*) (void *, int, size_t))
-NATIVE_EXPLICIT (memrchr, void * (*) (void *, int, size_t))
+NATIVE_EXPLICIT (memchr, void * (*)(void *, int, size_t))
+NATIVE_EXPLICIT (memrchr, void * (*)(void *, int, size_t))
 NATIVE (strcpy)
 NATIVE (strncpy)
 NATIVE (strcat)
@@ -126,15 +126,15 @@ NATIVE (strlen)
 NATIVE (strnlen)
 NATIVE (strcspn)
 NATIVE (strspn)
-NATIVE_EXPLICIT (strchr, char* (*) (char *, int))
-NATIVE_EXPLICIT (strrchr, const char * (*) (const char *, int))
+NATIVE_EXPLICIT (strchr, char* (*)(char *, int))
+NATIVE_EXPLICIT (strrchr, const char * (*)(const char *, int))
 NATIVE (strcasecmp)
 NATIVE (strncasecmp)
 DCE_WITH_ALIAS (strdup) // because C++ defines both const and non-const functions
 DCE (strndup)
-NATIVE_EXPLICIT (index, char * (*) (char *, int))
-NATIVE_EXPLICIT (rindex, char * (*) (char *, int))
-NATIVE_EXPLICIT (strtok, char * (*) (char *, const char *))
+NATIVE_EXPLICIT (index, char * (*)(char *, int))
+NATIVE_EXPLICIT (rindex, char * (*)(char *, int))
+NATIVE_EXPLICIT (strtok, char * (*)(char *, const char *))
 NATIVE_EXPLICIT (strtok_r,  char * (*)(char *, const char *, char **))
 NATIVE (strsep)
 

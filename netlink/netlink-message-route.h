@@ -34,13 +34,14 @@ namespace ns3 {
 * there are mainly three types:interface address, interface info, route entry
 * just implemented them for quagga porting.
 */
-  
+
 
 
 /**
 * \Types of messages,here we only define the route message types quagga used
 */
-enum NetlinkRtmType_e {
+enum NetlinkRtmType_e
+{
   NETLINK_RTM_BASE = 16,
 
   NETLINK_RTM_NEWLINK = 16,
@@ -57,12 +58,13 @@ enum NetlinkRtmType_e {
   NETLINK_RTM_GETROUTE,
 
   NETLINK_RTM_MAX,
-};  
+};
 
 /**
 * \Types of netlink groups,here we only define types quagga used
 */
-enum NetlinkRtmGroup_e {
+enum NetlinkRtmGroup_e
+{
   NETLINK_RTM_GRP_LINK = 1,
   NETLINK_RTM_GRP_IPV4_IFADDR = 0x10,
   NETLINK_RTM_GRP_IPV4_ROUTE = 0x40,
@@ -70,7 +72,7 @@ enum NetlinkRtmGroup_e {
   RTMGRP_IPV6_ROUTE = 0x400,
 };
 
-class NetlinkPayload :public ObjectBase
+class NetlinkPayload : public ObjectBase
 {
 public:
   static TypeId GetTypeId (void);
@@ -103,9 +105,9 @@ public:
   virtual void Print (std::ostream &os) const;
   virtual uint32_t GetSerializedSize (void) const;
 
-  
-  virtual uint32_t GetNNetlinkAttribute (void)const;
-  virtual NetlinkAttribute GetNetlinkAttribute (uint32_t index)const;
+
+  virtual uint32_t GetNNetlinkAttribute (void) const;
+  virtual NetlinkAttribute GetNetlinkAttribute (uint32_t index) const;
   virtual void AppendAttribute (NetlinkAttribute v);
   virtual void SerializeAttribute (Buffer::Iterator& start) const;
   virtual void PrintAttribute (std::ostream &os) const;
@@ -117,7 +119,7 @@ public:
   uint8_t GetFamily (void) const;
 
 private:
-  static const int NETLINK_GENMSG_SIZE = 1; /* size of the struct rtgenmsg */  
+  static const int NETLINK_GENMSG_SIZE = 1; /* size of the struct rtgenmsg */
 protected:
   uint8_t m_family;   //always set to AF_UNSPEC
   //attribute can exist or not
@@ -138,7 +140,7 @@ protected:
     unsigned char	ifi_family;
     unsigned char	__ifi_pad;
     unsigned short	ifi_type;
-    int		ifi_index;	
+    int		ifi_index;
     unsigned	ifi_flags;
     unsigned	ifi_change;
   };
@@ -156,7 +158,8 @@ public:
   virtual void Print (std::ostream &os) const;
   virtual uint32_t GetSerializedSize (void) const;
 
-  enum IflAttr_e {
+  enum IflAttr_e
+  {
     IFL_A_UNSPEC,
     IFL_A_ADDRESS,
     IFL_A_BROADCAST,
@@ -168,7 +171,7 @@ public:
     IFL_A_COST,
     IFL_A_PRIORITY,
     IFL_A_MASTER,
-    IFL_A_WIRELESS,		
+    IFL_A_WIRELESS,
     IFL_A_PROTINFO,
     IFL_A_TXQLEN,
     IFL_A_MAP,
@@ -178,7 +181,8 @@ public:
     IFL_A_MAX,
   };
 
-  enum Type_e {
+  enum Type_e
+  {
     UP = 1,
     BROADCAST = 2,
     DBG = 4,
@@ -232,7 +236,8 @@ public:
   virtual void Print (std::ostream &os) const;
   virtual uint32_t GetSerializedSize (void) const;
 
-  enum IfAttr_e {
+  enum IfAttr_e
+  {
     IF_A_UNSPEC,
     IF_A_ADDRESS,
     IF_A_LOCAL,
@@ -244,13 +249,15 @@ public:
     IF_A_MAX
   };
 
-  enum {
+  enum
+  {
     F_SECONDARY = 0x01,
     F_PERMANENT = 0x80,
     F_DEPRECATED = 0x20,
     F_TENTATIVE = 0x40
   };
-  enum {
+  enum
+  {
     SCOPE_UNIVERSE = 0,
     SCOPE_SITE = 200,
     SCOPE_LINK = 253,
@@ -290,10 +297,10 @@ private:
     unsigned char		rtm_src_len;
     unsigned char		rtm_tos;
 
-    unsigned char		rtm_table;	// Routing table id 
-    unsigned char		rtm_protocol;	//Routing protocol; 
-    unsigned char		rtm_scope;	
-    unsigned char		rtm_type;	
+    unsigned char		rtm_table;	// Routing table id
+    unsigned char		rtm_protocol;	//Routing protocol;
+    unsigned char		rtm_scope;
+    unsigned char		rtm_type;
 
     unsigned		rtm_flags;
   };
@@ -317,7 +324,7 @@ public:
   uint8_t GetSrcLength (void) const;
   uint8_t GetTos (void) const;
   uint8_t GetTableId (void) const;
-  uint8_t GetProtocol(void) const;
+  uint8_t GetProtocol (void) const;
   uint8_t GetType (void) const;
   uint8_t GetScope (void) const;
   uint32_t GetFlags (void) const;
@@ -331,25 +338,30 @@ public:
   void SetType (uint8_t v);
   void SetFlags (uint32_t v);
 
-  enum RtProtocol_e {
+  enum RtProtocol_e
+  {
     RT_PROT_UNSPEC = 0,
   };
 
-  enum RtFlags_e {
+  enum RtFlags_e
+  {
     RT_F_CLONED = 0x200,
   };
 
-  enum RtScope_e {
+  enum RtScope_e
+  {
     RT_SCOPE_UNIVERSE = 0,
     RT_SCOPE_LINK = 253,
   };
 
-  enum RtClass_e {
+  enum RtClass_e
+  {
     RT_TABLE_UNSPEC = 0,
     RT_TABLE_MAIN = 254,
   };
 
-  enum RtAttr_e {
+  enum RtAttr_e
+  {
     RT_A_UNSPEC,
     RT_A_DST,
     RT_A_SRC,

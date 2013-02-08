@@ -35,7 +35,7 @@ int main (int argc, char *argv[])
   mkdir ("files-0/home", 0700);
   mkdir ("files-0/home/dce", 0700);
 
-  FILE *script = fopen("files-0/tmp/script.sh", "w");
+  FILE *script = fopen ("files-0/tmp/script.sh", "w");
 //                  12345678901234567890 123456 7890123456789012345
   fprintf (script, "echo BEFORE $LINENO\nuname\necho AFTER: $LINENO");
   //  fprintf (script, "cat <$0\necho $$\necho $LINENO\necho Hello NS3..\nexit 0\n" );
@@ -52,17 +52,17 @@ int main (int argc, char *argv[])
 //  dce.SetBinary ("/bin/sh not here");
 //  dce.SetBinary ("/libtest.so"); // TEMPOFUR
   dce.SetBinary ("/bin/sh");
-  dce.SetStackSize (1<<20);
+  dce.SetStackSize (1 << 20);
   dce.AddEnvironment ("PATH","/bin:/usr/local/ssl/bin");
   dce.AddEnvironment ("HOME","/home/dce");
- // dce.SetStdinFile ("/tmp/script.sh");
- // dce.SetStdinFile ("/tmp/ccnd-init-keystore-helper");
-  dce.AddArgument("/tmp/ccnd-init-keystore-helper");
-  dce.AddArgument("urbanos");
+  // dce.SetStdinFile ("/tmp/script.sh");
+  // dce.SetStdinFile ("/tmp/ccnd-init-keystore-helper");
+  dce.AddArgument ("/tmp/ccnd-init-keystore-helper");
+  dce.AddArgument ("urbanos");
   apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds (4.0));
 
-  Simulator::Stop (Seconds(1000100.0));
+  Simulator::Stop (Seconds (1000100.0));
   Simulator::Run ();
   Simulator::Destroy ();
 

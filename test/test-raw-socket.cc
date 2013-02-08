@@ -20,7 +20,7 @@ void
 fill_addr (struct sockaddr_in &addr, int port)
 {
   int res = inet_aton ("127.0.0.1", &(addr.sin_addr));
-  TEST_ASSERT_EQUAL ( res, 1);
+  TEST_ASSERT_EQUAL (res, 1);
 
   addr.sin_family = AF_INET;
   addr.sin_port = htons (port);
@@ -38,13 +38,13 @@ test1_client (void *arg)
   sleep (1);
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   fill_addr (ad, 4567);
 
   status = connect (sock, (struct sockaddr *) &ad, sizeof(ad));
-  printf ("test1_client: connect --> %d errno: %d\n", status, errno );
-  TEST_ASSERT_EQUAL ( status, 0);
+  printf ("test1_client: connect --> %d errno: %d\n", status, errno);
+  TEST_ASSERT_EQUAL (status, 0);
 
   int l = sprintf (sendBuffer, "GET / HTTP/1.1%c%c", 13, 10);
 
@@ -69,7 +69,7 @@ test1_server (void *arg)
   struct sockaddr_in ad;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   fill_addr (ad, 4567);
   status = bind (sock, (struct sockaddr *) &ad, sizeof(ad));
@@ -79,7 +79,7 @@ test1_server (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -88,14 +88,14 @@ test1_server (void *arg)
     {
       status = recv (sockin, readBuffer + tot, BUFF_LEN - tot, 0);
       printf ("test1_server: received %d / %ld\n", status, BUFF_LEN - tot);
-      if ( 0 == status)
+      if (0 == status)
         {
           break;
         }
-      TEST_ASSERT ( status > 0 );
+      TEST_ASSERT (status > 0);
       tot += status;
     }
-  TEST_ASSERT ( tot > 0);
+  TEST_ASSERT (tot > 0);
 
   status = close (sockin);
   printf ("test1_server: close -> %d \n ", status);
@@ -121,11 +121,11 @@ test1_reader (void *ctxt)
 
       printf ("recvfrom -> %d , Familly, proto %d, 0x%x, Interface Number %d, Packet Type %d, Header type %d 0x%x \n",
               st, from.sll_family, ntohs (from.sll_protocol),
-              from.sll_ifindex, from.sll_pkttype, from.sll_hatype, from.sll_hatype );
+              from.sll_ifindex, from.sll_pkttype, from.sll_hatype, from.sll_hatype);
 
       for (int i = 14; i < st - 2; i++)
         {
-          if ( (buffer[i] == 'G') && (buffer[i + 1] == 'E') && (buffer[i + 2] == 'T') )
+          if ((buffer[i] == 'G') && (buffer[i + 1] == 'E') && (buffer[i + 2] == 'T'))
             {
               printf ("we win !\n");
               return ctxt;   // GET found :)
@@ -169,7 +169,8 @@ void*
 test2_client (void *arg)
 {
   int rawFd, st, tcp4;
-  struct sockaddr_ll dest = {
+  struct sockaddr_ll dest =
+  {
     0
   };
   char buffer [1024 * 1];
@@ -188,7 +189,7 @@ test2_client (void *arg)
       buffer [ i ] = i & 0xff;
     }
 
-  st = sendto ( rawFd, buffer, sizeof(buffer), 0, (sockaddr*) &dest, sizeof(dest));
+  st = sendto (rawFd, buffer, sizeof(buffer), 0, (sockaddr*) &dest, sizeof(dest));
 
   TEST_ASSERT (rawFd >= 0);
 

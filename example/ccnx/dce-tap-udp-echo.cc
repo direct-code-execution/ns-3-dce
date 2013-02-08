@@ -65,10 +65,10 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("TapUDPEcho");
+NS_LOG_COMPONENT_DEFINE ("TapUDPEcho");
 
-int 
-main( int argc, char *argv[] )
+int
+main ( int argc, char *argv[] )
 {
   std::string mode = "ConfigureLocal";
   std::string tapName = "thetap";
@@ -78,7 +78,7 @@ main( int argc, char *argv[] )
   cmd.AddValue ("tapName", "Name of the OS tap device", tapName);
   cmd.Parse (argc, argv);
 
-  LogComponentEnable("TapUDPEcho", LOG_LEVEL_INFO);
+  LogComponentEnable ("TapUDPEcho", LOG_LEVEL_INFO);
 
   GlobalValue::Bind ("SimulatorImplementationType", StringValue ("ns3::RealtimeSimulatorImpl"));
   GlobalValue::Bind ("ChecksumEnabled", BooleanValue (true));
@@ -109,12 +109,12 @@ main( int argc, char *argv[] )
   DceApplicationHelper dce;
   ApplicationContainer apps;
 
-  dce.SetStackSize (1<<20);
+  dce.SetStackSize (1 << 20);
 
   dce.SetBinary ("udp-echo-server");
-  dce.ResetArguments();
-  dce.AddArgument("10.0.0.2");
-    apps = dce.Install (nodes.Get (1));
+  dce.ResetArguments ();
+  dce.AddArgument ("10.0.0.2");
+  apps = dce.Install (nodes.Get (1));
   apps.Start (Seconds (0.1));
 
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();

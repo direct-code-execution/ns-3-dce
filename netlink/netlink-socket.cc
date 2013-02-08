@@ -62,21 +62,21 @@ namespace ns3 {
 class GroupSockets
 {
 public:
-  static uint32_t GetNSockets(void)
-  { 
-    return m_Sockets.size();
-  }
-  static Ptr<NetlinkSocket> GetSocket(uint32_t index)
+  static uint32_t GetNSockets (void)
   {
-    NS_ASSERT(index < m_Sockets.size());
+    return m_Sockets.size ();
+  }
+  static Ptr<NetlinkSocket> GetSocket (uint32_t index)
+  {
+    NS_ASSERT (index < m_Sockets.size ());
     return m_Sockets[index];
   }
-  static void AddSocket(Ptr<NetlinkSocket>sock)
+  static void AddSocket (Ptr<NetlinkSocket>sock)
   {
-    m_Sockets.push_back(sock);
+    m_Sockets.push_back (sock);
   }
 private:
-   /*use a std::vector to store the sockets with nozero group value*/
+  /*use a std::vector to store the sockets with nozero group value*/
   static std::vector<Ptr<NetlinkSocket> >m_Sockets;
 };
 std::vector<Ptr<NetlinkSocket> >GroupSockets::m_Sockets;
@@ -103,7 +103,7 @@ NetlinkSocket::GetTypeId (void)
                    CallbackValue (),
                    MakeCallbackAccessor (&NetlinkSocket::m_icmpCallback),
                    MakeCallbackChecker ())
-    ;
+  ;
   return tid;
 }
 
@@ -121,7 +121,7 @@ NetlinkSocket::~NetlinkSocket ()
 {
   NS_LOG_FUNCTION (this);
 }
-void 
+void
 NetlinkSocket::DoDispose (void)
 {
   NS_LOG_FUNCTION_NOARGS ();
@@ -165,7 +165,7 @@ NetlinkSocket::ErrnoToSimuErrno (void)
     }
 }
 
-void 
+void
 NetlinkSocket::SetNode (Ptr<Node> node)
 {
   NS_LOG_FUNCTION_NOARGS ();
@@ -182,7 +182,7 @@ NetlinkSocket::GetErrno (void) const
   NS_LOG_FUNCTION_NOARGS ();
   return m_errno;
 }
-enum Socket::SocketType 
+enum Socket::SocketType
 NetlinkSocket::GetSocketType (void) const
 {
   return Socket::NS3_SOCK_DGRAM;
@@ -202,7 +202,7 @@ NetlinkSocket::GetPid (void) const
   return m_Pid;
 }
 uint32_t
-NetlinkSocket::GetGroups (void)const
+NetlinkSocket::GetGroups (void) const
 {
   NS_LOG_FUNCTION_NOARGS ();
   return m_Groups;
@@ -223,7 +223,7 @@ NetlinkSocket::Bind6 (void)
 }
 int
 NetlinkSocket::Bind (const Address &address)
-{ 
+{
   NS_LOG_FUNCTION (this << address);
 
   if (!NetlinkSocketAddress::IsMatchingType (address))
@@ -253,7 +253,7 @@ NetlinkSocket::DoBind (const NetlinkSocketAddress &address)
         {
           m_Pid = current->process->pid;
 
-          while (nsf->m_pidsList.count (m_Pid)>0)
+          while (nsf->m_pidsList.count (m_Pid) > 0)
             {
               m_Pid++;
             }
@@ -264,22 +264,22 @@ NetlinkSocket::DoBind (const NetlinkSocketAddress &address)
 
   if (m_Groups)
     {
-      GroupSockets::AddSocket(this);
-    } 
+      GroupSockets::AddSocket (this);
+    }
 
   Ptr<Ipv4> ipv4 = m_node->GetObject<Ipv4> ();
   NS_ASSERT_MSG (ipv4 != 0, "Netlink Socket requires IPv4 stack to be installed on the node");
 
   // We only care about staticRouting for netlink support
   m_ipv4Routing = Ipv4DceRouting::GetRouting (ipv4->GetRoutingProtocol (),
-                                                 (Ipv4DceRouting*)0);
+                                              (Ipv4DceRouting*)0);
   NS_ASSERT_MSG (m_ipv4Routing != 0,
                  "Netlink Socket requires Ipv4DceRouting to be installed on the node");
 
   return 0;
 }
 
-int 
+int
 NetlinkSocket::Listen (void)
 {
   NS_LOG_FUNCTION_NOARGS ();
@@ -297,7 +297,7 @@ uint32_t
 NetlinkSocket::GetRxAvailable (void) const
 {
   NS_LOG_FUNCTION_NOARGS ();
-  // We separately maintain this state to avoid walking the queue 
+  // We separately maintain this state to avoid walking the queue
   // every time this might be called
   return m_rxAvailable;
 }
@@ -321,8 +321,8 @@ int
 NetlinkSocket::Close (void)
 {
   NS_LOG_FUNCTION_NOARGS ();
-  ShutdownSend();
-  ShutdownRecv();
+  ShutdownSend ();
+  ShutdownRecv ();
 
   // a little bit complicated, but this will allow us to keep track of every open netlink socket
   if (m_node != 0)
@@ -350,21 +350,21 @@ NetlinkSocket::Connect (const Address &address)
 Ptr<Packet>
 NetlinkSocket::Recv (uint32_t maxSize, uint32_t flags)
 {
-  NS_LOG_FUNCTION (this << maxSize<< flags);
-  if (m_dataReceiveQueue.empty())
+  NS_LOG_FUNCTION (this << maxSize << flags);
+  if (m_dataReceiveQueue.empty ())
     {
       return 0;
     }
 
   Ptr<Packet> p = m_dataReceiveQueue.front ();
-  if (p->GetSize () <= maxSize) 
+  if (p->GetSize () <= maxSize)
     {
       m_dataReceiveQueue.pop ();
       m_rxAvailable -= p->GetSize ();
     }
   else
     {
-      p = 0; 
+      p = 0;
     }
   return p;
 }
@@ -389,8 +389,8 @@ int
 NetlinkSocket::Send (Ptr<Packet> p, uint32_t flags)
 {
   NS_LOG_FUNCTION (this << p << flags);
-  NetlinkSocketAddress address = NetlinkSocketAddress(m_Pid, m_Groups);
-  return SendTo(p, flags, address);
+  NetlinkSocketAddress address = NetlinkSocketAddress (m_Pid, m_Groups);
+  return SendTo (p, flags, address);
 }
 
 int
@@ -406,7 +406,7 @@ NetlinkSocket::SendTo (Ptr<Packet> p, uint32_t flags, const Address &toAddress)
       return -1;
     }
 
-  NS_LOG_INFO ("send netlink message to pid = " << 
+  NS_LOG_INFO ("send netlink message to pid = " <<
                NetlinkSocketAddress::ConvertFrom (toAddress));
   NS_LOG_DEBUG ("At " << Simulator::Now ().GetSeconds () << "s "
                 "sending netlink message from node " << m_node->GetId ());
@@ -420,7 +420,7 @@ NetlinkSocket::SendTo (Ptr<Packet> p, uint32_t flags, const Address &toAddress)
   //is always the kernel(pid = 0), (Actually, there must be one static kernel netlink socket to
   //receive/handle messages), we do not setup a kernel socket to receive packet.
   //
-  
+
   MultipartNetlinkMessage multipartnlmsg;
   uint32_t packet_len, remain_len;
 
@@ -433,7 +433,7 @@ NetlinkSocket::SendTo (Ptr<Packet> p, uint32_t flags, const Address &toAddress)
       NS_ASSERT (remain_len == p->GetSize ());
 
       //actually, message to kernel contains single one netlink message
-      for (uint32_t i = 0; i < multipartnlmsg.GetNMessages(); i ++)
+      for (uint32_t i = 0; i < multipartnlmsg.GetNMessages (); i++)
         {
           NetlinkMessage nlmsg = multipartnlmsg.GetMessage (i);
           if (HandleMessage (nlmsg) < 0)
@@ -455,7 +455,7 @@ NetlinkSocket::SendTo (Ptr<Packet> p, uint32_t flags, const Address &toAddress)
     {
       NS_LOG_INFO ("netlink socket kernel error " << -m_errno);
     }
-  
+
   return packet_len;
 }
 
@@ -478,13 +478,13 @@ NetlinkSocket::GetPeerName (Address &address) const
   NS_ASSERT (false);
   return -1;
 }
-bool 
+bool
 NetlinkSocket::SetAllowBroadcast (bool allowBroadcast)
 {
   NS_ASSERT (false);
   return false;
 }
-bool 
+bool
 NetlinkSocket::GetAllowBroadcast () const
 {
   NS_ASSERT (false);
@@ -530,24 +530,24 @@ NetlinkSocket::SendMessageUnicast (const MultipartNetlinkMessage &nlmsg, int32_t
   // address.SetProcessID (pid);
 
   //send packet to user space
-  ForwardUp (p, NetlinkSocketAddress(m_kernelPid,0));
+  ForwardUp (p, NetlinkSocketAddress (m_kernelPid,0));
   return 0;
 }
 
 int32_t
-NetlinkSocket::SendMessageBroadcast (const MultipartNetlinkMessage &nlmsg, 
+NetlinkSocket::SendMessageBroadcast (const MultipartNetlinkMessage &nlmsg,
                                      uint32_t group,
                                      Ptr<Node> node)
 {
   NS_LOG_FUNCTION ("SendMessageBroadcast" << group);
   //fisrt find the dest netlink socket through group value, then attach this nlmsg to its recv-queue
-  for (uint32_t i = 0; i < GroupSockets::GetNSockets (); i ++)
+  for (uint32_t i = 0; i < GroupSockets::GetNSockets (); i++)
     {
       Ptr<NetlinkSocket> nlsock = GroupSockets::GetSocket (i);
 
-      if ((nlsock->GetGroups () & group) &&
-          (nlsock->GetPid () != m_kernelPid) && 
-          node == nlsock->GetNode ())
+      if ((nlsock->GetGroups () & group)
+          && (nlsock->GetPid () != m_kernelPid)
+          && node == nlsock->GetNode ())
         {
           NS_LOG_DEBUG ("SendMessageBroadcast to pid " << nlsock->GetPid ());
 
@@ -556,7 +556,7 @@ NetlinkSocket::SendMessageBroadcast (const MultipartNetlinkMessage &nlmsg,
           p->AddHeader (nlmsg);
 
           //send packet to user space
-          nlsock->ForwardUp (p, NetlinkSocketAddress(m_kernelPid,group));
+          nlsock->ForwardUp (p, NetlinkSocketAddress (m_kernelPid,group));
         }
     }
   return 0;
@@ -612,7 +612,7 @@ NetlinkSocket::HandleMessage (const NetlinkMessage &nlmsg)
       NS_LOG_INFO ("netlink message type not parsed in kernel");
       m_errno = ERROR_INVAL;
       return -1;
-    }  
+    }
 }
 
 int32_t
@@ -625,7 +625,9 @@ NetlinkSocket::HandleNetlinkRouteMessage (const NetlinkMessage &nlmsg)
 
   /* Only requests are handled by kernel now */
   if (!NetlinkMessage::IsMessageFlagsRequest (nlmsg.GetHeader ().GetMsgFlags ()))
-    return 0;
+    {
+      return 0;
+    }
 
   type = nlmsg.GetMsgType ();
 
@@ -638,15 +640,17 @@ NetlinkSocket::HandleNetlinkRouteMessage (const NetlinkMessage &nlmsg)
     {
       /* All the messages must have at least 1 byte length */
       if (nlmsg.GetPayloadSize () < 1)
-        return 0;
+        {
+          return 0;
+        }
 
       family = nlmsg.GetFamily ();
       /*here we do not deal with different family, default for AF_NET*/
-      NS_ASSERT(family == AF_INET || family == AF_UNSPEC || family == AF_PACKET || family == AF_INET6);  
+      NS_ASSERT (family == AF_INET || family == AF_UNSPEC || family == AF_PACKET || family == AF_INET6);
 
       /*for GET*** message, dump it to userspace*/
-      if (NetlinkMessage::IsMessageTypeGet (type) && 
-          NetlinkMessage::IsMessageFlagsDump (nlmsg.GetHeader ().GetMsgFlags ())) 
+      if (NetlinkMessage::IsMessageTypeGet (type)
+          && NetlinkMessage::IsMessageFlagsDump (nlmsg.GetHeader ().GetMsgFlags ()))
         {
           DumpNetlinkRouteMessage (nlmsg, type, family);
           return -1;
@@ -655,11 +659,11 @@ NetlinkSocket::HandleNetlinkRouteMessage (const NetlinkMessage &nlmsg)
       /* other types of messages*/
       return DoNetlinkRouteMessage (nlmsg, type, family);
     }
-  else/* Unknown message: reply with EINVAL */
+  else /* Unknown message: reply with EINVAL */
     {
       err = ERROR_INVAL;
       return -1;
-    } 
+    }
 }
 
 int32_t
@@ -693,7 +697,7 @@ NetlinkSocket::DumpNetlinkRouteMessage (const NetlinkMessage &nlmsg, uint16_t ty
 
   //then append netlink message with type NLMSG_DONE
   NetlinkMessage nlmsg_done;
-  NetlinkMessageHeader nhr2 = NetlinkMessageHeader (NETLINK_MSG_DONE, NETLINK_MSG_F_MULTI, 
+  NetlinkMessageHeader nhr2 = NetlinkMessageHeader (NETLINK_MSG_DONE, NETLINK_MSG_F_MULTI,
                                                     nhr.GetMsgSeq (), m_kernelPid);
   nlmsg_done.SetHeader (nhr2);
   //kernel append nlmsg_dump size to it, here we omit it
@@ -707,28 +711,28 @@ NetlinkSocket::DumpNetlinkRouteMessage (const NetlinkMessage &nlmsg, uint16_t ty
 int32_t
 NetlinkSocket::DoNetlinkRouteMessage (const NetlinkMessage &nlmsg, uint16_t type, uint8_t family)
 {
-  NS_LOG_FUNCTION (this << type <<family);
+  NS_LOG_FUNCTION (this << type << family);
   int32_t err;
 
   if (type == NETLINK_RTM_NEWADDR || type == NETLINK_RTM_DELADDR)
-    {      
+    {
       err = DoInterfaceAddressMessage (nlmsg, type, family);
     }
   else if (type == NETLINK_RTM_NEWROUTE || type == NETLINK_RTM_DELROUTE || type == NETLINK_RTM_GETROUTE)
-    {     
+    {
       err = DoRouteMessage (nlmsg, type, family);
     }
   else if (type == NETLINK_RTM_GETLINK || type == NETLINK_RTM_SETLINK)
-    {     
+    {
       err = DoInterfaceInfoMessage (nlmsg, type, family);
     }
   else
     {
-      NS_LOG_LOGIC ("netlink message:type( " << type << ") not processed by ns3 now." );
+      NS_LOG_LOGIC ("netlink message:type( " << type << ") not processed by ns3 now.");
       m_errno = ERROR_INVAL;
       err = -1;
-    } 
-  
+    }
+
   return err;
 }
 
@@ -739,33 +743,35 @@ NetlinkSocket::BuildInterfaceAddressDumpMessages ()
   MultipartNetlinkMessage nlmsg_dump;
   Ptr<Ipv4> ipv4 = m_node->GetObject<Ipv4> ();
 
-  for (uint32_t i = 0; i < ipv4->GetNInterfaces (); i ++)
+  for (uint32_t i = 0; i < ipv4->GetNInterfaces (); i++)
     {
       if (!ipv4->IsUp (i))
-        continue;
+        {
+          continue;
+        }
 
       Ipv4Address addri = ipv4->GetAddress (i, 0).GetLocal ();
       Ipv4Mask maski = ipv4->GetAddress (i, 0).GetMask ();
       Ipv4Address bcast = ipv4->GetAddress (i, 0).GetBroadcast ();
 
       NS_LOG_DEBUG (ipv4->GetAddress (i, 0));
-      
+
       //here get the address mask length
       uint32_t mask = maski.Get ();
       uint8_t mask_len = 0;
       while (mask)
         {
           mask = mask << 1;
-          mask_len ++;
+          mask_len++;
         }
-      
+
       //next fill the message body
       NetlinkMessage nlmsg_ifa;
       NetlinkMessageHeader nhr = NetlinkMessageHeader (NETLINK_RTM_NEWADDR, NETLINK_MSG_F_MULTI, 0, m_kernelPid);
       InterfaceAddressMessage ifamsg;
 
       ifamsg.SetInterfaceIndex (i);
-      ifamsg.SetFamily (AF_INET);//default AF_INET      
+      ifamsg.SetFamily (AF_INET); //default AF_INET
       ifamsg.SetLength (mask_len);
       ifamsg.SetFlags (0);
       ifamsg.SetScope (RouteMessage::RT_SCOPE_UNIVERSE);
@@ -777,7 +783,7 @@ NetlinkSocket::BuildInterfaceAddressDumpMessages ()
       //ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_ANYCAST,  ADDRESS, Ipv4Address("0.0.0.0")));//not used in ns3
       //XXXother attributes not used by ns3
 
-      nlmsg_ifa.SetHeader(nhr);
+      nlmsg_ifa.SetHeader (nhr);
       nlmsg_ifa.SetInterfaceAddressMessage (ifamsg);
       nlmsg_dump.AppendMessage (nlmsg_ifa);
     }
@@ -785,40 +791,44 @@ NetlinkSocket::BuildInterfaceAddressDumpMessages ()
   // For IPv6
   Ptr<Ipv6>ipv6 = m_node->GetObject<Ipv6> ();
 
-  for (uint32_t i = 0; i < ipv6->GetNInterfaces(); i ++)
+  for (uint32_t i = 0; i < ipv6->GetNInterfaces (); i++)
     {
       if (!ipv6->IsUp (i))
-        continue;
-
-      for (uint32_t j = 0; j < ipv6->GetNAddresses(i); j ++)
         {
-          Ipv6Address addri = ipv6->GetAddress (i, j).GetAddress();
+          continue;
+        }
+
+      for (uint32_t j = 0; j < ipv6->GetNAddresses (i); j++)
+        {
+          Ipv6Address addri = ipv6->GetAddress (i, j).GetAddress ();
           Ipv6Prefix prefix = ipv6->GetAddress (i, j).GetPrefix ();
 
           //here get the address mask length
-          uint8_t mask_len = prefix.GetPrefixLength();
+          uint8_t mask_len = prefix.GetPrefixLength ();
 
           //loopback address's prefix is wrong... FIXME
-          if (addri.IsEqual(Ipv6Address::GetLoopback()))
-            mask_len = 128;
-      
+          if (addri.IsEqual (Ipv6Address::GetLoopback ()))
+            {
+              mask_len = 128;
+            }
+
           //next fill the message body
           NetlinkMessage nlmsg_ifa;
-          NetlinkMessageHeader nhr = NetlinkMessageHeader(NETLINK_RTM_NEWADDR, NETLINK_MSG_F_MULTI, 0, m_kernelPid);
-          InterfaceAddressMessage ifamsg;       
+          NetlinkMessageHeader nhr = NetlinkMessageHeader (NETLINK_RTM_NEWADDR, NETLINK_MSG_F_MULTI, 0, m_kernelPid);
+          InterfaceAddressMessage ifamsg;
 
-          ifamsg.SetInterfaceIndex(i);
-          ifamsg.SetFamily(AF_INET6);
-          ifamsg.SetFlags(0);
+          ifamsg.SetInterfaceIndex (i);
+          ifamsg.SetFamily (AF_INET6);
+          ifamsg.SetFlags (0);
 
-          if (addri.IsLinkLocal())
+          if (addri.IsLinkLocal ())
             {
-              ifamsg.SetLength(64);
+              ifamsg.SetLength (64);
               ifamsg.SetScope (RouteMessage::RT_SCOPE_LINK);
             }
           else
             {
-              ifamsg.SetLength(mask_len);
+              ifamsg.SetLength (mask_len);
               ifamsg.SetScope (RouteMessage::RT_SCOPE_UNIVERSE);
             }
 
@@ -827,7 +837,7 @@ NetlinkSocket::BuildInterfaceAddressDumpMessages ()
           ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_ADDRESS,  ADDRESS, addri));
           //XXXother attributes not used by ns3
 
-          nlmsg_ifa.SetHeader(nhr);
+          nlmsg_ifa.SetHeader (nhr);
           nlmsg_ifa.SetInterfaceAddressMessage (ifamsg);
           nlmsg_dump.AppendMessage (nlmsg_ifa);
         }
@@ -839,10 +849,10 @@ NetlinkMessage
 NetlinkSocket::BuildInterfaceInfoDumpMessage (uint32_t interface_num)
 {
   NS_LOG_FUNCTION (this << interface_num);
-  
+
   Ptr<Ipv4> ipv4 = m_node->GetObject<Ipv4> ();
   Ptr<NetDevice> dev = m_node->GetDevice (interface_num);
-  
+
   int32_t ipv4_link = ipv4->GetInterfaceForDevice (dev);
   NS_ASSERT (ipv4_link >= 0);
 
@@ -874,9 +884,9 @@ NetlinkSocket::BuildInterfaceInfoDumpMessage (uint32_t interface_num)
 
   NetlinkMessage nlmsg_ifinfo;
   NetlinkMessageHeader nhr = NetlinkMessageHeader (NETLINK_RTM_NEWLINK, NETLINK_MSG_F_MULTI, 0, m_kernelPid);
-  InterfaceInfoMessage ifinfomsg;     
+  InterfaceInfoMessage ifinfomsg;
 
-  ifinfomsg.SetFamily(0);      // AF_UNSPEC
+  ifinfomsg.SetFamily (0);      // AF_UNSPEC
   ifinfomsg.SetDeviceType (0); // not clear
   ifinfomsg.SetInterfaceIndex (interface_num);
   ifinfomsg.SetDeviceFlags (flags); // not clear
@@ -886,7 +896,7 @@ NetlinkSocket::BuildInterfaceInfoDumpMessage (uint32_t interface_num)
   std::stringstream ss;
   ss <<  "ns3-device" << interface_num;
 
-  ifinfomsg.AppendAttribute (NetlinkAttribute (InterfaceInfoMessage::IFL_A_IFNAME,    STRING,  ss.str()));
+  ifinfomsg.AppendAttribute (NetlinkAttribute (InterfaceInfoMessage::IFL_A_IFNAME,    STRING,  ss.str ()));
   //not used in ns3
   //ifinfomsg.AppendAttribute (NetlinkAttribute (InterfaceInfoMessage::IFL_A_TXQLEN,    U32,     0));
   //ifinfomsg.AppendAttribute (NetlinkAttribute (InterfaceInfoMessage::IFL_A_WEIGHT,    U32,     0));
@@ -912,7 +922,7 @@ NetlinkSocket::BuildInterfaceInfoDumpMessages ()
 {
   NS_LOG_FUNCTION (this);
   MultipartNetlinkMessage nlmsg_dump;
-  for (uint32_t i = 0; i < m_node->GetNDevices (); i ++)
+  for (uint32_t i = 0; i < m_node->GetNDevices (); i++)
     {
       nlmsg_dump.AppendMessage (BuildInterfaceInfoDumpMessage (i));
     }
@@ -924,12 +934,15 @@ NetlinkSocket::BuildRouteDumpMessages ()
   NS_LOG_FUNCTION (this);
   MultipartNetlinkMessage nlmsg_dump;
 
-  if (0 == m_ipv4Routing) return nlmsg_dump;
+  if (0 == m_ipv4Routing)
+    {
+      return nlmsg_dump;
+    }
 
   NS_ASSERT_MSG (m_ipv4Routing != 0, "Should not happen");
-  
+
   // We only care about staticRouting for netlink support
-  for (uint32_t i = 0; i < m_ipv4Routing->GetNRoutes (); i ++)
+  for (uint32_t i = 0; i < m_ipv4Routing->GetNRoutes (); i++)
     {
       NetlinkMessage nlmsg_rt;
       NetlinkMessageHeader nhr = NetlinkMessageHeader (NETLINK_RTM_NEWROUTE, NETLINK_MSG_F_MULTI, 0, m_kernelPid);
@@ -939,7 +952,7 @@ NetlinkSocket::BuildRouteDumpMessages ()
       rtmsg.SetFamily (AF_INET);
       rtmsg.SetDstLength (32);
       rtmsg.SetSrcLength (0);
-      rtmsg.SetTos (0);//not clear
+      rtmsg.SetTos (0); //not clear
       rtmsg.SetTableId (RouteMessage::RT_TABLE_MAIN);
       rtmsg.SetScope (RouteMessage::RT_SCOPE_UNIVERSE);
       rtmsg.SetProtocol (RouteMessage::RT_PROT_UNSPEC);
@@ -950,7 +963,7 @@ NetlinkSocket::BuildRouteDumpMessages ()
       //      rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_SRC, ADDRESS, route.GetSource()));
       //      rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_PREFSRC, ADDRESS, route.GetSource()));//not used in ns3
       rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_IIF, U32, route.GetInterface ()));
-      rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_OIF, U32, route.GetInterface ()));      
+      rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_OIF, U32, route.GetInterface ()));
       rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_GATEWAY, ADDRESS, route.GetGateway ()));
 
       nlmsg_rt.SetHeader (nhr);
@@ -962,7 +975,7 @@ NetlinkSocket::BuildRouteDumpMessages ()
   // We only care about staticRouting for netlink support
   Ipv6StaticRoutingHelper routingHelper6;
   Ptr<Ipv6StaticRouting> ipv6Static = routingHelper6.GetStaticRouting (ipv6);
-  for (uint32_t i = 0; i < ipv6Static->GetNRoutes (); i ++)
+  for (uint32_t i = 0; i < ipv6Static->GetNRoutes (); i++)
     {
       NetlinkMessage nlmsg_rt;
       NetlinkMessageHeader nhr = NetlinkMessageHeader (NETLINK_RTM_NEWROUTE, NETLINK_MSG_F_MULTI, 0, m_kernelPid);
@@ -972,7 +985,7 @@ NetlinkSocket::BuildRouteDumpMessages ()
       rtmsg.SetFamily (AF_INET6);
       rtmsg.SetDstLength (128);
       rtmsg.SetSrcLength (0);
-      rtmsg.SetTos (0);//not clear
+      rtmsg.SetTos (0); //not clear
       rtmsg.SetTableId (RouteMessage::RT_TABLE_MAIN);
       rtmsg.SetScope (RouteMessage::RT_SCOPE_UNIVERSE);
       rtmsg.SetProtocol (RouteMessage::RT_PROT_UNSPEC);
@@ -980,13 +993,13 @@ NetlinkSocket::BuildRouteDumpMessages ()
 
       rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_DST, ADDRESS, route.GetDest ()));
       //ns3 use local address as the route src address
-      // rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_SRC, ADDRESS, 
+      // rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_SRC, ADDRESS,
       //                                          ipv6->GetSourceAddress(route.GetDest ())));
-      // rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_PREFSRC, ADDRESS, 
+      // rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_PREFSRC, ADDRESS,
       //                                          ipv6->GetSourceAddress(route.GetDest ())));
-      rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_IIF, U32, route.GetInterface()));
-      rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_OIF, U32, route.GetInterface()));      
-      rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_GATEWAY, ADDRESS, route.GetGateway()));
+      rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_IIF, U32, route.GetInterface ()));
+      rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_OIF, U32, route.GetInterface ()));
+      rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_GATEWAY, ADDRESS, route.GetGateway ()));
 
       nlmsg_rt.SetHeader (nhr);
       nlmsg_rt.SetRouteMessage (rtmsg);
@@ -1016,30 +1029,30 @@ NetlinkSocket::DoInterfaceAddressMessage (const NetlinkMessage &nlmsg, uint16_t 
     {
       //when adding an interface address, it should check the input arguments
       //prefix-len and local address attribute
-      if (ifamsg.GetLength () > 32 || 
-          ifamsg.GetAttributeByType (attr_local, InterfaceAddressMessage::IF_A_LOCAL) == false)
+      if (ifamsg.GetLength () > 32
+          || ifamsg.GetAttributeByType (attr_local, InterfaceAddressMessage::IF_A_LOCAL) == false)
         {
           m_errno = ERROR_INVAL;
           return -1;
         }
-    }  
+    }
 
   //get necessary information for add/del, many attributes we not used
-  for (uint32_t i = 0; i < ifamsg.GetNNetlinkAttribute (); i ++)
+  for (uint32_t i = 0; i < ifamsg.GetNNetlinkAttribute (); i++)
     {
       NetlinkAttribute attr = ifamsg.GetNetlinkAttribute (i);
       uint32_t attr_type = attr.GetAttrType ();
 
-      switch(attr_type)
+      switch (attr_type)
         {
         case InterfaceAddressMessage::IF_A_ADDRESS:
           addri = Ipv4Address::ConvertFrom (attr.GetAttrPayload ().GetAddress ());
           break;
         case InterfaceAddressMessage::IF_A_BROADCAST:
-          bcast = Ipv4Address::ConvertFrom(attr.GetAttrPayload ().GetAddress ());
+          bcast = Ipv4Address::ConvertFrom (attr.GetAttrPayload ().GetAddress ());
           break;
         case InterfaceAddressMessage::IF_A_LOCAL:
-          addr_local = Ipv4Address::ConvertFrom(attr.GetAttrPayload ().GetAddress ());
+          addr_local = Ipv4Address::ConvertFrom (attr.GetAttrPayload ().GetAddress ());
           break;
         case InterfaceAddressMessage::IF_A_LABEL:
         case InterfaceAddressMessage::IF_A_ANYCAST:
@@ -1053,10 +1066,10 @@ NetlinkSocket::DoInterfaceAddressMessage (const NetlinkMessage &nlmsg, uint16_t 
       //create an new NetDevice with an new index and set the address
       //otherwise set the indexed interface directly
       if (index >= ipv4->GetNInterfaces ())
-        {          
+        {
           Ptr<SimpleNetDevice> dev;
           dev = CreateObject<SimpleNetDevice> ();
-          dev ->SetAddress (Mac48Address::Allocate ());
+          dev->SetAddress (Mac48Address::Allocate ());
           m_node->AddDevice (dev);
 
           uint32_t netdev_idx = ipv4->AddInterface (dev);
@@ -1064,18 +1077,20 @@ NetlinkSocket::DoInterfaceAddressMessage (const NetlinkMessage &nlmsg, uint16_t 
           Ipv4InterfaceAddress ipv4Addr = Ipv4InterfaceAddress (addri, Ipv4Mask ());
           ipv4->AddAddress (netdev_idx, ipv4Addr);
           ipv4->SetUp (netdev_idx);
-          NS_LOG_INFO ("Add an interface address at index "<< netdev_idx << "but not the ifamsg input" << index);
+          NS_LOG_INFO ("Add an interface address at index " << netdev_idx << "but not the ifamsg input" << index);
         }
       else
         {
           Ipv4InterfaceAddress ipv4Addr = Ipv4InterfaceAddress (addri, Ipv4Mask ());
           ipv4->AddAddress (index, ipv4Addr);
           if (!ipv4->IsUp (index))
-            ipv4->SetUp (index);
-        }    
+            {
+              ipv4->SetUp (index);
+            }
+        }
       flag4 = 1;
     }
-  else//type == NETLINK_RTM_DELADDR
+  else //type == NETLINK_RTM_DELADDR
     {
       //when delete an interface address by index, if the indexed interface  was not exist
       //return an error EINVAL, otherwise set down the interface which has the addri
@@ -1086,7 +1101,7 @@ NetlinkSocket::DoInterfaceAddressMessage (const NetlinkMessage &nlmsg, uint16_t 
         }
       else
         {
-          for (uint32_t i = 0; i < ipv4->GetNInterfaces (); i ++)
+          for (uint32_t i = 0; i < ipv4->GetNInterfaces (); i++)
             {
               Ipv4Address ad = ipv4->GetAddress (i, 0).GetLocal ();
               if (ad == addri && ipv4->IsUp (i))
@@ -1101,9 +1116,9 @@ NetlinkSocket::DoInterfaceAddressMessage (const NetlinkMessage &nlmsg, uint16_t 
                 }
             }
           flag4 = 1;
-        }      
+        }
     }
-  
+
   //then send an broadcast message, let all user know this operation happened
   NetlinkMessage nlmsg_broadcast = nlmsg;
   NetlinkMessageHeader nhr;
@@ -1158,18 +1173,18 @@ NetlinkSocket::DoRouteMessage (const NetlinkMessage &nlmsg, uint16_t type, uint8
   Ipv4Address src, dest, gateway;
   Ipv6Address src6, dest6, gateway6;
   uint32_t index = 0;
-  int attr_flags[RouteMessage::RT_A_MAX] = {0};
+  int attr_flags[RouteMessage::RT_A_MAX] = { 0};
   uint8_t dstlen = rtmsg.GetDstLength ();
   uint32_t metric = 0;
 
   //get necessary information for add/del, many attributes we not used
-  for (uint32_t i = 0; i < rtmsg.GetNNetlinkAttribute (); i ++)
+  for (uint32_t i = 0; i < rtmsg.GetNNetlinkAttribute (); i++)
     {
       NetlinkAttribute attr = rtmsg.GetNetlinkAttribute (i);
       uint32_t attr_type = attr.GetAttrType ();
       attr_flags[attr_type] = 1;
 
-      switch(attr_type)
+      switch (attr_type)
         {
         case RouteMessage::RT_A_DST:
           if (family == AF_INET)
@@ -1218,7 +1233,7 @@ NetlinkSocket::DoRouteMessage (const NetlinkMessage &nlmsg, uint16_t type, uint8
         case RouteMessage::RT_A_SESSION:
         case RouteMessage::RT_A_MP_ALGO:
         case RouteMessage::RT_A_TABLE:
-          NS_LOG_INFO("route attribute not used by ns3" << attr_type);
+          NS_LOG_INFO ("route attribute not used by ns3" << attr_type);
           //not used by ns3
           break;
         }
@@ -1226,13 +1241,13 @@ NetlinkSocket::DoRouteMessage (const NetlinkMessage &nlmsg, uint16_t type, uint8
 
   // Sigh....
   Ptr<Ipv4>ipv4 = m_node->GetObject<Ipv4> ();
-  
+
   Ptr<Ipv6>ipv6 = m_node->GetObject<Ipv6> ();
   Ipv6StaticRoutingHelper routingHelper6;
   Ptr<Ipv6StaticRouting> ipv6Static = routingHelper6.GetStaticRouting (ipv6);
 
   NS_LOG_DEBUG (Simulator::Now ().GetSeconds () << " Route message, type: " << type << "; from " << m_node->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()
-      << " to " << dest<< " through " << gateway);
+                                                << " to " << dest << " through " << gateway);
 
   if (type == NETLINK_RTM_NEWROUTE)
     {
@@ -1259,7 +1274,10 @@ NetlinkSocket::DoRouteMessage (const NetlinkMessage &nlmsg, uint16_t type, uint8
                                   break;
                                 }
                             }
-                          if (found) break;
+                          if (found)
+                            {
+                              break;
+                            }
                         }
                     }
                   if (!found)
@@ -1269,170 +1287,171 @@ NetlinkSocket::DoRouteMessage (const NetlinkMessage &nlmsg, uint16_t type, uint8
                       return -1;
                     }
                 }
-            if (dstlen == 32)
-              {
-                int exist_flag = 0;
-                for (uint32_t i = 0; i < m_ipv4Routing->GetNRoutes (); ++i)
-                  {
-                    Ipv4RoutingTableEntry rt = m_ipv4Routing->GetRoute (i);
-                    if (dest == rt.GetDest ())
-                      {
-                        exist_flag = 1;
-                      }
-                  }
+              if (dstlen == 32)
+                {
+                  int exist_flag = 0;
+                  for (uint32_t i = 0; i < m_ipv4Routing->GetNRoutes (); ++i)
+                    {
+                      Ipv4RoutingTableEntry rt = m_ipv4Routing->GetRoute (i);
+                      if (dest == rt.GetDest ())
+                        {
+                          exist_flag = 1;
+                        }
+                    }
 
-                if (exist_flag)
-                  { //route to dest already exists
-                    int delete_flag = 0;
-                    if (nlmsg.GetHeader ().GetMsgFlags () & NETLINK_MSG_F_REPLACE)
-                      {
-                        for (uint32_t i = 0; i < m_ipv4Routing->GetNRoutes (); ++i)
-                          {
-                            Ipv4RoutingTableEntry rt = m_ipv4Routing->GetRoute (i);
-                            if (dest == rt.GetDest ())
-                              {
-                                m_ipv4Routing->RemoveRoute (i);
-                                NS_LOG_DEBUG ("Route from  " << m_node->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << " to "
-                                    << dest << " through " << gateway << " removed");
-                                delete_flag = 1;
-                              }
-                          }
+                  if (exist_flag)
+                    { //route to dest already exists
+                      int delete_flag = 0;
+                      if (nlmsg.GetHeader ().GetMsgFlags () & NETLINK_MSG_F_REPLACE)
+                        {
+                          for (uint32_t i = 0; i < m_ipv4Routing->GetNRoutes (); ++i)
+                            {
+                              Ipv4RoutingTableEntry rt = m_ipv4Routing->GetRoute (i);
+                              if (dest == rt.GetDest ())
+                                {
+                                  m_ipv4Routing->RemoveRoute (i);
+                                  NS_LOG_DEBUG ("Route from  " << m_node->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << " to "
+                                                               << dest << " through " << gateway << " removed");
+                                  delete_flag = 1;
+                                }
+                            }
 
-                        if (!delete_flag)
-                          {
-                             NS_LOG_INFO ("no route entry removed by dest address in new route sector " << dest);
-                             m_errno = ERROR_INVAL;
-                             return -1;
-                           }
-                      }
-                    else
-                      {
-                        NS_LOG_DEBUG ("Route exists but overwriting declined!");
-                      }
-                    if ((attr_flags[RouteMessage::RT_A_GATEWAY]))
-                      {
-                        NS_LOG_DEBUG (Simulator::Now().GetSeconds() << "Overwrite route from "
-                                      << m_node->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << " to " << dest<< " through " << gateway << " with index " << index << " and metric " << metric);
-                        m_ipv4Routing->AddHostRouteTo (dest, gateway, index, metric);
-                      }
-                    else
-                      {
-                        NS_LOG_DEBUG (Simulator::Now ().GetSeconds () 
-                                      << "Overwrite route from " 
+                          if (!delete_flag)
+                            {
+                              NS_LOG_INFO ("no route entry removed by dest address in new route sector " << dest);
+                              m_errno = ERROR_INVAL;
+                              return -1;
+                            }
+                        }
+                      else
+                        {
+                          NS_LOG_DEBUG ("Route exists but overwriting declined!");
+                        }
+                      if ((attr_flags[RouteMessage::RT_A_GATEWAY]))
+                        {
+                          NS_LOG_DEBUG (Simulator::Now ().GetSeconds () << "Overwrite route from "
+                                                                        << m_node->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << " to " << dest << " through " << gateway << " with index " << index << " and metric " << metric);
+                          m_ipv4Routing->AddHostRouteTo (dest, gateway, index, metric);
+                        }
+                      else
+                        {
+                          NS_LOG_DEBUG (Simulator::Now ().GetSeconds ()
+                                      << "Overwrite route from "
                                       << m_node->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()
-                                      << " to " << dest<< " through " << "self" 
-                                      << " with index " << index 
+                                      << " to " << dest << " through " << "self"
+                                      << " with index " << index
                                       << " and metric " << metric);
-                        m_ipv4Routing->AddHostRouteTo (dest, index, metric);
-                      }
-                }
-                else
-                  { //route to dest doesn't exist
-                    if (nlmsg.GetHeader ().GetMsgFlags () & NETLINK_MSG_F_CREATE)
-                      {
-                        if (attr_flags[RouteMessage::RT_A_GATEWAY])
-                          {
-                            NS_LOG_DEBUG (Simulator::Now ().GetSeconds () << "Add new route from " << m_node->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()
-                                << " to " << dest<< " through " << gateway << " with index" << index);
-                            m_ipv4Routing->AddHostRouteTo (dest, gateway, index, metric);
-                          }
-                        else
-                          {
-                            NS_LOG_DEBUG (Simulator::Now ().GetSeconds () << "Add new route from " << m_node->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()
-                                << " to " << dest<< " through " << "self" << " with index" << index);
-                            m_ipv4Routing->AddHostRouteTo (dest, index, metric);
-                          }
-                      }
-                    else
-                      {
-                        NS_LOG_ERROR ("Route doesn't exist but writing declined!");
-                      }
-                  }
+                          m_ipv4Routing->AddHostRouteTo (dest, index, metric);
+                        }
+                    }
+                  else
+                    {
+                      //route to dest doesn't exist
+                      if (nlmsg.GetHeader ().GetMsgFlags () & NETLINK_MSG_F_CREATE)
+                        {
+                          if (attr_flags[RouteMessage::RT_A_GATEWAY])
+                            {
+                              NS_LOG_DEBUG (Simulator::Now ().GetSeconds () << "Add new route from " << m_node->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()
+                                                                            << " to " << dest << " through " << gateway << " with index" << index);
+                              m_ipv4Routing->AddHostRouteTo (dest, gateway, index, metric);
+                            }
+                          else
+                            {
+                              NS_LOG_DEBUG (Simulator::Now ().GetSeconds () << "Add new route from " << m_node->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()
+                                                                            << " to " << dest << " through " << "self" << " with index" << index);
+                              m_ipv4Routing->AddHostRouteTo (dest, index, metric);
+                            }
+                        }
+                      else
+                        {
+                          NS_LOG_ERROR ("Route doesn't exist but writing declined!");
+                        }
+                    }
 
-                NS_LOG_DEBUG ("=After change attempt=");
-                //Dump of table
-                NS_LOG_DEBUG (m_node->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << ":");
-                for (uint32_t i = 0; i < m_ipv4Routing->GetNRoutes (); ++i)
-                  {
-                    Ipv4RoutingTableEntry rt = m_ipv4Routing->GetRoute (i);
-                    NS_LOG_DEBUG (rt.GetDest () << " through " << rt.GetGateway ());
-                  }
-                NS_LOG_DEBUG ("= = = = = = = = = = =");
-              }
-            else // dstlen != 32
-              {
-                if (attr_flags[RouteMessage::RT_A_GATEWAY])
-                  {
-                    m_ipv4Routing->AddNetworkRouteTo (dest, Ipv4Mask (~(1<<(32 - dstlen))+1), gateway, index, metric);
-                  }
-                else
-                  {
-                    m_ipv4Routing->AddNetworkRouteTo (dest, Ipv4Mask (~(1<<(32 - dstlen))+1), index, metric);
-                  }
-              }
-          }
+                  NS_LOG_DEBUG ("=After change attempt=");
+                  //Dump of table
+                  NS_LOG_DEBUG (m_node->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << ":");
+                  for (uint32_t i = 0; i < m_ipv4Routing->GetNRoutes (); ++i)
+                    {
+                      Ipv4RoutingTableEntry rt = m_ipv4Routing->GetRoute (i);
+                      NS_LOG_DEBUG (rt.GetDest () << " through " << rt.GetGateway ());
+                    }
+                  NS_LOG_DEBUG ("= = = = = = = = = = =");
+                }
+              else // dstlen != 32
+                {
+                  if (attr_flags[RouteMessage::RT_A_GATEWAY])
+                    {
+                      m_ipv4Routing->AddNetworkRouteTo (dest, Ipv4Mask (~(1 << (32 - dstlen)) + 1), gateway, index, metric);
+                    }
+                  else
+                    {
+                      m_ipv4Routing->AddNetworkRouteTo (dest, Ipv4Mask (~(1 << (32 - dstlen)) + 1), index, metric);
+                    }
+                }
+            }
           else if (family == AF_INET6)
             {
-            if (!attr_flags[RouteMessage::RT_A_OIF])
-              {
-#ifdef FIXME
-              if (ipv6->GetIfIndexForDestination (gateway6, index) == false)
+              if (!attr_flags[RouteMessage::RT_A_OIF])
                 {
-                  NS_LOG_INFO ("No suitable interface to add an route entry");
-                  m_errno = ERROR_ADDRNOTAVAIL;
-                  return -1;
-                }
+#ifdef FIXME
+                  if (ipv6->GetIfIndexForDestination (gateway6, index) == false)
+                    {
+                      NS_LOG_INFO ("No suitable interface to add an route entry");
+                      m_errno = ERROR_ADDRNOTAVAIL;
+                      return -1;
+                    }
 #endif
-              }
+                }
 
-            Ipv6Prefix pref (dstlen);
-            if (attr_flags[RouteMessage::RT_A_GATEWAY])
-              {
-                ipv6Static->AddNetworkRouteTo (dest6, pref, gateway6, index, metric);
-              }
-            else
-              {
-                ipv6Static->AddNetworkRouteTo (dest6, pref, Ipv6Address("::"), index, metric);
-              }
+              Ipv6Prefix pref (dstlen);
+              if (attr_flags[RouteMessage::RT_A_GATEWAY])
+                {
+                  ipv6Static->AddNetworkRouteTo (dest6, pref, gateway6, index, metric);
+                }
+              else
+                {
+                  ipv6Static->AddNetworkRouteTo (dest6, pref, Ipv6Address ("::"), index, metric);
+                }
             }
-          }
-        else
-          {
-            NS_LOG_INFO("too few attributes to add an route entry");
-            m_errno = ERROR_INVAL;
-            return -1;
-          }
+        }
+      else
+        {
+          NS_LOG_INFO ("too few attributes to add an route entry");
+          m_errno = ERROR_INVAL;
+          return -1;
+        }
     }
   else if (type == NETLINK_RTM_DELROUTE)
     {
       NS_LOG_DEBUG (Simulator::Now ().GetSeconds () << "Route delete request from " << m_node->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()
-          << " to " << dest<< " through " << gateway);
+                                                    << " to " << dest << " through " << gateway);
       if (attr_flags[RouteMessage::RT_A_DST])
         {
           int delete_flag = 0;
 
           if (family == AF_INET)
             {
-              for (uint32_t i = 0; i < m_ipv4Routing->GetNRoutes (); i ++)
+              for (uint32_t i = 0; i < m_ipv4Routing->GetNRoutes (); i++)
                 {
-                Ipv4RoutingTableEntry rt = m_ipv4Routing->GetRoute (i);
-                if (gateway == rt.GetGateway () && dest == rt.GetDest ())
-                  {
-                    m_ipv4Routing->RemoveRoute (i);
-                    delete_flag = 1;
-                  }
+                  Ipv4RoutingTableEntry rt = m_ipv4Routing->GetRoute (i);
+                  if (gateway == rt.GetGateway () && dest == rt.GetDest ())
+                    {
+                      m_ipv4Routing->RemoveRoute (i);
+                      delete_flag = 1;
+                    }
                 }
             }
           else if (family == AF_INET6)
             {
-              for (uint32_t i = 0; i < ipv6Static->GetNRoutes (); i ++)
+              for (uint32_t i = 0; i < ipv6Static->GetNRoutes (); i++)
                 {
-                Ipv6RoutingTableEntry rt = ipv6Static->GetRoute (i);
-                if (gateway6 == rt.GetGateway () && dest6 == rt.GetDest ())
-                  {
-                    ipv6Static->RemoveRoute (i);
-                    delete_flag = 1;
-                  }
+                  Ipv6RoutingTableEntry rt = ipv6Static->GetRoute (i);
+                  if (gateway6 == rt.GetGateway () && dest6 == rt.GetDest ())
+                    {
+                      ipv6Static->RemoveRoute (i);
+                      delete_flag = 1;
+                    }
                 }
             }
 
@@ -1447,23 +1466,23 @@ NetlinkSocket::DoRouteMessage (const NetlinkMessage &nlmsg, uint16_t type, uint8
         {
           NS_LOG_INFO ("too few attributes to add an route entry");
           m_errno = ERROR_INVAL;
-          return -1;    
+          return -1;
         }
     }
-  else// type == NETLINK_RTM_GETROUTE
+  else // type == NETLINK_RTM_GETROUTE
     {
-      NS_LOG_DEBUG (Simulator::Now ().GetSeconds () << "GetRoute "<< "from " << m_node->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << " to " << dest);
+      NS_LOG_DEBUG (Simulator::Now ().GetSeconds () << "GetRoute " << "from " << m_node->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal () << " to " << dest);
       if (!attr_flags[RouteMessage::RT_A_DST])
         {
           NS_LOG_INFO ("too few attributes to get an route entry");
           m_errno = ERROR_INVAL;
           return -1;
         }
-      
+
       int get_flag = 0;
       if (family == AF_INET)
         {
-          for (uint32_t i = 0; i < m_ipv4Routing->GetNRoutes (); i ++)
+          for (uint32_t i = 0; i < m_ipv4Routing->GetNRoutes (); i++)
             {
               Ipv4RoutingTableEntry route = m_ipv4Routing->GetRoute (i);
               //find the route entry with same dest address and send unicast to user space
@@ -1471,7 +1490,7 @@ NetlinkSocket::DoRouteMessage (const NetlinkMessage &nlmsg, uint16_t type, uint8
                 {
                   //                Ptr<Ipv4>ipv4 = m_node->GetObject<Ipv4> ();
                   NetlinkMessage nlmsg_route;
-                  NetlinkMessageHeader nhr = NetlinkMessageHeader (NETLINK_RTM_NEWROUTE, 0, 
+                  NetlinkMessageHeader nhr = NetlinkMessageHeader (NETLINK_RTM_NEWROUTE, 0,
                                                                    nlmsg.GetHeader ().GetMsgSeq (), m_kernelPid);
                   RouteMessage rtmsg;
 
@@ -1479,7 +1498,7 @@ NetlinkSocket::DoRouteMessage (const NetlinkMessage &nlmsg, uint16_t type, uint8
                   rtmsg.SetFamily (AF_INET);
                   rtmsg.SetDstLength (32);
                   rtmsg.SetSrcLength (0);
-                  rtmsg.SetTos (0);//not clear
+                  rtmsg.SetTos (0); //not clear
                   rtmsg.SetTableId (RouteMessage::RT_TABLE_MAIN);
                   rtmsg.SetScope (RouteMessage::RT_SCOPE_UNIVERSE);
                   rtmsg.SetProtocol (RouteMessage::RT_PROT_UNSPEC);
@@ -1496,7 +1515,7 @@ NetlinkSocket::DoRouteMessage (const NetlinkMessage &nlmsg, uint16_t type, uint8
                   //fill an netlink message body
                   nlmsg_route.SetHeader (nhr);
                   nlmsg_route.SetRouteMessage (rtmsg);
-                  
+
                   SendMessageUnicast (nlmsg_route, 1);
                   get_flag = 1;
                 }
@@ -1504,14 +1523,14 @@ NetlinkSocket::DoRouteMessage (const NetlinkMessage &nlmsg, uint16_t type, uint8
         }
       else if (family == AF_INET6)
         {
-          for (uint32_t i = 0; i < ipv6Static->GetNRoutes(); i ++)
+          for (uint32_t i = 0; i < ipv6Static->GetNRoutes (); i++)
             {
               Ipv6RoutingTableEntry route = ipv6Static->GetRoute (i);
               //find the route entry with same dest address and send unicast to user space
               if (dest6.IsEqual (route.GetDest ()))
                 {
                   NetlinkMessage nlmsg_route;
-                  NetlinkMessageHeader nhr = NetlinkMessageHeader (NETLINK_RTM_NEWROUTE, 0, 
+                  NetlinkMessageHeader nhr = NetlinkMessageHeader (NETLINK_RTM_NEWROUTE, 0,
                                                                    nlmsg.GetHeader ().GetMsgSeq (), m_kernelPid);
                   RouteMessage rtmsg;
 
@@ -1519,7 +1538,7 @@ NetlinkSocket::DoRouteMessage (const NetlinkMessage &nlmsg, uint16_t type, uint8
                   rtmsg.SetFamily (AF_INET6);
                   rtmsg.SetDstLength (32);
                   rtmsg.SetSrcLength (0);
-                  rtmsg.SetTos (0);//not clear
+                  rtmsg.SetTos (0); //not clear
                   rtmsg.SetTableId (RouteMessage::RT_TABLE_MAIN);
                   rtmsg.SetScope (RouteMessage::RT_SCOPE_UNIVERSE);
                   rtmsg.SetProtocol (RouteMessage::RT_PROT_UNSPEC);
@@ -1542,7 +1561,7 @@ NetlinkSocket::DoRouteMessage (const NetlinkMessage &nlmsg, uint16_t type, uint8
                 }
             }
         }
-      
+
       if (!get_flag)
         {
           NS_LOG_INFO ("no route entry exist by dest address" << dest);
@@ -1566,21 +1585,24 @@ NetlinkSocket::DoRouteMessage (const NetlinkMessage &nlmsg, uint16_t type, uint8
 int32_t
 NetlinkSocket::NotifyIfLinkMessage (uint32_t interface_num)
 {
-  if (m_ipv4Routing == 0) return -1; //should be some nicer error code
-  
+  if (m_ipv4Routing == 0)
+    {
+      return -1;                     //should be some nicer error code
+
+    }
   NS_LOG_FUNCTION (this << interface_num);
 
   MultipartNetlinkMessage nlmsg_multi;
   nlmsg_multi.AppendMessage (BuildInterfaceInfoDumpMessage (interface_num));
-  
+
   //then append netlink message with type NLMSG_DONE
   NetlinkMessage nlmsg_done;
-  nlmsg_done.SetHeader (NetlinkMessageHeader (NETLINK_MSG_DONE, NETLINK_MSG_F_MULTI, 
+  nlmsg_done.SetHeader (NetlinkMessageHeader (NETLINK_MSG_DONE, NETLINK_MSG_F_MULTI,
                                               0, m_kernelPid));
   //kernel append nlmsg_dump size to it, here we omit it
   nlmsg_multi.AppendMessage (nlmsg_done);
 
-  int32_t err = SendMessageBroadcast (nlmsg_multi, NETLINK_RTM_GRP_LINK, GetNode());
+  int32_t err = SendMessageBroadcast (nlmsg_multi, NETLINK_RTM_GRP_LINK, GetNode ());
   return err;
 }
 
@@ -1609,7 +1631,7 @@ NetlinkSocket::NotifyIfLinkMessage (uint32_t interface_num)
 //           mask_len ++;
 //         }
 //     }
-      
+
 //   ifamsg.SetInterfaceIndex (interface->GetDevice ()->GetIfIndex ());
 //   ifamsg.SetFamily (AF_INET6);
 //   ifamsg.SetLength (mask_len);
@@ -1633,13 +1655,13 @@ NetlinkSocket::NotifyIfLinkMessage (uint32_t interface_num)
 //   nlmsg_multi.AppendMessage (nlmsg_ifa);
 //   nlmsg_multi.AppendMessage (nlmsg_done);
 
-//   SendMessageBroadcast (nlmsg_multi, 0, RTMGRP_IPV6_IFADDR, interface->GetDevice ()->GetNode ());  
+//   SendMessageBroadcast (nlmsg_multi, 0, RTMGRP_IPV6_IFADDR, interface->GetDevice ()->GetNode ());
 //   return 0;
 // }
 
 #ifdef FIXME
 int32_t
-NetlinkSocket::NotifyRouteMessage(Ojbect route, uint16_t type, uint8_t family)
+NetlinkSocket::NotifyRouteMessage (Ojbect route, uint16_t type, uint8_t family)
 {
   NetlinkMessage nlmsg_broadcast = nlmsg;
   NetlinkMessageHeader nhr;
@@ -1653,4 +1675,4 @@ NetlinkSocket::NotifyRouteMessage(Ojbect route, uint16_t type, uint8_t family)
 }
 #endif
 
-}//namespace ns3
+} //namespace ns3

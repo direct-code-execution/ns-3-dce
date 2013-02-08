@@ -66,7 +66,7 @@ NS_OBJECT_ENSURE_REGISTERED (DceManager);
 
 class Waiter;
 
-TypeId 
+TypeId
 DceManager::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::DceManager")
@@ -104,11 +104,11 @@ DceManager::DoDispose (void)
   std::map<uint16_t, Process*> mapCopy = m_processes;
 
   m_processes.clear ();
-  for(std::map<uint16_t, Process*>::iterator it = mapCopy.begin (); it != mapCopy.end (); it++)
+  for (std::map<uint16_t, Process*>::iterator it = mapCopy.begin (); it != mapCopy.end (); it++)
     {
       tmp = it->second;
       std::string statusWord = "Never ended.";
-      AppendStatusFile (tmp->pid, tmp->nodeId, statusWord );
+      AppendStatusFile (tmp->pid, tmp->nodeId, statusWord);
       DeleteProcess (tmp, PEC_NS3_END);
     }
   mapCopy.clear ();
@@ -164,8 +164,7 @@ DceManager::CreatePidFile (struct Thread *current, std::string filename)
   int fd = dce_creat (s.c_str (), S_IWUSR | S_IRUSR);
   return fd;
 }
-int
-(*DceManager::PrepareDoStartProcess(Thread *current))(int, char **)
+int (*DceManager::PrepareDoStartProcess (Thread * current)) (int, char **)
 {
   // Note : this preparing process is out of method DoStartProcess in order to
   //        free all local variable in particular the std library ones before the main execution
@@ -177,14 +176,14 @@ int
   struct ::Libc *libc = GetLibc ();
   UnixFd *unixFd = 0;
 
-  if ( current->process->stdinFilename.length () > 0 )
+  if (current->process->stdinFilename.length () > 0)
     {
       std::string fullpath = UtilsGetRealFilePath (current->process->stdinFilename);
       int realFd = ::open (fullpath.c_str (), O_RDONLY, 0);
 
-      if ( -1 == realFd )
+      if (-1 == realFd)
         {
-          NS_FATAL_ERROR ("Unable to open stdin file : " << current->process->stdinFilename );
+          NS_FATAL_ERROR ("Unable to open stdin file : " << current->process->stdinFilename);
         }
       unixFd = new UnixFileFd (realFd);
     }
@@ -211,7 +210,7 @@ int
       dce_write (fd, cur, strlen (cur));
       dce_write (fd, " ", 1);
       current->process->timing.cmdLine += cur;
-      if (i < ( current->process->originalArgc -1 ))
+      if (i < (current->process->originalArgc - 1))
         {
           current->process->timing.cmdLine += ' ';
         }
@@ -230,7 +229,7 @@ int
     dce_close (fd);
   }
   std::string vpath = "";
-  char *pvpath= seek_env ("PATH", current->process->originalEnvp);
+  char *pvpath = seek_env ("PATH", current->process->originalEnvp);
   if (pvpath)
     {
       vpath = std::string (pvpath);
@@ -238,21 +237,21 @@ int
   int errNo = 0;
   std::string exeFullPath = SearchExecFile (current->process->originalArgv[0], vpath, getuid (), getgid (), &errNo);
 
-  if (exeFullPath.length() <= 0)
+  if (exeFullPath.length () <= 0)
     {
       std::string line = "Executable '";
       line += current->process->originalArgv[0];
       line += "' not found !  Please check your DCE_PATH and DCE_ROOT environment variables.";
       AppendStatusFile (current->process->pid, current->process->nodeId, line);
-      NS_ASSERT_MSG ( exeFullPath.length() > 0, line.c_str ());
+      NS_ASSERT_MSG (exeFullPath.length () > 0, line.c_str ());
       dce_exit (-1);
       return 0;
     }
 
-  main = (int (*)(int, char **)) LoadMain (current->process->loader,
-      exeFullPath,
-      current->process,
-      err);
+  main = (int (*) (int, char **))LoadMain (current->process->loader,
+                                           exeFullPath,
+                                           current->process,
+                                           err);
 
   if (!main)
     {
@@ -260,7 +259,7 @@ int
       line += exeFullPath;
       line += "'.";
       AppendStatusFile (current->process->pid, current->process->nodeId, line);
-      NS_ASSERT_MSG ( !main , line.c_str ());
+      NS_ASSERT_MSG (!main, line.c_str ());
     }
   else
     {
@@ -287,7 +286,8 @@ DceManager::DoStartProcess (void *context)
 
 void
 DceManager::StartProcessDebugHook (void)
-{}
+{
+}
 
 struct Process *
 DceManager::CreateProcess (std::string name, std::string stdinfilename, std::vector<std::string> args,
@@ -310,7 +310,7 @@ DceManager::CreateProcess (std::string name, std::string stdinfilename, std::vec
   process->loader = loaderFactory->Create (process->originalArgc, process->originalArgv,
                                            process->originalEnvp);
   process->timing.exitValue = 0;
-  process->timing.ns3Start = Now ().GetNanoSeconds();
+  process->timing.ns3Start = Now ().GetNanoSeconds ();
   process->timing.realStart = time (0);
   process->timing.ns3End = 0;
   process->timing.realEnd = 0;
@@ -325,10 +325,10 @@ DceManager::CreateProcess (std::string name, std::string stdinfilename, std::vec
 
   SetDefaultSigHandler (process->signalHandlers);
 
-  // we reserve 0 for the mutex initialized with PTHREAD_MUTEX_INITIALIZER 
+  // we reserve 0 for the mutex initialized with PTHREAD_MUTEX_INITIALIZER
   // we reserve 2 for a destroyed mutex
   // 1 is such a common value that we try to avoid it.
-  // we unfortunately cannot avoid the value 0 because we 
+  // we unfortunately cannot avoid the value 0 because we
   // have to be compatible with the system PHREAD_MUTEX_INITIALIZER
   // which uses the value 0.
   process->nextMid = 3;
@@ -355,11 +355,14 @@ DceManager::CreateProcess (std::string name, std::string stdinfilename, std::vec
 
   process->minimizeFiles = (m_minimizeFiles ? 1 : 0);
 
-  if (!pid) m_processes[process->pid] = process;
+  if (!pid)
+    {
+      m_processes[process->pid] = process;
+    }
 
   return process;
 }
-void 
+void
 DceManager::TaskSwitch (enum Task::SwitchType type, void *context)
 {
   Process *process = (Process *)context;
@@ -416,7 +419,7 @@ DceManager::Start (std::string name, std::string stdinfilename, uint32_t stackSi
 uint16_t
 DceManager::AllocatePid (void)
 {
-  // Note that this function purposedly never allocates pid 0 
+  // Note that this function purposedly never allocates pid 0
   // to make it useable in the kernel stack layer for kernel-level
   // special tasks (which thus all share the same pid)
   NS_LOG_FUNCTION (this);
@@ -490,7 +493,7 @@ DceManager::CreateThread (struct Process *process)
   return thread;
 }
 
-void 
+void
 DceManager::Exit (void)
 {
   TaskManager::Current ()->Exit ();
@@ -499,8 +502,14 @@ DceManager::Exit (void)
 bool
 DceManager::ThreadExists (Thread *thread)
 {
-  if ( !thread ) return false;
-  if ( !thread->process ) return false;
+  if (!thread)
+    {
+      return false;
+    }
+  if (!thread->process)
+    {
+      return false;
+    }
 
   Process *process = thread->process;
 
@@ -517,7 +526,7 @@ DceManager::ThreadExists (Thread *thread)
   return false;
 }
 
-uint16_t 
+uint16_t
 DceManager::Clone (Thread *thread)
 {
   NS_LOG_FUNCTION (this << thread);
@@ -533,7 +542,7 @@ DceManager::Clone (Thread *thread)
   clone->originalArgc = 0;
   clone->originalEnvp = 0;
   clone->timing.exitValue = 0;
-  clone->timing.ns3Start = Now ().GetNanoSeconds();
+  clone->timing.ns3Start = Now ().GetNanoSeconds ();
   clone->timing.realStart = time (0);
   clone->timing.ns3End = 0;
   clone->timing.realEnd = 0;
@@ -592,13 +601,13 @@ DceManager::Clone (Thread *thread)
   return 0;
 }
 
-void 
+void
 DceManager::Yield (void)
 {
   TaskManager::Current ()->Yield ();
 }
 
-void 
+void
 DceManager::Wait (void)
 {
   TaskManager::Current ()->Sleep ();
@@ -610,14 +619,14 @@ DceManager::Wait (Time timeout)
   return TaskManager::Current ()->Sleep (timeout);
 }
 
-void 
+void
 DceManager::Wakeup (Thread *thread)
 {
   NS_ASSERT (ThreadExists (thread));
   return TaskManager::Current ()->Wakeup (thread->task);
 }
 
-void 
+void
 DceManager::SetFinishedCallback (uint16_t pid, Callback<void,uint16_t,int> cb)
 {
   Process *process = SearchProcess (pid);
@@ -627,7 +636,7 @@ DceManager::SetFinishedCallback (uint16_t pid, Callback<void,uint16_t,int> cb)
     }
   process->finished = cb;
 }
-void 
+void
 DceManager::Stop (uint16_t pid)
 {
   NS_LOG_FUNCTION (this << pid);
@@ -641,7 +650,7 @@ DceManager::Stop (uint16_t pid)
   AppendStatusFile (process->pid, process->nodeId, statusWord);
   DeleteProcess (process, PEC_NS3_STOP);
 }
-void 
+void
 DceManager::SigkillHandler (int signal)
 {
   NS_ASSERT (signal == SIGKILL);
@@ -695,7 +704,7 @@ DceManager::DeleteThread (struct Thread *thread)
           break;
         }
     }
-  if ( 0 != thread->childWaiter)
+  if (0 != thread->childWaiter)
     {
       Waiter *lb = thread->childWaiter;
       thread->childWaiter = 0;
@@ -749,7 +758,7 @@ DceManager::DeleteProcess (struct Process *process, ProcessEndCause type)
     {
       // Note that, while this code might look straightforward,
       // it is not so. Specifically, we call here the system fclose
-      // function which will call indirectly system_close in 
+      // function which will call indirectly system_close in
       // system-wrappers.cc which will call dce_close in dce-fd.cc
       // which will return -1 because it is called without a 'current'
       // thread
@@ -826,16 +835,16 @@ DceManager::DeleteProcess (struct Process *process, ProcessEndCause type)
       process->children.clear ();
       std::set<uint16_t>::iterator it;
 
-      for (it = children.begin (); it != children.end (); it++ )
+      for (it = children.begin (); it != children.end (); it++)
         {
           Process *child = SearchProcess (*it);
 
           if (child)
             {
               child->ppid = 1;
-              if ( ( child->pid > 1 ) && !child->loader && !child->alloc )
+              if ((child->pid > 1) && !child->loader && !child->alloc)
                 {
-                  m_processes.erase ( child->pid );
+                  m_processes.erase (child->pid);
                   delete child;
                 }
             }
@@ -845,24 +854,25 @@ DceManager::DeleteProcess (struct Process *process, ProcessEndCause type)
   delete process->loader;
   process->loader = 0;
   if (type == PEC_EXIT)
-     {
-        // Only dispose from good context
-        process->alloc->Dispose();
-     }
+    {
+      // Only dispose from good context
+      process->alloc->Dispose ();
+    }
   delete process->alloc;
   process->alloc = 0;
 
   if ((type == PEC_EXIT)||(type == PEC_NS3_STOP))
     {
-      if ( ppid > 1 )
+      if (ppid > 1)
         {
           // Warn father
           ChildFinished (process->pid);
         }
       else
-        { // ppid == 0 have no father, perhaps DCE, else ppid = 1 init : have lost it's real father.
+        {
+          // ppid == 0 have no father, perhaps DCE, else ppid = 1 init : have lost it's real father.
           // remove ourselves from list of processes
-          m_processes.erase ( process->pid );
+          m_processes.erase (process->pid);
           // delete process data structure.
           delete process;
         }
@@ -890,7 +900,7 @@ DceManager::SearchThread (uint16_t pid, uint16_t tid)
     {
       return 0;
     }
-  for (std::vector<Thread *>::const_iterator j = process->threads.begin (); 
+  for (std::vector<Thread *>::const_iterator j = process->threads.begin ();
        j != process->threads.end (); ++j)
     {
       Thread *thread = *j;
@@ -908,14 +918,14 @@ DceManager::SearchProcess (uint16_t pid)
 
   std::map<uint16_t, Process *>::iterator it = m_processes.find (pid);
 
-  if ( it !=  m_processes.end ())
+  if (it !=  m_processes.end ())
     {
       return it->second;
     }
   return 0;
 }
 
-void 
+void
 DceManager::SetArgv (struct Process *process, std::string filename, std::vector<std::string> args)
 {
   NS_ASSERT (process->originalArgv == 0);
@@ -928,7 +938,7 @@ DceManager::SetArgv (struct Process *process, std::string filename, std::vector<
     {
       char *arg = strdup (args[i].c_str ());
       NS_LOG_DEBUG ("argc=" << argc << " i=" << i << " v=" << arg);
-      argv[i+1] = arg;
+      argv[i + 1] = arg;
       process->allocated.push_back (arg);
     }
   argv[argc] = 0;
@@ -937,8 +947,8 @@ DceManager::SetArgv (struct Process *process, std::string filename, std::vector<
   process->originalProgname = argv[0];
 }
 
-void 
-DceManager::SetEnvp (struct Process *process, 
+void
+DceManager::SetEnvp (struct Process *process,
                      std::vector<std::pair<std::string,std::string> > envs)
 {
   int envpc = envs.size ();
@@ -947,7 +957,7 @@ DceManager::SetEnvp (struct Process *process,
   for (uint32_t i = 0; i < envs.size (); ++i)
     {
       int size = envs[i].first.size () + envs[i].second.size () + 1;
-      envp[i] = (char*)malloc (size+1);
+      envp[i] = (char*)malloc (size + 1);
       process->allocated.push_back (envp[i]);
       memcpy (envp[i], envs[i].first.c_str (), envs[i].first.size ());
       envp[i][envs[i].first.size ()] = '=';
@@ -966,7 +976,7 @@ DceManager::AppendStatusFile (uint16_t pid, uint32_t nodeId,  std::string &line)
   oss << "files-" << nodeId << "/var/log/" << pid << "/status";
   std::string s = oss.str ();
 
-  int fd = ::open (s.c_str (), O_WRONLY | O_APPEND, 0 );
+  int fd = ::open (s.c_str (), O_WRONLY | O_APPEND, 0);
 
   if (fd >= 0) // XXX: When fork is used the pid directory is not created, I plan to fix it when I will work on fork/exec/wait...
     {
@@ -983,18 +993,21 @@ DceManager::AppendStatusFile (uint16_t pid, uint32_t nodeId,  std::string &line)
 void
 DceManager::AppendProcFile (Process *p)
 {
-  if (!p) return;
+  if (!p)
+    {
+      return;
+    }
   std::ostringstream oss;
-  int fd = ::open ("exitprocs", O_WRONLY | O_APPEND | O_CREAT , 0644 );
+  int fd = ::open ("exitprocs", O_WRONLY | O_APPEND | O_CREAT, 0644);
 
   if (fd >= 0)
     {
       struct stat st;
-      if ( (!fstat( fd, &st)) && ( 0 == st.st_size) )
+      if ((!fstat (fd, &st)) && (0 == st.st_size))
         {
           const char *header =  "NODE EXIT-CODE PID NS3-START-TIME NS3-END-TIME REAL-START-TIME REAL-END-TIME NS3-DURATION REAL-DURATION CMDLINE\n";
 
-          ::write (fd, header, strlen(header));
+          ::write (fd, header, strlen (header));
         }
 
       oss << p->nodeId
@@ -1004,8 +1017,8 @@ DceManager::AppendProcFile (Process *p)
           << ' ' <<  p->timing.ns3End
           << ' ' <<  p->timing.realStart
           << ' ' <<  p->timing.realEnd
-          << ' ' <<  ( (  p->timing.ns3End - p->timing.ns3Start  ) / (double) 1000000000 )
-          << ' ' <<  (  p->timing.realEnd - p->timing.realStart  )
+          << ' ' <<  ((p->timing.ns3End - p->timing.ns3Start) / (double) 1000000000)
+          << ' ' <<  (p->timing.realEnd - p->timing.realStart)
           << ' ' <<  p->timing.cmdLine  << std::endl;
       std::string wholeLine = oss.str ();
       int l =  wholeLine.length ();
@@ -1030,10 +1043,10 @@ DceManager::ChildFinished (uint16_t pid)
   Process *p = SearchProcess (child->ppid);
   NS_ASSERT (p);
   WakeupChildWaiters (p);
-  if ( !true ) // IF WAIT DONE !
+  if (!true) // IF WAIT DONE !
     {
       std::set<uint16_t>::iterator it = p->children.find (pid);
-      if ( it != p->children.end () )
+      if (it != p->children.end ())
         {
           p->children.erase (it);
         }
@@ -1047,10 +1060,10 @@ DceManager::WakeupChildWaiters (struct Process *p)
   bool ret = false;
   std::vector<Thread *> tt = p->threads;
 
-  for (std::vector<Thread*>::iterator it = tt.begin (); it != tt.end (); it++ )
+  for (std::vector<Thread*>::iterator it = tt.begin (); it != tt.end (); it++)
     {
       Thread *t = *it;
-      if ( t && t->childWaiter )
+      if (t && t->childWaiter)
         {
           t->childWaiter->Wakeup ();
         }
@@ -1075,10 +1088,13 @@ DceManager::CopyArgs (char *const argv[])
   std::vector<std::string> args;
 
   // Copy argv
-  if ( 0 != argv )
+  if (0 != argv)
     {
       char **v = (char **) argv;
-      if (*v) v++;  // Ignore argv[0]
+      if (*v)
+        {
+          v++;      // Ignore argv[0]
+        }
       while (*v)
         {
           char *s = *v++;
@@ -1090,7 +1106,7 @@ DceManager::CopyArgs (char *const argv[])
 int
 DceManager::CopyEnv (char *const envp[], std::vector<std::pair<std::string,std::string> > &envs)
 {
-  if ( 0 != envp )
+  if (0 != envp)
     {
       char **e = (char **) envp;
 
@@ -1099,9 +1115,12 @@ DceManager::CopyEnv (char *const envp[], std::vector<std::pair<std::string,std::
           char *s = *e++;
           char *c = s;
 
-          while ( ( *c != 0 ) && ( *c != '=' ) ) c++;
+          while ((*c != 0) && (*c != '='))
+            {
+              c++;
+            }
 
-          if (( '=' != *c ) || (s == c) )
+          if (('=' != *c) || (s == c))
             {
               Current ()->err = EINVAL;
               return -1;
@@ -1135,7 +1154,7 @@ DceManager::LoadMain (Loader *ld, std::string filename, Process *proc, int &err)
         }
       // construct the libc now
       void (*libc_setup)(const struct Libc *fn);
-      libc_setup = (void (*)(const struct Libc *))(symbol);
+      libc_setup = (void (*) (const struct Libc *))(symbol);
       libc_setup (libc);
 
       h = ld->Load ("libpthread-ns3.so", RTLD_GLOBAL);
@@ -1153,7 +1172,7 @@ DceManager::LoadMain (Loader *ld, std::string filename, Process *proc, int &err)
             }
           // construct libpthread now
           void (*libpthread_setup)(const struct Libc *fn);
-          libpthread_setup = (void (*)(const struct Libc *))(symbol);
+          libpthread_setup = (void (*) (const struct Libc *))(symbol);
           libpthread_setup (libc);
 
           h = ld->Load ("librt-ns3.so", RTLD_GLOBAL);
@@ -1169,13 +1188,13 @@ DceManager::LoadMain (Loader *ld, std::string filename, Process *proc, int &err)
             }
           // construct librt now
           void (*librt_setup)(const struct Libc *fn);
-          librt_setup = (void (*)(const struct Libc *))(symbol);
+          librt_setup = (void (*) (const struct Libc *))(symbol);
           librt_setup (libc);
 
           // finally, call into 'main'.
           h = ld->Load (filename, RTLD_GLOBAL);
 
-          if ( h == 0 )
+          if (h == 0)
             {
               err = EACCES;
               return 0;
@@ -1184,7 +1203,7 @@ DceManager::LoadMain (Loader *ld, std::string filename, Process *proc, int &err)
             {
               proc->mainHandle = h;
               symbol = ld->Lookup (h, "main");
-              err = ( 0 != symbol ) ? 0 : ENOEXEC;
+              err = (0 != symbol) ? 0 : ENOEXEC;
             }
         }
     }
@@ -1193,7 +1212,7 @@ DceManager::LoadMain (Loader *ld, std::string filename, Process *proc, int &err)
 void
 DceManager::DoExecProcess (void *c)
 {
-  int (*main)(int, char **) = (int (*)(int, char **))c;
+  int (*main)(int, char **) = (int (*) (int, char **))c;
   Thread *current = Current ();
 
   StartProcessDebugHook ();
@@ -1235,11 +1254,11 @@ DceManager::Execve (const char *path, const char *argv0, char *const argv[], cha
   std::string filename = std::string (path);
   if (CheckShellScript (path, interpreter, optArgs))
     {
-      std::vector<std::string> args, lasts = CopyArgs(argv);
+      std::vector<std::string> args, lasts = CopyArgs (argv);
       std::string opt = optArgs.str ();
       std::string shell = interpreter.str ();
 
-      if (opt.length() > 0)
+      if (opt.length () > 0)
         {
           args.push_back (opt);
         }
@@ -1247,26 +1266,26 @@ DceManager::Execve (const char *path, const char *argv0, char *const argv[], cha
 
       if (lasts.size () > 0)
         {
-          args.insert(args.end(), lasts.begin(), lasts.end());
+          args.insert (args.end (), lasts.begin (), lasts.end ());
         }
 
       SetArgv (&pTemp, argv0, args);
 
       std::string vpath = "";
-      char *pvpath= seek_env ("PATH", *process->penvp );
+      char *pvpath = seek_env ("PATH", *process->penvp);
       if (pvpath)
         {
           vpath = std::string (pvpath);
         }
-      filename = SearchExecFile ( shell, vpath, getuid (), getgid (), &( Current ()->err) );
-      if (filename.length() <= 0)
+      filename = SearchExecFile (shell, vpath, getuid (), getgid (), &(Current ()->err));
+      if (filename.length () <= 0)
         {
           return -1;
         }
     }
   else
     {
-      SetArgv (&pTemp, path, CopyArgs(argv) );
+      SetArgv (&pTemp, path, CopyArgs (argv));
     }
   SetEnvp (&pTemp, envs);
   envs.clear ();
@@ -1342,7 +1361,7 @@ DceManager::Execve (const char *path, const char *argv0, char *const argv[], cha
   struct Thread *thread = CreateThread (process);
 
   Task *task = TaskManager::Current ()->Start (&DceManager::DoExecProcess, main,
-      TaskManager::Current ()->GetStackSize (Current ()->task));
+                                               TaskManager::Current ()->GetStackSize (Current ()->task));
   task->SetContext (thread);
   task->SetSwitchNotifier (&DceManager::TaskSwitch, process);
   thread->task = task;
@@ -1364,7 +1383,7 @@ DceManager::Execve (const char *path, const char *argv0, char *const argv[], cha
   process->originalArgv = pTemp.originalArgv;
   process->originalEnvp = pTemp.originalEnvp;
   *process->penvp = process->originalEnvp;
-  process->name = std::string(path);
+  process->name = std::string (path);
   process->signalHandlers.clear ();
   SetDefaultSigHandler (process->signalHandlers);
   process->atExitHandlers.clear ();

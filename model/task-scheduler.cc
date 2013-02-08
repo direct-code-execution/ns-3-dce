@@ -23,7 +23,7 @@ namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (TaskScheduler);
 
-TypeId 
+TypeId
 TaskScheduler::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::TaskScheduler")

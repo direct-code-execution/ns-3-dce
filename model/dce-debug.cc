@@ -30,7 +30,7 @@ uint32_t dce_debug_nodeid (void)
   NS_ASSERT (Current () != 0);
   return UtilsGetNodeId ();
 }
-const char *dce_debug_processname (void)
+const char * dce_debug_processname (void)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId ());
@@ -39,14 +39,14 @@ const char *dce_debug_processname (void)
 }
 bool dce_debug_is_node (uint32_t node)
 {
-  return std::find (g_dce_debug_nodes.begin (), 
+  return std::find (g_dce_debug_nodes.begin (),
                     g_dce_debug_nodes.end (),
                     node) != g_dce_debug_nodes.end ();
 }
 static void dce_debug_switch_notify (void)
 {
-  if (Current () != 0 &&
-      dce_debug_is_node (dce_debug_nodeid ()))
+  if (Current () != 0
+      && dce_debug_is_node (dce_debug_nodeid ()))
     {
       NS_BREAKPOINT ();
     }

@@ -7,7 +7,7 @@
 
 #define SERVER_PORT 2000
 
-static void *client_run (void *ctx)
+static void * client_run (void *ctx)
 {
   sleep (1);
   int sock;
@@ -26,17 +26,17 @@ static void *client_run (void *ctx)
   uint8_t buf[1024];
 
   memset (buf, 0x66, 20);
-  memset (buf+20, 0x67, 1004);
+  memset (buf + 20, 0x67, 1004);
 
   for (uint32_t i = 0; i < 100000; i++)
     {
       ssize_t n = 1024;
       while (n > 0)
-	{
-	  ssize_t written = write (sock, buf, 1024);
-	  std::cout << "write " << written << "bytes" << std::endl;
-	  n -= written;
-	}
+        {
+          ssize_t written = write (sock, buf, 1024);
+          std::cout << "write " << written << "bytes" << std::endl;
+          n -= written;
+        }
       sleep (1);
     }
 
@@ -47,7 +47,7 @@ static void *client_run (void *ctx)
   return 0;
 }
 
-static void *server_run (void *ctx)
+static void * server_run (void *ctx)
 {
   int sock;
   sock = socket (PF_INET, SOCK_STREAM, 0);
@@ -60,7 +60,7 @@ static void *server_run (void *ctx)
   int status;
   status = bind (sock, (const struct sockaddr *) &addr, sizeof (addr));
   status = listen (sock, 1);
-  
+
 
   int fd = accept (sock, 0, 0);
 
@@ -72,11 +72,11 @@ static void *server_run (void *ctx)
     {
       ssize_t n = 10240;
       while (n > 0)
-	{
-	  ssize_t bytes_read = read (fd, buf, 10240);
-	  std::cout << "read " << bytes_read << "bytes" << std::endl;
-	  n -= bytes_read;
-	}
+        {
+          ssize_t bytes_read = read (fd, buf, 10240);
+          std::cout << "read " << bytes_read << "bytes" << std::endl;
+          n -= bytes_read;
+        }
       sleep (1);
     }
 

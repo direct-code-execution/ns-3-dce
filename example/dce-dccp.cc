@@ -22,8 +22,8 @@ int main (int argc, char *argv[])
   DceManagerHelper dceManager;
   dceManager.SetTaskManagerAttribute ("FiberManagerType",
                                       StringValue ("UcontextFiberManager"));
-  dceManager.SetNetworkStack("ns3::LinuxSocketFdFactory",
-			     "Library", StringValue ("liblinux.so"));
+  dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory",
+                              "Library", StringValue ("liblinux.so"));
 
   LinuxStackHelper stack;
   stack.Install (nodes);
@@ -36,21 +36,21 @@ int main (int argc, char *argv[])
   ApplicationContainer apps;
 
   dce.SetBinary ("dccp-server");
-  dce.SetStackSize (1<<16);
-  dce.ResetArguments();
+  dce.SetStackSize (1 << 16);
+  dce.ResetArguments ();
   apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds (4.0));
 
   dce.SetBinary ("dccp-client");
-  dce.SetStackSize (1<<16);
-  dce.ResetArguments();
+  dce.SetStackSize (1 << 16);
+  dce.ResetArguments ();
   dce.AddArgument ("10.0.0.1");
   apps = dce.Install (nodes.Get (1));
   apps.Start (Seconds (4.5));
 
   csma.EnablePcapAll ("dce-dccp");
 
-  Simulator::Stop (Seconds(1000100.0));
+  Simulator::Stop (Seconds (1000100.0));
   Simulator::Run ();
   Simulator::Destroy ();
 

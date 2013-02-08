@@ -44,7 +44,7 @@ std::string UtilsGetAbsRealFilePath (uint32_t node, std::string path)
   return nodeDir + path;
 }
 
-std::string 
+std::string
 UtilsGetRealFilePath (std::string path)
 {
   NS_LOG_FUNCTION (Current () << path);
@@ -104,9 +104,12 @@ std::string UtilsGetVirtualFilePath (std::string path)
 }
 Thread *gDisposingThreadContext = 0;
 
-Thread *Current (void)
+Thread * Current (void)
 {
-  if ( 0 != gDisposingThreadContext ) return gDisposingThreadContext;
+  if (0 != gDisposingThreadContext)
+    {
+      return gDisposingThreadContext;
+    }
 
   TaskManager *manager = TaskManager::Current ();
   if (manager == 0)
@@ -132,7 +135,7 @@ struct timespec UtilsTimeToTimespec (Time time)
 {
   struct timespec tv;
   int64_t n = time.GetNanoSeconds ();
-  tv.tv_sec = (time_t) ( n / 1000000000L );
+  tv.tv_sec = (time_t)(n / 1000000000L);
   tv.tv_nsec = n % 1000000000;
   return tv;
 }
@@ -174,7 +177,7 @@ void
 UtilsSendSignal (Process *process, int signum)
 {
   sigaddset (&process->pendingSignals, signum);
-  for (std::vector<Thread *>::iterator i = process->threads.begin (); 
+  for (std::vector<Thread *>::iterator i = process->threads.begin ();
        i != process->threads.end (); ++i)
     {
       Thread *thread = *i;
@@ -199,14 +202,14 @@ void UtilsDoSignal (void)
       return;
     }
 
-  // we try to check if we 
+  // we try to check if we
   // have pending signals and we deliver them if we have any.
-  for (std::vector<SignalHandler>::iterator i = current->process->signalHandlers.begin (); 
+  for (std::vector<SignalHandler>::iterator i = current->process->signalHandlers.begin ();
        i != current->process->signalHandlers.end (); ++i)
     {
-      if (sigismember (&current->signalMask, i->signal) == 1 &&
-          i->signal != SIGKILL &&
-          i->signal != SIGSTOP)
+      if (sigismember (&current->signalMask, i->signal) == 1
+          && i->signal != SIGKILL
+          && i->signal != SIGSTOP)
         {
           // don't deliver signals which are masked
           // ignore the signal mask for SIGKILL and SIGSTOP
@@ -274,9 +277,9 @@ void UtilsAdvanceTime (Thread *current)
   if (now == current->lastTime)
     {
 //      NS_LOG_DEBUG ("UtilsAdvanceTime current thread wait 1ms.");
-      //current->process->manager->Wait (Time ( MilliSeconds (1) ) );
+      //current->process->manager->Wait (Time (MilliSeconds (1)));
       NS_LOG_DEBUG ("UtilsAdvanceTime current thread wait 1µs.");
-      current->process->manager->Wait (Time ( MicroSeconds (1) ) );
+      current->process->manager->Wait (Time (MicroSeconds (1)));
     }
 
   current->lastTime = Now ();
@@ -292,9 +295,9 @@ GetTimeStamp ()
   std::string sec = oss.str ();
   int indent = 10;
   std::string padding = "";
-  if ( sec.length () < indent )
+  if (sec.length () < indent)
     {
-      padding = std::string ( indent-sec.length (), ' ');
+      padding = std::string (indent - sec.length (), ' ');
     }
   sec = padding + sec;
   padding = "";
@@ -303,9 +306,9 @@ GetTimeStamp ()
   oss << now;
   indent = 25;
   std::string ns = oss.str ();
-  if ( ns.length () < indent )
+  if (ns.length () < indent)
     {
-      padding = std::string ( indent-ns.length (), ' ');
+      padding = std::string (indent - ns.length (), ' ');
     }
   ns = padding + ns;
   padding = "";
@@ -349,22 +352,22 @@ FindExecFile (std::string root, std::string envPath, std::string fileName, uid_t
   std::string found = "";
   *errNo = ENOENT;
 
-  int idx =  fileName.find ('/',0 );
+  int idx = fileName.find ('/', 0);
 
-  if ( idx >= 0 )  // fileName contain a '/'
+  if (idx >= 0)  // fileName contain a '/'
     {
-      NS_LOG_DEBUG ("TEMPOFUR  FindExecFile " << UtilsGetRealFilePath ( fileName ) );
-      std::string vFile = UtilsGetRealFilePath ( fileName );
-      if ( 0 == ::stat ( vFile.c_str () , &st) )
+      NS_LOG_DEBUG ("TEMPOFUR  FindExecFile " << UtilsGetRealFilePath (fileName));
+      std::string vFile = UtilsGetRealFilePath (fileName);
+      if (0 == ::stat (vFile.c_str (), &st))
         {
-          if (((uid) && CheckExeMode ( &st, uid, gid )) || (!uid))
+          if (((uid) && CheckExeMode (&st, uid, gid)) || (!uid))
             {
               return vFile;
             }
         }
-      if ( 0 == ::stat (fileName.c_str (), &st) )
+      if (0 == ::stat (fileName.c_str (), &st))
         {
-          if (((uid) && CheckExeMode ( &st, uid, gid )) || (!uid))
+          if (((uid) && CheckExeMode (&st, uid, gid)) || (!uid))
             {
               return fileName;
             }
@@ -376,9 +379,9 @@ FindExecFile (std::string root, std::string envPath, std::string fileName, uid_t
       for (std::list<std::string>::const_iterator i = paths.begin (); i != paths.end (); i++)
         {
           std::string test = root + "/" + *i + "/" + fileName;
-          if ( 0 == ::stat (test.c_str (), &st) )
+          if (0 == ::stat (test.c_str (), &st))
             {
-              if (((uid) && CheckExeMode ( &st, uid, gid )) || (!uid))
+              if (((uid) && CheckExeMode (&st, uid, gid)) || (!uid))
                 {
                   found = test;
                   break;
@@ -396,9 +399,9 @@ FindExecFile (std::string root, std::string envPath, std::string fileName, uid_t
 bool
 CheckExeMode (struct stat *st, uid_t uid, gid_t gid)
 {
-  return ( ( gid != st->st_gid) && ( uid != st->st_uid ) && ( ( st->st_mode & (S_IROTH|S_IXOTH) ) ==  (S_IROTH|S_IXOTH) ) )  ||
-         ( ( gid == st->st_gid ) && ( uid != st->st_uid ) && ( ( st->st_mode & (S_IRGRP|S_IXGRP)) ==  (S_IRGRP|S_IXGRP) ) ) ||
-         ( ( uid == st->st_uid ) && ( ( st->st_mode & (S_IRUSR|S_IXUSR)) == (S_IRUSR|S_IXUSR) ) );
+  return ((gid != st->st_gid) && (uid != st->st_uid) && ((st->st_mode & (S_IROTH | S_IXOTH)) == (S_IROTH | S_IXOTH)))
+         || ((gid == st->st_gid) && (uid != st->st_uid) && ((st->st_mode & (S_IRGRP | S_IXGRP)) ==  (S_IRGRP | S_IXGRP)))
+         || ((uid == st->st_uid) && ((st->st_mode & (S_IRUSR | S_IXUSR)) == (S_IRUSR | S_IXUSR)));
 }
 void
 FdDecUsage (int fd)
@@ -407,7 +410,7 @@ FdDecUsage (int fd)
 
   FileUsage *fu = current->process->openFiles[fd];
 
-  if ( fu && fu->DecUsage ())
+  if (fu && fu->DecUsage ())
     {
       current->process->openFiles.erase (fd);
       delete fu;
@@ -421,7 +424,7 @@ CheckFdExists (Process* const p, int const fd, bool const opened)
 
   if (it != p->openFiles.end ())
     {
-      return !opened || (! (*it).second->IsClosed ());
+      return !opened || (!(*it).second->IsClosed ());
     }
 
   return false;
@@ -429,7 +432,7 @@ CheckFdExists (Process* const p, int const fd, bool const opened)
 int getRealFd (int fd, Thread *current)
 {
   std::map<int,FileUsage *>::iterator it = current->process->openFiles.find (fd);
-  if ( current->process->openFiles.end () == it )
+  if (current->process->openFiles.end () == it)
     {
       return -1;
     }
@@ -443,13 +446,13 @@ int getRealFd (int fd, Thread *current)
 std::string PathOfFd (int fd)
 {
   char proc[50];
-  char direc[PATH_MAX+1];
+  char direc[PATH_MAX + 1];
 
   sprintf (proc, "/proc/self/fd/%d", fd);
 
-  memset (direc, 0, PATH_MAX+1);
+  memset (direc, 0, PATH_MAX + 1);
 
-  ssize_t r = readlink(proc, direc, sizeof(direc) - 1);
+  ssize_t r = readlink (proc, direc, sizeof(direc) - 1);
 
   if (r >= 0)
     {
@@ -459,7 +462,7 @@ std::string PathOfFd (int fd)
 }
 bool
 CheckShellScript (std::string fileName,
-    std::ostringstream &shellName, std::ostringstream &optionalArg)
+                  std::ostringstream &shellName, std::ostringstream &optionalArg)
 {
   int fd = open (fileName.c_str (), O_RDONLY);
 
@@ -471,13 +474,13 @@ CheckShellScript (std::string fileName,
   char firstLine[128];
   ssize_t lg = read (fd, firstLine, 127);
   close (fd);
-  if ( (lg <= 2) || ( '#' != firstLine [0] ) || ( '!'!= firstLine [1] ))
+  if ((lg <= 2) || ('#' != firstLine [0]) || ('!' != firstLine [1]))
     {
       return false;
     }
   ssize_t crsr = 2;
   firstLine [lg] = 0;
-  while (' '==firstLine [crsr])
+  while (' ' == firstLine [crsr])
     {
       crsr++;
       if (crsr >= lg)
@@ -487,7 +490,7 @@ CheckShellScript (std::string fileName,
     }
   ssize_t startShellName = crsr;
   crsr++;
-  while ( firstLine [crsr] && (' ' != firstLine [crsr]) && ( '\n' !=  firstLine [crsr] ) )
+  while (firstLine [crsr] && (' ' != firstLine [crsr]) && ('\n' != firstLine [crsr]))
     {
       crsr++;
       if (crsr >= lg)
@@ -497,7 +500,7 @@ CheckShellScript (std::string fileName,
     }
   ssize_t endShellName = crsr;
   ssize_t lShellName = endShellName - startShellName;
-  if (lShellName <= 0 )
+  if (lShellName <= 0)
     {
       return false;
     }
@@ -507,7 +510,7 @@ CheckShellScript (std::string fileName,
       return true;
     }
   ssize_t startOpt = crsr;
-  while (firstLine[crsr]&&('\n'!=  firstLine [crsr]))
+  while (firstLine[crsr]&&('\n' !=  firstLine [crsr]))
     {
       crsr++;
       if (crsr >= lg)
@@ -524,7 +527,7 @@ CheckShellScript (std::string fileName,
 
   return true;
 }
-char *seek_env (const char *name, char **array)
+char * seek_env (const char *name, char **array)
 {
   int namelen = strlen (name);
   char **cur;
@@ -539,7 +542,7 @@ char *seek_env (const char *name, char **array)
         {
           continue;
         }
-      return equal+1;
+      return equal + 1;
     }
   return 0;
 }
@@ -551,7 +554,7 @@ std::string UtilsGetCurrentDirName (void)
     {
       return pwd;
     }
-  char *thePwd = get_current_dir_name();
+  char *thePwd = get_current_dir_name ();
   int fd = open (thePwd, O_RDONLY);
   pwd = PathOfFd (fd);
   close (fd);

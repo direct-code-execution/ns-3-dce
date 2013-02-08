@@ -17,7 +17,7 @@ int dce___fxstatat (int ver, int fd, const char *filename,
 int dce_fstat (int fd, struct stat *buf);
 int dce_fstat64 (int fd, struct stat64 *buf);
 
-int dce_mkdir(const char *pathname, mode_t mode);
+int dce_mkdir (const char *pathname, mode_t mode);
 
 #ifdef __cplusplus
 }

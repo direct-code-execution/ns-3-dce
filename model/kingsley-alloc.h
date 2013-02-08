@@ -10,11 +10,11 @@ public:
   KingsleyAlloc (void);
   ~KingsleyAlloc ();
 
-  KingsleyAlloc *Clone (void);
+  KingsleyAlloc * Clone (void);
   void SwitchTo (void);
   uint8_t * Malloc (uint32_t size);
   void Free (uint8_t *buffer, uint32_t size);
-  uint8_t *Realloc (uint8_t *oldBuffer, uint32_t oldSize, uint32_t newSize);
+  uint8_t * Realloc (uint8_t *oldBuffer, uint32_t oldSize, uint32_t newSize);
   // Call me only from my context
   void Dispose ();
 
@@ -43,7 +43,7 @@ private:
   };
   void MmapAlloc (uint32_t size);
   void MmapFree (uint8_t *buffer, uint32_t size);
-  uint8_t *Brk (uint32_t needed);
+  uint8_t * Brk (uint32_t needed);
   uint8_t SizeToBucket (uint32_t size);
   uint32_t BucketToSize (uint8_t bucket);
 

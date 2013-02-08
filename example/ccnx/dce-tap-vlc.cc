@@ -108,10 +108,10 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("DceTapVlc");
+NS_LOG_COMPONENT_DEFINE ("DceTapVlc");
 
-int 
-main( int argc, char *argv[] )
+int
+main ( int argc, char *argv[] )
 {
   std::string mode = "ConfigureLocal";
   std::string tapName = "thetap";
@@ -122,7 +122,7 @@ main( int argc, char *argv[] )
   cmd.AddValue ("tapName", "Name of the OS tap device", tapName);
   cmd.AddValue ("transport", "Transport used by ccnd for interrest forwarding (tcp|udp)", transport),
   cmd.Parse (argc, argv);
-  LogComponentEnable("DceTapVlc", LOG_LEVEL_INFO);
+  LogComponentEnable ("DceTapVlc", LOG_LEVEL_INFO);
 
   GlobalValue::Bind ("SimulatorImplementationType", StringValue ("ns3::RealtimeSimulatorImpl"));
   GlobalValue::Bind ("ChecksumEnabled", BooleanValue (true));
@@ -153,36 +153,36 @@ main( int argc, char *argv[] )
   CcnClientHelper dce;
   ApplicationContainer apps;
 
-  dce.SetStackSize (1<<20);
+  dce.SetStackSize (1 << 20);
 
   // Launch ccn daemon on node 1
   dce.SetBinary ("ccnd");
-  dce.ResetArguments();
-  dce.ResetEnvironment();
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
 
-  dce.AddEnvironment("CCND_CAP", "50000");
-  dce.AddEnvironment("CCND_DEBUG", "-1"); // FULL TRACES
-  dce.AddEnvironment("CCN_LOCAL_PORT", "2000");
+  dce.AddEnvironment ("CCND_CAP", "50000");
+  dce.AddEnvironment ("CCND_DEBUG", "-1"); // FULL TRACES
+  dce.AddEnvironment ("CCN_LOCAL_PORT", "2000");
 
-  dce.AddEnvironment("CCND_CAP", "");
-  dce.AddEnvironment("CCND_AUTOREG", "");
-  dce.AddEnvironment("CCND_LISTEN_ON", "");
-  dce.AddEnvironment("CCND_MTU", "");
-  dce.AddEnvironment("CCND_LOCAL_SOCKNAME", "");
-  dce.AddEnvironment("CCND_DATA_PAUSE_MICROSEC", "");
-  dce.AddEnvironment("CCND_KEYSTORE_DIRECTORY", "");
-  dce.AddEnvironment("CCND_LISTEN_ON", "10.0.0.2");
+  dce.AddEnvironment ("CCND_CAP", "");
+  dce.AddEnvironment ("CCND_AUTOREG", "");
+  dce.AddEnvironment ("CCND_LISTEN_ON", "");
+  dce.AddEnvironment ("CCND_MTU", "");
+  dce.AddEnvironment ("CCND_LOCAL_SOCKNAME", "");
+  dce.AddEnvironment ("CCND_DATA_PAUSE_MICROSEC", "");
+  dce.AddEnvironment ("CCND_KEYSTORE_DIRECTORY", "");
+  dce.AddEnvironment ("CCND_LISTEN_ON", "10.0.0.2");
 
   apps = dce.Install (nodes.Get (1));
   apps.Start (Seconds (0.0));
 
   // Forward interrest to real world !
   dce.SetBinary ("ccndc");
-  dce.ResetArguments();
-  dce.ResetEnvironment();
-  dce.AddEnvironment("CCND_DEBUG", "-1"); // FULL TRACES
-  dce.AddEnvironment("HOME", "/root");
-  dce.AddEnvironment("CCN_LOCAL_PORT", "2000");
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
+  dce.AddEnvironment ("CCND_DEBUG", "-1"); // FULL TRACES
+  dce.AddEnvironment ("HOME", "/root");
+  dce.AddEnvironment ("CCN_LOCAL_PORT", "2000");
   dce.AddArgument ("-v");
   dce.AddArgument ("add");
   dce.AddArgument ("/");

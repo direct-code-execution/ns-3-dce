@@ -39,7 +39,7 @@ int dce___fxstatat (int ver, int fd, const char *pathname, struct stat *buf, int
   NS_ASSERT (current != 0);
   int retval = -1;
 
-  if ( ( 0 == pathname ) || ( 0 == buf ) )
+  if ((0 == pathname) || (0 == buf))
     {
       current->err = EFAULT;
       return -1;
@@ -76,12 +76,12 @@ void unlink_notify (std::string fullpath);
 int dce_unlinkat (int fd, const char *pathname, int flags)
 {
   Thread *current = Current ();
-  NS_LOG_FUNCTION (current << UtilsGetNodeId () << pathname );
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << pathname);
   NS_ASSERT (current != 0);
   int retval = -1;
   std::string realpath = "";
 
-  if ( 0 == pathname )
+  if (0 == pathname)
     {
       current->err = EFAULT;
       return -1;
@@ -108,8 +108,8 @@ int dce_unlinkat (int fd, const char *pathname, int flags)
     }
   else
     {
-      realpath = UtilsGetCurrentDirName () +"/"+ UtilsGetRealFilePath (pathname);
-      retval = ::unlinkat (fd , realpath.c_str (), flags);
+      realpath = UtilsGetCurrentDirName () + "/" + UtilsGetRealFilePath (pathname);
+      retval = ::unlinkat (fd, realpath.c_str (), flags);
     }
   if (retval == -1)
     {

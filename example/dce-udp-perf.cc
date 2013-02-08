@@ -29,7 +29,7 @@ int main (int argc, char *argv[])
   cmd.Parse (argc, argv);
 
   NodeContainer nodes;
-  nodes.Create (nHops+1);
+  nodes.Create (nHops + 1);
 
   PointToPointHelper p2p;
   p2p.SetDeviceAttribute ("DataRate", StringValue (rate));
@@ -39,7 +39,7 @@ int main (int argc, char *argv[])
     {
       NodeContainer linkNodes;
       linkNodes.Add (nodes.Get (i));
-      linkNodes.Add (nodes.Get (i+1));
+      linkNodes.Add (nodes.Get (i + 1));
       NetDeviceContainer dev = p2p.Install (linkNodes);
       devs.push_back (dev);
     }
@@ -50,7 +50,7 @@ int main (int argc, char *argv[])
     {
       InternetStackHelper stack;
       stack.Install (nodes);
-      }
+    }
   else
     {
       dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
@@ -70,28 +70,28 @@ int main (int argc, char *argv[])
     }
 
   // setup ip routes
- // Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+  // Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 
 
   // start the ping binaries.
   dceManager.Install (nodes);
 
-  Ipv4Address serverAddress = interfaces[nHops-1].GetAddress (1, 0);
+  Ipv4Address serverAddress = interfaces[nHops - 1].GetAddress (1, 0);
   Ipv4Address clientAddress = interfaces[0].GetAddress (0, 0);
 
   if (useKernel)
     {
       // Set the routes
-      for (int n=0; n < nHops + 1; n++)
+      for (int n = 0; n < nHops + 1; n++)
         {
-          if (n < nHops )
+          if (n < nHops)
             {
               Ipv4Address monte = interfaces[n].GetAddress (0, 0);
               dceManager.AddRoute (nodes.Get (n), Ipv4AddressToString (serverAddress), "255.255.255.255", Ipv4AddressToString (monte), 1);
             }
           if (n > 1)
             {
-              Ipv4Address desc = interfaces[n-1].GetAddress (1, 0);
+              Ipv4Address desc = interfaces[n - 1].GetAddress (1, 0);
               dceManager.AddRoute (nodes.Get (n), Ipv4AddressToString (clientAddress), "255.255.255.255", Ipv4AddressToString (desc), 1);
             }
         }
@@ -102,7 +102,7 @@ int main (int argc, char *argv[])
     }
 
   DceApplicationHelper process;
-  process.SetStackSize (1<<16);
+  process.SetStackSize (1 << 16);
   ApplicationContainer apps;
 
   Ptr<Node> serverNode = nodes.Get (nHops);
@@ -113,23 +113,23 @@ int main (int argc, char *argv[])
 
   process.SetBinary ("udp-perf");
   process.AddArgument ("--duration=10");
-  oss << "--nodes=" << (nHops+1);
-  process.AddArgument (oss.str().c_str ());
+  oss << "--nodes=" << (nHops + 1);
+  process.AddArgument (oss.str ().c_str ());
   apps = process.Install (serverNode);
   apps.Start (Seconds (1.0));
 
   process.SetBinary ("udp-perf");
   process.ResetArguments ();
   process.AddArgument ("--client");
-  process.AddArgument (oss.str().c_str ());
+  process.AddArgument (oss.str ().c_str ());
   oss.clear ();
   oss.str ("");
   oss << "--host=" << Ipv4AddressToString (serverAddress);
-  process.AddArgument (oss.str().c_str ());
+  process.AddArgument (oss.str ().c_str ());
   oss.clear ();
   oss.str ("");
   oss << "--bandwidth=" << DataRate (rate).GetBitRate ();
-  process.AddArgument (oss.str().c_str ());
+  process.AddArgument (oss.str ().c_str ());
   process.AddArgument ("--duration=10");
   apps = process.Install (clientNode);
   apps.Start (Seconds (2.0));
@@ -145,9 +145,9 @@ int main (int argc, char *argv[])
     {
       ProcStatus st = *i;
       const char *interest = "udp-perf";
-      if (st.GetCmdLine().compare(0, strlen (interest), interest) == 0)
+      if (st.GetCmdLine ().compare (0, strlen (interest), interest) == 0)
         {
-          if ( 0 != st.GetNode () )
+          if (0 != st.GetNode ())
             {
               // This is the server
               char stdoutname[1024];
@@ -155,30 +155,33 @@ int main (int argc, char *argv[])
               FILE *f = fopen (stdoutname,"r");
               char tmp[1024];
               int l = fread (tmp, 1, sizeof (tmp), f);
-              tmp[l]=0;
+              tmp[l] = 0;
               fclose (f);
-              unsigned long pn=0;
+              unsigned long pn = 0;
               l--;
               // Seek the last number must be the total packet number.
-              int lvl=1;
-              while ( (l>=0) && (!isdigit(tmp[l]))) { l--; }
-              while ( (l>=0) && (isdigit(tmp[l])))
+              int lvl = 1;
+              while ((l >= 0) && (!isdigit (tmp[l])))
                 {
-                  pn += lvl * (tmp[l]-'0');
+                  l--;
+                }
+              while ((l >= 0) && (isdigit (tmp[l])))
+                {
+                  pn += lvl * (tmp[l] - '0');
                   lvl *= 10;
                   l--;
                 }
               std::cout << "Packet Number:" << pn << std::endl;
-              std::cout << "Real duration : " << st.GetRealDuration() << std::endl;
+              std::cout << "Real duration : " << st.GetRealDuration () << std::endl;
 
-              long theoric = (long) (DataRate (rate).GetBitRate ())/8.5; // (long) (DataRate (rate).GetBitRate ())/8.192F;
+              long theoric = (long)(DataRate (rate).GetBitRate ()) / 8.5; // (long) (DataRate (rate).GetBitRate ())/8.192F;
 
               std::cout <<  "DataRate:" << theoric << std::endl;
               if (st.GetRealDuration () > 0)
                 {
                   // Packets / seconds
-                  unsigned long pps = pn/st.GetRealDuration();
-                  unsigned long Bps = pn * 1500 / st.GetRealDuration();
+                  unsigned long pps = pn / st.GetRealDuration ();
+                  unsigned long Bps = pn * 1500 / st.GetRealDuration ();
                   std::cout << "Packets / second :" << pps << std::endl;
                   std::cout << "Bytes / second" << Bps << std::endl;
                   float rapport = (float)Bps / (float)theoric;

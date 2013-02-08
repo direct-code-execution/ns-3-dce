@@ -51,7 +51,7 @@ int dce_poll (struct pollfd *fds, nfds_t nfds, int timeout)
       count = 0;
       for (uint32_t i = 0; i < nfds; ++i)
         {
-          if ( CheckFdExists( current->process, fds[i].fd, true ) )
+          if (CheckFdExists (current->process, fds[i].fd, true))
             {
               validFd++;
               UnixFd *unixFd = 0;
@@ -81,7 +81,10 @@ int dce_poll (struct pollfd *fds, nfds_t nfds, int timeout)
         }
       currentTable = 0; // Register only first time.
 
-      if (count || timed_out) break;
+      if (count || timed_out)
+        {
+          break;
+        }
 
       if (timeout != 0)
         {
@@ -118,7 +121,7 @@ int dce_poll (struct pollfd *fds, nfds_t nfds, int timeout)
     }
 
   // Try to break infinite loop in poll with a 0 timeout !
-  if ( ( 0 == count ) && ( 0 == timeout ) )
+  if ((0 == count) && (0 == timeout))
     {
       UtilsAdvanceTime (current);
     }
@@ -126,7 +129,7 @@ int dce_poll (struct pollfd *fds, nfds_t nfds, int timeout)
   return count;
 }
 
-int dce_select (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, 
+int dce_select (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
                 struct timeval *timeout)
 {
   Thread *current = Current ();
@@ -146,7 +149,7 @@ int dce_select (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
     }
   if (timeout)
     {
-      if(timeout->tv_sec < 0 || timeout->tv_usec < 0)
+      if (timeout->tv_sec < 0 || timeout->tv_usec < 0)
         {
           current->err = EINVAL;
           return -1;
@@ -171,7 +174,7 @@ int dce_select (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
 
       if (event)
         {
-          if (!CheckFdExists (current->process, fd, true ))
+          if (!CheckFdExists (current->process, fd, true))
             {
               current->err = EBADF;
               return -1;
@@ -181,9 +184,9 @@ int dce_select (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
     }
   nfds = eventByFd.size ();
 
-  // select(2): 
+  // select(2):
   // Some  code  calls  select() with all three sets empty, nfds zero, and a
-  // non-NULL timeout as a fairly portable way to sleep with subsecond 
+  // non-NULL timeout as a fairly portable way to sleep with subsecond
   // precision.
   if (nfds == 0 && !timeout)
     {
@@ -193,7 +196,7 @@ int dce_select (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
   struct pollfd pollFd[nfds];
   int j = 0;
 
-  for (std::map<int, int>::iterator i=eventByFd.begin (); i != eventByFd.end (); ++i)
+  for (std::map<int, int>::iterator i = eventByFd.begin (); i != eventByFd.end (); ++i)
     {
       pollFd[j].events = (*i).second;
       pollFd[j].fd = (*i).first;
@@ -224,20 +227,20 @@ int dce_select (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
         {
           FD_ZERO (exceptfds);
         }
-      for (j=0; j < nfds; j++)
+      for (j = 0; j < nfds; j++)
         {
-          if ( readfds && ( ( POLLIN & pollFd[j].revents ) || ( POLLHUP & pollFd[j].revents )
-                            || ( POLLERR & pollFd[j].revents )))
+          if (readfds && ((POLLIN & pollFd[j].revents) || (POLLHUP & pollFd[j].revents)
+                          || (POLLERR & pollFd[j].revents)))
             {
               FD_SET (pollFd[j].fd, readfds);
               pollRet++;
             }
-          if ( writefds && ( POLLOUT & pollFd[j].revents ))
+          if (writefds && (POLLOUT & pollFd[j].revents))
             {
               FD_SET (pollFd[j].fd, writefds);
               pollRet++;
             }
-          if ( exceptfds && ( POLLPRI & pollFd[j].revents ))
+          if (exceptfds && (POLLPRI & pollFd[j].revents))
             {
               FD_SET (pollFd[j].fd, exceptfds);
               pollRet++;

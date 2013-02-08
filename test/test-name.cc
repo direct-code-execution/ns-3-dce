@@ -13,7 +13,7 @@ int main (int argc, char *argv[])
 
   std::cout << "NodeName:" << n.nodename << std::endl;
 
-  ret = gethostname ( gifbuffer, sizeof (gifbuffer) );
+  ret = gethostname (gifbuffer, sizeof (gifbuffer));
 
   TEST_ASSERT_EQUAL (ret, 0);
 

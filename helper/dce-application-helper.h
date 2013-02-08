@@ -21,13 +21,13 @@ public:
   void AddArguments (std::string a0, std::string a1, std::string a2);
   void AddArguments (std::string a0, std::string a1, std::string a2, std::string a3);
   void AddArguments (std::string a0, std::string a1, std::string a2, std::string a3,
-		     std::string a4);
+                     std::string a4);
   void AddArguments (std::string a0, std::string a1, std::string a2, std::string a3,
-		     std::string a4, std::string a5);
+                     std::string a4, std::string a5);
   void AddArguments (std::string a0, std::string a1, std::string a2, std::string a3,
-		     std::string a4, std::string a5, std::string a6);
+                     std::string a4, std::string a5, std::string a6);
   void AddArguments (std::string a0, std::string a1, std::string a2, std::string a3,
-		     std::string a4, std::string a5, std::string a6, std::string a7);
+                     std::string a4, std::string a5, std::string a6, std::string a7);
   void ParseArguments (std::string args);
   void ResetArguments (void);
   void AddEnvironment (std::string name, std::string value);

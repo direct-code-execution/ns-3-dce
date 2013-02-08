@@ -55,7 +55,7 @@ Waiter::GetTimeoutLeft (void) const
   return m_timeout;
 }
 
-Waiter::Result 
+Waiter::Result
 Waiter::Wait (void)
 {
   Thread *current = Current ();
@@ -82,13 +82,14 @@ Waiter::Wait (void)
   NS_LOG_DEBUG ("ok self=" << this << " current=" << current);
   return Waiter::OK;
 }
-bool 
+bool
 Waiter::WaitDoSignal (void)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current);
   Waiter::Result result = Wait ();
-  switch (result) {
+  switch (result)
+    {
     case Waiter::INTERRUPTED:
       UtilsDoSignal ();
       current->err = EINTR;
@@ -104,14 +105,14 @@ Waiter::WaitDoSignal (void)
   return true;
 }
 
-void 
+void
 Waiter::Wakeup (void)
 {
   NS_LOG_FUNCTION (this << m_waiting);
   if (m_waiting != 0)
     {
       /* The waiting thread could well be active because, it could have been
-       * unblocked but not scheduled yet which means that the assignment of 
+       * unblocked but not scheduled yet which means that the assignment of
        * m_waiting to zero has not been done yet in Waiter::Wait.
        */
       if (m_waiting->task->IsBlocked ())

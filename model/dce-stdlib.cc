@@ -117,7 +117,7 @@ int dce_mkstemp (char *temp)
   return fd;
 }
 
-int dce_rename(const char *oldpath, const char *newpath)
+int dce_rename (const char *oldpath, const char *newpath)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId ());

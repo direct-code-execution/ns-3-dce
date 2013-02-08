@@ -61,16 +61,16 @@ private:
   virtual ~CoojaLoader ();
   virtual void NotifyStartExecute (void);
   virtual void NotifyEndExecute (void);
-  virtual Loader *Clone (void);
+  virtual Loader * Clone (void);
   virtual void UnloadAll (void);
-  virtual void *Load (std::string filename, int flag);
+  virtual void * Load (std::string filename, int flag);
   virtual void Unload (void *module);
-  virtual void *Lookup (void *module, std::string symbol);
+  virtual void * Lookup (void *module, std::string symbol);
 
-  static struct SharedModules *Peek (void);
-  struct CoojaLoader::Module *SearchModule (uint32_t id);
-  struct SharedModule *SearchSharedModule (uint32_t id);
-  struct CoojaLoader::Module *LoadModule (std::string filename, int flag);
+  static struct SharedModules * Peek (void);
+  struct CoojaLoader::Module * SearchModule (uint32_t id);
+  struct SharedModule * SearchSharedModule (uint32_t id);
+  struct CoojaLoader::Module * LoadModule (std::string filename, int flag);
   void UnrefSharedModule (SharedModule *search);
 
   std::list<struct Module *> m_modules;
@@ -78,11 +78,12 @@ private:
 
 SharedModules::SharedModules ()
 #ifdef DCE_MPI
-: cache ("elf-cache", MpiInterface::GetSystemId ())
+  : cache ("elf-cache", MpiInterface::GetSystemId ())
 #else
-: cache ("elf-cache", 0)
+  : cache ("elf-cache", 0)
 #endif
-{}
+{
+}
 
 SharedModules::~SharedModules ()
 {
@@ -105,7 +106,7 @@ CoojaLoader::Peek (void)
   return &modules;
 }
 
-void 
+void
 CoojaLoader::NotifyStartExecute (void)
 {
   for (std::list<struct Module *>::const_iterator i = m_modules.begin (); i != m_modules.end (); ++i)
@@ -130,9 +131,10 @@ CoojaLoader::NotifyStartExecute (void)
       module->module->current_buffer = module->buffer;
     }
 }
-void 
+void
 CoojaLoader::NotifyEndExecute (void)
-{}
+{
+}
 
 Loader *
 CoojaLoader::Clone (void)
@@ -146,7 +148,7 @@ CoojaLoader::Clone (void)
       clonedModule->module->refcount++;
       clonedModule->refcount = module->refcount;
       clonedModule->buffer = malloc (module->module->buffer_size);
-      memcpy (clonedModule->buffer, 
+      memcpy (clonedModule->buffer,
               module->module->data_buffer,
               clonedModule->module->buffer_size);
       // setup deps.
@@ -316,7 +318,7 @@ CoojaLoader::UnrefSharedModule (SharedModule *search)
         }
     }
 }
-void 
+void
 CoojaLoader::UnloadAll (void)
 {
   NS_LOG_FUNCTION (this);
@@ -334,7 +336,7 @@ CoojaLoader::UnloadAll (void)
     }
   m_modules.clear ();
 }
-void 
+void
 CoojaLoader::Unload (void *handle)
 {
   NS_LOG_FUNCTION (this << handle);
@@ -387,7 +389,7 @@ CoojaLoader::~CoojaLoader ()
 }
 
 
-TypeId 
+TypeId
 CoojaLoaderFactory::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::CoojaLoaderFactory")
@@ -397,9 +399,11 @@ CoojaLoaderFactory::GetTypeId (void)
   return tid;
 }
 CoojaLoaderFactory::CoojaLoaderFactory ()
-{}
+{
+}
 CoojaLoaderFactory::~CoojaLoaderFactory ()
-{}
+{
+}
 Loader *
 CoojaLoaderFactory::Create (int argc, char **argv, char **envp)
 {

@@ -27,10 +27,13 @@ NS_LOG_COMPONENT_DEFINE ("FifoBuffer");
 
 #define MIN_ALLOC 1024
 
-namespace ns3
-{
-FifoBuffer::FifoBuffer (size_t mxSz) : m_maxSize (mxSz), m_buffer (0), m_read (0)
-  , m_fill (0), m_size (0)
+namespace ns3 {
+FifoBuffer::FifoBuffer (size_t mxSz) : m_maxSize (mxSz),
+                                       m_buffer (0),
+                                       m_read (0)
+                                       ,
+                                       m_fill (0),
+                                       m_size (0)
 {
 }
 FifoBuffer::~FifoBuffer (void)
@@ -44,7 +47,7 @@ FifoBuffer::~FifoBuffer (void)
 ssize_t
 FifoBuffer::Write (uint8_t *buf, size_t len)
 {
-  NS_LOG_FUNCTION ("r:"<< m_read << " f:" << m_fill << " s:"<<  m_size);
+  NS_LOG_FUNCTION ("r:" << m_read << " f:" << m_fill << " s:" <<  m_size);
   size_t capa = m_size - m_fill;
 
   if (len <= capa)
@@ -57,7 +60,7 @@ FifoBuffer::Write (uint8_t *buf, size_t len)
     {
       if (m_fill > m_read)
         {
-          memmove (m_buffer, m_buffer + m_read, m_fill - m_read );
+          memmove (m_buffer, m_buffer + m_read, m_fill - m_read);
         }
       m_fill -= m_read;
       m_read = 0;
@@ -76,7 +79,7 @@ FifoBuffer::Write (uint8_t *buf, size_t len)
     {
       size_t newSize = len + m_fill;
 
-      if ( newSize - m_size < MIN_ALLOC )
+      if (newSize - m_size < MIN_ALLOC)
         {
           newSize = m_size + MIN_ALLOC;
         }
@@ -90,7 +93,7 @@ FifoBuffer::Write (uint8_t *buf, size_t len)
         {
           return -1;
         }
-      memcpy (newBuf, m_buffer + m_read, m_fill - m_read );
+      memcpy (newBuf, m_buffer + m_read, m_fill - m_read);
       free (m_buffer);
       m_buffer = newBuf;
       m_fill -= m_read;
@@ -102,14 +105,14 @@ FifoBuffer::Write (uint8_t *buf, size_t len)
   return 0;
 }
 ssize_t
-FifoBuffer::Read(uint8_t *buf, size_t len)
+FifoBuffer::Read (uint8_t *buf, size_t len)
 {
-  NS_LOG_FUNCTION ("r:"<< m_read << " f:" << m_fill << " s:"<<  m_size);
+  NS_LOG_FUNCTION ("r:" << m_read << " f:" << m_fill << " s:" <<  m_size);
   size_t capa = m_fill - m_read;
 
   if (capa > 0)
     {
-      size_t l = std::min(len, capa);
+      size_t l = std::min (len, capa);
 
       memcpy (buf, m_buffer + m_read, l);
       m_read += l;

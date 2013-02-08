@@ -52,7 +52,7 @@ int main (int argc, char *argv[])
   devices = pointToPoint.Install (nodes);
 
   DceManagerHelper dceManager;
-  dceManager.SetTaskManagerAttribute( "FiberManagerType", StringValue ( "UcontextFiberManager" ) );
+  dceManager.SetTaskManagerAttribute ("FiberManagerType", StringValue ("UcontextFiberManager"));
 
   if (!useKernel)
     {
@@ -78,12 +78,12 @@ int main (int argc, char *argv[])
   DceApplicationHelper dce;
   ApplicationContainer apps;
 
-  dce.SetStackSize (1<<20);
+  dce.SetStackSize (1 << 20);
 
   // Launch iperf client on node 0
   dce.SetBinary ("iperf");
-  dce.ResetArguments();
-  dce.ResetEnvironment();
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
   dce.AddArgument ("-c");
   dce.AddArgument ("10.1.1.2");
   dce.AddArgument ("-i");
@@ -103,8 +103,8 @@ int main (int argc, char *argv[])
 
   // Launch iperf server on node 1
   dce.SetBinary ("iperf");
-  dce.ResetArguments();
-  dce.ResetEnvironment();
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
   dce.AddArgument ("-s");
   dce.AddArgument ("-P");
   dce.AddArgument ("1");
@@ -115,14 +115,14 @@ int main (int argc, char *argv[])
 
   apps = dce.Install (nodes.Get (1));
 
-  pointToPoint.EnablePcapAll (useKernel?"iperf-kernel":"iperf-ns3", false);
+  pointToPoint.EnablePcapAll (useKernel ? "iperf-kernel" : "iperf-ns3", false);
 
   apps.Start (Seconds (0.6));
 
   setPos (nodes.Get (0), 1, 10, 0);
   setPos (nodes.Get (1), 50,10, 0);
 
-  Simulator::Stop (Seconds(40.0));
+  Simulator::Stop (Seconds (40.0));
   Simulator::Run ();
   Simulator::Destroy ();
 

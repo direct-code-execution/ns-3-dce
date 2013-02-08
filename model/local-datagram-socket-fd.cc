@@ -36,8 +36,7 @@
 
 NS_LOG_COMPONENT_DEFINE ("LocalDatagramSocketFd");
 
-namespace ns3
-{
+namespace ns3 {
 TypeId
 LocalDatagramSocketFd::GetTypeId (void)
 {
@@ -50,8 +49,9 @@ LocalDatagramSocketFd::GetInstanceTypeId (void) const
 {
   return LocalDatagramSocketFd::GetTypeId ();
 }
-LocalDatagramSocketFd::LocalDatagramSocketFd (Ptr<LocalSocketFdFactory> f) :
-  m_state (CREATED), m_peer (0)
+LocalDatagramSocketFd::LocalDatagramSocketFd (Ptr<LocalSocketFdFactory> f)
+  : m_state (CREATED),
+    m_peer (0)
 {
   m_factory = f;
 }
@@ -72,7 +72,7 @@ LocalDatagramSocketFd::Close (void)
 {
   NS_LOG_FUNCTION (this);
 
-  switch ( m_state )
+  switch (m_state)
     {
     case CONNECTED:
     case BINDED:
@@ -89,33 +89,33 @@ LocalDatagramSocketFd::Close (void)
 ssize_t
 LocalDatagramSocketFd::Write (const void *buf, size_t count)
 {
-  NS_LOG_FUNCTION (this << "state:" << m_state );
+  NS_LOG_FUNCTION (this << "state:" << m_state);
 
-  if ( CONNECTED != m_state )
+  if (CONNECTED != m_state)
     {
 
-      Current ()->err =  (REMOTECLOSED==m_state) ? ECONNREFUSED : ENOTCONN;
+      Current ()->err =  (REMOTECLOSED == m_state) ? ECONNREFUSED : ENOTCONN;
 
       return -1;
     }
 
-  return Write2Peer ( buf, count, m_peer );
+  return Write2Peer (buf, count, m_peer);
 }
 
 ssize_t
 LocalDatagramSocketFd::Read (void *buf, size_t count, bool noWait, bool peek)
 {
-  NS_LOG_FUNCTION (this << "state:" << m_state );
+  NS_LOG_FUNCTION (this << "state:" << m_state);
   WaitQueueEntryTimeout *wq = 0;
 
-  while ( BINDED == m_state )
+  while (BINDED == m_state)
     {
       // Is There some already received data ?
       if (m_readBuffer.size () > 0)
         {
           ssize_t ret = ReadData ((uint8_t*) buf, count, peek);
 
-          if ((ret > 0)&&(0!=m_peer))
+          if ((ret > 0)&&(0 != m_peer))
             {
               // WakeUP peer because we made room
               short po = POLLOUT;
@@ -129,14 +129,14 @@ LocalDatagramSocketFd::Read (void *buf, size_t count, bool noWait, bool peek)
         {
           RETURNFREE (0);
         }
-      if (  m_statusFlags & O_NONBLOCK  )
+      if (m_statusFlags & O_NONBLOCK)
         {
           // Socket do not want to wait
           Current ()->err = EAGAIN;
           RETURNFREE (-1);
         }
       // Before wait verify not closed by another thread !
-      if ( BINDED != m_state )
+      if (BINDED != m_state)
         {
           Current ()->err = ENOTCONN;
           RETURNFREE (-1);
@@ -145,9 +145,9 @@ LocalDatagramSocketFd::Read (void *buf, size_t count, bool noWait, bool peek)
         {
           wq = new WaitQueueEntryTimeout (POLLIN | POLLHUP, GetRecvTimeout ());
         }
-      AddWaitQueue (wq,true);
+      AddWaitQueue (wq, true);
       WaitPoint::Result res = wq->Wait ();
-      RemoveWaitQueue ( wq,true);
+      RemoveWaitQueue (wq, true);
 
       switch (res)
         {
@@ -156,7 +156,7 @@ LocalDatagramSocketFd::Read (void *buf, size_t count, bool noWait, bool peek)
 
         case WaitPoint::INTERRUPTED:
           UtilsDoSignal ();
-          if ( 0 == m_readBuffer.size () )
+          if (0 == m_readBuffer.size ())
             {
               Current ()->err = EINTR;
               RETURNFREE (-1);
@@ -164,7 +164,7 @@ LocalDatagramSocketFd::Read (void *buf, size_t count, bool noWait, bool peek)
           break;
 
         case WaitPoint::TIMEOUT:
-          if ( 0 == m_readBuffer.size () )
+          if (0 == m_readBuffer.size ())
             {
               Current ()->err = EAGAIN;
               RETURNFREE (-1);
@@ -242,7 +242,8 @@ LocalDatagramSocketFd::Setsockopt (int level, int optname, const void *optval, s
         return 0;
       }
 
-    default: break;
+    default:
+      break;
     }
   current->err = EINVAL;
   return -1;
@@ -307,7 +308,7 @@ LocalDatagramSocketFd::Getsockopt (int level, int optname, void *optval, socklen
 
     case SO_RCVTIMEO:
       {
-        if ((0 == optval) || (0 == optlen) || ( (*optlen) < sizeof(struct timeval)))
+        if ((0 == optval) || (0 == optlen) || ((*optlen) < sizeof(struct timeval)))
           {
             current->err = EINVAL;
             return -1;
@@ -322,7 +323,7 @@ LocalDatagramSocketFd::Getsockopt (int level, int optname, void *optval, socklen
 
     case SO_SNDTIMEO:
       {
-        if ((0 == optval) || (0 == optlen) || ( (*optlen) < sizeof(struct timeval)))
+        if ((0 == optval) || (0 == optlen) || ((*optlen) < sizeof(struct timeval)))
           {
             current->err = EINVAL;
             return -1;
@@ -367,7 +368,7 @@ LocalDatagramSocketFd::Getsockname (struct sockaddr *name, socklen_t *namelen)
 {
   NS_LOG_FUNCTION (this);
 
-  if ( (0 == name) || (0 == namelen) )
+  if ((0 == name) || (0 == namelen))
     {
       Current ()->err = EINVAL;
       return -1;
@@ -379,12 +380,12 @@ LocalDatagramSocketFd::Getsockname (struct sockaddr *name, socklen_t *namelen)
   if ((m_bindPath.length () > 0)&&(m_state != CLOSED))
     {
       std::string root = UtilsGetRealFilePath ("/");
-      std::string virtualPath = m_bindPath.substr (root.length ()-1);
+      std::string virtualPath = m_bindPath.substr (root.length () - 1);
 
       memcpy (&address.sun_path, virtualPath.c_str (), std::min (108, (int)virtualPath.length ()));
     }
 
-  socklen_t len = std::min ( (int) *namelen, (int) sizeof(struct sockaddr_un) );
+  socklen_t len = std::min ((int) *namelen, (int) sizeof(struct sockaddr_un));
 
   memcpy (name, &address, len);
 
@@ -398,12 +399,12 @@ LocalDatagramSocketFd::Getpeername (struct sockaddr *name, socklen_t *namelen)
 {
   NS_LOG_FUNCTION (this);
 
-  if ( (0 == name) || (0 == namelen) )
+  if ((0 == name) || (0 == namelen))
     {
       Current ()->err = EINVAL;
       return -1;
     }
-  if ( (m_state != CONNECTED) && (m_state != REMOTECLOSED) )
+  if ((m_state != CONNECTED) && (m_state != REMOTECLOSED))
     {
       Current ()->err = ENOTCONN;
       return -1;
@@ -415,12 +416,12 @@ LocalDatagramSocketFd::Getpeername (struct sockaddr *name, socklen_t *namelen)
   if (m_connectPath.length () > 0)
     {
       std::string root = UtilsGetRealFilePath ("/");
-      std::string virtualPath = m_connectPath.substr (root.length ()-1);
+      std::string virtualPath = m_connectPath.substr (root.length () - 1);
 
       memcpy (&address.sun_path, virtualPath.c_str (), std::min (108, (int)virtualPath.length ()));
     }
 
-  socklen_t len = std::min ( (int) *namelen, (int) sizeof(struct sockaddr_un) );
+  socklen_t len = std::min ((int) *namelen, (int) sizeof(struct sockaddr_un));
 
   memcpy (name, &address, len);
 
@@ -441,7 +442,9 @@ LocalDatagramSocketFd::Bind (const struct sockaddr *my_addr, socklen_t addrlen)
     }
 
   if (m_state != CREATED)
-    return -1;
+    {
+      return -1;
+    }
 
   std::string realPath = UtilsGetRealFilePath (std::string (((struct sockaddr_un*) my_addr)->sun_path));
   struct sockaddr_un realAddr;
@@ -455,7 +458,7 @@ LocalDatagramSocketFd::Bind (const struct sockaddr *my_addr, socklen_t addrlen)
   UtilsEnsureAllDirectoriesExist (realPath);
 
   int ret = ::bind (realFd, (struct sockaddr *) &realAddr, sizeof(realAddr));
-  NS_LOG_FUNCTION (this << "Bind: " << ret << "errno:" << errno );
+  NS_LOG_FUNCTION (this << "Bind: " << ret << "errno:" << errno);
   if (0 == ret)
     {
       m_state = BINDED;
@@ -505,12 +508,12 @@ LocalDatagramSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrle
 
   std::string realPath = UtilsGetRealFilePath (std::string (((struct sockaddr_un*) my_addr)->sun_path));
 
-  LocalSocketFd* l1 = m_factory->FindBinder (realPath, this->GetTypeId () );
-  LocalDatagramSocketFd *listener =  dynamic_cast<LocalDatagramSocketFd*>( l1 );
+  LocalSocketFd* l1 = m_factory->FindBinder (realPath, this->GetTypeId ());
+  LocalDatagramSocketFd *listener =  dynamic_cast<LocalDatagramSocketFd*> (l1);
 
   if (0 != listener)
     {
-      if (!listener->IsBinded () )
+      if (!listener->IsBinded ())
         {
           Current ()->err = ECONNREFUSED;
           return -1;
@@ -543,7 +546,7 @@ int
 LocalDatagramSocketFd::Shutdown (int how)
 {
   NS_LOG_FUNCTION (this << how);
-  if ( m_state == CLOSED )
+  if (m_state == CLOSED)
     {
       Current ()->err = EPIPE;
       return -1;
@@ -586,13 +589,17 @@ LocalDatagramSocketFd::CanRecv (void) const
 {
   switch (m_state)
     {
-    case CLOSED: return 1;
-    case CREATED: return 1;
+    case CLOSED:
+      return 1;
+    case CREATED:
+      return 1;
 
-    case BINDED: return m_readBufferSize > 0;
+    case BINDED:
+      return m_readBufferSize > 0;
 
     case REMOTECLOSED:
-    case CONNECTED: return 0;
+    case CONNECTED:
+      return 0;
 
     }
   return 0;
@@ -601,15 +608,15 @@ LocalDatagramSocketFd::CanRecv (void) const
 bool
 LocalDatagramSocketFd::CanSend (void) const
 {
-  return ( ( CONNECTED == m_state ) && (0 != m_peer) && ( m_peer->m_readBufferSize < LOCAL_SOCKET_MAX_BUFFER ) )
-         || ( CONNECTED != m_state );
+  return ((CONNECTED == m_state) && (0 != m_peer) && (m_peer->m_readBufferSize < LOCAL_SOCKET_MAX_BUFFER))
+         || (CONNECTED != m_state);
 }
 
 bool
 LocalDatagramSocketFd::HangupReceived (void) const
 {
-  NS_LOG_FUNCTION ( this << " state:" << m_state);
-  return ( REMOTECLOSED == m_state );
+  NS_LOG_FUNCTION (this << " state:" << m_state);
+  return (REMOTECLOSED == m_state);
 }
 
 ssize_t
@@ -617,13 +624,13 @@ LocalDatagramSocketFd::Recvmsg (struct msghdr *msg, int flags)
 {
   NS_LOG_FUNCTION (this);
 
-  if ( 0 == msg )
+  if (0 == msg)
     {
       Current ()->err = EINVAL;
       return -1;
     }
 
-  if ( CONNECTED == m_state )
+  if (CONNECTED == m_state)
     {
       Current ()->err = ENOTCONN;
       return -1;
@@ -636,8 +643,8 @@ LocalDatagramSocketFd::Recvmsg (struct msghdr *msg, int flags)
       ssize_t len = msg->msg_iov[i].iov_len;
       msg->msg_namelen = 0;
 
-      ssize_t ret = Read (buf, len, (retval > 0) || ( flags & MSG_DONTWAIT ), (flags & MSG_PEEK) );
-      NS_LOG_FUNCTION (this << "len:" << len << " read-> " << ret );
+      ssize_t ret = Read (buf, len, (retval > 0) || (flags & MSG_DONTWAIT), (flags & MSG_PEEK));
+      NS_LOG_FUNCTION (this << "len:" << len << " read-> " << ret);
       if (ret <= 0)
         {
           NS_LOG_FUNCTION (this << "4");
@@ -650,17 +657,17 @@ LocalDatagramSocketFd::Recvmsg (struct msghdr *msg, int flags)
         }
     }
 
-  if ( retval > 0 )
+  if (retval > 0)
     {
-      if ( ( !( flags & MSG_PEEK) && ( m_readBufferSize > 0 ) ) ||
-           ( (flags & MSG_PEEK) && ( m_readBufferSize > retval ) ) )
+      if ((!(flags & MSG_PEEK) && (m_readBufferSize > 0))
+          || ((flags & MSG_PEEK) && (m_readBufferSize > retval)))
         {
           msg->msg_flags |= MSG_TRUNC;
         }
       return retval;
     }
 
-  if ( flags & MSG_DONTWAIT )
+  if (flags & MSG_DONTWAIT)
     {
       Current ()->err = EAGAIN;
     }
@@ -674,19 +681,19 @@ LocalDatagramSocketFd::Sendmsg (const struct msghdr *msg, int flags)
   NS_LOG_FUNCTION (this << m_state);
   LocalDatagramSocketFd* listener = 0;
   LocalSocketFd* l1 = 0;
-  if ( 0 == msg )
+  if (0 == msg)
     {
       Current ()->err = EINVAL;
       return -1;
     }
 
-  if ( CONNECTED == m_state )
+  if (CONNECTED == m_state)
     {
       listener = m_peer;
     }
-  else if ( CREATED == m_state )
+  else if (CREATED == m_state)
     {
-      if ( ( msg->msg_namelen < sizeof (struct sockaddr_un ) ) || ( 0 == msg->msg_name ) )
+      if ((msg->msg_namelen < sizeof (struct sockaddr_un)) || (0 == msg->msg_name))
         {
           Current ()->err = EINVAL;
           return -1;
@@ -697,10 +704,10 @@ LocalDatagramSocketFd::Sendmsg (const struct msghdr *msg, int flags)
       std::string realPath = UtilsGetRealFilePath (std::string (addr->sun_path));
 
       // Do a write
-      l1 = m_factory->FindBinder (realPath, this->GetTypeId () );
-      listener = dynamic_cast<LocalDatagramSocketFd*>( l1 );
+      l1 = m_factory->FindBinder (realPath, this->GetTypeId ());
+      listener = dynamic_cast<LocalDatagramSocketFd*> (l1);
     }
-  else if ( REMOTECLOSED == m_state )
+  else if (REMOTECLOSED == m_state)
     {
       Current ()->err = ECONNREFUSED;
       return -1;
@@ -711,7 +718,7 @@ LocalDatagramSocketFd::Sendmsg (const struct msghdr *msg, int flags)
       return -1;
     }
 
-  if ( 0 == listener )
+  if (0 == listener)
     {
       Current ()->err = EACCES;
       return -1;
@@ -726,15 +733,15 @@ LocalDatagramSocketFd::Sendmsg (const struct msghdr *msg, int flags)
       ssize_t len = msg->msg_iov[i].iov_len;
       size_t ret = 0;
 
-      while ( m_state < REMOTECLOSED )
+      while (m_state < REMOTECLOSED)
         {
           ret = listener->DoRecvPacket (buf, len);
 
-          switch ( ret )
+          switch (ret)
             {
             case 0: // NO ROOM
               {
-                if ( flags & MSG_DONTWAIT )
+                if (flags & MSG_DONTWAIT)
                   {
                     Current ()->err = EAGAIN;
                     RETURNFREE (-1);
@@ -766,7 +773,7 @@ LocalDatagramSocketFd::Sendmsg (const struct msghdr *msg, int flags)
                     break;
                   }
 
-                if ( m_state >= REMOTECLOSED )
+                if (m_state >= REMOTECLOSED)
                   {
                     Current ()->err = ECONNREFUSED;
                     RETURNFREE (-1);
@@ -774,10 +781,10 @@ LocalDatagramSocketFd::Sendmsg (const struct msghdr *msg, int flags)
                 continue;
               }
 
-            case -1: // NOMEM !
+            case - 1: // NOMEM !
               RETURNFREE (-1);
 
-            case -2: // CLOSED !
+            case - 2: // CLOSED !
               {
                 Current ()->err = ECONNREFUSED;
                 RETURNFREE (-1);
@@ -791,7 +798,7 @@ LocalDatagramSocketFd::Sendmsg (const struct msghdr *msg, int flags)
             }
         }
     }
-  RETURNFREE ( retval);
+  RETURNFREE (retval);
 }
 
 bool
@@ -806,15 +813,15 @@ LocalDatagramSocketFd::Write2Peer (const void *buf, size_t count, LocalDatagramS
   NS_LOG_FUNCTION (this);
 
   // Verify peer state
-  if ( 0 == peer || !peer->IsBinded () )
+  if (0 == peer || !peer->IsBinded ())
     {
       Current ()->err =  EPIPE;
       return -1;
     }
 
-  ssize_t lg = m_peer->DoRecvPacket ((uint8_t*) buf, count );
+  ssize_t lg = m_peer->DoRecvPacket ((uint8_t*) buf, count);
 
-  if ( -2 == lg )
+  if (-2 == lg)
     {
       Current ()->err =  EPIPE;
       return -1;
@@ -826,7 +833,7 @@ LocalDatagramSocketFd::Write2Peer (const void *buf, size_t count, LocalDatagramS
 void
 LocalDatagramSocketFd::UnBind (void)
 {
-  if ( (m_bindPath.length () > 0) && (BINDED == m_state) )
+  if ((m_bindPath.length () > 0) && (BINDED == m_state))
     {
       m_factory->UnRegisterBinder (m_bindPath);
       m_bindPath = "";
@@ -837,7 +844,7 @@ LocalDatagramSocketFd::UnBind (void)
 ssize_t
 LocalDatagramSocketFd::Read (void *buf, size_t count)
 {
-  return Read ( buf, count, false, false);
+  return Read (buf, count, false, false);
 }
 bool
 LocalDatagramSocketFd::IsClosed (void) const
@@ -857,7 +864,7 @@ void
 LocalDatagramSocketFd::RemoveConnected (LocalDatagramSocketFd *freeOne, bool andWakeUp)
 {
   NS_LOG_FUNCTION (this << m_state);
-  switch ( m_state )
+  switch (m_state)
     {
     case BINDED:
       {
@@ -888,7 +895,7 @@ void
 LocalDatagramSocketFd::ClearAll (bool andWakeUp)
 {
   m_state = CLOSED;
-  if ( 0 != m_peer )
+  if (0 != m_peer)
     {
       LocalDatagramSocketFd* freeOne = m_peer;
 
@@ -907,7 +914,7 @@ LocalDatagramSocketFd::ClearAll (bool andWakeUp)
     }
   toFree.clear ();
 
-  if ( m_bindPath.length () > 0 )
+  if (m_bindPath.length () > 0)
     {
       m_factory->UnRegisterBinder (m_bindPath);
       m_bindPath = "";
@@ -935,7 +942,7 @@ LocalDatagramSocketFd::Poll (PollTable* ptable)
     {
       ret |= POLLOUT;
     }
-  if (HangupReceived () )
+  if (HangupReceived ())
     {
       ret |= POLLHUP;
     }

@@ -108,7 +108,7 @@ public:
    * \param checker a required callback called to check and validate or not the potential files found by this method.
    */
   std::string SeekFile (std::string file, std::string cwd,
-           void *userData, bool (*checker)(std::string, void*));
+                        void *userData, bool (*checker)(std::string, void*));
 
 private:
   bool m_virtual;
@@ -117,21 +117,21 @@ private:
 };
 
 std::string SearchFile (std::string file,
-    std::string vroot,
-    std::string vpath,
-    std::string dcepath,
-    std::string cwd,
-    std::string altRoots,
-    void *userData,
-    bool (*checker)(std::string, void*));
+                        std::string vroot,
+                        std::string vpath,
+                        std::string dcepath,
+                        std::string cwd,
+                        std::string altRoots,
+                        void *userData,
+                        bool (*checker)(std::string, void*));
 
 std::string
 SearchFile (std::string file,
-    std::string vroot,
-    std::string cwd,
-    std::string altRoots,
-    void *userData,
-    bool (*checker)(std::string, void*));
+            std::string vroot,
+            std::string cwd,
+            std::string altRoots,
+            void *userData,
+            bool (*checker)(std::string, void*));
 
 bool CheckFileExe (std::string file,void *userData);
 

@@ -38,7 +38,7 @@ int main (int argc, char *argv[])
     }
 
 //  while (true)
-  for (int i=0; i < 1 ; i++)
+  for (int i = 0; i < 1 ; i++)
     {
       struct sockaddr_in remoteAddr;
       socklen_t len = sizeof(remoteAddr);
@@ -47,15 +47,21 @@ int main (int argc, char *argv[])
       memset (&remoteAddr, 0, len);
       memset (buf, 0, sizeof(buf));
 
-      ssize_t rLen = recvfrom ( sock, buf, sizeof(buf) , 0, (struct sockaddr *)&remoteAddr, &len);
+      ssize_t rLen = recvfrom (sock, buf, sizeof(buf), 0, (struct sockaddr *)&remoteAddr, &len);
 
       std::cout << "recvfrom len:" << rLen << std::endl;
 
-      if (rLen <= 0) break;
+      if (rLen <= 0)
+        {
+          break;
+        }
 
       ssize_t wLen = sendto (sock, buf, (size_t) rLen, 0, (struct sockaddr *)&remoteAddr, len);
 
-      if (wLen <= 0) break;
+      if (wLen <= 0)
+        {
+          break;
+        }
 
       std::cout << "Echo sended, len:" << wLen << " over " << rLen << std::endl;
     }

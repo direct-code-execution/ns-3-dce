@@ -10,14 +10,14 @@ NS_LOG_COMPONENT_DEFINE ("SimuAlloc");
 
 using namespace ns3;
 
-void *dce_calloc (size_t nmemb, size_t size)
+void * dce_calloc (size_t nmemb, size_t size)
 {
   GET_CURRENT (nmemb << size);
   void *ptr = dce_malloc (nmemb * size);
   memset (ptr, 0, nmemb * size);
   return ptr;
 }
-void *dce_malloc (size_t size)
+void * dce_malloc (size_t size)
 {
   GET_CURRENT (size);
   size += sizeof (size_t);
@@ -40,7 +40,7 @@ void dce_free (void *ptr)
   memcpy (&size, buffer, sizeof (size_t));
   current->process->alloc->Free (buffer, size);
 }
-void *dce_realloc (void *ptr, size_t size)
+void * dce_realloc (void *ptr, size_t size)
 {
   GET_CURRENT (ptr << size);
   if (ptr == 0 && size == 0)
@@ -65,12 +65,15 @@ void *dce_realloc (void *ptr, size_t size)
   buffer += sizeof (size_t);
   return buffer;
 }
-void *dce_sbrk(intptr_t increment)
+void * dce_sbrk (intptr_t increment)
 {
-  if ( 0  == increment ) return (void*)-1;
+  if (0  == increment)
+    {
+      return (void*)-1;
+    }
   return dce_calloc (1, increment);
 }
-int dce_getpagesize(void)
+int dce_getpagesize (void)
 {
-  return sysconf(_SC_PAGESIZE);
+  return sysconf (_SC_PAGESIZE);
 }

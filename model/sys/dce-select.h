@@ -7,8 +7,8 @@
 extern "C" {
 #endif
 
-int dce_select(int nfds, fd_set *readfds, fd_set *writefds,
-                  fd_set *exceptfds, struct timeval *timeout);
+int dce_select (int nfds, fd_set *readfds, fd_set *writefds,
+                fd_set *exceptfds, struct timeval *timeout);
 
 #ifdef __cplusplus
 }

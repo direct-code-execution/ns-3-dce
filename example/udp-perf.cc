@@ -16,24 +16,24 @@
 #include <math.h>
 #include <poll.h>
 
-extern long long int llrintl(long double x);
-extern long int lrintl(long double x);
+extern long long int llrintl (long double x);
+extern long int lrintl (long double x);
 static uint64_t current_time (void);
 
-#define CHECK_INT_ARG(arg, name, value)				  \
-  if (strncmp (arg, "--"name"=", strlen ("--"name"=")) == 0)	  \
-    {								  \
-      value = atoi (arg + strlen ("--"name"="));		  \
+#define CHECK_INT_ARG(arg, name, value)                           \
+  if (strncmp (arg, "--" name "=", strlen ("--" name "=")) == 0)      \
+    {                                                             \
+      value = atoi (arg + strlen ("--" name "="));                  \
     }
-#define CHECK_LLINT_ARG(arg, name, value)				  \
-  if (strncmp (arg, "--"name"=", strlen ("--"name"=")) == 0)	  \
-    {								  \
-      value = atoll (arg + strlen ("--"name"="));		  \
+#define CHECK_LLINT_ARG(arg, name, value)                                 \
+  if (strncmp (arg, "--" name "=", strlen ("--" name "=")) == 0)      \
+    {                                                             \
+      value = atoll (arg + strlen ("--" name "="));                 \
     }
-#define CHECK_STR_ARG(arg, name, value)				  \
-  if (strncmp (arg, "--"name"=", strlen ("--"name"=")) == 0)	  \
-    {								  \
-      value = arg + strlen ("--"name"=");			  \
+#define CHECK_STR_ARG(arg, name, value)                           \
+  if (strncmp (arg, "--" name "=", strlen ("--" name "=")) == 0)      \
+    {                                                             \
+      value = arg + strlen ("--" name "=");                         \
     }
 
 #if 0
@@ -49,8 +49,8 @@ static void set_txbuf_size (int fd, int buffer_size)
 }
 #endif
 
-static void run_client (int to_port, const char *to_ip, int pkt_size, 
-			long long bytes_per_second, int dur, int nodes, long long bw)
+static void run_client (int to_port, const char *to_ip, int pkt_size,
+                        long long bytes_per_second, int dur, int nodes, long long bw)
 {
   int fd = socket (AF_INET, SOCK_DGRAM, 0);
   if (fd == -1)
@@ -59,21 +59,21 @@ static void run_client (int to_port, const char *to_ip, int pkt_size,
       exit (1);
     }
   int status;
-  status = fcntl(fd, F_GETFL, 0);
+  status = fcntl (fd, F_GETFL, 0);
   if (status == -1)
-  {
-	  perror("fcntl");
-	  exit (1);
-  }
-  status = fcntl(fd, F_SETFL, status | O_NONBLOCK);
+    {
+      perror ("fcntl");
+      exit (1);
+    }
+  status = fcntl (fd, F_SETFL, status | O_NONBLOCK);
   if (status == -1)
-  {
-	  perror("fcntl");
-	  exit (1);
-  }
-  status = fcntl(fd, F_GETFL, 0);
+    {
+      perror ("fcntl");
+      exit (1);
+    }
+  status = fcntl (fd, F_GETFL, 0);
 #if 0
-  set_txbuf_size (fd, 1<<20);
+  set_txbuf_size (fd, 1 << 20);
 #endif
 
   struct sockaddr_in addr;
@@ -90,19 +90,19 @@ static void run_client (int to_port, const char *to_ip, int pkt_size,
   char *buffer = (char*)malloc (pkt_size);
   memset (buffer, 0, pkt_size);
 
-  int64_t pps = llrintl(1.0L * bytes_per_second / pkt_size);
-  int64_t ns_delay = llrintl(1000000000.0L / pps);
+  int64_t pps = llrintl (1.0L * bytes_per_second / pkt_size);
+  int64_t ns_delay = llrintl (1000000000.0L / pps);
   if (ns_delay <= 100000)
     {
       ns_delay = 100000;
     }
-  
+
   // 10^9ns=1s
   double packets_per_delay = 1.0L * bytes_per_second * ns_delay /
-	  pkt_size / 1000000000.0L;
-  printf("bw = %lld, psize = %d, pps = %lld, ns_delay = %lld, ppd = %f\n",
-	 (signed long long) bytes_per_second, pkt_size, (signed long long) pps, 
-	 (signed long long) ns_delay, packets_per_delay);
+    pkt_size / 1000000000.0L;
+  printf ("bw = %lld, psize = %d, pps = %lld, ns_delay = %lld, ppd = %f\n",
+          (signed long long) bytes_per_second, pkt_size, (signed long long) pps,
+          (signed long long) ns_delay, packets_per_delay);
 
   int timerfd = timerfd_create (CLOCK_MONOTONIC, 0);
   struct itimerspec timer;
@@ -120,52 +120,52 @@ static void run_client (int to_port, const char *to_ip, int pkt_size,
   int64_t sent = 0, total_misses = 0, snd_skipped = 0;
   int expires = 0;
   uint64_t last_print_time = current_time ();
-  int cpt=0;
+  int cpt = 0;
   long total = 0;
   while (true)
     {
       uint64_t current = current_time ();
       if (current > last_print_time + 1000000)
-	{
-	  last_print_time = current;
-	  //printf("Timer misses: %ld, skipped sends: %ld\n", total_misses, snd_skipped);
-	  if (dur > 0)
-	    {
-	      cpt++;
-	      if (cpt>=dur)
-	        {
-	          printf("duration %d, total write %ld total packets %ld\n", dur, total, sent);
-	          FILE *f = fopen ("client.txt","a");
-	          fprintf(f, "%lld %d %ld\n",bw, nodes, sent);
-	          fclose (f);
-	          exit (0);
-	        }
-	    }
-	}
+        {
+          last_print_time = current;
+          //printf("Timer misses: %ld, skipped sends: %ld\n", total_misses, snd_skipped);
+          if (dur > 0)
+            {
+              cpt++;
+              if (cpt >= dur)
+                {
+                  printf ("duration %d, total write %ld total packets %ld\n", dur, total, sent);
+                  FILE *f = fopen ("client.txt","a");
+                  fprintf (f, "%lld %d %ld\n",bw, nodes, sent);
+                  fclose (f);
+                  exit (0);
+                }
+            }
+        }
       uint64_t skipped;
       ssize_t bytes_read;
       bytes_read = read (timerfd, &skipped, 8);
       //printf("skipped: %ld\n", skipped);
       expires += skipped;
       total_misses += skipped - 1;
-      long i, tosend = lrintl(expires * packets_per_delay) - sent;
+      long i, tosend = lrintl (expires * packets_per_delay) - sent;
       for (i = 0; i < tosend; i++)
-	{
-	  ssize_t written = sendto (fd, buffer, pkt_size, MSG_DONTWAIT,
-		  (struct sockaddr *)&to, sizeof (to));
-	  if (written == -1 && (errno == EWOULDBLOCK || errno == EAGAIN))
-	  {
-		  snd_skipped += tosend - i;
-		  break;
-	  }
-	  if (written == -1)
-	  {
-		  perror("sentto");
-		  exit(1);
-	  }
-	  total+=written;
-	  sent++;
-	}
+        {
+          ssize_t written = sendto (fd, buffer, pkt_size, MSG_DONTWAIT,
+                                    (struct sockaddr *)&to, sizeof (to));
+          if (written == -1 && (errno == EWOULDBLOCK || errno == EAGAIN))
+            {
+              snd_skipped += tosend - i;
+              break;
+            }
+          if (written == -1)
+            {
+              perror ("sentto");
+              exit (1);
+            }
+          total += written;
+          sent++;
+        }
     }
 
   free (buffer);
@@ -225,35 +225,41 @@ static void run_server (int port, int dur, int nodes, long long bytes_per_second
     {
       uint64_t current = current_time ();
       if (current > last_print_time + 1000000)
-	{
-	  last_print_time = current;
-	  full_total += total_received;
-	  int64_t q = total_reads;
-	  if (q == 0) q = 1;
-	  printf ("received=%lld bytes, %lld reads (@%lld bytes) %llu\n",
-		  (signed long long) total_received, 
-		  (signed long long) total_reads,
-		  (signed long long) (total_received / q),
-		  (unsigned long long) full_total);
+        {
+          last_print_time = current;
+          full_total += total_received;
+          int64_t q = total_reads;
+          if (q == 0)
+            {
+              q = 1;
+            }
+          printf ("received=%lld bytes, %lld reads (@%lld bytes) %llu\n",
+                  (signed long long) total_received,
+                  (signed long long) total_reads,
+                  (signed long long)(total_received / q),
+                  (unsigned long long) full_total);
 
-	  total_received = total_reads = 0;
-	  if (dur > 0)
-	    {
-	      cpt++;
-	      if (cpt>dur)
-	        {
-	          printf("duration %d, total read %ld total packet %ld\n", dur, full_total, total_packet);
-	          FILE *f = fopen ("server.txt","a");
-	          fprintf(f, "%lld %d %ld\n",bytes_per_second, nodes, total_packet);
-	          fclose (f);
-	          exit (0);
-	        }
-	    }
-	}
+          total_received = total_reads = 0;
+          if (dur > 0)
+            {
+              cpt++;
+              if (cpt > dur)
+                {
+                  printf ("duration %d, total read %ld total packet %ld\n", dur, full_total, total_packet);
+                  FILE *f = fopen ("server.txt","a");
+                  fprintf (f, "%lld %d %ld\n",bytes_per_second, nodes, total_packet);
+                  fclose (f);
+                  exit (0);
+                }
+            }
+        }
       int r = 1;
       if (dur > 0)
         {
-          struct pollfd p = { fd, POLLIN, 0 };
+          struct pollfd p =
+          {
+            fd, POLLIN, 0
+          };
           int t = dur - cpt;
           if (t <= 0)
             {
@@ -294,22 +300,22 @@ int main (int argc, char *argv[])
   char **arg = argv;
   while (*arg != 0)
     {
-      CHECK_INT_ARG(*arg, "pktsize", pkt_size);
-      CHECK_LLINT_ARG(*arg, "bandwidth", bytes_per_second);
-      CHECK_INT_ARG(*arg, "port", port);
-      CHECK_INT_ARG(*arg, "nodes", nodes);
-      CHECK_INT_ARG(*arg, "duration", duration);
-      CHECK_STR_ARG(*arg, "host", to_ip);
+      CHECK_INT_ARG (*arg, "pktsize", pkt_size);
+      CHECK_LLINT_ARG (*arg, "bandwidth", bytes_per_second);
+      CHECK_INT_ARG (*arg, "port", port);
+      CHECK_INT_ARG (*arg, "nodes", nodes);
+      CHECK_INT_ARG (*arg, "duration", duration);
+      CHECK_STR_ARG (*arg, "host", to_ip);
       if (strcmp (*arg, "--client") == 0)
-	{
-	  client = true;
-	}
+        {
+          client = true;
+        }
       arg++;
     }
-  setlinebuf(stdout);
+  setlinebuf (stdout);
   if (client)
     {
-      run_client (port, to_ip, pkt_size, bytes_per_second/8.5, duration, nodes, bytes_per_second);
+      run_client (port, to_ip, pkt_size, bytes_per_second / 8.5, duration, nodes, bytes_per_second);
     }
   else
     {

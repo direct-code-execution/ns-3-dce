@@ -30,8 +30,7 @@
 
 NS_LOG_COMPONENT_DEFINE ("WaitQueue");
 
-namespace ns3
-{
+namespace ns3 {
 WaitQueueEntry::WaitQueueEntry ()
 {
 }
@@ -49,18 +48,22 @@ WaitQueueEntryPoll::SetPollTableEntry (PollTableEntry* p)
 void
 WaitQueueEntryPoll::WakeUp (void *key)
 {
-  short event = (0!=key) ? (*((short*)key)) : 0;  // Deference a short * if not 0
+  short event = (0 != key) ? (*((short*)key)) : 0;  // Deference a short * if not 0
 
-  if ((m_pollTableEntry)&&(m_pollTableEntry->IsEventMatch ( event )))
+  if ((m_pollTableEntry) && (m_pollTableEntry->IsEventMatch (event)))
     {
       m_func ();
     }
 }
-PollTableEntry::PollTableEntry () :  m_file (0), m_wait (0), m_eventMask (0)
+PollTableEntry::PollTableEntry () :  m_file (0),
+                                     m_wait (0),
+                                     m_eventMask (0)
 {
 }
-PollTableEntry::PollTableEntry (UnixFd *file, WaitQueueEntryPoll *wait, short em) :
-  m_file (file), m_wait (wait), m_eventMask (em)
+PollTableEntry::PollTableEntry (UnixFd *file, WaitQueueEntryPoll *wait, short em)
+  : m_file (file),
+    m_wait (wait),
+    m_eventMask (em)
 {
 }
 PollTableEntry::~PollTableEntry ()
@@ -118,7 +121,7 @@ WaitPoint::WakeUpCallback ()
        */
       if (m_waitTask->task->IsBlocked ())
         {
-          // NS_ASSERT ( Simulator::GetContext () == m_waitTask->process->nodeId); TODO Fix this assert or Remove it :)
+          // NS_ASSERT (Simulator::GetContext () == m_waitTask->process->nodeId); TODO Fix this assert or Remove it :)
           m_waitTask->process->manager->Wakeup (m_waitTask);
         }
       else
@@ -146,22 +149,22 @@ PollTable::~PollTable ()
 void
 PollTable::PollWait (UnixFd* file)
 {
-  WaitQueueEntryPoll* we = new WaitQueueEntryPoll ( MakeCallback ( &PollTable::WakeUpCallback, this ) );
+  WaitQueueEntryPoll* we = new WaitQueueEntryPoll (MakeCallback (&PollTable::WakeUpCallback, this));
   PollTableEntry* e = new PollTableEntry (file, we, m_eventMask);
   we->SetPollTableEntry (e);
-  m_pollEntryList.push_back ( e );
+  m_pollEntryList.push_back (e);
   file->AddWaitQueue (we, false);
 }
 void
 PollTable::PollWait (void *ref, Callback<void, void*> cb)
 {
-  m_pollEntryList.push_back ( new PollTableEntryLinux (ref, cb) );
+  m_pollEntryList.push_back (new PollTableEntryLinux (ref, cb));
 }
 void
 PollTable::FreeWait ()
 {
   for (std::list <PollTableEntry*> :: iterator i = m_pollEntryList.begin ();
-       i != m_pollEntryList.end (); ++i )
+       i != m_pollEntryList.end (); ++i)
     {
       (*i)->FreeWait ();
     }
@@ -176,7 +179,8 @@ PollTable::GetEventMask () const
 {
   return m_eventMask;
 }
-WaitQueueEntryTimeout::WaitQueueEntryTimeout (short em, Time to) : m_waitTask (0), m_eventMask (em)
+WaitQueueEntryTimeout::WaitQueueEntryTimeout (short em, Time to) : m_waitTask (0),
+                                                                   m_eventMask (em)
 {
   if (to.IsZero ())
     {
@@ -191,7 +195,7 @@ WaitQueueEntryTimeout::WaitQueueEntryTimeout (short em, Time to) : m_waitTask (0
 void
 WaitQueueEntryTimeout::WakeUp (void *key)
 {
-  short event = (0!=key) ? (*((short*)key)) : 0; // Deference a short * if not 0
+  short event = (0 != key) ? (*((short*)key)) : 0; // Deference a short * if not 0
 
   if (event & m_eventMask)
     {
@@ -201,7 +205,7 @@ WaitQueueEntryTimeout::WakeUp (void *key)
 WaitPoint::Result
 WaitQueueEntryTimeout::Wait ()
 {
-  NS_LOG_FUNCTION ( m_lastTime );
+  NS_LOG_FUNCTION (m_lastTime);
   if (m_lastTime.IsNegative ())
     {
       return WaitPoint::Wait (Seconds (0));
@@ -219,7 +223,8 @@ WaitQueueEntryTimeout::Wait ()
 }
 
 PollTableEntryLinux::PollTableEntryLinux (void *kernelReference, Callback<void, void*> cb)
-  : m_kernelRef (kernelReference), m_freeCb (cb)
+  : m_kernelRef (kernelReference),
+    m_freeCb (cb)
 {
 }
 void

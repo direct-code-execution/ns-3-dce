@@ -8,14 +8,14 @@
 #include "ns3/nstime.h"
 
 #define GET_CURRENT(x)                                  \
-  Thread *current;                                      \
+  Thread * current;                                      \
   current = Current ();                                 \
   do {                                                  \
       NS_LOG_FUNCTION (current << UtilsGetNodeId () << x);  \
       NS_ASSERT (current != 0);                             \
     } while (false)
 #define GET_CURRENT_NOLOG()                             \
-  Thread *current;                                      \
+  Thread * current;                                      \
   current = Current ();                                 \
   do {                                                  \
       NS_LOG_FUNCTION (current << UtilsGetNodeId ());       \
@@ -37,7 +37,7 @@ std::string UtilsGetRealFilePath (std::string path);
 std::string UtilsGetAbsRealFilePath (uint32_t node, std::string path);
 std::string UtilsGetVirtualFilePath (std::string path);
 uint32_t UtilsGetNodeId (void);
-Thread *Current (void);
+Thread * Current (void);
 bool HasPendingSignal (void);
 Time UtilsTimeToSimulationTime (Time time);
 Time UtilsSimulationTimeToTime (Time time);
@@ -60,37 +60,37 @@ bool CheckFdExists (Process* const p, int const fd, bool const opened);
 int getRealFd (int fd, Thread *current);
 std::string PathOfFd (int fd);
 bool CheckShellScript (std::string fileName,
-    std::ostringstream &shellName, std::ostringstream &optionalArg);
-char *seek_env (const char *name, char **array);
+                       std::ostringstream &shellName, std::ostringstream &optionalArg);
+char * seek_env (const char *name, char **array);
 std::string UtilsGetCurrentDirName (void);
 
 #define MAX_FDS 1024
 
-#define OPENED_FD_METHOD_ERR( errCode, rettype, args ) \
-  std::map<int,FileUsage *>::iterator it = current->process->openFiles.find (fd); \
-  if ( current->process->openFiles.end () == it ) \
-  { \
+#define OPENED_FD_METHOD_ERR(errCode, rettype, args) \
+  std::map < int,FileUsage * > ::iterator it = current->process->openFiles.find (fd); \
+  if (current->process->openFiles.end () == it) \
+    { \
       current->err = EBADF; \
       return (rettype) errCode; \
     } \
-    FileUsage *fu = it->second; \
-    if (fu->IsClosed ()) \
+  FileUsage *fu = it->second; \
+  if (fu->IsClosed ()) \
     { \
-        current->err = EBADF; \
-        return (rettype) errCode; \
-      } \
-    UnixFd *unixFd =  fu->GetFileInc (); \
-    rettype retval = unixFd->args; \
-    if ( fu && fu->DecUsage ()) \
-      { \
-        current->process->openFiles.erase (fd); \
-        delete fu; \
-        fu = 0; \
-      } \
+      current->err = EBADF; \
+      return (rettype) errCode; \
+    } \
+  UnixFd *unixFd =  fu->GetFileInc (); \
+  rettype retval = unixFd->args; \
+  if (fu && fu->DecUsage ()) \
+    { \
+      current->process->openFiles.erase (fd); \
+      delete fu; \
+      fu = 0; \
+    } \
 \
-    return retval;
+  return retval;
 
-#define OPENED_FD_METHOD(rettype, args ) OPENED_FD_METHOD_ERR( -1, rettype, args )
+#define OPENED_FD_METHOD(rettype, args) OPENED_FD_METHOD_ERR (-1, rettype, args)
 
 } // namespace ns3
 

@@ -5,7 +5,7 @@
 
 int main (int argc, char *argv[])
 {
-  int sizes[] = {0, 1, 2, 3, 4, 8, 10, 16, 19, 30, 64, 120, 240, 1020, 4098, 10000, 100000, 1000000};
+  int sizes[] = { 0, 1, 2, 3, 4, 8, 10, 16, 19, 30, 64, 120, 240, 1020, 4098, 10000, 100000, 1000000};
   for (uint32_t i = 0; i < sizeof (sizes) / sizeof (int); i++)
     {
       int size = sizes[i];

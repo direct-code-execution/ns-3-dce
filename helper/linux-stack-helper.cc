@@ -60,11 +60,11 @@ LinuxStackHelper::InstallAll (void)
 
 
 void
-LinuxStackHelper::SysctlGetCallback (Ptr<Node> node, std::string path, 
+LinuxStackHelper::SysctlGetCallback (Ptr<Node> node, std::string path,
                                      void (*callback)(std::string, std::string))
 {
 #ifdef KERNEL_STACK
-  Ptr<LinuxSocketFdFactory> sock = node->GetObject<LinuxSocketFdFactory>();
+  Ptr<LinuxSocketFdFactory> sock = node->GetObject<LinuxSocketFdFactory> ();
   if (!sock)
     {
       callback ("error", "no socket factory");
@@ -78,11 +78,11 @@ LinuxStackHelper::SysctlGetCallback (Ptr<Node> node, std::string path,
 }
 
 void
-LinuxStackHelper::SysctlGet (Ptr<Node> node, Time at, std::string path, 
+LinuxStackHelper::SysctlGet (Ptr<Node> node, Time at, std::string path,
                              void (*callback)(std::string, std::string))
 {
 #ifdef KERNEL_STACK
-  Ptr<LinuxSocketFdFactory> sock = node->GetObject<LinuxSocketFdFactory>();
+  Ptr<LinuxSocketFdFactory> sock = node->GetObject<LinuxSocketFdFactory> ();
   if (!sock)
     {
       callback ("error", "no socket factory");
@@ -90,8 +90,8 @@ LinuxStackHelper::SysctlGet (Ptr<Node> node, Time at, std::string path,
     }
   Simulator::ScheduleWithContext (node->GetId (), at,
                                   &LinuxSocketFdFactory::ScheduleTask, sock,
-                                  MakeEvent (&LinuxStackHelper::SysctlGetCallback, 
-                                  node, path, callback));
+                                  MakeEvent (&LinuxStackHelper::SysctlGetCallback,
+                                             node, path, callback));
   return;
 #endif
 }
@@ -102,7 +102,7 @@ LinuxStackHelper::SysctlSet (NodeContainer c, std::string path, std::string valu
   for (NodeContainer::Iterator i = c.Begin (); i != c.End (); ++i)
     {
       Ptr<Node> node = *i;
-      Ptr<LinuxSocketFdFactory> sock = node->GetObject<LinuxSocketFdFactory>();
+      Ptr<LinuxSocketFdFactory> sock = node->GetObject<LinuxSocketFdFactory> ();
       if (!sock)
         {
           continue;

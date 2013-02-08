@@ -50,11 +50,11 @@ bool CanonizePath (std::string path, bool ChRootProtected, std::ostringstream &r
   do
     {
       switch (state)
-      {
+        {
         case 0:
           {
             switch (*crsr)
-            {
+              {
               case '.':
                 {
                   state = 1;
@@ -69,13 +69,13 @@ bool CanonizePath (std::string path, bool ChRootProtected, std::ostringstream &r
                   state = 2;
                 }
                 break;
-            }
+              }
           }
           break;
         case 1: // .
           {
             switch (*crsr)
-            {
+              {
               case '.':
                 {
                   state = 3;
@@ -93,7 +93,7 @@ bool CanonizePath (std::string path, bool ChRootProtected, std::ostringstream &r
                   state = 2;
                 }
                 break;
-            }
+              }
           }
           break;
         case 2:  // other
@@ -101,7 +101,7 @@ bool CanonizePath (std::string path, bool ChRootProtected, std::ostringstream &r
             if (('/' == *crsr)||(!*crsr))
               {
                 state = 0;
-                level ++;
+                level++;
                 std::string e = cur.str ();
                 profs.push_back (e);
                 cur.clear ();
@@ -116,7 +116,7 @@ bool CanonizePath (std::string path, bool ChRootProtected, std::ostringstream &r
         case 3: // ..
           {
             switch (*crsr)
-            {
+              {
               case 0:
               case '/':
                 {
@@ -125,7 +125,7 @@ bool CanonizePath (std::string path, bool ChRootProtected, std::ostringstream &r
                     {
                       return false;
                     }
-                  if (level>=0)
+                  if (level >= 0)
                     {
                       profs.pop_back ();
                     }
@@ -142,12 +142,12 @@ bool CanonizePath (std::string path, bool ChRootProtected, std::ostringstream &r
                   state = 2;
                 }
                 break;
-            }
+              }
           }
           break;
         default:
           return false;
-      }
+        }
       if (*crsr)
         {
           crsr++;
@@ -162,7 +162,7 @@ bool CanonizePath (std::string path, bool ChRootProtected, std::ostringstream &r
   bool first = true;
   if (profs.size () > 0)
     {
-      for (std::vector <std::string> :: iterator i = profs.begin () ; i != profs.end () ; ++i )
+      for (std::vector <std::string> :: iterator i = profs.begin () ; i != profs.end () ; ++i)
         {
           if (!first || SlashStart)
             {
@@ -186,9 +186,10 @@ bool CanonizePath (std::string path, bool ChRootProtected, std::ostringstream &r
 
   return true;
 }
-SearchPath::SearchPath (std::string basepath, std::string paths, bool virt) : m_basePath (basepath), m_virtual (virt)
+SearchPath::SearchPath (std::string basepath, std::string paths, bool virt) : m_basePath (basepath),
+                                                                              m_virtual (virt)
 {
-  bool prot = (m_basePath.length() > 0);
+  bool prot = (m_basePath.length () > 0);
   std::list<std::string> p = Split (paths, ":");
   for (std::list<std::string>::const_iterator i = p.begin (); i != p.end (); i++)
     {
@@ -196,7 +197,7 @@ SearchPath::SearchPath (std::string basepath, std::string paths, bool virt) : m_
       if (CanonizePath (*i, prot, cano))
         {
           std::string e = cano.str ();
-          if (e.length() > 0)
+          if (e.length () > 0)
             {
               m_paths.push_back (e);
             }
@@ -204,13 +205,13 @@ SearchPath::SearchPath (std::string basepath, std::string paths, bool virt) : m_
     }
 }
 std::string
-SearchPath::SeekFile (std::string file, std::string cwd, void *userData, bool (*checker)(std::string, void*) )
+SearchPath::SeekFile (std::string file, std::string cwd, void *userData, bool (*checker)(std::string, void*))
 {
   for (std::vector <std::string>::const_iterator i = m_paths.begin (); i != m_paths.end (); ++i)
     {
       std::string p = *i;
       std::string pp;
-      if ( *p.c_str () == '/' )
+      if (*p.c_str () == '/')
         {
           if (m_virtual)
             {
@@ -237,14 +238,14 @@ SearchPath::SeekFile (std::string file, std::string cwd, void *userData, bool (*
                   pp = m_basePath + "/" + cwd + "/" + p + "/" + file;
                 }
               else
-                if (cwd.length () > 0)
-                  {
-                    pp = m_basePath + "/" + cwd + "/" + file;
-                  }
-                else
-                  {
-                    pp = m_basePath + "/" + file;
-                  }
+              if (cwd.length () > 0)
+                {
+                  pp = m_basePath + "/" + cwd + "/" + file;
+                }
+              else
+                {
+                  pp = m_basePath + "/" + file;
+                }
             }
           else
             {
@@ -254,7 +255,7 @@ SearchPath::SeekFile (std::string file, std::string cwd, void *userData, bool (*
       std::ostringstream cano;
       CanonizePath (pp, false, cano);
       pp = cano.str ();
-      if ( ( pp.length () > 0 ) &&  checker (pp, userData) )
+      if ((pp.length () > 0) &&  checker (pp, userData))
         {
           return pp;
         }
@@ -263,11 +264,11 @@ SearchPath::SeekFile (std::string file, std::string cwd, void *userData, bool (*
 }
 std::string
 SearchAbsoluteFile (std::string file, std::string vroot, std::string altRoots, void *userData,
-    bool (*checker)(std::string, void*))
+                    bool (*checker)(std::string, void*))
 {
   SearchPath p1 (vroot, ".", true);
-  std::string res = p1.SeekFile (file, "", userData, checker );
-  if (res .length() > 0)
+  std::string res = p1.SeekFile (file, "", userData, checker);
+  if (res.length () > 0)
     {
       return res;
     }
@@ -279,48 +280,48 @@ SearchAbsoluteFile (std::string file, std::string vroot, std::string altRoots, v
 }
 std::string
 SearchRelativeFile (std::string file, std::string vroot, std::string cwd,
-    void *userData, bool (*checker)(std::string, void*))
+                    void *userData, bool (*checker)(std::string, void*))
 {
   SearchPath p1 (vroot, cwd, true);
-  return p1.SeekFile (file, "", userData, checker );
+  return p1.SeekFile (file, "", userData, checker);
 }
 std::string
 SearchSimpleFile (std::string file,
-    std::string vroot,
-    std::string vpath,
-    std::string cwd,
-    std::string dcepath,
-    void *userData,
-    bool (*checker)(std::string, void*))
+                  std::string vroot,
+                  std::string vpath,
+                  std::string cwd,
+                  std::string dcepath,
+                  void *userData,
+                  bool (*checker)(std::string, void*))
 {
   SearchPath p1 (vroot, vpath, true);
-  std::string res = p1.SeekFile (file, cwd, userData, checker );
-  if (res .length () > 0)
+  std::string res = p1.SeekFile (file, cwd, userData, checker);
+  if (res.length () > 0)
     {
       return res;
     }
   else
     {
       SearchPath p2 ("", dcepath, false);
-      return p2.SeekFile (file ,"", userData, checker);
+      return p2.SeekFile (file,"", userData, checker);
     }
 }
 std::string
 SearchFile (std::string file,
-    std::string vroot,
-    std::string vpath,
-    std::string dcepath,
-    std::string cwd,
-    std::string altRoots,
-    void *userData,
-    bool (*checker)(std::string, void*))
+            std::string vroot,
+            std::string vpath,
+            std::string dcepath,
+            std::string cwd,
+            std::string altRoots,
+            void *userData,
+            bool (*checker)(std::string, void*))
 {
-  if ( *file.c_str () == '/' )
+  if (*file.c_str () == '/')
     {
       return SearchAbsoluteFile (file, vroot, altRoots, userData, checker);
     }
   int idx =  file.find ('/',0);
-  if ( idx >= 0 )
+  if (idx >= 0)
     {
       return SearchRelativeFile (file, vroot, cwd, userData, checker);
     }
@@ -328,13 +329,13 @@ SearchFile (std::string file,
 }
 std::string
 SearchFile (std::string file,
-    std::string vroot,
-    std::string cwd,
-    std::string altRoots,
-    void *userData,
-    bool (*checker)(std::string, void*))
+            std::string vroot,
+            std::string cwd,
+            std::string altRoots,
+            void *userData,
+            bool (*checker)(std::string, void*))
 {
-  if ( *file.c_str () == '/' )
+  if (*file.c_str () == '/')
     {
       return SearchAbsoluteFile (file, vroot, altRoots, userData, checker);
     }
@@ -346,15 +347,15 @@ CheckFileExe (std::string file, void *params)
   struct stat st;
   struct ExeCriteria *criteria = (struct ExeCriteria *) params;
 
-  if ( 0 != ::stat ( file.c_str () , &st) )
+  if (0 != ::stat (file.c_str (), &st))
     {
       return false;
     }
-  if ( criteria )
+  if (criteria)
     {
       uid_t uid = criteria->uid;
       gid_t gid = criteria->gid;
-      if (((uid) && CheckExeMode ( &st, uid, gid )) || (!uid))
+      if (((uid) && CheckExeMode (&st, uid, gid)) || (!uid))
         {
           return true;
         }
@@ -381,7 +382,7 @@ SearchExecFile (std::string file, std::string vpath, uid_t uid, gid_t gid, int *
     {
       *errNo = ENOENT;
     }
-if (vpath.length () == 0)
+  if (vpath.length () == 0)
     {
       if (manager->GetVirtualPath ().length () > 0)
         {
@@ -392,10 +393,10 @@ if (vpath.length () == 0)
     {
       if (manager->GetVirtualPath ().length () > 0)
         {
-          vpath = vpath +':' + manager->GetVirtualPath ();
+          vpath = vpath + ':' + manager->GetVirtualPath ();
         }
     }
-  if ( c )
+  if (c)
     {
       dcepath = c;
     }
@@ -408,7 +409,7 @@ if (vpath.length () == 0)
   userData.gid = gid;
   userData.errNo = errNo;
 
-  return SearchFile (file, vroot, vpath, dcepath, cwd, altRoots, &userData, CheckFileExe );
+  return SearchFile (file, vroot, vpath, dcepath, cwd, altRoots, &userData, CheckFileExe);
 }
 std::string
 SearchExecFile (std::string file, uid_t uid, gid_t gid, int *errNo)
@@ -430,7 +431,7 @@ SearchExecFile (std::string file, uid_t uid, gid_t gid, int *errNo)
   userData.gid = gid;
   userData.errNo = errNo;
 
-  return SearchFile (file, vroot,  cwd, altRoots, &userData, CheckFileExe );
+  return SearchFile (file, vroot,  cwd, altRoots, &userData, CheckFileExe);
 }
 // Search using only a real path within a real environment variable
 std::string
@@ -448,7 +449,7 @@ SearchExecFile (std::string envVar, std::string file, int *errNo)
   userData.gid = 0;
   userData.errNo = 0;
 
-  return SearchFile (file, "", "", dcepath, "", "", &userData, CheckFileExe );
+  return SearchFile (file, "", "", dcepath, "", "", &userData, CheckFileExe);
 }
 
 }

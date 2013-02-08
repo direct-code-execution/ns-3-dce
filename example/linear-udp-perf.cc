@@ -44,9 +44,9 @@ static Time RunIp (Ptr<Node> node, Time at, std::string str)
   DceApplicationHelper process;
   ApplicationContainer apps;
   process.SetBinary ("./ip");
-  process.SetStackSize (1<<16);
-  process.ResetArguments();
-  process.ParseArguments(str.c_str ());
+  process.SetStackSize (1 << 16);
+  process.ResetArguments ();
+  process.ParseArguments (str.c_str ());
   apps = process.Install (node);
   apps.Start (at);
   return at + TimeStep (1);
@@ -71,8 +71,8 @@ SetupIpStacks (std::string linuxStack, std::string ns3App, NodeContainer nodes)
     }
   else
     {
-      processManager.SetNetworkStack("ns3::LinuxSocketFdFactory",
-				     "Library", StringValue (linuxStack));
+      processManager.SetNetworkStack ("ns3::LinuxSocketFdFactory",
+                                      "Library", StringValue (linuxStack));
     }
   if (ns3App ==  "false")
     {
@@ -81,10 +81,10 @@ SetupIpStacks (std::string linuxStack, std::string ns3App, NodeContainer nodes)
   if (linuxStack != "")
     {
       for (uint32_t i = 0; i < nodes.GetN (); i++)
-	{
-	  Ptr<Node> n = nodes.Get (i);
-	  RunIp (n, Seconds (0.0), "link set lo up");
-	}
+        {
+          Ptr<Node> n = nodes.Get (i);
+          RunIp (n, Seconds (0.0), "link set lo up");
+        }
     }
 }
 
@@ -102,7 +102,7 @@ SetupIpAddresses (std::string linuxStack, NodeContainer nodes, std::vector<NetDe
   Time increment = TimeStep (1);
   std::vector<std::pair<Ptr<Node>, Ipv4Address> > pairs;
   Ipv4AddressHelper addressAlloc;
-  Ipv4Mask mask = Ipv4Mask ("255.255.255.0"); 
+  Ipv4Mask mask = Ipv4Mask ("255.255.255.0");
   addressAlloc.SetBase ("10.1.0.0", mask);
   for (uint32_t i = 0; i < devs.size (); i++)
     {
@@ -114,30 +114,30 @@ SetupIpAddresses (std::string linuxStack, NodeContainer nodes, std::vector<NetDe
       Ptr<Node> a = devA->GetNode ();
       Ptr<Node> b = devB->GetNode ();
       if (linuxStack == "")
-	{
-	  Ptr<Ipv4> ipv4A = a->GetObject<Ipv4> ();
-	  Ptr<Ipv4> ipv4B = b->GetObject<Ipv4> ();
-	  uint32_t interfA = ipv4A->AddInterface (devA);
-	  uint32_t interfB = ipv4B->AddInterface (devB);
-	  ipv4A->AddAddress (interfA, Ipv4InterfaceAddress (ipA, mask));
-	  ipv4B->AddAddress (interfB, Ipv4InterfaceAddress (ipB, mask));
-	  ipv4A->SetUp (interfA);
-	  ipv4B->SetUp (interfB);
+        {
+          Ptr<Ipv4> ipv4A = a->GetObject<Ipv4> ();
+          Ptr<Ipv4> ipv4B = b->GetObject<Ipv4> ();
+          uint32_t interfA = ipv4A->AddInterface (devA);
+          uint32_t interfB = ipv4B->AddInterface (devB);
+          ipv4A->AddAddress (interfA, Ipv4InterfaceAddress (ipA, mask));
+          ipv4B->AddAddress (interfB, Ipv4InterfaceAddress (ipB, mask));
+          ipv4A->SetUp (interfA);
+          ipv4B->SetUp (interfB);
 
-	  Ptr<Ipv4StaticRouting> routing = DynamicCast<Ipv4StaticRouting> (ipv4A->GetRoutingProtocol ());
-	  routing->SetDefaultRoute (ipB, interfA, 0);
-	}
+          Ptr<Ipv4StaticRouting> routing = DynamicCast<Ipv4StaticRouting> (ipv4A->GetRoutingProtocol ());
+          routing->SetDefaultRoute (ipB, interfA, 0);
+        }
       else
-	{
-	  start = AddAddress (a, start, Device(devA), Ipv4AddressToString (ipA) + "/24");
-	  start = AddAddress (b, start, Device(devB), Ipv4AddressToString (ipB) + "/24");
-	  start = RunIp (a, start, "route add default via " + Ipv4AddressToString (ipB) + " dev " + Device (devA));
-	}
+        {
+          start = AddAddress (a, start, Device (devA), Ipv4AddressToString (ipA) + "/24");
+          start = AddAddress (b, start, Device (devB), Ipv4AddressToString (ipB) + "/24");
+          start = RunIp (a, start, "route add default via " + Ipv4AddressToString (ipB) + " dev " + Device (devA));
+        }
       pairs.push_back (std::make_pair (a, ipA));
       if (i == devs.size () - 1)
-	{
-	  pairs.push_back (std::make_pair (b, ipB));
-	}
+        {
+          pairs.push_back (std::make_pair (b, ipB));
+        }
     }
   return pairs;
 }
@@ -187,7 +187,7 @@ static long ReadTotalBytesReceived (uint32_t node)
   // now, parse the last line.
   std::string::size_type i = prev.rfind (" ");
   NS_ASSERT (i != std::string::npos);
-  std::string bytes = prev.substr (i+1, prev.size ()-(i+1));
+  std::string bytes = prev.substr (i + 1, prev.size () - (i + 1));
   is.close ();
   return AsNumber (bytes);
 }
@@ -195,11 +195,11 @@ static long ReadTotalBytesReceived (uint32_t node)
 int main (int argc, char *argv[])
 {
   //HookManager hooks;
-  //hooks.AddHookBySourceAndFunction ("ip-input.c", "ip_rcv", &IpRcv); 
-  //hooks.AddHookBySourceAndFunction ("ip-input.c", "ip_rcv_finish", &IpRcvFinish); 
-  //hooks.AddHookBySourceAndFunction ("ip-output.c", "ip_local_out", &IpLocalOut); 
-  //hooks.AddHookBySourceAndFunction ("ip-output.c", "nf_hook_slow", &IpLocalOut); 
-  //hooks.AddHookBySourceAndFunction ("af_inet.c", "inet_sendmsg", &IpLocalOut); 
+  //hooks.AddHookBySourceAndFunction ("ip-input.c", "ip_rcv", &IpRcv);
+  //hooks.AddHookBySourceAndFunction ("ip-input.c", "ip_rcv_finish", &IpRcvFinish);
+  //hooks.AddHookBySourceAndFunction ("ip-output.c", "ip_local_out", &IpLocalOut);
+  //hooks.AddHookBySourceAndFunction ("ip-output.c", "nf_hook_slow", &IpLocalOut);
+  //hooks.AddHookBySourceAndFunction ("af_inet.c", "inet_sendmsg", &IpLocalOut);
   // udp_sendmsg udp.c
   // ip_route_output_flow
   // ip_output
@@ -264,11 +264,11 @@ int main (int argc, char *argv[])
   csma.SetChannelAttribute ("DataRate", StringValue (rate));
   csma.SetChannelAttribute ("Delay", StringValue (delay));
   std::vector<NetDeviceContainer> devs;
-  for (uint32_t i = 0; i < size-1; i++)
+  for (uint32_t i = 0; i < size - 1; i++)
     {
       NodeContainer linkNodes;
       linkNodes.Add (nodes.Get (i));
-      linkNodes.Add (nodes.Get (i+1));
+      linkNodes.Add (nodes.Get (i + 1));
       NetDeviceContainer dev = csma.Install (linkNodes);
       devs.push_back (dev);
     }
@@ -280,8 +280,8 @@ int main (int argc, char *argv[])
       std::vector<std::pair<Ptr<Node>, Ipv4Address> > pairs;
       pairs = SetupIpAddresses (linuxStack, nodes, devs);
       clientNode = pairs[0].first;
-      serverNode = pairs[pairs.size ()-1].first;
-      serverIp = pairs[pairs.size()-1].second;
+      serverNode = pairs[pairs.size () - 1].first;
+      serverIp = pairs[pairs.size () - 1].second;
     }
   else
     {
@@ -294,7 +294,7 @@ int main (int argc, char *argv[])
     {
       DceApplicationHelper process;
       ApplicationContainer apps;
-      process.SetStackSize (1<<16);
+      process.SetStackSize (1 << 16);
       process.SetBinary ("udp-perf");
 
       // setup client
@@ -345,7 +345,7 @@ int main (int argc, char *argv[])
   double bytes;
   if (ns3App == "false")
     {
-      bytes = ReadTotalBytesReceived (size-1);
+      bytes = ReadTotalBytesReceived (size - 1);
     }
   else
     {

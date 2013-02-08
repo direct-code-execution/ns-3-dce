@@ -7,9 +7,9 @@ extern "C" {
 
 struct cpu_features;
 
-extern const struct cpu_features *__get_cpu_features (void);
+extern const struct cpu_features * __get_cpu_features (void);
 
-const struct cpu_features *dce___get_cpu_features (void);
+const struct cpu_features * dce___get_cpu_features (void);
 
 #ifdef __cplusplus
 }

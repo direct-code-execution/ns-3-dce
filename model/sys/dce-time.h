@@ -8,10 +8,10 @@ extern "C" {
 #endif
 
 int dce_gettimeofday (struct timeval *tv, struct timezone *tz);
-int dce_getitimer(int which, struct itimerval *value);
-int dce_setitimer(int which, const struct itimerval *value,
-		   struct itimerval *ovalue);
-int dce_nanosleep(const struct timespec *req, struct timespec *rem);
+int dce_getitimer (int which, struct itimerval *value);
+int dce_setitimer (int which, const struct itimerval *value,
+                   struct itimerval *ovalue);
+int dce_nanosleep (const struct timespec *req, struct timespec *rem);
 
 
 #ifdef __cplusplus

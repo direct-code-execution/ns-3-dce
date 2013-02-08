@@ -35,7 +35,7 @@ main (int argc, char *argv[])
       ssize_t n = 10240;
       while (n > 0)
         {
-          ssize_t bytes_read = read (fd, &buf[10240-n], n);
+          ssize_t bytes_read = read (fd, &buf[10240 - n], n);
 
           if (bytes_read > 0)
             {

@@ -9,7 +9,7 @@ namespace ns3 {
 NS_LOG_COMPONENT_DEFINE ("DceApplication");
 NS_OBJECT_ENSURE_REGISTERED (DceApplication);
 
-TypeId 
+TypeId
 DceApplication::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::DceApplication")
@@ -23,10 +23,16 @@ DceApplication::GetTypeId (void)
 
 DceApplication::DceApplication ()
   : m_stackSize (0),
-    m_pid (0), m_uid (0), m_euid (0), m_gid (0), m_egid (0)
-{}
+    m_pid (0),
+    m_uid (0),
+    m_euid (0),
+    m_gid (0),
+    m_egid (0)
+{
+}
 DceApplication::~DceApplication ()
-{}
+{
+}
 
 void
 DceApplication::DoDispose (void)
@@ -34,29 +40,29 @@ DceApplication::DoDispose (void)
   NS_LOG_FUNCTION (this);
   Application::DoDispose ();
 }
-void 
+void
 DceApplication::SetBinary (std::string filename)
 {
   m_filename = filename;
 }
-void 
+void
 DceApplication::SetStackSize (uint32_t stackSize)
 {
   m_stackSize = stackSize;
 }
-void 
+void
 DceApplication::SetArguments (std::vector<std::string> args)
 {
   m_args = args;
 }
 
-void 
+void
 DceApplication::SetEnvironment (std::vector<std::pair<std::string,std::string> > envs)
 {
   m_envs = envs;
 }
 
-void 
+void
 DceApplication::StartApplication (void)
 {
   NS_LOG_FUNCTION (this);
@@ -70,20 +76,20 @@ DceApplication::StartApplication (void)
   if (m_stackSize != 0)
     {
       m_pid = manager->Start (m_filename, m_stdinFilename, m_stackSize, m_args,
-          m_envs, m_uid, m_euid, m_gid, m_egid);
-    } 
+                              m_envs, m_uid, m_euid, m_gid, m_egid);
+    }
   else
     {
       m_pid = manager->Start (m_filename, m_stdinFilename, m_args, m_envs,
-          m_uid, m_euid, m_gid, m_egid);
+                              m_uid, m_euid, m_gid, m_egid);
     }
-  if ( !m_finishedCallback.IsNull () )
+  if (!m_finishedCallback.IsNull ())
     {
-      manager->SetFinishedCallback (m_pid, m_finishedCallback );
+      manager->SetFinishedCallback (m_pid, m_finishedCallback);
     }
   m_dceStarted (m_pid);
 }
-void 
+void
 DceApplication::StopApplication (void)
 {
   NS_LOG_FUNCTION (this);

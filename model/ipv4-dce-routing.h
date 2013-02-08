@@ -33,12 +33,12 @@ class NetlinkSocket;
 
 /**
  * \ingroup dce
- * 
+ *
  * \brief DCE managed routing protocol for IP version 4 stacks.
  *
  * This class provides a basic set of methods to manage routing
  * entries from DCE and notify DCE about interface changes.
- * 
+ *
  * The Ipv4DceRouting class inherits from Ipv4StaticRouting class.
  *
  * \see Ipv4RoutingProtocol
@@ -75,7 +75,10 @@ private:
 template<class T>
 Ptr<T> Ipv4DceRouting::GetRouting (Ptr<Ipv4RoutingProtocol> ipv4rp, T* type)
 {
-  if (ipv4rp == 0) return 0;
+  if (ipv4rp == 0)
+    {
+      return 0;
+    }
 
   if (DynamicCast<T> (ipv4rp))
     {

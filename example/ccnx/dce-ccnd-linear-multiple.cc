@@ -45,7 +45,7 @@ NS_LOG_COMPONENT_DEFINE ("CcndInLine");
 void
 CreateReadme ()
 {
-  std::ofstream osf("/tmp/README", std::fstream::trunc);
+  std::ofstream osf ("/tmp/README", std::fstream::trunc);
 
   osf << "The wanted data is here :)" ;
 
@@ -69,7 +69,7 @@ int main (int argc, char *argv[])
   cmd.AddValue ("kernel", "Use kernel linux IP stack.", useKernel);
   cmd.Parse (argc, argv);
 
-  NS_LOG_INFO( "useTcp: " << useTcp );
+  NS_LOG_INFO ( "useTcp: " << useTcp );
 
   NodeContainer nodes;
   nodes.Create (nNodes);
@@ -98,7 +98,7 @@ int main (int argc, char *argv[])
   std::vector<Ipv4InterfaceContainer> vInterfaces;
   std::vector<std::vector<Ipv4Address> > networks;
 
-  for (int n=0; n < (nNodes-1) ; n++)
+  for (int n = 0; n < (nNodes - 1) ; n++)
     {
       devices = pointToPoint.Install (nodes.Get (n), nodes.Get ( 1 + n ) );
 
@@ -116,7 +116,7 @@ int main (int argc, char *argv[])
   DceManagerHelper dceManager;
   if (useKernel)
     {
-      dceManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
+      dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
     }
   dceManager.Install (nodes);
 
@@ -135,18 +135,30 @@ int main (int argc, char *argv[])
 
   // Calculate maxX and maxY;
 
-  for (int n=0; n < nNodes ; n++)
+  for (int n = 0; n < nNodes ; n++)
     {
       float r = startR * deltaR * currentAngle / 360;
       double a =  ((currentAngle) * 2.0 * M_PI) / 360.0  ;
       float x = r * cos ( a );
       float y = r * sin ( a );
 
-      if ( x < 0) x = -x;
-      if ( y < 0) y = -y;
+      if ( x < 0)
+        {
+          x = -x;
+        }
+      if ( y < 0)
+        {
+          y = -y;
+        }
 
-      if (x > maxX) maxX = x;
-      if (y > maxY) maxY = y;
+      if (x > maxX)
+        {
+          maxX = x;
+        }
+      if (y > maxY)
+        {
+          maxY = y;
+        }
 
       currentAngle += angle;
     }
@@ -155,7 +167,7 @@ int main (int argc, char *argv[])
   float centerY = maxY / 2;
   currentAngle = 360;
 
-  for (int n=0; n < nNodes ; n++)
+  for (int n = 0; n < nNodes ; n++)
     {
       float r = startR * deltaR * currentAngle / 360;
       double a =  (currentAngle  * 2.0 * M_PI) / 360.0  ;
@@ -164,7 +176,7 @@ int main (int argc, char *argv[])
 
       currentAngle += angle;
 
-      setPos (nodes.Get (n), x+centerX, y+centerY, 0);
+      setPos (nodes.Get (n), x + centerX, y + centerY, 0);
 
       dce.SetStackSize (1 << 20);
 
@@ -188,8 +200,8 @@ int main (int argc, char *argv[])
       apps.Start (Seconds (0.2));
 
       // Stop ccnd before end of simu.
-      dce.ResetArguments();
-      dce.ResetEnvironment();
+      dce.ResetArguments ();
+      dce.ResetEnvironment ();
       dce.SetBinary ("ccndsmoketest");
       dce.SetStdinFile ("");
       dce.AddArgument ("kill");
@@ -197,19 +209,19 @@ int main (int argc, char *argv[])
       apps.Start (Seconds (3599));
     }
 
-  for (int n=0; n < nNodes ; n++)
+  for (int n = 0; n < nNodes ; n++)
     {
       if ( n > 0 )
         { // Forward /NODE0 interrest to prec node
           dce.SetBinary ("ccndc");
-          dce.ResetArguments();
-          dce.ResetEnvironment();
-          dce.AddEnvironment("HOME", "/root");
+          dce.ResetArguments ();
+          dce.ResetEnvironment ();
+          dce.AddEnvironment ("HOME", "/root");
           dce.AddArgument ("-v");
           dce.AddArgument ("add");
           dce.AddArgument ("/NODE0");
-          dce.AddArgument (useTcp?"tcp":"udp");
-          dce.AddArgument ( Ipv4AddressToString( networks[n-1][0] ) );
+          dce.AddArgument (useTcp ? "tcp" : "udp");
+          dce.AddArgument ( Ipv4AddressToString ( networks[n - 1][0] ) );
 
           apps = dce.Install (nodes.Get (n));
           apps.Start (Seconds ( ( 22.0 + n ) / 100  )); // Every 0.01s from time 2s
@@ -217,16 +229,16 @@ int main (int argc, char *argv[])
     }
 
   // Publish a file using NODE number 0 : ccnput /NODE0/LeReadme </tmp/README
-  dce.ResetArguments();
-  dce.ResetEnvironment();
-  dce.AddEnvironment("HOME", "/root");
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
+  dce.AddEnvironment ("HOME", "/root");
   dce.SetBinary ("ccnpoke");
   dce.SetStdinFile ("/tmp/README");
   dce.AddFile ("/tmp/README","/tmp/README");
   dce.AddArgument ("-x" );
   dce.AddArgument ("3540" );
   dce.AddArgument ("/NODE0/LeReadme");
-  dce.AddEnvironment("HOME", "/root");
+  dce.AddEnvironment ("HOME", "/root");
 
   apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds ( (( 20.0 + nNodes ) / 100 ) + 0.5 ) ) ;
@@ -235,10 +247,10 @@ int main (int argc, char *argv[])
   // Retrieve the file using last NODE using a big CCN_LINGER value in order to have a chance of having a
   // response expecially when we use tcp to link daemons.
   // ccnget -c -a /NODE0/LeReadme
-  dce.ResetArguments();
-  dce.ResetEnvironment();
-  dce.AddEnvironment("HOME", "/root");
-  dce.AddEnvironment("CCN_LINGER", "3540"); // 1 little hour or less
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
+  dce.AddEnvironment ("HOME", "/root");
+  dce.AddEnvironment ("CCN_LINGER", "3540"); // 1 little hour or less
   dce.SetBinary ("ccnpeek"); // First get can take 105s when ccnd daemons are linked with tcp, with 500 nodes.
   dce.SetStdinFile ("");
   dce.AddArgument ("-c");
@@ -249,10 +261,10 @@ int main (int argc, char *argv[])
   apps.Start (Seconds ( (( 20.0 + nNodes ) / 100 ) + 0.5 ) ) ;
 
   // The second get is very fast but not furious :) because of cache usage the data is already in the local node !
-  dce.ResetArguments();
-  dce.ResetEnvironment();
-  dce.AddEnvironment("HOME", "/root");
-  dce.AddEnvironment("CCN_LINGER", "1");
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
+  dce.AddEnvironment ("HOME", "/root");
+  dce.AddEnvironment ("CCN_LINGER", "1");
   dce.SetBinary ("ccnpeek");
   dce.SetStdinFile ("");
   dce.AddArgument ("-c");
@@ -265,7 +277,7 @@ int main (int argc, char *argv[])
   // Create the animation object and configure for specified output
   AnimationInterface anim (animFile);
 
-  Simulator::Stop (Seconds(3600.0));
+  Simulator::Stop (Seconds (3600.0));
   Simulator::Run ();
   Simulator::Destroy ();
 

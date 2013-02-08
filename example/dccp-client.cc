@@ -31,30 +31,30 @@ int main (int argc, char *argv[])
   uint8_t buf[1024];
 
   memset (buf, 0x66, 20);
-  memset (buf+20, 0x67, 1004);
+  memset (buf + 20, 0x67, 1004);
   ssize_t tot = 0;
 
   for (uint32_t i = 0; i < 1000; i++)
     {
       ssize_t n = 1024;
-      while (n>0)
+      while (n > 0)
         {
-          ssize_t e  = write (sock, &(buf[1024-n]), n);
+          ssize_t e  = write (sock, &(buf[1024 - n]), n);
           if (e < 0)
             {
               break;
             }
-          if ( e < n)
+          if (e < n)
             {
-            //  sleep (1);
+              //  sleep (1);
               std::cout << "e < n : " << e << "<" << n << std::endl;
             }
-            n -= e;
-            tot += e;
+          n -= e;
+          tot += e;
         }
 
-  //    std::cout << "write: " << n << std::endl;
-     // sleep (1);
+      //    std::cout << "write: " << n << std::endl;
+      // sleep (1);
     }
 
   std::cout << "did write all buffers total:" << tot << std::endl;

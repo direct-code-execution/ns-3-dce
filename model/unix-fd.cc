@@ -19,8 +19,11 @@ UnixFd::GetTypeId (void)
   return tid;
 }
 
-UnixFd::UnixFd () : m_fdCount (0), m_fdFlags (0), m_statusFlags (0)
-{}
+UnixFd::UnixFd () : m_fdCount (0),
+                    m_fdFlags (0),
+                    m_statusFlags (0)
+{
+}
 void
 UnixFd::RemoveWaitQueue (WaitQueueEntry* old, bool andUnregister)
 {

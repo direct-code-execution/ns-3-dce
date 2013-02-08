@@ -27,18 +27,19 @@ namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (NetlinkSocketFactory);
 
-TypeId 
+TypeId
 NetlinkSocketFactory::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::NetlinkSocketFactory")
     .AddConstructor<NetlinkSocketFactory> ()
     .SetParent<SocketFactory> ()
-    ;
+  ;
   return tid;
 }
 
 NetlinkSocketFactory::NetlinkSocketFactory ()
-{}
+{
+}
 
 Ptr<Socket> NetlinkSocketFactory::CreateSocket (void)
 {
@@ -46,5 +47,5 @@ Ptr<Socket> NetlinkSocketFactory::CreateSocket (void)
   Ptr<NetlinkSocket> socket = CreateObject<NetlinkSocket> ();
   socket->SetNode (node);
   return socket;
-} 
+}
 } // namespace ns3

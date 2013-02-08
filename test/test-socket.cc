@@ -107,7 +107,7 @@ void test_raw (void)
   ret = sendmsg (sock, &msg, 0);
   // XXX: FIXME to handle header size
   TEST_ASSERT_EQUAL (ret, (int)sizeof (buf) + iph.ip_hl * 4);
-  //  TEST_ASSERT_EQUAL (ret, (int)sizeof (buf) + );
+  //  TEST_ASSERT_EQUAL (ret, (int)sizeof (buf) +);
   OUTPUT ("RAW send ret = " << ret);
 
   // recvmsg with long buf

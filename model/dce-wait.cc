@@ -23,12 +23,12 @@ pid_t dce_waitpid (pid_t pid, int *status, int options)
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread);
 
-  if ((options & WUNTRACED) || (options & WCONTINUED) )
+  if ((options & WUNTRACED) || (options & WCONTINUED))
     {
       thread->err = EINVAL;
       return -1;
     }
-  if ( ( pid == 0) || (pid < -1)) // Process Group not yet supported.
+  if ((pid == 0) || (pid < -1)) // Process Group not yet supported.
     {
       thread->err = EINVAL;
       return -1;
@@ -42,23 +42,23 @@ pid_t dce_waitpid (pid_t pid, int *status, int options)
       for (std::set<uint16_t>::iterator it = thread->process->children.begin ();
            it != thread->process->children.end (); it++)
         {
-          if ( (*it) > 1 )
+          if ((*it) > 1)
             {
               Process *p = thread->process->manager->SearchProcess (*it);
 
-              if ( p )
+              if (p)
                 {
-                  if ( ( pid == -1 ) || ( pid == p->pid ) )
+                  if ((pid == -1) || (pid == p->pid))
                     {
                       childCount++;
-                      if ( !p->alloc && !p->loader )  // process zombie ?
+                      if (!p->alloc && !p->loader)  // process zombie ?
                         {
                           pid_t id = p->pid;
                           int exitCode = p->timing.exitValue;
 
                           std::set<uint16_t>::iterator it = thread->process->children.find (id);
 
-                          if ( it != thread->process->children.end () )
+                          if (it != thread->process->children.end ())
                             {
                               thread->process->children.erase (it);
                             }

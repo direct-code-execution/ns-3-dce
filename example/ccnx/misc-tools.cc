@@ -19,9 +19,9 @@ void RunIp (Ptr<Node> node, Time at, std::string str)
   DceApplicationHelper process;
   ApplicationContainer apps;
   process.SetBinary ("ip");
-  process.SetStackSize (1<<16);
-  process.ResetArguments();
-  process.ParseArguments(str.c_str ());
+  process.SetStackSize (1 << 16);
+  process.ResetArguments ();
+  process.ParseArguments (str.c_str ());
   apps = process.Install (node);
   apps.Start (at);
 }

@@ -16,7 +16,7 @@ NS_LOG_COMPONENT_DEFINE ("DceMisc");
 int dce_uname (struct utsname *buf)
 {
   Ptr<DceNodeContext> nodeContext = DceNodeContext::GetNodeContext ();
-  NS_ASSERT ( 0 != nodeContext );
+  NS_ASSERT (0 != nodeContext);
 
   return nodeContext->UName (buf);
 }
@@ -24,7 +24,7 @@ int dce_uname (struct utsname *buf)
 int dce_gethostname (char *name, size_t len)
 {
   Thread *current = Current ();
-  NS_LOG_FUNCTION (current << UtilsGetNodeId () );
+  NS_LOG_FUNCTION (current << UtilsGetNodeId ());
   NS_ASSERT (current != 0);
 
   if (!name)
@@ -45,7 +45,7 @@ int dce_gethostname (char *name, size_t len)
   size_t sl = strlen (tmp.nodename);
 
   memset (name, 0, len);
-  memcpy (name, &tmp.nodename, std::min(sl, len));
+  memcpy (name, &tmp.nodename, std::min (sl, len));
 
   return 0;
 }

@@ -42,14 +42,14 @@ test1 (void)
   cpt1 = cpt2 = 0;
   dp = opendir (outPath.c_str ());
 
-  TEST_ASSERT ( dp != 0 );
+  TEST_ASSERT (dp != 0);
 
   while ((dirp = readdir (dp)) != NULL)
     {
       std::cout <<  dirp->d_name << std::endl;
       cpt1++;
     }
-  TEST_ASSERT ( cpt1 > 0 );
+  TEST_ASSERT (cpt1 > 0);
 
   rewinddir (dp);
 
@@ -60,7 +60,7 @@ test1 (void)
       std::cout <<  dirp->d_name << std::endl;
       cpt2++;
     }
-  TEST_ASSERT ( cpt2 > 0 );
+  TEST_ASSERT (cpt2 > 0);
   TEST_ASSERT_EQUAL (cpt1, cpt2);
 
   int st = closedir (dp);

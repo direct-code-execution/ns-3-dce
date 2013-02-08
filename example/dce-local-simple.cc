@@ -23,19 +23,19 @@ int main (int argc, char *argv[])
   DceApplicationHelper dce;
   ApplicationContainer apps;
 
-  dce.SetStackSize (1<<20);
+  dce.SetStackSize (1 << 20);
 
   dce.SetBinary ("unix-server");
-  dce.ResetArguments();
+  dce.ResetArguments ();
   apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds (4.0));
 
   dce.SetBinary ("unix-client");
-  dce.ResetArguments();
+  dce.ResetArguments ();
   apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds (4.1));
 
-  Simulator::Stop (Seconds(1000.0));
+  Simulator::Stop (Seconds (1000.0));
   Simulator::Run ();
   Simulator::Destroy ();
 

@@ -18,7 +18,7 @@ static void test_fork (void)
   char * toto = strdup ("tintin");
   char * houla = (char*)42;
 
-  printf ( "Before Fork toto: %lx %s \nhoula %lx\n", toto, toto, houla);
+  printf ("Before Fork toto: %lx %s \nhoula %lx\n", toto, toto, houla);
 
   pid_t pid = fork ();
 
@@ -27,7 +27,7 @@ static void test_fork (void)
   if (pid == 0)
     {
       // child.
-      printf ( "CHILD toto: %lx %s \nhoula %lx\n", toto, toto, houla);
+      printf ("CHILD toto: %lx %s \nhoula %lx\n", toto, toto, houla);
       printf ("I am the child ! \n");
       TEST_ASSERT_EQUAL (parent, 1);
       TEST_ASSERT_EQUAL (g_static, 1);
@@ -44,7 +44,7 @@ static void test_fork (void)
     }
   else
     {
-      printf ( "FATHER toto: %lx %s \nhoula %lx\n", toto, toto, houla);
+      printf ("FATHER toto: %lx %s \nhoula %lx\n", toto, toto, houla);
       printf ("I am the father, my son pid is %d\n", pid);
       TEST_ASSERT_EQUAL (parent, 1);
       TEST_ASSERT_EQUAL (g_static, 1);
@@ -67,14 +67,14 @@ static void test_fork (void)
 static void *
 test_wait_fork_thread (void *arg)
 {
-  pid_t pid = *((pid_t*) arg );
+  pid_t pid = *((pid_t*) arg);
   int status = 0;
 
   printf ("Thread about to wait \n");
 
   pid_t w = wait (&status);
 
-  printf ("test wait fork thread: after wait >>> %d,  status = %d signal %d \n", w,  WEXITSTATUS ( status), WTERMSIG (status) );
+  printf ("test wait fork thread: after wait >>> %d,  status = %d signal %d \n", w,  WEXITSTATUS (status), WTERMSIG (status));
 
   return 0;
 }
@@ -124,13 +124,13 @@ static void test_wait_fork (void)
       pthread_t thread;
       int status = pthread_create (&thread, NULL, &test_wait_fork_thread, (void*)&pid);
       sleep (1);
-      pid_t w =  waitpid ( -1, &status, WNOHANG);
-      if ( 0 == w )
+      pid_t w =  waitpid (-1, &status, WNOHANG);
+      if (0 == w)
         {
           printf ("child not yet ended.\n");
-          w = waitpid ( pid, &status, 0);
+          w = waitpid (pid, &status, 0);
         }
-      printf ("father wait fork thread: after wait >>> %d, status = %d signal %d \n", w,  WEXITSTATUS ( status), WTERMSIG (status) );
+      printf ("father wait fork thread: after wait >>> %d, status = %d signal %d \n", w,  WEXITSTATUS (status), WTERMSIG (status));
 
       pthread_join (thread, 0);
     }
@@ -142,7 +142,7 @@ void big_fork (int prof)
     {
       pid_t pid = fork ();
 
-      if ( -1 == pid )
+      if (-1 == pid)
         {
           printf ("fork failed errno:%d, prof=%d\n", errno, prof);
           return;
@@ -151,7 +151,7 @@ void big_fork (int prof)
         {
           int st = 0;
 
-          pid_t w =  waitpid ( pid, &st, 0);
+          pid_t w =  waitpid (pid, &st, 0);
           printf ("Child pid:%d %d\n", pid, w);
           if (prof > 0)
             {
@@ -176,7 +176,7 @@ void big_fork_exec (int prof)
     {
       pid_t pid = fork ();
 
-      if ( -1 == pid )
+      if (-1 == pid)
         {
           printf ("fork failed errno:%d, prof=%d\n", errno, prof);
           return;
@@ -197,7 +197,7 @@ void big_fork_exec (int prof)
 
           free (copy);
 
-          pid_t w =  waitpid ( pid, &st, 0);
+          pid_t w =  waitpid (pid, &st, 0);
           printf ("Child pid:%d %d\n", pid, w);
           if (prof > 0)
             {
@@ -236,7 +236,7 @@ first_test (void)
   pid_t pid = fork ();
   char c;
 
-  if ( -1 == pid )
+  if (-1 == pid)
     {
       printf ("fork failed errno:%d\n", errno);
       return;
@@ -324,7 +324,7 @@ int main (int argc, char *argv[])
     }
   else
     {
-      big_fork_exec (argc > 1 ? (atoi (argv[1])) : 0 );
+      big_fork_exec (argc > 1 ? (atoi (argv[1])) : 0);
     }
   return 0;
 }

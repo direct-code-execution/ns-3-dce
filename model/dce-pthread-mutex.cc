@@ -27,14 +27,14 @@ MutexToMid (const pthread_mutex_t *mutex)
     }
   return 0;
 }
-static void 
+static void
 MidToMutex (uint32_t mid, pthread_mutex_t *mutex)
 {
   uint32_t *pmid = (uint32_t *)mutex;
   *pmid = mid;
 }
 
-static void 
+static void
 PthreadMutexInitStatic (pthread_mutex_t *mutex)
 {
   Thread *current = Current ();
@@ -98,13 +98,13 @@ int dce_pthread_mutex_init (pthread_mutex_t *mutex,
       return EINVAL;
     }
   struct PthreadMutexAttr *attr = (struct PthreadMutexAttr *)attribute;
-  if (attr != 0 && 
-      attr->type != PTHREAD_MUTEX_RECURSIVE &&
-      attr->type != PTHREAD_MUTEX_NORMAL)
+  if (attr != 0
+      && attr->type != PTHREAD_MUTEX_RECURSIVE
+      && attr->type != PTHREAD_MUTEX_NORMAL)
     {
       return EINVAL;
     }
-  /* Note: there is no way to detect a second attempt to initialize 
+  /* Note: there is no way to detect a second attempt to initialize
    * a mutex because there is no way to detect the difference between
    * a mutex initialized correctly and a mutex un-initialized but filled
    * with random garbage which happens to look like correctly-initialized
@@ -154,7 +154,7 @@ int dce_pthread_mutex_destroy (pthread_mutex_t *mutex)
   // If no one is holding this mutex, its count should be zero.
   NS_ASSERT (mtx->count == 0);
 
-  for (std::vector<struct Mutex *>::iterator i = current->process->mutexes.begin (); 
+  for (std::vector<struct Mutex *>::iterator i = current->process->mutexes.begin ();
        i != current->process->mutexes.end (); ++i)
     {
       if (mtx == *i)
@@ -268,8 +268,8 @@ int dce_pthread_mutex_unlock (pthread_mutex_t *mutex)
     {
       return EINVAL;
     }
-  if (mtx->current == 0 || 
-      mtx->current != current)
+  if (mtx->current == 0
+      || mtx->current != current)
     {
       return EPERM;
     }
@@ -277,11 +277,11 @@ int dce_pthread_mutex_unlock (pthread_mutex_t *mutex)
   if (mtx->count == 0)
     {
       mtx->current = 0;
-      // Now, we tell the first waiting thread that 
+      // Now, we tell the first waiting thread that
       // it can potentially take the lock. Note that
-      // there are lots of different possible policies 
+      // there are lots of different possible policies
       // here. We could wake up everybody and let the
-      // process scheduler pick the highest priority 
+      // process scheduler pick the highest priority
       // thread, we could attempt to find a better candidate
       // here locally to avoid waking up lots of threads only
       // to bring them back to sleep after they wake up because

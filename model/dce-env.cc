@@ -9,7 +9,7 @@ NS_LOG_COMPONENT_DEFINE ("SimuEnv");
 
 using namespace ns3;
 
-char *dce_getenv (const char *name)
+char * dce_getenv (const char *name)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << name);
   NS_ASSERT (Current () != 0);
@@ -51,11 +51,11 @@ int dce_putenv (char *string)
       return 0;
     }
   // not found: we are going to add it now.
-  char **newEnvp = (char**)malloc (sizeof(char*)*(len+1+1));
+  char **newEnvp = (char**)malloc (sizeof(char*) * (len + 1 + 1));
   current->process->allocated.push_back (newEnvp);
-  memcpy (newEnvp, *penvp, sizeof(char*)*(len));
+  memcpy (newEnvp, *penvp, sizeof(char*) * (len));
   newEnvp[len] = string;
-  newEnvp[len+1] = 0;
+  newEnvp[len + 1] = 0;
   *penvp = newEnvp;
   return 0;
 }
@@ -82,18 +82,18 @@ int dce_setenv (const char *name, const char *value, int overwrite)
         }
       len++;
     }
-  char **newEnvp = (char**)malloc (sizeof(char*)*(len+1+1));
+  char **newEnvp = (char**)malloc (sizeof(char*) * (len + 1 + 1));
   current->process->allocated.push_back (newEnvp);
-  memcpy (newEnvp, *penvp, sizeof(char*)*(len));
+  memcpy (newEnvp, *penvp, sizeof(char*) * (len));
   int valuelen = strlen (value);
   char *str = (char*)malloc (namelen + 1 + valuelen + 1);
   current->process->allocated.push_back (str);
   memcpy (str, name, namelen);
   str[namelen] = '=';
-  memcpy (str+namelen+1,value, valuelen);
-  str[namelen+1+valuelen] = 0;
+  memcpy (str + namelen + 1,value, valuelen);
+  str[namelen + 1 + valuelen] = 0;
   newEnvp[len] = str;
-  newEnvp[len+1] = 0;
+  newEnvp[len + 1] = 0;
   *penvp = newEnvp;
   return 0;
 }
@@ -118,8 +118,8 @@ int dce_unsetenv (const char *name)
           continue;
         }
       char **i, **prev;
-      *cur = *(cur+1);
-      for (i = cur+1, prev = cur; *i != 0; i++, prev++)
+      *cur = *(cur + 1);
+      for (i = cur + 1, prev = cur; *i != 0; i++, prev++)
         {
           *prev = *i;
         }

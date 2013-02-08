@@ -90,7 +90,7 @@ int dce_sem_destroy (sem_t *sem)
     {
       NS_FATAL_ERROR ("Trying to destroy a semaphore on which someone else is waiting.");
     }
-  for (std::vector<struct Semaphore *>::iterator i = current->process->semaphores.begin (); 
+  for (std::vector<struct Semaphore *>::iterator i = current->process->semaphores.begin ();
        i != current->process->semaphores.end (); ++i)
     {
       if (semaphore == *i)

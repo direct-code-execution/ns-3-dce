@@ -20,14 +20,14 @@ int test1 ()
 
   setenv ("CALLER", "TEST1", 1);
   ret = execv ("/bin_dce/test-exec", (char * const *)args);
-  TEST_ASSERT ( false ); // Must not be reached
+  TEST_ASSERT (false); // Must not be reached
 
   return ret;
 }
 // Test execvp
 int test2 ()
 {
-  TEST_ASSERT_EQUAL ( strcmp ("TEST1", getenv ("CALLER")), 0 );
+  TEST_ASSERT_EQUAL (strcmp ("TEST1", getenv ("CALLER")), 0);
   setenv ("CALLER", "TEST2", 1);
   const char * args[] = { "test-exec-not-existing", "3", 0 };
   int ret = execvp ("test-exec-not-existing", (char * const *)args);
@@ -35,28 +35,28 @@ int test2 ()
   TEST_ASSERT_EQUAL (errno,  ENOENT);
 
   ret = execvp ("test-exec", (char * const *)args);
-  TEST_ASSERT ( false ); // Must not be reached
+  TEST_ASSERT (false); // Must not be reached
 
   return ret;
 }
 // Test execl
 int test3 ()
 {
-  TEST_ASSERT_EQUAL ( strcmp ("TEST2", getenv ("CALLER")), 0 );
+  TEST_ASSERT_EQUAL (strcmp ("TEST2", getenv ("CALLER")), 0);
   setenv ("CALLER", "TEST3", 1);
-  int ret = execl ("test-exec-not-existing", "4", NULL );
+  int ret = execl ("test-exec-not-existing", "4", NULL);
   TEST_ASSERT_EQUAL (ret, -1);
   TEST_ASSERT_EQUAL (errno,  ENOENT);
 
   ret = execl ("/bin_dce/test-exec", "/bin_dce/test-exec", "4", NULL);
-  TEST_ASSERT ( false ); // Must not be reached
+  TEST_ASSERT (false); // Must not be reached
 
   return ret;
 }
 // Test execve
 int test4 ()
 {
-  TEST_ASSERT_EQUAL ( strcmp ("TEST3", getenv ("CALLER")), 0 );
+  TEST_ASSERT_EQUAL (strcmp ("TEST3", getenv ("CALLER")), 0);
   setenv ("CALLER", "", 1);
 
   const char * args[] = { "test-exec-not-existing", "5", 0 };
@@ -70,7 +70,7 @@ int test4 ()
     const char * args[] = { "build/bin/test-exec", "5", 0 };
 
     ret = execve ("/bin_dce/test-exec", (char * const *)args, (char * const *)env);
-    TEST_ASSERT ( false ); // Must not be reached
+    TEST_ASSERT (false); // Must not be reached
   }
 
   return ret;
@@ -78,30 +78,30 @@ int test4 ()
 // Test execlp
 int test5 ()
 {
-  TEST_ASSERT_EQUAL ( strcmp ("TEST4", getenv ("CALLER")), 0 );
+  TEST_ASSERT_EQUAL (strcmp ("TEST4", getenv ("CALLER")), 0);
   setenv ("CALLER", "TEST5", 1);
   int ret = execlp ("test-exec-not-existing", "6", NULL);
   TEST_ASSERT_EQUAL (ret, -1);
   TEST_ASSERT_EQUAL (errno,  ENOENT);
 
   ret = execlp ("test-exec", "test-exec", "6", NULL);
-  TEST_ASSERT ( false ); // Must not be reached
+  TEST_ASSERT (false); // Must not be reached
 
   return ret;
 }
 // Test execle
 int test6 ()
 {
-  TEST_ASSERT_EQUAL ( strcmp ("TEST5", getenv ("CALLER")), 0 );
+  TEST_ASSERT_EQUAL (strcmp ("TEST5", getenv ("CALLER")), 0);
   setenv ("CALLER", "", 1);
   const char * env[] = { "CALLER=TEST6", "LD_LIBRARY_PATH=./build/lib", 0 };
   int ret = execle ("test-exec", "test-exec",  "7", NULL, (char * const *) env);
   TEST_ASSERT_EQUAL (ret, -1);
   TEST_ASSERT_EQUAL (errno,  ENOENT);
 
-  ret = execle ("/bin_dce/test-exec", "/bin_dce/test-exec", "7", NULL, (char * const *) env );
+  ret = execle ("/bin_dce/test-exec", "/bin_dce/test-exec", "7", NULL, (char * const *) env);
   printf ("execle -> %d, errno=%d\n", ret, errno);
-  TEST_ASSERT ( false ); // Must not be reached
+  TEST_ASSERT (false); // Must not be reached
 
   return ret;
 }
@@ -134,7 +134,7 @@ int test7 ()
       status = pthread_create (&thread, NULL, &thread_test7, 0);
     }
   int ret = execl ("/bin_dce/test-exec", "/bin_dce/test-exec", "8", NULL);
-  TEST_ASSERT ( false ); // Must not be reached
+  TEST_ASSERT (false); // Must not be reached
 
   return ret;
 }
@@ -151,17 +151,17 @@ int test8 ()
   fprintf (f,"#!/bin/sh\n");
   fprintf (f,"CALLER=TEST6\n");
   fprintf (f,"export CALLER\n");
-  fprintf (f,"/bin_dce/test-exec 9\n" );
+  fprintf (f,"/bin_dce/test-exec 9\n");
   fclose (f);
 
   int ret = execve  ("Script8", argv, envp);
-  TEST_ASSERT ( false ); // Must not be reached
+  TEST_ASSERT (false); // Must not be reached
 
   return ret;
 }
 int last_test ()
 {
-  TEST_ASSERT_EQUAL ( strcmp ("TEST6", getenv ("CALLER")), 0 );
+  TEST_ASSERT_EQUAL (strcmp ("TEST6", getenv ("CALLER")), 0);
   sleep (1);
   printf ("Last test.\n");
   return 0;
@@ -169,9 +169,9 @@ int last_test ()
 extern char *__progname;
 int main (int c, char **v)
 {
-  printf ("ProgName: %s %s %s \n", __progname, program_invocation_name, program_invocation_short_name );
+  printf ("ProgName: %s %s %s \n", __progname, program_invocation_name, program_invocation_short_name);
   printf ("%s: argc=%d", v[0], c);
-  if ( c == 1)
+  if (c == 1)
     {
       printf ("\n");
       return test1 ();

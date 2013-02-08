@@ -14,7 +14,7 @@
 #include <netinet/ip.h>
 #include <arpa/inet.h>
 
-#define BUFF_LEN ((size_t) 33 * 1024 )
+#define BUFF_LEN ((size_t) 33 * 1024)
 
 static char *sendBuffer = 0;
 static char *readBuffer = 0;
@@ -23,7 +23,7 @@ static
 void fill_addr (struct sockaddr_in &addr, int port)
 {
   int res = inet_aton ("127.0.0.1", &(addr.sin_addr));
-  TEST_ASSERT_EQUAL ( res, 1);
+  TEST_ASSERT_EQUAL (res, 1);
 
   addr.sin_family = AF_INET;
   addr.sin_port = htons (port);
@@ -41,13 +41,13 @@ client1 (void *arg)
   sleep (1);
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   fill_addr (ad, 1234);
   status = connect (sock, (struct sockaddr *) &ad, sizeof(ad));
-  printf ("Client1: connect --> %d errno: %d\n", status, errno );
-  // if ( ( status != 0) &&  ( EINPROGRESS == errno )) goto encore;
-  TEST_ASSERT_EQUAL ( status, 0);
+  printf ("Client1: connect --> %d errno: %d\n", status, errno);
+  // if ((status != 0) &&  (EINPROGRESS == errno)) goto encore;
+  TEST_ASSERT_EQUAL (status, 0);
 
   char *crsr = sendBuffer;
   for (size_t i = 0; i < BUFF_LEN; i++)
@@ -60,10 +60,10 @@ client1 (void *arg)
       status = send (sock, sendBuffer + tot, BUFF_LEN - tot, 0);
       printf ("Client1: send %d / %ld\n", status, BUFF_LEN - tot);
 
-      TEST_ASSERT ( status > 0 );
+      TEST_ASSERT (status > 0);
       tot += status;
     }
-  TEST_ASSERT_EQUAL ( tot, BUFF_LEN);
+  TEST_ASSERT_EQUAL (tot, BUFF_LEN);
 
   tot = 0;
 
@@ -78,14 +78,14 @@ client1 (void *arg)
           continue;
         }
 
-      TEST_ASSERT ( status > 0 );
+      TEST_ASSERT (status > 0);
       tot += status;
     }
-  TEST_ASSERT_EQUAL ( tot, BUFF_LEN);
+  TEST_ASSERT_EQUAL (tot, BUFF_LEN);
 
   for (size_t i = 0; i < BUFF_LEN; i++)
     {
-      TEST_ASSERT_EQUAL ( readBuffer[i], sendBuffer[i] );
+      TEST_ASSERT_EQUAL (readBuffer[i], sendBuffer[i]);
     }
 
   status = close (sock);
@@ -105,7 +105,7 @@ server1 (void *arg)
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   fill_addr (ad, 1234);
   status = bind (sock, (struct sockaddr *) &ad, sizeof(ad));
@@ -115,7 +115,7 @@ server1 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -124,20 +124,20 @@ server1 (void *arg)
     {
       status = recv (sockin, readBuffer + tot, BUFF_LEN - tot, 0);
       printf ("Server1: received %d / %ld\n", status, BUFF_LEN - tot);
-      TEST_ASSERT ( status > 0 );
+      TEST_ASSERT (status > 0);
       tot += status;
     }
-  TEST_ASSERT_EQUAL ( tot, BUFF_LEN);
+  TEST_ASSERT_EQUAL (tot, BUFF_LEN);
 
   tot = 0;
   while (tot < BUFF_LEN)
     {
       status = send (sockin, readBuffer + tot, BUFF_LEN - tot, 0);
       printf ("Server1: send %d / %ld\n", status, BUFF_LEN - tot);
-      TEST_ASSERT ( status > 0 );
+      TEST_ASSERT (status > 0);
       tot += status;
     }
-  TEST_ASSERT_EQUAL ( tot, BUFF_LEN);
+  TEST_ASSERT_EQUAL (tot, BUFF_LEN);
 
   status = close (sockin);
   printf ("Server1: close -> %d \n ", status);
@@ -161,10 +161,10 @@ client2 (void *arg)
   sleep (1);
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   fill_addr (ad, 1235);
-  status = connect (sock, (struct sockaddr *) &ad, sizeof(ad) );
+  status = connect (sock, (struct sockaddr *) &ad, sizeof(ad));
   TEST_ASSERT_EQUAL (status, 0);
 
   struct timeval tiout;
@@ -177,10 +177,10 @@ client2 (void *arg)
   tot = 0;
   status = recv (sock, readBuffer, TEST2_LEN, 0);
   printf ("recv->%d, errno:%d\n", status, errno);
-  TEST_ASSERT ( ( status == -1 ) && (errno == EAGAIN) );
+  TEST_ASSERT ((status == -1) && (errno == EAGAIN));
 
   status = recv (sock, readBuffer, TEST2_LEN, 0);
-  TEST_ASSERT ( status > 0 );
+  TEST_ASSERT (status > 0);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -201,7 +201,7 @@ server2 (void *arg)
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   fill_addr (ad, 1235);
   status = bind (sock, (struct sockaddr *) &ad, sizeof(ad));
@@ -211,7 +211,7 @@ server2 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -224,7 +224,7 @@ server2 (void *arg)
 
   sleep (5);
   status = send (sockin, sendBuffer, TEST2_LEN, 0);
-  TEST_ASSERT ( status > 0 );
+  TEST_ASSERT (status > 0);
 
   // Close after send : client must receive last data
   status = close (sockin);
@@ -251,10 +251,10 @@ client3 (void *arg)
 
   sleep (1);
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   fill_addr (ad, 1236);
-  status = connect (sock, (struct sockaddr *) &ad, sizeof(ad) );
+  status = connect (sock, (struct sockaddr *) &ad, sizeof(ad));
   TEST_ASSERT_EQUAL (status, 0);
 
   tot = 0;
@@ -289,7 +289,7 @@ server3 (void *arg)
   int sockin = -1;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   fill_addr (ad, 1236);
   status = bind (sock, (struct sockaddr *) &ad, sizeof(ad));
@@ -299,7 +299,7 @@ server3 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -323,7 +323,7 @@ server3 (void *arg)
       printf ("Server3: send -> %d, errno: %d \n ",status, errno);
     }
   while (status > 0);
-  TEST_ASSERT ( ( status == -1 ) && (errno == EAGAIN) );
+  TEST_ASSERT ((status == -1) && (errno == EAGAIN));
 
   status = close (sockin);
   TEST_ASSERT_EQUAL (status, 0);
@@ -344,17 +344,17 @@ client4 (void *arg)
   int sock = -1;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   status = recv (sock, readBuffer, TEST4_LEN, 0);
   printf ("Client4: recv status %d and errno %d\n", status, errno);
   TEST_ASSERT_EQUAL (status, -1);
-  TEST_ASSERT ( (errno == EINVAL ) || (errno == ENOTCONN ) );
+  TEST_ASSERT ((errno == EINVAL) || (errno == ENOTCONN));
 
   status = send (sock, readBuffer, TEST4_LEN, 0);
   printf ("Client4: send status %d and errno %d\n", status, errno);
   TEST_ASSERT_EQUAL (status, -1);
-  TEST_ASSERT ( (errno == EPIPE ) || (errno == ENOTCONN ) );
+  TEST_ASSERT ((errno == EPIPE) || (errno == ENOTCONN));
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -380,12 +380,12 @@ client5 (void *arg)
   sleep (1);
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   fill_addr (ad, 1236);
   status = connect (sock, (struct sockaddr *) &ad, sizeof(ad));
-  TEST_ASSERT ( status == -1 );
-  TEST_ASSERT_EQUAL (errno, ECONNREFUSED );
+  TEST_ASSERT (status == -1);
+  TEST_ASSERT_EQUAL (errno, ECONNREFUSED);
 
   sleep (15);
 
@@ -412,7 +412,7 @@ server5 (void *arg)
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   fill_addr (ad, 1236);
   status = bind (sock, (struct sockaddr *) &ad, sizeof(ad));
@@ -427,7 +427,7 @@ server5 (void *arg)
   printf ("Server5: accepting...\n");
   sockin = accept (sock, NULL, NULL);
   printf ("Server5: after accept ! \n ");
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -453,21 +453,21 @@ client6 (void *arg)
   sleep (1);
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   fill_addr (ad, 1237);
-  status = connect (sock, (struct sockaddr *) &ad, sizeof(ad) );
-  TEST_ASSERT_EQUAL (status, 0 );
+  status = connect (sock, (struct sockaddr *) &ad, sizeof(ad));
+  TEST_ASSERT_EQUAL (status, 0);
 
   sleep (1);
 
   sock2 = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock2 >= 0 );
+  TEST_ASSERT (sock2 >= 0);
 
   fill_addr (ad, 1237);
-  status = connect (sock2, (struct sockaddr *) &ad, sizeof(ad) );
-  TEST_ASSERT_EQUAL (status, -1 );
-  TEST_ASSERT_EQUAL (errno, ECONNREFUSED );
+  status = connect (sock2, (struct sockaddr *) &ad, sizeof(ad));
+  TEST_ASSERT_EQUAL (status, -1);
+  TEST_ASSERT_EQUAL (errno, ECONNREFUSED);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -490,7 +490,7 @@ server6 (void *arg)
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   fill_addr (ad, 1237);
   status = bind (sock, (struct sockaddr *) &ad, sizeof(ad));
@@ -500,7 +500,7 @@ server6 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -522,14 +522,14 @@ client7 (void *arg)
   sleep (1);
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   memset (&address, 0, sizeof(address));
   address.sun_family = AF_UNIX;
   strcpy (address.sun_path, SOCK_PATH);
 
   status = connect (sock, (struct sockaddr *) &address, SUN_LEN(&address));
-  TEST_ASSERT_EQUAL (status , 0 );
+  TEST_ASSERT_EQUAL (status , 0);
 
   int val = 42;
   socklen_t sz = sizeof(val);
@@ -572,7 +572,7 @@ server7 (void *arg)
 
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
 
-  TEST_ASSERT( sock >= 0 );
+  TEST_ASSERT(sock >= 0);
 
   struct sockaddr_un address;
 
@@ -595,7 +595,7 @@ server7 (void *arg)
   TEST_ASSERT_UNEQUAL(val, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   val = 0;
   sz = sizeof(val);
@@ -632,33 +632,33 @@ client8 (void *arg)
   sleep (1);
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   fill_addr (ad, 1239);
-  status = connect (sock, (struct sockaddr *) &ad, sizeof(ad) );
-  TEST_ASSERT_EQUAL (status, 0 );
+  status = connect (sock, (struct sockaddr *) &ad, sizeof(ad));
+  TEST_ASSERT_EQUAL (status, 0);
 
   socklen_t len = sizeof(struct sockaddr);
   status = getpeername (sock, (struct sockaddr *) &peer, &len);
-  printf ("Client8: peer port %d \n \n ", ntohs ( ((struct sockaddr_in*)&peer)->sin_port ));
-  TEST_ASSERT_EQUAL ( status, 0 );
-//  TEST_ASSERT_EQUAL ( memcmp (&ad, &peer, sizeof(ad)) , 0 );
+  printf ("Client8: peer port %d \n \n ", ntohs (((struct sockaddr_in*)&peer)->sin_port));
+  TEST_ASSERT_EQUAL (status, 0);
+//  TEST_ASSERT_EQUAL (memcmp (&ad, &peer, sizeof(ad)) , 0);
 
   len = sizeof(struct sockaddr);
   memset (&loc, 0, len);
   status = getsockname (sock, (struct sockaddr *) &loc, &len);
-  TEST_ASSERT_EQUAL ( status, 0 );
-  printf ("Client8: local port %d \n \n ", ntohs ( ((struct sockaddr_in*)&loc)->sin_port ));
+  TEST_ASSERT_EQUAL (status, 0);
+  printf ("Client8: local port %d \n \n ", ntohs (((struct sockaddr_in*)&loc)->sin_port));
 
   sleep (3);
 
   status = shutdown (sock, SHUT_RD);
-  TEST_ASSERT_EQUAL (status, 0 );
+  TEST_ASSERT_EQUAL (status, 0);
 
   printf ("client8: 2 reads\n");
 
   status = read (sock, buf, 1024);
-  TEST_ASSERT_EQUAL (status, sizeof(int) );
+  TEST_ASSERT_EQUAL (status, sizeof(int));
 
   status = read (sock, buf, 1024);
   TEST_ASSERT_EQUAL (status, 0);
@@ -667,12 +667,12 @@ client8 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   fill_addr (ad, 1239);
-  status = connect (sock, (struct sockaddr *) &ad, sizeof(ad) );
+  status = connect (sock, (struct sockaddr *) &ad, sizeof(ad));
   printf ("Client8: After connect sock fd : %d\n", sock);
-  TEST_ASSERT_EQUAL (status, 0 );
+  TEST_ASSERT_EQUAL (status, 0);
   sleep (1);
   status = write (sock, &status, sizeof(status));
   printf ("Client8: write -> %d\n", status);
@@ -682,11 +682,11 @@ client8 (void *arg)
   status = close (sock); //status = shutdown (sock, SHUT_WR);
   //
   printf ("Client8: close -> %d\n",status);
-  TEST_ASSERT_EQUAL (status, 0 );
+  TEST_ASSERT_EQUAL (status, 0);
 
   status = write (sock, &status, sizeof(status));
   // Bug in NS3 TCP STACK  TEST_ASSERT_EQUAL (status, -1);
-  // Bug in NS3 TCP STACK TEST_ASSERT_EQUAL (errno , EPIPE );
+  // Bug in NS3 TCP STACK TEST_ASSERT_EQUAL (errno , EPIPE);
 
   sleep (5);
 
@@ -712,7 +712,7 @@ server8 (void *arg)
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
 
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   fill_addr (ad, 1239);
   status = bind (sock, (struct sockaddr *) &ad, sizeof(ad));
@@ -723,19 +723,19 @@ server8 (void *arg)
   memset (&locName, 0, len);
   status = getsockname (sock, (struct sockaddr *) &locName, &len);
   printf ("Server8: getsockname -> %d\n\n ", status);
-  printf ("Server8: local port %d \n \n ", ntohs ( locName.sin_port ));
+  printf ("Server8: local port %d \n \n ", ntohs (locName.sin_port));
 
   status = listen (sock, 1);
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   len = sizeof(struct sockaddr_in);
   memset (&peerName, 0, len);
   status = getpeername (sockin, (struct sockaddr *) &peerName, &len);
   printf ("Server8: getpeername -> %d\n\n ", status);
-  printf ("Server8: peer port %d \n \n ", ntohs ( peerName.sin_port ));
+  printf ("Server8: peer port %d \n \n ", ntohs (peerName.sin_port));
 
   status = write (sockin, &status, sizeof(status));
   TEST_ASSERT_EQUAL (status, sizeof(status));
@@ -750,17 +750,17 @@ server8 (void *arg)
   printf ("Server8: About to accept !\n");
   sockin = accept (sock, NULL, NULL);
   printf ("Server8: After accept sock fd : %d\n", sockin);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   sleep (1);
 
   status = read (sockin, &status, sizeof(status));
   printf ("server8: read %d errno %d \n \n ",status, errno);
-  TEST_ASSERT_EQUAL (status, sizeof(status) );
+  TEST_ASSERT_EQUAL (status, sizeof(status));
 
   status = read (sockin, &status, sizeof(status));
   printf ("server8: read %d errno %d \n \n ",status, errno);
-  TEST_ASSERT_EQUAL (status, 0 );
+  TEST_ASSERT_EQUAL (status, 0);
 
   sleep (10);
 
@@ -791,10 +791,10 @@ server9 (void *arg)
   struct sockaddr_in ad;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   fill_addr (ad, 1238);
-  status = bind (sock, (struct sockaddr *) &ad, sizeof(ad) );
+  status = bind (sock, (struct sockaddr *) &ad, sizeof(ad));
   TEST_ASSERT_EQUAL (status, 0);
 
   status = listen (sock, 1);
@@ -809,8 +809,8 @@ server9 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT_EQUAL ( sockin, -1 );
-  TEST_ASSERT_EQUAL ( errno, EAGAIN );
+  TEST_ASSERT_EQUAL (sockin, -1);
+  TEST_ASSERT_EQUAL (errno, EAGAIN);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -834,12 +834,12 @@ client10 (void *arg)
 
   sleep (1);
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   fill_addr (ad, 1240);
   status = connect (sock, (struct sockaddr *) &ad, sizeof(ad));
   printf ("Client10: 1st connect -> %d errno:%d\n", status, errno);
-  TEST_ASSERT_EQUAL (status, 0 );
+  TEST_ASSERT_EQUAL (status, 0);
 
   char *crsr = sendBuffer;
   for (size_t i = 0; i < LEN_10; i++)
@@ -885,7 +885,7 @@ server10 (void *arg)
   struct sockaddr_in ad;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   fill_addr (ad, 1240);
   status = bind (sock, (struct sockaddr *) &ad, sizeof(ad));
@@ -895,7 +895,7 @@ server10 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   do
     {
@@ -929,11 +929,11 @@ client11 (void *arg)
   sleep (1);
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
-  fill_addr ( ad, 1241 );
+  fill_addr (ad, 1241);
   status = connect (sock, (struct sockaddr *) &ad, sizeof(ad));
-  TEST_ASSERT_EQUAL ( status,0 );
+  TEST_ASSERT_EQUAL (status,0);
 
   sleep (1);
 
@@ -954,9 +954,9 @@ server11 (void *arg)
   struct sockaddr_in ad;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
-  fill_addr ( ad, 1241 );
+  fill_addr (ad, 1241);
   status = bind (sock, (struct sockaddr *) &ad, sizeof(ad));
   TEST_ASSERT_EQUAL (status, 0);
 
@@ -964,11 +964,11 @@ server11 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   status = send (sockin, sendBuffer, LEN_11, 0);
   printf ("Server11: send -> %d / %ld \n \n ", status, LEN_11);
-  TEST_ASSERT ( status >= 0 );
+  TEST_ASSERT (status >= 0);
 
   status = close (sockin);
   TEST_ASSERT_EQUAL (status, 0);
@@ -1007,11 +1007,11 @@ client13 (void *arg)
   sleep (1);
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
-  fill_addr ( ad, 1242);
+  fill_addr (ad, 1242);
   status = connect (sock, (struct sockaddr *) &ad, sizeof(ad));
-  TEST_ASSERT_EQUAL ( status, 0 );
+  TEST_ASSERT_EQUAL (status, 0);
 
   sleep (1);
 
@@ -1020,14 +1020,14 @@ client13 (void *arg)
   int maxFd = sock + 1;
 
   FD_ZERO (&readFd);
-  FD_SET ( sock, &readFd );
+  FD_SET (sock, &readFd);
   FD_ZERO (&writeFd);
-  FD_SET ( 1, &writeFd );
-  FD_SET ( sock, &writeFd );
+  FD_SET (1, &writeFd);
+  FD_SET (sock, &writeFd);
 
   status = select (maxFd, &readFd, &writeFd, NULL, NULL);
-  TEST_ASSERT ( status >= 2 );
-  TEST_ASSERT ( FD_ISSET (sock, &readFd) );
+  TEST_ASSERT (status >= 2);
+  TEST_ASSERT (FD_ISSET (sock, &readFd));
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -1046,9 +1046,9 @@ server13 (void *arg)
   struct sockaddr_in ad;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
-  fill_addr ( ad, 1242);
+  fill_addr (ad, 1242);
   status = bind (sock, (struct sockaddr *) &ad, sizeof(ad));
   TEST_ASSERT_EQUAL (status, 0);
 
@@ -1056,10 +1056,10 @@ server13 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   status = send (sockin, sendBuffer, LEN_13, 0);
-  TEST_ASSERT ( status >= 0 );
+  TEST_ASSERT (status >= 0);
 
   status = close (sockin);
   TEST_ASSERT_EQUAL (status, 0);
@@ -1084,11 +1084,11 @@ client14 (void *arg)
   sleep (1);
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
-  fill_addr ( ad, 1243 );
+  fill_addr (ad, 1243);
   status = connect (sock, (struct sockaddr *) &ad, sizeof(ad));
-  TEST_ASSERT_EQUAL ( status, 0 );
+  TEST_ASSERT_EQUAL (status, 0);
 
   fd_set readFd;
 
@@ -1100,8 +1100,8 @@ client14 (void *arg)
   timeOut.tv_sec = 1;
   timeOut.tv_usec = 0;
 
-  FD_SET ( sock, &readFd );
-  FD_SET ( 0, &readFd );
+  FD_SET (sock, &readFd);
+  FD_SET (0, &readFd);
 
   status = select (maxFd, &readFd, NULL, NULL, &timeOut);
   printf ("Client14: select -> %d, errno: %d \n", status, errno);
@@ -1126,9 +1126,9 @@ server14 (void *arg)
   struct sockaddr_in ad;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
-  fill_addr ( ad, 1243 );
+  fill_addr (ad, 1243);
   status = bind (sock, (struct sockaddr *) &ad, sizeof(ad));
   TEST_ASSERT_EQUAL (status, 0);
 
@@ -1136,12 +1136,12 @@ server14 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   sleep (2);
 
   status = send (sockin, sendBuffer, LEN_14, 0);
-  TEST_ASSERT ( status >= 0 );
+  TEST_ASSERT (status >= 0);
 
   status = close (sockin);
   TEST_ASSERT_EQUAL (status, 0);
@@ -1186,7 +1186,7 @@ client15 (void *arg)
         }
       closeList.push_back (sock);
 
-      fill_addr ( ad, 1244 );
+      fill_addr (ad, 1244);
       status = connect (sock, (struct sockaddr *) &ad, sizeof(ad));
       printf ("Client15: connect -> %d \n ", status);
     }
@@ -1211,9 +1211,9 @@ server15 (void *arg)
   std::vector<int> closeList;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
-  fill_addr ( ad, 1244 );
+  fill_addr (ad, 1244);
   status = bind (sock, (struct sockaddr *) &ad, sizeof(ad));
   TEST_ASSERT_EQUAL (status, 0);
 
@@ -1221,7 +1221,7 @@ server15 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   closeList.push_back (sockin);
 
@@ -1232,28 +1232,28 @@ server15 (void *arg)
 
       FD_ZERO (&readFd);
 
-      FD_SET ( sock, &readFd );
-      FD_SET ( sockin, &readFd );
+      FD_SET (sock, &readFd);
+      FD_SET (sockin, &readFd);
 
       printf ("Server15: selecting ... \n ");
 
-      status = select ( 1 + maxFd, &readFd, NULL, NULL, NULL);
+      status = select (1 + maxFd, &readFd, NULL, NULL, NULL);
       printf ("Server15: select -> %d \n ", status);
       if (status > 0)
         {
-          if ( FD_ISSET ( sockin, &readFd) )
+          if (FD_ISSET (sockin, &readFd))
             {
               // The client close it !
               break;
             }
-          if ( FD_ISSET ( sock, &readFd) )
+          if (FD_ISSET (sock, &readFd))
             {
               // Incoming Connexion
               int newSock = accept (sock, NULL, NULL);
-              printf ("Server15: accept -> %d \n\n ",newSock );
-              if ( newSock >= 0 )
+              printf ("Server15: accept -> %d \n\n ",newSock);
+              if (newSock >= 0)
                 {
-                  closeList.push_back ( newSock );
+                  closeList.push_back (newSock);
                 }
               else
                 {
@@ -1316,11 +1316,11 @@ int LongCompare (const void *A, const void *B)
 {
   long *a = (long*)A;
   long *b = (long*)B;
-  if ( *a == *b )
+  if (*a == *b)
     {
       return 0;
     }
-  if ( *a < *b )
+  if (*a < *b)
     {
       return -1;
     }
@@ -1331,12 +1331,15 @@ int
 main (int argc, char *argv[])
 {
   signal (SIGPIPE, SIG_IGN);
-  readBuffer = (char *)malloc ( BUFF_LEN );
-  sendBuffer = (char *)malloc ( BUFF_LEN );
+  readBuffer = (char *)malloc (BUFF_LEN);
+  sendBuffer = (char *)malloc (BUFF_LEN);
 
   launch (client1, server1);
   launch (client2, server2);
-  if (0) launch (client3, server3); // NS3 failed : tcp stack bug like bug 907 or 1167
+  if (0)
+    {
+      launch (client3, server3);    // NS3 failed : tcp stack bug like bug 907 or 1167
+    }
   // the server defer close because it is waiting for : Stop sending if we need to wait for a larger Tx window
   // But it is never came ....
   // The client is blocked in read ....
@@ -1352,9 +1355,12 @@ main (int argc, char *argv[])
   launch (client13, server13);
   launch (client14, server14);
 
-  if (0) launch (client15, server15); // Valgrind crash ?  // TODO DEBUG
+  if (0)
+    {
+      launch (client15, server15);    // Valgrind crash ?  // TODO DEBUG
 
-  printf ("That's All Folks ....\n \n " );
+    }
+  printf ("That's All Folks ....\n \n ");
   fflush (stdout);
   fclose (stdout);
   sleep (1);

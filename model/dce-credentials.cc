@@ -39,14 +39,14 @@ pid_t dce_getpgrp (void)
   return current->process->pgid;
 }
 
-int dce_euidaccess(const char *pathname, int mode)
+int dce_euidaccess (const char *pathname, int mode)
 {
   NS_LOG_FUNCTION (pathname << mode);
   std::string rPath = UtilsGetRealFilePath (pathname);
   int ret = euidaccess (rPath.c_str (), mode);
   return ret;
 }
-int dce_eaccess(const char *pathname, int mode)
+int dce_eaccess (const char *pathname, int mode)
 {
   NS_LOG_FUNCTION (pathname << mode);
   std::string rPath = UtilsGetRealFilePath (pathname);

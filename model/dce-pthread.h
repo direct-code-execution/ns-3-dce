@@ -7,8 +7,8 @@
 extern "C" {
 #endif
 
-int dce_pthread_create (pthread_t *thread,
-                        const pthread_attr_t *attr,
+int dce_pthread_create (pthread_t * thread,
+                        const pthread_attr_t * attr,
                         void *(*start_routine)(void*),
                         void *arg);
 void dce_pthread_exit (void *arg);
@@ -27,10 +27,10 @@ int dce_pthread_mutexattr_init (pthread_mutexattr_t *attr);
 int dce_pthread_mutexattr_destroy (pthread_mutexattr_t *attr);
 int dce_pthread_mutexattr_settype (pthread_mutexattr_t *attr, int kind);
 
-int dce_pthread_once (pthread_once_t *once_control, void (*init_routine)(void));
-void *dce_pthread_getspecific (pthread_key_t key);
+int dce_pthread_once (pthread_once_t * once_control, void (*init_routine)(void));
+void * dce_pthread_getspecific (pthread_key_t key);
 int dce_pthread_setspecific (pthread_key_t key, const void *value);
-int dce_pthread_key_create (pthread_key_t *key, void (*destructor)(void*));
+int dce_pthread_key_create (pthread_key_t * key, void (*destructor)(void*));
 int dce_pthread_key_delete (pthread_key_t key);
 
 int dce_pthread_cond_destroy (pthread_cond_t *cond);

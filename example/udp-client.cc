@@ -26,7 +26,7 @@ int main (int argc, char *argv[])
   uint8_t buf[10240];
 
   memset (buf, 0x66, 20);
-  memset (buf+20, 0x67, 1004);
+  memset (buf + 20, 0x67, 1004);
 
   for (uint32_t i = 0; i < 1000; i++)
     {

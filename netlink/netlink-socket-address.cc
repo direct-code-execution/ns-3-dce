@@ -24,17 +24,20 @@
 namespace ns3 {
 
 NetlinkSocketAddress::NetlinkSocketAddress (uint32_t pid, uint32_t groups)
-  : m_pid(pid),
-    m_groups(groups)
-{}
+  : m_pid (pid),
+    m_groups (groups)
+{
+}
 
 NetlinkSocketAddress::NetlinkSocketAddress ()
   : m_pid (0),
     m_groups (0)
-{}
+{
+}
 
 NetlinkSocketAddress::~NetlinkSocketAddress ()
-{}
+{
+}
 
 void NetlinkSocketAddress::SetProcessID (uint32_t pid)
 {

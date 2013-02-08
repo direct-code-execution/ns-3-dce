@@ -52,7 +52,7 @@ void SetPosition (Ptr<Node> n, int radius, int angle, int level)
   dce.ResetArguments ();
   dce.ResetEnvironment ();
 
- // dce.AddEnvironment ("CCND_DEBUG", "-1"); // FULL TRACES
+  // dce.AddEnvironment ("CCND_DEBUG", "-1"); // FULL TRACES
   dce.AddEnvironment ("CCND_DEBUG", "31");
   dce.AddEnvironment ("CCN_LOCAL_PORT", "9695");
   dce.AddEnvironment ("CCND_AUTOREG", "");
@@ -66,8 +66,8 @@ void SetPosition (Ptr<Node> n, int radius, int angle, int level)
   daemon.Start (Seconds (0)) ;
 
   // Stop ccnd before simu end.
-  dce.ResetArguments();
-  dce.ResetEnvironment();
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
   dce.SetBinary ("ccndsmoketest");
   dce.SetStdinFile ("");
   dce.AddArgument ("kill");
@@ -117,7 +117,7 @@ void LinkNodes (Ptr<Node> left, int leftNum,  Ptr<Node> right, int level, int id
   dce.AddArgument ("add");
   dce.AddArgument ("/");
   dce.AddArgument (useTcp ? "tcp" : "udp");
-  dce.AddArgument ( Ipv4AddressToString( interfaces.GetAddress (1)) );
+  dce.AddArgument ( Ipv4AddressToString ( interfaces.GetAddress (1)) );
 
   config = dce.Install (left);
   config.Start (Seconds (0.1));
@@ -134,10 +134,11 @@ void LinkCenterNodes (NodeContainer nodes, int leftIdx, int rightIdx, int leftLe
   Ptr<Node> leftNode = nodes.Get (leftIdx);
   Ptr<Node> rightNode = nodes.Get (rightIdx);
 
-  if (1 == leftLevel) {
+  if (1 == leftLevel)
+    {
       SetPosition (rightNode, radius, 0, leftLevel);
-  }
-  SetPosition (leftNode, radius, 0, leftLevel+1);
+    }
+  SetPosition (leftNode, radius, 0, leftLevel + 1);
 
   LinkNodes (leftNode, leftIdx, rightNode, leftLevel, 1, false);
 
@@ -145,7 +146,7 @@ void LinkCenterNodes (NodeContainer nodes, int leftIdx, int rightIdx, int leftLe
 }
 
 void LinkCircle (NodeContainer nodes,
-    int level, int centerIdx, int power, int radius, int i)
+                 int level, int centerIdx, int power, int radius, int i)
 {
   int angle = 90 - ( i * 90 / power );
   NS_LOG_FUNCTION (  level << centerIdx << power << i << angle ) ;
@@ -156,10 +157,10 @@ void LinkCircle (NodeContainer nodes,
   SetPosition (nodes.Get (centerIdx + 1 +  i + 1), radius, -angle, level);
 
   LinkNodes (nodes.Get (centerIdx + 1 +  i), centerIdx + 1 +  i,
-      nodes.Get (centerIdx), level, (i * 4) + 3 , true);
+             nodes.Get (centerIdx), level, (i * 4) + 3, true);
 
   LinkNodes (nodes.Get (centerIdx + 1 +  i + 1), centerIdx + 1 +  i + 1,
-      nodes.Get (centerIdx), level, (i * 4) + 5 , true);
+             nodes.Get (centerIdx), level, (i * 4) + 5, true);
 
 }
 
@@ -174,7 +175,7 @@ void InstallGetters (NodeContainer nodes )
 
   for (int turn = 0; turn < 2; turn++)
     {
-      for (int n=0; n < GetNodes.size () ; n++)
+      for (int n = 0; n < GetNodes.size () ; n++)
         {
           int nodeNum = GetNodes [n];
 
@@ -186,10 +187,10 @@ void InstallGetters (NodeContainer nodes )
               int percent = getNumber % 100;
 
               dce.SetStackSize (1 << 20);
-              dce.ResetArguments();
-              dce.ResetEnvironment();
-              dce.AddEnvironment("HOME", "/root");
-              dce.SetBinary ((ccnxVersion==4)?"ccnget":"ccnpeek");
+              dce.ResetArguments ();
+              dce.ResetEnvironment ();
+              dce.AddEnvironment ("HOME", "/root");
+              dce.SetBinary ((ccnxVersion == 4) ? "ccnget" : "ccnpeek");
               dce.SetStdinFile ("");
               dce.AddArgument ("-c");
               dce.AddArgument ("/A");
@@ -204,9 +205,10 @@ void InstallGetters (NodeContainer nodes )
                 }
               else
                 {
-                  if (nodeNum >= middleNode) {
+                  if (nodeNum >= middleNode)
+                    {
                       startTime = 0.3;
-                  }
+                    }
                 }
 
               get.Start (Seconds (startTime));
@@ -218,7 +220,7 @@ void InstallGetters (NodeContainer nodes )
 void
 CreateReadme ()
 {
-  std::ofstream osf("/tmp/README", std::fstream::trunc);
+  std::ofstream osf ("/tmp/README", std::fstream::trunc);
 
   osf << "The wanted data is here :)" ;
 
@@ -243,12 +245,12 @@ main (int argc, char *argv[])
   cmd.AddValue ("NN", "Toggle, if true return the number of nodes for this parameters.", nn);
   cmd.AddValue ("some", "Toggle, if true only some nodes do ccnget ", onlySomeNodes);
   cmd.AddValue ("cv", "Ccnx version 4 for 0.4.x variantes and 5 for 0.5.x variantes, default: 4",
-      ccnxVersion);
+                ccnxVersion);
   cmd.Parse (argc, argv);
 
   NS_ASSERT_MSG (radius >= 2, "Radius must be greater or equal to 2.");
   NS_ASSERT_MSG ( (4 == ccnxVersion) || (5 == ccnxVersion),
-      "Ccnx version must be equal to 4 or 5");
+                  "Ccnx version must be equal to 4 or 5");
 
   int NodeNumber = 0;
   int power = 0;
@@ -285,11 +287,11 @@ main (int argc, char *argv[])
 
   power = 0;
   // Create Topology .
-  for (int l=0; l<width; l++)
+  for (int l = 0; l < width; l++)
     {
       int Center = NodeCursor++;
 
-      if ( (l-1) == (width /2))
+      if ( (l - 1) == (width / 2))
         {
           middleNode = NodeCursor;
         }
@@ -308,9 +310,9 @@ main (int argc, char *argv[])
           power = power * 2;
         }
 
-      for (int n=0; n < power ; n+=2)
+      for (int n = 0; n < power ; n += 2)
         {
-          LinkCircle (nodes, l+1, Center, power, radius, n);
+          LinkCircle (nodes, l + 1, Center, power, radius, n);
         }
       NodeCursor += power;
 
@@ -323,17 +325,17 @@ main (int argc, char *argv[])
   CcnClientHelper dce;
 
   dce.SetStackSize (1 << 20);
-  dce.ResetArguments();
-  dce.ResetEnvironment();
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
 
-  dce.SetBinary ((ccnxVersion==4)?"ccnput":"ccnpoke");
+  dce.SetBinary ((ccnxVersion == 4) ? "ccnput" : "ccnpoke");
   dce.SetStdinFile ("/tmp/README");
   dce.AddFile ("/tmp/README", "/tmp/README");
 
   dce.AddArgument ("-x" );
   dce.AddArgument ("300" );
   dce.AddArgument ("/A");
-  dce.AddEnvironment("HOME", "/root");
+  dce.AddEnvironment ("HOME", "/root");
 
   ApplicationContainer put = dce.Install (nodes.Get (0));
   put.Start (Seconds ( 0.15 ));

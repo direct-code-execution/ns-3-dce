@@ -91,16 +91,16 @@ static void test_stat (void)
   status = close (fd);
   TEST_ASSERT_EQUAL (status, 0);
 
-  status = fstatat ( 42, "/etc/passwd", &st, 0);
+  status = fstatat (42, "/etc/passwd", &st, 0);
   TEST_ASSERT_EQUAL (status, 0);
 
-  status = fstatat ( 42, "passwd", &st, 0);
+  status = fstatat (42, "passwd", &st, 0);
   TEST_ASSERT_EQUAL (status, -1);
   TEST_ASSERT_EQUAL (errno, EBADF);
 
   fd = open ("/etc/passwd", O_RDONLY, 0);
   TEST_ASSERT (fd > 0);
-  status = fstatat ( fd, "passwd", &st, 0);
+  status = fstatat (fd, "passwd", &st, 0);
   TEST_ASSERT_EQUAL (status, -1);
   TEST_ASSERT_EQUAL (errno, ENOTDIR);
   status = close (fd);
@@ -108,7 +108,7 @@ static void test_stat (void)
 
   fd = open ("/etc", O_RDONLY, 0);
   TEST_ASSERT (fd > 0);
-  status = fstatat ( fd, "passwd", &st, 0);
+  status = fstatat (fd, "passwd", &st, 0);
   TEST_ASSERT_EQUAL (status, 0);
   status = close (fd);
   TEST_ASSERT_EQUAL (status, 0);

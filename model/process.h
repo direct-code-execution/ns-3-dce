@@ -54,7 +54,8 @@ class PollTable;
 struct Mutex
 {
   uint32_t mid; // mutex id
-  enum {
+  enum
+  {
     NORMAL,
     RECURSIVE
   } type;
@@ -81,7 +82,8 @@ struct SignalHandler
   void (*handler)(int);
   void (*sigaction)(int, siginfo_t *, void *);
 };
-enum ThreadState_e {
+enum ThreadState_e
+{
   // the thread is executing
   THREAD_RUNNING,
   // the thread is in the run queue, not executing yet
@@ -95,13 +97,16 @@ enum ThreadState_e {
 
 struct AtExitHandler
 {
-  enum {
+  enum
+  {
     NORMAL,
     CXA
   } type;
-  union {
+  union
+  {
     void (*normal)(void);
-    struct {
+    struct
+    {
       void (*fn)(void *);
       void *arg;
       void *d;
@@ -119,7 +124,7 @@ struct ProcessActivity
   std::string cmdLine;
 };
 
-struct Process 
+struct Process
 {
   uid_t euid;
   uid_t ruid;
@@ -161,8 +166,8 @@ struct Process
   char **originalArgv;
   int originalArgc;
   char *originalProgname; // some programs use it instead argv[0]
-  
-  // pointers to the global variables present in the libc loader 
+
+  // pointers to the global variables present in the libc loader
   // in the corresponding process.
   FILE **pstdin;
   FILE **pstdout;
@@ -174,12 +179,12 @@ struct Process
   int *poptopt;
   FILE *syslog; // instead of real syslog, everything is written to a file /var/log/<pid>/syslog
   struct tm struct_tm;
-  char asctime_result[ 3+1+3+1+20+1+20+1+20+1+20+1+20+1 + 1]; // definition is stolen from glibc
+  char asctime_result[ 3 + 1 + 3 + 1 + 20 + 1 + 20 + 1 + 20 + 1 + 20 + 1 + 20 + 1 + 1]; // definition is stolen from glibc
   uint32_t nodeId; // NS3 NODE ID
   uint8_t minimizeFiles; // If true close stderr and stdout between writes .
-  // an array of memory buffers which must be freed upon process 
+  // an array of memory buffers which must be freed upon process
   // termination to avoid memory leaks. We stick in there a bunch
-  // of buffers we allocate but for which we cannot control the 
+  // of buffers we allocate but for which we cannot control the
   // lifetime due to weirdness in the posix API.
   std::vector<void *> allocated;
   //random variable for rand and random implementation

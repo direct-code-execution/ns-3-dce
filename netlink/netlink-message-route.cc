@@ -27,12 +27,12 @@ namespace ns3 {
 /***********************************************************************************
 * \ NetlinkPayload
 ***********************************************************************************/
-TypeId 
+TypeId
 NetlinkPayload::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::NetlinkPayload")
     .SetParent<ObjectBase> ()
-    ;
+  ;
   return tid;
 }
 
@@ -47,10 +47,12 @@ NS_OBJECT_ENSURE_REGISTERED (InterfaceAddressMessage);
 NS_OBJECT_ENSURE_REGISTERED (RouteMessage);
 
 GeneralMessage::GeneralMessage ()
-  : m_family(0)
-{}
+  : m_family (0)
+{
+}
 GeneralMessage::~GeneralMessage ()
-{}
+{
+}
 
 void
 GeneralMessage::SetFamily (uint8_t v)
@@ -63,29 +65,29 @@ GeneralMessage::GetFamily (void) const
   return m_family;
 }
 
-TypeId 
+TypeId
 GeneralMessage::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::GeneralMessage")
     .SetParent<NetlinkPayload> ()
     .AddConstructor<GeneralMessage> ()
-    ;
+  ;
   return tid;
 }
 
-TypeId 
+TypeId
 GeneralMessage::GetInstanceTypeId (void) const
 {
   return GetTypeId ();
 }
-void 
+void
 GeneralMessage::Print (std::ostream &os) const
 {
   os << " ----GeneralMessage ("
-     << "family: " << (uint32_t)m_family << ")"; 
+     << "family: " << (uint32_t)m_family << ")";
 }
 
-uint32_t 
+uint32_t
 GeneralMessage::GetSerializedSize (void) const
 {
   /* this is the size of an nlmsghdr payload. */
@@ -119,14 +121,14 @@ GeneralMessage::Deserialize (Buffer::Iterator& start, uint32_t len)
 
 
 uint32_t
-GeneralMessage::GetNNetlinkAttribute (void)const
+GeneralMessage::GetNNetlinkAttribute (void) const
 {
   return m_attributes.size ();
 }
 NetlinkAttribute
-GeneralMessage::GetNetlinkAttribute (uint32_t index)const
+GeneralMessage::GetNetlinkAttribute (uint32_t index) const
 {
-  NS_ASSERT(index < GetNNetlinkAttribute ());
+  NS_ASSERT (index < GetNNetlinkAttribute ());
   return m_attributes[index];
 }
 
@@ -135,7 +137,7 @@ GeneralMessage::GetAttributeSerializedSize (void) const
 {
   uint32_t size = 0;
 
-  for (uint32_t i = 0; i < m_attributes.size (); i ++)
+  for (uint32_t i = 0; i < m_attributes.size (); i++)
     {
       size += m_attributes[i].GetSerializedSize ();
     }
@@ -144,7 +146,7 @@ GeneralMessage::GetAttributeSerializedSize (void) const
 bool
 GeneralMessage::GetAttributeByType (NetlinkAttribute& attr, uint16_t type)
 {
-  for (uint32_t i = 0; i < m_attributes.size (); i ++)
+  for (uint32_t i = 0; i < m_attributes.size (); i++)
     {
       if (type == m_attributes[i].GetAttrType ())
         {
@@ -152,7 +154,7 @@ GeneralMessage::GetAttributeByType (NetlinkAttribute& attr, uint16_t type)
           return true;
         }
     }
-  return false;  
+  return false;
 }
 void
 GeneralMessage::AppendAttribute (NetlinkAttribute v)
@@ -163,7 +165,7 @@ GeneralMessage::AppendAttribute (NetlinkAttribute v)
 void
 GeneralMessage::SerializeAttribute (Buffer::Iterator& start) const
 {
-  for (uint32_t i = 0; i < m_attributes.size (); i ++)
+  for (uint32_t i = 0; i < m_attributes.size (); i++)
     {
       m_attributes[i].Serialize (start);
     }
@@ -172,10 +174,10 @@ GeneralMessage::SerializeAttribute (Buffer::Iterator& start) const
 void
 GeneralMessage::PrintAttribute (std::ostream &os) const
 {
-  for (uint32_t i = 0; i < m_attributes.size (); i ++)
+  for (uint32_t i = 0; i < m_attributes.size (); i++)
     {
       os << " ----Attribute (" << i << "):";
-      m_attributes[i].Print(os);
+      m_attributes[i].Print (os);
     }
 }
 
@@ -185,7 +187,7 @@ GeneralMessage::PrintAttribute (std::ostream &os) const
 InterfaceInfoMessage::InterfaceInfoMessage ()
   : m_reserved (0),
     m_deviceType (0),
-    m_interfaceIndex(0),
+    m_interfaceIndex (0),
     m_deviceFlags (0),
     m_changeMask (0)
 {
@@ -201,7 +203,8 @@ InterfaceInfoMessage::InterfaceInfoMessage ()
   m_attributeTypes[IFL_A_COST] = UNSPEC;
 }
 InterfaceInfoMessage::~InterfaceInfoMessage ()
-{}
+{
+}
 void
 InterfaceInfoMessage::SetDeviceType (uint16_t type)
 {
@@ -242,23 +245,23 @@ InterfaceInfoMessage::GetChangeMask (void) const
 {
   return m_changeMask;
 }
-TypeId 
+TypeId
 InterfaceInfoMessage::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::InterfaceInfoMessage")
     .SetParent<GeneralMessage> ()
     .AddConstructor<InterfaceInfoMessage> ()
-    ;
+  ;
   return tid;
 }
-TypeId 
+TypeId
 InterfaceInfoMessage::GetInstanceTypeId (void) const
 {
   return GetTypeId ();
 }
-void 
+void
 InterfaceInfoMessage::Print (std::ostream &os) const
-{  
+{
   os << " ----InterfaceInfoMessage ("
      << "deviceType: " << m_deviceType << " "
      << "interfaceIndex: " << m_interfaceIndex << " "
@@ -266,7 +269,7 @@ InterfaceInfoMessage::Print (std::ostream &os) const
      << "changeMask: " << m_changeMask << ")" ;
   PrintAttribute (os);
 }
-uint32_t 
+uint32_t
 InterfaceInfoMessage::GetSerializedSize (void) const
 {
   return NETLINK_INTERFACE_SIZE + GetAttributeSerializedSize ();
@@ -316,7 +319,7 @@ InterfaceAddressMessage::InterfaceAddressMessage ()
   : m_length (0),
     m_flags (0),
     m_scope (0),
-    m_index(0)
+    m_index (0)
 {
   memset ((void*)m_attributeTypes, 0, sizeof (m_attributeTypes));
   m_attributeTypes[IF_A_UNSPEC] = UNSPEC;
@@ -383,23 +386,23 @@ InterfaceAddressMessage::GetInterfaceIndex (void) const
   return m_index;
 }
 
-TypeId 
+TypeId
 InterfaceAddressMessage::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::InterfaceAddressMessage")
     .SetParent<GeneralMessage> ()
     .AddConstructor<InterfaceAddressMessage> ()
-    ;
+  ;
   return tid;
 }
-TypeId 
+TypeId
 InterfaceAddressMessage::GetInstanceTypeId (void) const
 {
   return GetTypeId ();
 }
-void 
+void
 InterfaceAddressMessage::Print (std::ostream &os) const
-{  
+{
   os << " ----InterfaceAddressMessage ("
      << "family: " << (uint32_t)m_family << " "
      << "length: " << (uint32_t)m_length << " "
@@ -408,7 +411,7 @@ InterfaceAddressMessage::Print (std::ostream &os) const
      << "index: " << m_index << ")";
   PrintAttribute (os);
 }
-uint32_t 
+uint32_t
 InterfaceAddressMessage::GetSerializedSize (void) const
 {
   return NETLINK_ADDRESS_SIZE + GetAttributeSerializedSize ();
@@ -423,7 +426,7 @@ InterfaceAddressMessage::Serialize (Buffer::Iterator& start) const
   start.WriteU8 (m_scope);
   start.WriteU32 (m_index);
 
-  SerializeAttribute(start);
+  SerializeAttribute (start);
 }
 
 uint32_t
@@ -458,7 +461,7 @@ RouteMessage::RouteMessage ()
     m_srcLen (0),
     m_tos (0),
     m_tableId (0),
-    m_protocol(0),
+    m_protocol (0),
     m_scope (0),
     m_type (0),
     m_flags (0)
@@ -476,7 +479,8 @@ RouteMessage::RouteMessage ()
   //others default value UNSPEC
 }
 RouteMessage::~RouteMessage ()
-{}
+{
+}
 
 void
 RouteMessage::SetFamily (uint8_t v)
@@ -569,23 +573,23 @@ RouteMessage::GetFlags (void) const
   return m_flags;
 }
 
-TypeId 
+TypeId
 RouteMessage::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::RouteMessage")
     .SetParent<GeneralMessage> ()
     .AddConstructor<RouteMessage> ()
-    ;
+  ;
   return tid;
 }
-TypeId 
+TypeId
 RouteMessage::GetInstanceTypeId (void) const
 {
   return GetTypeId ();
 }
-void 
+void
 RouteMessage::Print (std::ostream &os) const
-{  
+{
   os << " ----RouteMessage ("
      << "family: " << (uint32_t)m_family << " "
      << "dstLen: " << (uint32_t)m_dstLen << " "
@@ -595,10 +599,10 @@ RouteMessage::Print (std::ostream &os) const
      << "protocol: " << (uint32_t)m_protocol << " "
      << "scope: " << (uint32_t)m_scope << " "
      << "type: " << (uint32_t)m_type << " "
-     << "flags: " << m_flags<< ")" ;
+     << "flags: " << m_flags << ")" ;
   PrintAttribute (os);
 }
-uint32_t 
+uint32_t
 RouteMessage::GetSerializedSize (void) const
 {
   return NETLINK_ROUTE_SIZE + GetAttributeSerializedSize ();

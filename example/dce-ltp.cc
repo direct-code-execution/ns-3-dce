@@ -11,25 +11,27 @@
 using namespace ns3;
 NS_LOG_COMPONENT_DEFINE ("DceLtp");
 
-const char *bins[] = {"in6_01", 
-               "asapi_05",
-                      //               "getaddrinfo_01",
-               "in6_02",
-                      //               "asapi_06",
-               "asapi_07",
-               "asapi_03",
-                      //               "asapi_04",
-               "asapi_02",
-               "asapi_01"};
+const char *bins[] = {
+  "in6_01",
+  "asapi_05",
+  //               "getaddrinfo_01",
+  "in6_02",
+  //               "asapi_06",
+  "asapi_07",
+  "asapi_03",
+  //               "asapi_04",
+  "asapi_02",
+  "asapi_01"
+};
 
 static void RunIp (Ptr<Node> node, Time at, std::string str)
 {
   DceApplicationHelper process;
   ApplicationContainer apps;
   process.SetBinary ("ip");
-  process.SetStackSize (1<<16);
-  process.ResetArguments();
-  process.ParseArguments(str.c_str ());
+  process.SetStackSize (1 << 16);
+  process.ResetArguments ();
+  process.ParseArguments (str.c_str ());
   apps = process.Install (node);
   apps.Start (at);
 }
@@ -57,7 +59,7 @@ int main (int argc, char *argv[])
   //  processManager.SetLoader ("ns3::CopyLoaderFactory");
   processManager.SetTaskManagerAttribute ("FiberManagerType",
                                           StringValue ("UcontextFiberManager"));
-  processManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
+  processManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
   LinuxStackHelper stack;
   stack.Install (nodes);
 
@@ -67,7 +69,7 @@ int main (int argc, char *argv[])
 
   processManager.Install (nodes);
 
-  for (int n=0; n < nodes.GetN (); n++)
+  for (int n = 0; n < nodes.GetN (); n++)
     {
       //      RunIp (nodes.Get (n), Seconds (0.2), "link set lo up");
       // RunIp (nodes.Get (n), Seconds (0.2), "link show");
@@ -83,7 +85,7 @@ int main (int argc, char *argv[])
       process.SetBinary (bins[i]);
       process.SetUid (1000);
       process.ResetArguments ();
-      process.SetStackSize (1<<16);
+      process.SetStackSize (1 << 16);
       //  process.ParseArguments ("-L");
       //process.ParseArguments ("10.0.0.1");
       apps = process.Install (nodes.Get (0));
@@ -91,7 +93,7 @@ int main (int argc, char *argv[])
     }
 
   // print tcp sysctl value
-  LinuxStackHelper::SysctlGet (nodes.Get (0), Seconds (1.0), 
+  LinuxStackHelper::SysctlGet (nodes.Get (0), Seconds (1.0),
                                ".net.ipv4.tcp_available_congestion_control", &PrintTcpFlags);
 
   Simulator::Stop (Seconds (200.0));

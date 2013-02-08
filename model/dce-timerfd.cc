@@ -36,7 +36,7 @@ int dce_timerfd_settime (int fd, int flags,
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
 
-  OPENED_FD_METHOD (int, Settime (flags, new_value, old_value) )
+  OPENED_FD_METHOD (int, Settime (flags, new_value, old_value))
 }
 
 int dce_timerfd_gettime (int fd, struct itimerspec *cur_value)
@@ -45,6 +45,6 @@ int dce_timerfd_gettime (int fd, struct itimerspec *cur_value)
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
 
-  OPENED_FD_METHOD (int, Gettime (cur_value) )
+  OPENED_FD_METHOD (int, Gettime (cur_value))
 }
 

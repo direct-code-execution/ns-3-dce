@@ -50,7 +50,7 @@ CleanupPthreadKeys (void)
   // From this function, we perform process cleanup which _requires_
   // a user context. here delete the keys of each thread which might
   // require calling a key destructor in the process.
-  for (std::list<ThreadKeyValue>::iterator j = current->keyValues.begin (); 
+  for (std::list<ThreadKeyValue>::iterator j = current->keyValues.begin ();
        j != current->keyValues.end (); ++j)
     {
       NS_LOG_DEBUG ("destroy key " << j->key << " " << j->destructor << " " << j->value);
@@ -78,8 +78,8 @@ void dce_exit (int status)
   CleanupPthreadKeys ();
   dce___cxa_finalize (0);
   dce_fflush (0);
-  current->process->timing.exitValue = __W_EXITCODE ( status,  WTERMSIG ( current->process->timing.exitValue ) );
-  current->process->timing.ns3End = Now ().GetNanoSeconds();
+  current->process->timing.exitValue = __W_EXITCODE (status,  WTERMSIG (current->process->timing.exitValue));
+  current->process->timing.ns3End = Now ().GetNanoSeconds ();
   current->process->timing.realEnd = time (0);
 
   current->task->SetSwitchNotifier (0, 0);
@@ -88,7 +88,7 @@ void dce_exit (int status)
   oss << "Exit (" << status << ")";
   line = oss.str ();
   DceManager::AppendStatusFile (current->process->pid, current->process->nodeId, line);
-  DceManager::AppendProcFile ( current->process );
+  DceManager::AppendProcFile (current->process);
 
   current->process->manager->DeleteProcess (current->process, DceManager::PEC_EXIT);
   TaskManager::Current ()->Exit ();
@@ -288,7 +288,7 @@ IsKeyValid (pthread_key_t key)
     }
   return false;
 }
-void *dce_pthread_getspecific (pthread_key_t key)
+void * dce_pthread_getspecific (pthread_key_t key)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << key);
@@ -337,7 +337,7 @@ int dce_pthread_key_create (pthread_key_t *key, void (*destructor)(void*))
           value.value = 0;
           // store the key in each thread of the process.
           struct Process *process = current->process;
-          for (std::vector<struct Thread *>::const_iterator i = process->threads.begin (); 
+          for (std::vector<struct Thread *>::const_iterator i = process->threads.begin ();
                i != process->threads.end (); ++i)
             {
               struct Thread *thread = *i;
@@ -360,7 +360,7 @@ int dce_pthread_key_delete (pthread_key_t key)
       return EINVAL;
     }
   struct Process *process = current->process;
-  for (std::vector<struct Thread *>::const_iterator i = process->threads.begin (); 
+  for (std::vector<struct Thread *>::const_iterator i = process->threads.begin ();
        i != process->threads.end (); ++i)
     {
       struct Thread *thread = *i;

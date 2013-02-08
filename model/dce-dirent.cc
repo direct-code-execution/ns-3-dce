@@ -39,14 +39,13 @@ struct my__dirstream
   int fd; /* File descriptor.  */
 };
 
-namespace ns3
-{
+namespace ns3 {
 void
 remove_dir (DIR *d, Thread *current)
 {
   bool found = false;
   for (std::vector<DIR*>::iterator  i = current->process->openDirs.begin ();
-      i != current->process->openDirs.end (); ++i)
+       i != current->process->openDirs.end (); ++i)
     {
       if (*i == d)
         {
@@ -64,7 +63,7 @@ remove_dir (DIR *d, Thread *current)
 
 int dce_internalClosedir (DIR *dirp, struct Thread *cur)
 {
-  struct my__dirstream *ds = (struct my__dirstream * ) dirp;
+  struct my__dirstream *ds = (struct my__dirstream *) dirp;
   int saveFd = -1;
 
   if (cur)
@@ -108,7 +107,7 @@ int dce_internalClosedir (DIR *dirp, struct Thread *cur)
 
 using namespace ns3;
 
-DIR *dce_opendir (const char *name)
+DIR * dce_opendir (const char *name)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << name);
   NS_ASSERT (Current () != 0);
@@ -126,7 +125,7 @@ DIR *dce_opendir (const char *name)
     }
   return res;
 }
-DIR *dce_fdopendir (int fd)
+DIR * dce_fdopendir (int fd)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << fd);
   NS_ASSERT (Current () != 0);
@@ -139,7 +138,7 @@ DIR *dce_fdopendir (int fd)
       current->err = errno;
       return 0;
     }
-  struct my__dirstream *ds = (struct my__dirstream * ) res;
+  struct my__dirstream *ds = (struct my__dirstream *) res;
   close (ds->fd);
   ds->fd = -fd;
   current->process->openDirs.push_back (res);
@@ -147,12 +146,12 @@ DIR *dce_fdopendir (int fd)
   return res;
 }
 
-struct dirent *dce_readdir (DIR *dirp)
+struct dirent * dce_readdir (DIR *dirp)
 {
-  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () );
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
-  struct my__dirstream *ds = (struct my__dirstream * ) dirp;
+  struct my__dirstream *ds = (struct my__dirstream *) dirp;
   int saveFd = ds->fd;
   if (saveFd >= 0)
     {
@@ -175,10 +174,10 @@ struct dirent *dce_readdir (DIR *dirp)
 
 int dce_readdir_r (DIR *dirp, struct dirent *entry, struct dirent **result)
 {
-  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () );
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
-  struct my__dirstream *ds = (struct my__dirstream * ) dirp;
+  struct my__dirstream *ds = (struct my__dirstream *) dirp;
 
   int saveFd = ds->fd;
   if (saveFd >= 0)
@@ -201,14 +200,14 @@ int dce_readdir_r (DIR *dirp, struct dirent *entry, struct dirent **result)
 }
 int dce_closedir (DIR *dirp)
 {
-  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () );
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
   return dce_internalClosedir (dirp, current);
 }
 int dce_dirfd (DIR *dirp)
 {
-  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () );
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
   current->err = ENOTSUP;
@@ -216,10 +215,10 @@ int dce_dirfd (DIR *dirp)
 }
 void dce_rewinddir (DIR *dirp)
 {
-  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () );
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
-  struct my__dirstream *ds = (struct my__dirstream * ) dirp;
+  struct my__dirstream *ds = (struct my__dirstream *) dirp;
 
   int saveFd = ds->fd;
   if (saveFd >= 0)
@@ -237,19 +236,19 @@ void dce_rewinddir (DIR *dirp)
   ds->fd = saveFd;
 }
 int dce_scandir (const char *dirp, struct dirent ***namelist,
-    int (*filter)(const struct dirent *),
-    int (*compar)(const struct dirent **, const struct dirent **))
+                 int (*filter)(const struct dirent *),
+                 int (*compar)(const struct dirent **, const struct dirent **))
 {
-  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () );
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
 
   std::string vPath = UtilsGetRealFilePath (std::string (dirp));
 
   struct dirent **nl = 0;
-  int ret = scandir ( vPath.c_str () , &nl, filter, compar);
+  int ret = scandir (vPath.c_str (), &nl, filter, compar);
 
-  if ( (ret > 0) && nl )
+  if ((ret > 0) && nl)
     {
       // Realloc !
       struct dirent **res = 0;
@@ -262,7 +261,7 @@ int dce_scandir (const char *dirp, struct dirent ***namelist,
       {
         struct dirent tmp;
         direntMiniSize = sizeof (tmp.d_ino) + sizeof (tmp.d_off)
-            + sizeof (tmp.d_reclen) +sizeof (tmp.d_type);
+          + sizeof (tmp.d_reclen) + sizeof (tmp.d_type);
       }
       for (int i = 0; i < ret ; i++)
         {
@@ -272,7 +271,7 @@ int dce_scandir (const char *dirp, struct dirent ***namelist,
             {
               size_t direntSize = direntMiniSize + _D_ALLOC_NAMLEN (src);
               copy = (struct dirent *) dce_malloc (direntSize);
-              memcpy (copy , src, direntSize);
+              memcpy (copy, src, direntSize);
               res [i] = copy;
             }
           free (src);

@@ -35,18 +35,18 @@ main (int argc, char *argv[])
       address.sun_family = AF_UNIX;
       strcpy (address.sun_path, SOCK_PATH);
 
-      std::cout << "Client: " << time(0)  << " Before the Connect" << std::endl;
+      std::cout << "Client: " << time (0)  << " Before the Connect" << std::endl;
 
-      status = connect (sock, (struct sockaddr *) &address, SUN_LEN(&address));
+      status = connect (sock, (struct sockaddr *) &address, SUN_LEN (&address));
 
       if (status < 0)
         {
-          std::cout << "Client: " << time(0)  << " connect (timeout ?)" << std::endl;
+          std::cout << "Client: " << time (0)  << " connect (timeout ?)" << std::endl;
           perror ("connect() failed");
           break;
         }
 
-      std::cout << "Client: " << time(0)  << " Connected ! " << std::endl;
+      std::cout << "Client: " << time (0)  << " Connected ! " << std::endl;
 
       memset (buffer, 'F', sizeof(buffer));
 

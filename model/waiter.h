@@ -48,7 +48,7 @@ public:
   // return TIMEOUT if timeout expired
   // return INTERRUPTED if signal pending.
   Waiter::Result Wait (void);
-  // wait for a call to Wakeup, handle signals and stop timeout 
+  // wait for a call to Wakeup, handle signals and stop timeout
   // if any are pending. Return true only if Wakeup is called
   // and no signal is pending.
   bool WaitDoSignal (void);
@@ -56,7 +56,6 @@ public:
   // wakeup someone waiting on Wait.
   void Wakeup (void);
 private:
-
   Thread *m_waiting;
   Time m_timeout;
 };

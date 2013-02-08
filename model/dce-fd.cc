@@ -85,7 +85,7 @@ int dce_open (const char *path, int flags, ...)
     {
       mode = va_arg (vl, mode_t);
     }
-  va_end (vl);  
+  va_end (vl);
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << path << flags);
   NS_ASSERT (current != 0);
@@ -104,8 +104,8 @@ int dce_open (const char *path, int flags, ...)
     }
   UnixFd *unixFd = 0;
 
-  if ( ( std::string (path) == "/dev/random" ) || ( std::string (path) == "/dev/urandom" )
-       || ( std::string (path) == "/dev/srandom" ) )
+  if ((std::string (path) == "/dev/random") || (std::string (path) == "/dev/urandom")
+      || (std::string (path) == "/dev/srandom"))
     {
       unixFd = new UnixRandomFd (path);
     }
@@ -120,7 +120,7 @@ int dce_open (const char *path, int flags, ...)
           return -1;
         }
 
-      if ( ( ( 2 == fd) || ( 1 == fd ) ) && ( Current ()->process->minimizeFiles ) )
+      if (((2 == fd) || (1 == fd)) && (Current ()->process->minimizeFiles))
         {
           unixFd = new UnixFileFdLight (fullpath);
           close (realFd);
@@ -137,7 +137,7 @@ int dce_open (const char *path, int flags, ...)
 
 int dce_creat (const char *path, mode_t mode)
 {
-  return dce_open (path, O_CREAT|O_WRONLY|O_TRUNC, mode);
+  return dce_open (path, O_CREAT | O_WRONLY | O_TRUNC, mode);
 }
 
 int dce_unlink_real (const char *pathname)
@@ -147,16 +147,16 @@ int dce_unlink_real (const char *pathname)
 
 void unlink_notify (std::string fullpath)
 {
-  NS_LOG_FUNCTION ( "UNLINK FULL PATH " << fullpath );
+  NS_LOG_FUNCTION ("UNLINK FULL PATH " << fullpath);
 
   Ptr<SocketFdFactory> factory = Current ()->process->manager->GetObject<LocalSocketFdFactory> ();
 
-  if ( 0 != factory )
+  if (0 != factory)
     {
       factory->UnlinkNotify (fullpath);
     }
   factory = Current ()->process->manager->GetObject<SocketFdFactory> ();
-  if ( 0 != factory )
+  if (0 != factory)
     {
       factory->UnlinkNotify (fullpath);
     }
@@ -164,7 +164,7 @@ void unlink_notify (std::string fullpath)
 
 int dce_unlink (const char *pathname)
 {
-  NS_LOG_FUNCTION ( pathname );
+  NS_LOG_FUNCTION (pathname);
   int ret = dce_unlink_real (pathname);
 
   if (0 == ret)
@@ -178,8 +178,8 @@ int dce_unlink (const char *pathname)
 }
 int dce_mkdir (const char *pathname, mode_t mode)
 {
-  mode_t m =  (mode & ~(Current ()->process->uMask ));
-  DEFINE_FORWARDER_PATH (mkdir, pathname, m );
+  mode_t m =  (mode & ~(Current ()->process->uMask));
+  DEFINE_FORWARDER_PATH (mkdir, pathname, m);
 }
 int dce_rmdir (const char *pathname)
 {
@@ -193,7 +193,7 @@ int dce_close (int fd)
   Thread *current = Current ();
   std::map<int,FileUsage *>::iterator it =  current->process->openFiles.find (fd);
 
-  if ( it == current->process->openFiles.end ())
+  if (it == current->process->openFiles.end ())
     {
       current->err = EBADF;
       return -1;
@@ -201,13 +201,13 @@ int dce_close (int fd)
 
   FileUsage *fu = current->process->openFiles[fd];
 
-  if ( fu->GetFile () && (1 == fu->GetFile ()->GetFdCount () )  )
+  if (fu->GetFile () && (1 == fu->GetFile ()->GetFdCount ()))
     {
       // If only one process point to file we can really close it
       // else we be closed while the last process close it
       retval = fu->GetFile ()->Close ();
     }
-  if ( fu->CanForget () )
+  if (fu->CanForget ())
     {
       // If no thread of this process is using it we can free the corresponding fd entry
       // else we be freed by last thread renoncing of using it
@@ -225,7 +225,7 @@ int dce_isatty (int fd)
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd);
   NS_ASSERT (current != 0);
 
-  OPENED_FD_METHOD(int, Isatty () );
+  OPENED_FD_METHOD (int, Isatty ());
 }
 char* dce_ttyname (int fd)
 {
@@ -233,7 +233,7 @@ char* dce_ttyname (int fd)
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd);
   NS_ASSERT (current != 0);
 
-  OPENED_FD_METHOD(char*, Ttyname () );
+  OPENED_FD_METHOD (char*, Ttyname ());
 }
 ssize_t dce_send (int fd, const void *buf, size_t len, int flags)
 {
@@ -265,7 +265,7 @@ ssize_t dce_sendmsg (int fd, const struct msghdr *msg, int flags)
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << msg << flags);
   NS_ASSERT (current != 0);
 
-  OPENED_FD_METHOD (ssize_t, Sendmsg  (msg, flags) )
+  OPENED_FD_METHOD (ssize_t, Sendmsg (msg, flags))
 }
 
 int dce_ioctl (int fd, long unsigned int request, ...)
@@ -287,7 +287,7 @@ ssize_t dce_write (int fd, const void *buf, size_t count)
   Thread *current = Current ();
   NS_ASSERT (current != 0);
 
-  OPENED_FD_METHOD (int, Write (buf, count) )
+  OPENED_FD_METHOD (int, Write (buf, count))
 }
 
 ssize_t dce_writev (int fd, const struct iovec *iov, int iovcnt)
@@ -296,7 +296,7 @@ ssize_t dce_writev (int fd, const struct iovec *iov, int iovcnt)
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << iov << iovcnt);
   NS_ASSERT (current != 0);
 
-  if ( !CheckFdExists ( current->process, fd, true ))
+  if (!CheckFdExists (current->process, fd, true))
     {
       NS_LOG_DEBUG ("write error");
       current->err = EBADF;
@@ -305,9 +305,11 @@ ssize_t dce_writev (int fd, const struct iovec *iov, int iovcnt)
 
   size_t count = 0;
   for (int i = 0; i < iovcnt; ++i)
-    count += iov[i].iov_len;
+    {
+      count += iov[i].iov_len;
+    }
 
-  if (count == 0) 
+  if (count == 0)
     {
       current->err = EINVAL;
       return -1;
@@ -333,7 +335,7 @@ ssize_t dce_read (int fd, void *buf, size_t count)
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << buf << count);
   NS_ASSERT (current != 0);
 
-  OPENED_FD_METHOD (int, Read (buf, count) )
+  OPENED_FD_METHOD (int, Read (buf, count))
 }
 int dce_socket (int domain, int type, int protocol)
 {
@@ -351,7 +353,7 @@ int dce_socket (int domain, int type, int protocol)
     }
   else
     {
-      if ( type != SOCK_DGRAM && type != SOCK_STREAM )
+      if (type != SOCK_DGRAM && type != SOCK_STREAM)
         {
           current->err = EINVAL;
           return -1;
@@ -373,7 +375,9 @@ int dce_socket (int domain, int type, int protocol)
       return -1;
     }
   if (!socket)
-    return -1;
+    {
+      return -1;
+    }
   socket->IncFdCount ();
   current->process->openFiles[fd] = new FileUsage (fd, socket);
 
@@ -389,10 +393,10 @@ ssize_t dce_readv (int fd, const struct iovec *iov, int iovcnt)
       current->err = EINVAL;
       return -1;
     }
-  for (int b=0;b < iovcnt; b++)
+  for (int b = 0; b < iovcnt; b++)
     {
-      ssize_t r = dce_read (fd , iov[b].iov_base, iov[b].iov_len);
-      if (r>=0)
+      ssize_t r = dce_read (fd, iov[b].iov_base, iov[b].iov_len);
+      if (r >= 0)
         {
           ret += r;
           if (!r || (r < iov[b].iov_len))
@@ -430,7 +434,7 @@ int dce_bind (int fd, const struct sockaddr *my_addr, socklen_t addrlen)
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << my_addr << addrlen);
   NS_ASSERT (current != 0);
 
-  OPENED_FD_METHOD (int, Bind (my_addr, addrlen) )
+  OPENED_FD_METHOD (int, Bind (my_addr, addrlen))
 }
 int dce_connect (int fd, const struct sockaddr *my_addr, socklen_t addrlen)
 {
@@ -438,7 +442,7 @@ int dce_connect (int fd, const struct sockaddr *my_addr, socklen_t addrlen)
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << my_addr << addrlen);
   NS_ASSERT (current != 0);
 
-  OPENED_FD_METHOD (int, Connect (my_addr, addrlen) )
+  OPENED_FD_METHOD (int, Connect (my_addr, addrlen))
 }
 int dce_listen (int fd, int backlog)
 {
@@ -446,7 +450,7 @@ int dce_listen (int fd, int backlog)
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << backlog);
   NS_ASSERT (current != 0);
 
-  OPENED_FD_METHOD (int, Listen (backlog) )
+  OPENED_FD_METHOD (int, Listen (backlog))
 }
 int dce_accept (int fd, struct sockaddr *addr, socklen_t *addrlen)
 {
@@ -454,7 +458,7 @@ int dce_accept (int fd, struct sockaddr *addr, socklen_t *addrlen)
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << addr << addrlen);
   NS_ASSERT (current != 0);
 
-  OPENED_FD_METHOD (int, Accept (addr, addrlen) )
+  OPENED_FD_METHOD (int, Accept (addr, addrlen))
 }
 int dce_shutdown (int fd, int how)
 {
@@ -462,7 +466,7 @@ int dce_shutdown (int fd, int how)
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << how);
   NS_ASSERT (current != 0);
 
-  OPENED_FD_METHOD (int, Shutdown (how) )
+  OPENED_FD_METHOD (int, Shutdown (how))
 }
 ssize_t dce_recv (int fd, void *buf, size_t count, int flags)
 {
@@ -507,7 +511,7 @@ ssize_t dce_recvmsg (int fd, struct msghdr *msg, int flags)
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << msg << flags);
   NS_ASSERT (current != 0);
 
-  OPENED_FD_METHOD (ssize_t, Recvmsg (msg, flags) )
+  OPENED_FD_METHOD (ssize_t, Recvmsg (msg, flags))
 }
 int dce_setsockopt (int fd, int level, int optname,
                     const void *optval, socklen_t optlen)
@@ -516,7 +520,7 @@ int dce_setsockopt (int fd, int level, int optname,
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << level << optname << optval << optlen);
   NS_ASSERT (current != 0);
 
-  OPENED_FD_METHOD (int, Setsockopt (level, optname, optval, optlen) )
+  OPENED_FD_METHOD (int, Setsockopt (level, optname, optval, optlen))
 }
 int dce_getsockopt (int fd, int level, int optname,
                     void *optval, socklen_t *optlen)
@@ -525,7 +529,7 @@ int dce_getsockopt (int fd, int level, int optname,
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << level << optname << optval << optlen);
   NS_ASSERT (current != 0);
 
-  OPENED_FD_METHOD (int, Getsockopt (level, optname, optval, optlen) )
+  OPENED_FD_METHOD (int, Getsockopt (level, optname, optval, optlen))
 }
 int dce_getsockname (int fd, struct sockaddr *name, socklen_t *namelen)
 {
@@ -549,7 +553,7 @@ int dce_dup (int oldfd)
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << oldfd);
   NS_ASSERT (current != 0);
 
-  if ( ! CheckFdExists (current->process, oldfd, true ))
+  if (!CheckFdExists (current->process, oldfd, true))
     {
       current->err = EBADF;
       return -1;
@@ -573,7 +577,7 @@ int dce_dup2 (int oldfd, int newfd)
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << oldfd << newfd);
   NS_ASSERT (current != 0);
-  if (! CheckFdExists (current->process, oldfd, true ) || (newfd > MAX_FDS))
+  if (!CheckFdExists (current->process, oldfd, true) || (newfd > MAX_FDS))
     {
       current->err = EBADF;
       return -1;
@@ -583,7 +587,7 @@ int dce_dup2 (int oldfd, int newfd)
     {
       return newfd;
     }
-  if (CheckFdExists (current->process, newfd, true ))
+  if (CheckFdExists (current->process, newfd, true))
     {
       if (dce_close (newfd))
         {
@@ -604,20 +608,20 @@ int dce_dup2 (int oldfd, int newfd)
 
   return newfd;
 }
-void *dce_mmap (void *addr, size_t length, int prot, int flags,
-		int fd, off_t offset)
+void * dce_mmap (void *addr, size_t length, int prot, int flags,
+                 int fd, off_t offset)
 {
   return dce_mmap64 (addr, length, prot, flags, fd, offset);
 }
 
-void *dce_mmap64 (void *start, size_t length, int prot, int flags,
-                  int fd, off64_t offset)
+void * dce_mmap64 (void *start, size_t length, int prot, int flags,
+                   int fd, off64_t offset)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << start << length << prot << flags << fd << offset);
   NS_ASSERT (current != 0);
 
-  OPENED_FD_METHOD_ERR( MAP_FAILED, void *, Mmap (start, length, prot, flags, offset) )
+  OPENED_FD_METHOD_ERR (MAP_FAILED, void *, Mmap (start, length, prot, flags, offset))
 }
 int dce_munmap (void *start, size_t length)
 {
@@ -643,9 +647,9 @@ off64_t dce_lseek64 (int fd, off64_t offset, int whence)
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << offset << whence);
   NS_ASSERT (current != 0);
 
-  OPENED_FD_METHOD (int, Lseek (offset, whence) )
+  OPENED_FD_METHOD (int, Lseek (offset, whence))
 }
-int dce_fcntl(int fd, int cmd, ... /*unsigned long arg*/)
+int dce_fcntl (int fd, int cmd, ... /*unsigned long arg*/)
 {
   va_list vl;
   va_start (vl, cmd);
@@ -659,15 +663,15 @@ int dce_fcntl(int fd, int cmd, ... /*unsigned long arg*/)
   // For example, FD_DUP, etc.
 
   switch (cmd)
-  {
+    {
     case F_DUPFD:
       {
         return dce_dup (fd);
       }
-  }
+    }
 
 
-  OPENED_FD_METHOD (int, Fcntl (cmd, arg) )
+  OPENED_FD_METHOD (int, Fcntl (cmd, arg))
 }
 
 int dce_truncate (const char *path, off_t length)
@@ -678,10 +682,10 @@ int dce_truncate (const char *path, off_t length)
 
   int fd = dce_open (path, O_WRONLY, 0);
   if (fd == -1)
-	{
-	  current->err = errno;
-	  return -1;
-	}
+    {
+      current->err = errno;
+      return -1;
+    }
 
   return dce_ftruncate (fd, length);
 }
@@ -701,8 +705,8 @@ int dce_ftruncate (int fd, off_t length)
   UnixFd *unixFd = current->process->openFiles[index].second;
   int retval = unixFd->Ftruncate (length);
   return retval;
-  */ 
-  OPENED_FD_METHOD (int, Ftruncate (length) )  
+  */
+  OPENED_FD_METHOD (int, Ftruncate (length))
 }
 int dce_ftruncate64 (int fd, off_t length)
 {
@@ -712,11 +716,11 @@ int dce_ftruncate64 (int fd, off_t length)
   return dce_ftruncate (fd, length);
 }
 
-int dce_pipe(int pipefd[2])
+int dce_pipe (int pipefd[2])
 {
   Thread *current = Current ();
   NS_ASSERT (current != 0);
-  NS_LOG_FUNCTION (current << UtilsGetNodeId () );
+  NS_LOG_FUNCTION (current << UtilsGetNodeId ());
 
   if (0 == pipefd)
     {
@@ -761,22 +765,22 @@ int dce_pipe(int pipefd[2])
   current->process->openFiles[fdWrite] = new FileUsage (fdWrite, writer);
 
 //  writer->m_peer = reader;
-  reader->IncFdCount();
-  writer->IncFdCount();
+  reader->IncFdCount ();
+  writer->IncFdCount ();
 
   pipefd [0] = fdRead;
   pipefd [1] = fdWrite;
 
   return 0;
 }
-ssize_t dce_pread(int fd, void *buf, size_t count, off_t offset)
+ssize_t dce_pread (int fd, void *buf, size_t count, off_t offset)
 {
   Thread *current = Current ();
   NS_ASSERT (current != 0);
-  NS_LOG_FUNCTION (current << UtilsGetNodeId () );
+  NS_LOG_FUNCTION (current << UtilsGetNodeId ());
 
   off_t currentOffset = dce_lseek (fd, 0, SEEK_CUR);
-  if ( -1 == currentOffset )
+  if (-1 == currentOffset)
     {
       return (ssize_t) -1;
     }
@@ -787,26 +791,26 @@ ssize_t dce_pread(int fd, void *buf, size_t count, off_t offset)
       return (ssize_t) -1;
     }
   ssize_t ret = dce_read (fd, buf, count);
-  if ( -1 == ret )
+  if (-1 == ret)
     {
       return ret;
     }
   // Return to original offset.
   res = dce_lseek (fd, currentOffset, SEEK_SET);
-  if ( res != currentOffset )
+  if (res != currentOffset)
     {
       return (ssize_t) -1;
     }
   return ret;
 }
-ssize_t dce_pwrite(int fd, const void *buf, size_t count, off_t offset)
+ssize_t dce_pwrite (int fd, const void *buf, size_t count, off_t offset)
 {
   Thread *current = Current ();
   NS_ASSERT (current != 0);
-  NS_LOG_FUNCTION (current << UtilsGetNodeId () );
+  NS_LOG_FUNCTION (current << UtilsGetNodeId ());
 
   off_t currentOffset = dce_lseek (fd, 0, SEEK_CUR);
-  if ( -1 == currentOffset )
+  if (-1 == currentOffset)
     {
       return (ssize_t) -1;
     }
@@ -817,13 +821,13 @@ ssize_t dce_pwrite(int fd, const void *buf, size_t count, off_t offset)
       return (ssize_t) -1;
     }
   ssize_t ret = dce_write (fd, buf, count);
-  if ( -1 == ret )
+  if (-1 == ret)
     {
       return ret;
     }
   // Return to original offset.
   res = dce_lseek (fd, currentOffset, SEEK_SET);
-  if ( res != currentOffset )
+  if (res != currentOffset)
     {
       return (ssize_t) -1;
     }

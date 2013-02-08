@@ -14,7 +14,7 @@ public:
   Ns3SocketFdFactory ();
   void NotifyNewAggregate (void);
 
-  virtual UnixFd *CreateSocket (int domain, int type, int protocol);
+  virtual UnixFd * CreateSocket (int domain, int type, int protocol);
 private:
   Ptr<SocketFactory> m_netlink;
 };

@@ -9,10 +9,10 @@
 extern "C" {
 #endif
 
-FILE *dce_fopen (const char *path, const char *mode);
-FILE *dce_fopen64 (const char *path, const char *mode);
-FILE *dce_fdopen (int fildes, const char *mode);
-FILE *dce_freopen (const char *path, const char *mode, FILE *stream);
+FILE * dce_fopen (const char *path, const char *mode);
+FILE * dce_fopen64 (const char *path, const char *mode);
+FILE * dce_fdopen (int fildes, const char *mode);
+FILE * dce_freopen (const char *path, const char *mode, FILE *stream);
 int dce_fclose (FILE *fp);
 int dce_fclose_unconditional (FILE *fp);
 int dce_fclose_onexec (FILE *file);
@@ -48,22 +48,22 @@ int dce_ungetc (int c, FILE *stream);
 
 int dce_remove (const char *pathname);
 
-int dce_printf(const char *format, ...);
+int dce_printf (const char *format, ...);
 int dce_getchar (void);
 int dce__IO_getc (FILE *stream);
 int dce_putchar (int __c);
 int dce__IO_putc (int __c, FILE *__stream);
 int dce_puts (const char *__s);
-	
-void dce_perror(const char *s);
+
+void dce_perror (const char *s);
 
 int dce___printf_chk (int __flag, __const char *__restrict __format, ...);
 int dce___vfprintf_chk (FILE *__restrict __stream, int __flag,
-						__const char *__restrict __format, _G_va_list __ap);
+                        __const char *__restrict __format, _G_va_list __ap);
 int dce___fprintf_chk (FILE *__restrict __stream, int __flag,
-					   __const char *__restrict __format, ...);
+                       __const char *__restrict __format, ...);
 int dce___snprintf_chk (char *__restrict __s, size_t __n, int __flag,
-						size_t __slen, __const char *__restrict __format, ...);
+                        size_t __slen, __const char *__restrict __format, ...);
 
 void dce___fpurge (FILE *stream);
 size_t dce___fpending (FILE *stream);

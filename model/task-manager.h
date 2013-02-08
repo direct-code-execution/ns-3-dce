@@ -18,7 +18,8 @@ class FiberManager;
 class Task
 {
 public:
-  enum SwitchType {
+  enum SwitchType
+  {
     TO,
     FROM
   };
@@ -30,8 +31,8 @@ public:
   void SetExtraContext (void *ctx);
   void SetContext (void *ctx);
 
-  void *GetExtraContext (void) const;
-  void *GetContext (void) const;
+  void * GetExtraContext (void) const;
+  void * GetContext (void) const;
 
   void SetSwitchNotifier (void (*fn)(enum SwitchType, void *), void *context);
 private:
@@ -72,7 +73,7 @@ public:
   Task *Start (void (*fn)(void*), void *context);
   Task *Start (void (*fn)(void*), void *context, uint32_t stackSize);
 
-  Task *Clone (Task *task);
+  Task * Clone (Task *task);
 
   /**
    * Stop and delete a task. This task will never run again.
@@ -113,7 +114,7 @@ public:
    * Returns currently-executing task or 0 if no tasks are currently
    * running.
    */
-  Task *CurrentTask (void);
+  Task * CurrentTask (void);
   /**
    * Returns the 'current' task manager.
    * Note that this function does not return a reference (i.e., the caller does not
@@ -125,7 +126,7 @@ public:
    * the reference count and thus lose references when the caller's stack is ripped
    * out.
    */
-  static TaskManager *Current (void);
+  static TaskManager * Current (void);
 
   void SetSwitchNotify (void (*fn)(void));
   uint32_t GetStackSize (Task *task) const;

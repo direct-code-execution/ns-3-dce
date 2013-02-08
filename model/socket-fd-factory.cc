@@ -4,7 +4,7 @@ namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (SocketFdFactory);
 
-TypeId 
+TypeId
 SocketFdFactory::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::SocketFdFactory")
@@ -14,10 +14,12 @@ SocketFdFactory::GetTypeId (void)
 }
 
 SocketFdFactory::~SocketFdFactory ()
-{}
+{
+}
 
 void
 SocketFdFactory::UnlinkNotify (std::string path)
-{}
+{
+}
 
 } // namespace ns3

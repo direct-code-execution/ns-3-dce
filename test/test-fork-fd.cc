@@ -20,7 +20,7 @@ static
 void fill_addr (struct sockaddr_in &addr, int port)
 {
   int res = inet_aton ("127.0.0.1", &(addr.sin_addr));
-  TEST_ASSERT_EQUAL ( res, 1);
+  TEST_ASSERT_EQUAL (res, 1);
 
   addr.sin_family = AF_INET;
   addr.sin_port = htons (port);
@@ -54,7 +54,7 @@ father1 ()
   sleep (1);
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   fill_addr (ad, 2000);
 encore:
@@ -109,7 +109,7 @@ first_child1 ()
   char buf[1024];
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   fill_addr (ad, 2000);
   status = bind (sock, (struct sockaddr *) &ad, sizeof(ad));
@@ -120,7 +120,7 @@ first_child1 ()
 
   sockin = accept (sock, NULL, NULL);
   printf ("first_child1 accept -> %d\n", sockin);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   status = read (sockin, buf, sizeof(buf));
   printf ("first_child1: read result : %d\n",status);

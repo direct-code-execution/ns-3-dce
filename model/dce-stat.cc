@@ -54,7 +54,7 @@ int dce___fxstat (int ver, int fd, struct stat *buf)
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd);
   NS_ASSERT (current != 0);
 
-  OPENED_FD_METHOD(int, Fxstat (ver, buf) )
+  OPENED_FD_METHOD (int, Fxstat (ver, buf))
 }
 int dce___fxstat64 (int ver, int fd, struct stat64 *buf)
 {
@@ -62,7 +62,7 @@ int dce___fxstat64 (int ver, int fd, struct stat64 *buf)
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd);
   NS_ASSERT (current != 0);
 
-  OPENED_FD_METHOD(int, Fxstat64 (ver, buf) )
+  OPENED_FD_METHOD (int, Fxstat64 (ver, buf))
 }
 int dce___lxstat (int ver, const char *pathname, struct stat *buf)
 {

@@ -22,22 +22,22 @@ NS_OBJECT_ENSURE_REGISTERED (TaskManager);
 
 
 
-bool 
+bool
 Task::IsActive (void) const
 {
   return m_state == Task::ACTIVE;
 }
-bool 
+bool
 Task::IsRunning (void) const
 {
   return m_state == Task::RUNNING;
 }
-bool 
+bool
 Task::IsBlocked (void) const
 {
   return m_state == Task::BLOCKED;
 }
-bool 
+bool
 Task::IsDead (void) const
 {
   return m_state == Task::DEAD;
@@ -63,7 +63,7 @@ Task::GetContext (void) const
   return m_context;
 }
 
-void 
+void
 Task::SetSwitchNotifier (void (*fn)(enum SwitchType, void *), void *context)
 {
   m_switchNotifier = fn;
@@ -71,22 +71,23 @@ Task::SetSwitchNotifier (void (*fn)(enum SwitchType, void *), void *context)
 }
 
 Task::~Task ()
-{}
+{
+}
 
 
-TypeId 
+TypeId
 TaskManager::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::TaskManager")
     .SetParent<Object> ()
     .AddConstructor<TaskManager> ()
-    .AddAttribute ("DefaultStackSize", 
+    .AddAttribute ("DefaultStackSize",
                    "The default size of the stack of every task created by this manager.",
                    UintegerValue (8192),
                    MakeUintegerAccessor (&TaskManager::m_defaultStackSize),
                    MakeUintegerChecker<uint32_t> (4096))
-    .AddAttribute ("FiberManagerType", 
-                   "The type of FiberManager implementation to use to allocate, " 
+    .AddAttribute ("FiberManagerType",
+                   "The type of FiberManager implementation to use to allocate, "
                    "deallocate and switch among fibers.",
                    TypeId::ATTR_CONSTRUCT,
                    EnumValue (PTHREAD_FIBER_MANAGER),
@@ -119,24 +120,27 @@ TaskManager::~TaskManager ()
 
 void TaskManager::DoDispose (void)
 {
-  if ( m_disposing ) return;
+  if (m_disposing)
+    {
+      return;
+    }
   m_disposing = 1;
 
   // Flush every FILEs in every processes.
-  Ptr<DceManager> dceManager = this->GetObject<DceManager>();
+  Ptr<DceManager> dceManager = this->GetObject<DceManager> ();
 
   if (0 != dceManager)
     {
       std::map<uint16_t, Process *> procs = dceManager->GetProcs ();
       std::map<uint16_t, Process *>::iterator it;
 
-      for ( it = procs.begin (); it != procs.end (); it++)
+      for (it = procs.begin (); it != procs.end (); it++)
         {
-          if ( 0 != it->second )
+          if (0 != it->second)
             {
               gDisposingThreadContext = it->second->threads.back ();
 
-              if ( 0 != gDisposingThreadContext)
+              if (0 != gDisposingThreadContext)
                 {
                   Process *p = it->second;
                   for (std::vector<FILE *>::const_iterator i = p->openStreams.begin ();
@@ -171,13 +175,13 @@ TaskManager::GarbageCollectDeadTasks (void)
 }
 
 
-void 
+void
 TaskManager::SetScheduler (Ptr<TaskScheduler> scheduler)
 {
   m_scheduler = scheduler;
 }
 
-void 
+void
 TaskManager::SetDelayModel (Ptr<ProcessDelayModel> model)
 {
   m_delayModel = model;
@@ -196,7 +200,7 @@ static void SwitchNotifEatSignal (void)
     {
       return;
     }
-  if ( ! manager->CurrentTask () )
+  if (!manager->CurrentTask ())
     {
       return;
     }
@@ -258,7 +262,7 @@ TaskManager::Trampoline (void *context)
   NS_FATAL_ERROR ("The user function must not return.");
 }
 
-void 
+void
 TaskManager::Stop (Task *task)
 {
   NS_LOG_FUNCTION (this << task);
@@ -278,11 +282,11 @@ TaskManager::Stop (Task *task)
   delete task;
 }
 
-void 
+void
 TaskManager::Wakeup (Task *task)
 {
   NS_LOG_FUNCTION (this << task << task->m_state);
-  if (task->m_state == Task::ACTIVE 
+  if (task->m_state == Task::ACTIVE
       || task->m_state == Task::RUNNING)
     {
       return;
@@ -295,7 +299,7 @@ TaskManager::Wakeup (Task *task)
     }
 }
 
-void 
+void
 TaskManager::Sleep (void)
 {
   NS_LOG_FUNCTION (this << m_current);
@@ -306,7 +310,7 @@ TaskManager::Sleep (void)
   Schedule ();
 }
 
-Time 
+Time
 TaskManager::Sleep (Time timeout)
 {
   NS_LOG_FUNCTION (this << m_current);
@@ -321,14 +325,14 @@ TaskManager::Sleep (Time timeout)
     }
   Schedule ();
   current->m_waitTimer.Cancel ();
-  if (!timeout.IsZero () 
+  if (!timeout.IsZero ()
       && Simulator::Now () <= expectedEnd)
     {
       return expectedEnd - Simulator::Now ();
     }
   return Seconds (0.0);
 }
-void 
+void
 TaskManager::Yield (void)
 {
   NS_LOG_FUNCTION (this << m_current);
@@ -339,7 +343,7 @@ TaskManager::Yield (void)
   m_scheduler->Enqueue (m_current);
   Schedule ();
 }
-void 
+void
 TaskManager::Exit (void)
 {
   NS_LOG_FUNCTION (this << m_current);
@@ -407,7 +411,7 @@ TaskManager::Schedule (void)
       // we have something to schedule from.
       // but, we have nothing to schedule to so, we go back to the main task.
       Time delay = m_delayModel->RecordEnd ();
-      NS_LOG_DEBUG ("Leaving " << m_current <<", delay " << delay << " entering main");
+      NS_LOG_DEBUG ("Leaving " << m_current << ", delay " << delay << " entering main");
       struct Task *next = m_scheduler->PeekNext ();
       if (next != 0)
         {
@@ -425,7 +429,7 @@ TaskManager::Schedule (void)
     }
 }
 
-void 
+void
 TaskManager::SetFiberManagerType (enum FiberManagerType type)
 {
   NS_LOG_FUNCTION (this << type);
@@ -455,12 +459,12 @@ TaskManager::EndWait (Task *task)
     }
 }
 
-void 
+void
 TaskManager::SetSwitchNotify (void (*fn)(void))
 {
   m_fiberManager->SetSwitchNotification (fn);
 }
-uint32_t 
+uint32_t
 TaskManager::GetStackSize (Task *task) const
 {
   return m_fiberManager->GetStackSize (task->m_fiber);

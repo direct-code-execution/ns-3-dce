@@ -5,7 +5,7 @@ struct Libc g_libc;
 
 // macros stolen from glibc.
 #define weak_alias(name, aliasname) \
-  extern __typeof (name) aliasname __attribute__ ((weak, alias (#name)))
+  extern __typeof (name) aliasname __attribute__ ((weak, alias (# name)))
 
 extern "C" {
 
@@ -19,29 +19,29 @@ extern "C" {
 #define NATIVE_WITH_ALIAS2 DCE_WITH_ALIAS2
 
 #define GCC_BUILTIN_APPLY(export_symbol, func_to_call) \
-  void export_symbol (...) {\
-  void *args =  __builtin_apply_args();\
-		void *result = __builtin_apply( g_libc.func_to_call ## _fn, args, 128 ); \
-		__builtin_return (result);\
+  void export_symbol (...) { \
+    void *args =  __builtin_apply_args (); \
+    void *result = __builtin_apply (g_libc.func_to_call ## _fn, args, 128); \
+    __builtin_return (result); \
   }
 
 #define GCC_BUILTIN_APPLYT(rtype, export_symbol, func_to_call) \
-  rtype export_symbol (...) {\
-  void *args =  __builtin_apply_args();\
-                void *result = __builtin_apply( (void(*)(...)) g_libc.func_to_call ## _fn, args, 128 ); \
-                __builtin_return (result);\
+  rtype export_symbol (...) { \
+    void *args =  __builtin_apply_args (); \
+    void *result = __builtin_apply ((void (*) (...)) g_libc.func_to_call ## _fn, args, 128); \
+    __builtin_return (result); \
   }
 
 
-#define DCE(name)								\
-	GCC_BUILTIN_APPLY(name,name)
+#define DCE(name)                                                               \
+  GCC_BUILTIN_APPLY (name,name)
 
 #define DCET(rtype,name)                                                               \
-        GCC_BUILTIN_APPLYT(rtype,name,name)
+  GCC_BUILTIN_APPLYT (rtype,name,name)
 
 /* From gcc/testsuite/gcc.dg/cpp/vararg2.c */
 /* C99 __VA_ARGS__ versions */
-#define c99_count(...)    _c99_count1 ( , ##__VA_ARGS__)/* If only ## worked.*/
+#define c99_count(...)    _c99_count1 (, ## __VA_ARGS__) /* If only ## worked.*/
 #define _c99_count1(...)  _c99_count2 (__VA_ARGS__,10,9,8,7,6,5,4,3,2,1,0)
 #define _c99_count2(_,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,n,...) n
 
@@ -59,27 +59,27 @@ extern "C" {
 #define _ARGS_4(X0,X1,X2,X3)  a0, a1, a2, a3
 #define _ARGS_5(X0,X1,X2,X3,X4) a0, a1, a2, a3, a4
 
-#define CAT(a, ...) PRIMITIVE_CAT(a, __VA_ARGS__)
+#define CAT(a, ...) PRIMITIVE_CAT (a, __VA_ARGS__)
 #define PRIMITIVE_CAT(a, ...) a ## __VA_ARGS__
-  
-#define  FULL_ARGS(...) CAT(FULL_ARGS_,c99_count (__VA_ARGS__))(__VA_ARGS__)
-#define  ARGS(...) CAT(_ARGS_,c99_count (__VA_ARGS__))(__VA_ARGS__)
+
+#define  FULL_ARGS(...) CAT (FULL_ARGS_,c99_count (__VA_ARGS__)) (__VA_ARGS__)
+#define  ARGS(...) CAT (_ARGS_,c99_count (__VA_ARGS__)) (__VA_ARGS__)
 
 
 #define DCE_EXPLICIT(name,rtype,...)                                    \
-  rtype name (FULL_ARGS(__VA_ARGS__))    \
+  rtype name (FULL_ARGS (__VA_ARGS__))    \
   {                                                             \
-    return g_libc.name ## _fn (ARGS(__VA_ARGS__));              \
+    return g_libc.name ## _fn (ARGS (__VA_ARGS__));              \
   }
 
-#define DCE_WITH_ALIAS(name)					\
-	GCC_BUILTIN_APPLY(__ ## name,name)			\
-	weak_alias(__ ## name, name);
+#define DCE_WITH_ALIAS(name)                                    \
+  GCC_BUILTIN_APPLY (__ ## name,name)                      \
+  weak_alias (__ ## name, name);
 
-#define DCE_WITH_ALIAS2(name, internal)			\
-	GCC_BUILTIN_APPLY(internal,name)			\
-	weak_alias(internal, name);
-   
+#define DCE_WITH_ALIAS2(name, internal)                 \
+  GCC_BUILTIN_APPLY (internal,name)                        \
+  weak_alias (internal, name);
+
 
 // Note: it looks like that the stdio.h header does
 // not define putc and getc as macros if you include
@@ -93,7 +93,7 @@ extern "C" {
 // weak_alias (strtol, __strtol_internal);
 // weak_alias (wctype_l, __wctype_l);
 // weak_alias (strdup, __strdup);
-	
+
 // void exit(int status)
 // {
 //   g_libc.exit_fn (status);
@@ -118,12 +118,12 @@ extern "C" {
 //     }
 // }
 
-char *strpbrk (const char *s, const char *a)
+char * strpbrk (const char *s, const char *a)
 {
   return g_libc.strpbrk_fn (s,a);
 }
 
-char *strstr (const char *u, const char *d)
+char * strstr (const char *u, const char *d)
 {
   return g_libc.strstr_fn (u,d);
 }
@@ -146,12 +146,12 @@ int vsnprintf (char *s, size_t si, const char *f, va_list v)
 
 void LIBSETUP (const struct Libc *fn)
 {
-  /* The following assignment of fn to g_libc is a bit weird: we perform a copy of the data                       
-   * structures by hand rather than executing g_libc = fn. This is obviously done on purpose.                     
-   * The reason is that g_libc = fn would trigger a call to the memcpy function because the                       
-   * Libc structure is very big. The memcpy function is resolved through the dynamic loader's                     
-   * symbol lookup mechanism to the local memcpy function and that local memcpy function happens                  
-   * to be calling g_libc.memcpy_fn which is set to NULL before the data structure is initialized.                
+  /* The following assignment of fn to g_libc is a bit weird: we perform a copy of the data
+   * structures by hand rather than executing g_libc = fn. This is obviously done on purpose.
+   * The reason is that g_libc = fn would trigger a call to the memcpy function because the
+   * Libc structure is very big. The memcpy function is resolved through the dynamic loader's
+   * symbol lookup mechanism to the local memcpy function and that local memcpy function happens
+   * to be calling g_libc.memcpy_fn which is set to NULL before the data structure is initialized.
    */
   const unsigned char *src = (const unsigned char *)fn;
   unsigned char *dst = (unsigned char *)&g_libc;
@@ -172,8 +172,8 @@ void LIBSETUP (const struct Libc *fn)
 // directly without using the global g_libc variable, we can do it only if our implementation of the method
 // do not interract with any ressouces of DCE or NS3 and do no call any other libc methods ...
 struct cpu_features;
-extern const struct cpu_features *dce___get_cpu_features (void);
-const struct cpu_features *__get_cpu_features (void)
+extern const struct cpu_features * dce___get_cpu_features (void);
+const struct cpu_features * __get_cpu_features (void)
 {
   return dce___get_cpu_features ();
 }

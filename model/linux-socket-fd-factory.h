@@ -41,7 +41,7 @@ public:
   LinuxSocketFdFactory ();
   virtual ~LinuxSocketFdFactory ();
 
-  virtual UnixFd *CreateSocket (int domain, int type, int protocol);
+  virtual UnixFd * CreateSocket (int domain, int type, int protocol);
 
   void Set (std::string path, std::string value);
   std::string Get (std::string path);
@@ -80,22 +80,22 @@ private:
 
   // called from kernel.
   static int Vprintf (struct SimKernel *kernel, const char *str, va_list args);
-  static void *Malloc (struct SimKernel *kernel, unsigned long size);
+  static void * Malloc (struct SimKernel *kernel, unsigned long size);
   static void Free (struct SimKernel *kernel, void *buffer);
-  static void *Memcpy (struct SimKernel *kernel, void *dst, const void *src, unsigned long size);
-  static void *Memset (struct SimKernel *kernel, void *dst, char value, unsigned long size);
+  static void * Memcpy (struct SimKernel *kernel, void *dst, const void *src, unsigned long size);
+  static void * Memset (struct SimKernel *kernel, void *dst, char value, unsigned long size);
   static unsigned long Random (struct SimKernel *kernel);
   static void *EventScheduleNs (struct SimKernel *kernel, __u64 ns, void (*fn)(void *context), void *context,
                                 void (*pre_fn)(void));
   static void EventCancel (struct SimKernel *kernel, void *ev);
   static struct SimTask *TaskStart (struct SimKernel *kernel, void (*callback)(void *), void *context);
-  static struct SimTask *TaskCurrent (struct SimKernel *kernel);
+  static struct SimTask * TaskCurrent (struct SimKernel *kernel);
   static void TaskWait (struct SimKernel *kernel);
   static int TaskWakeup (struct SimKernel *kernel, struct SimTask *task);
   static void TaskYield (struct SimKernel *kernel);
   static void DevXmit (struct SimKernel *kernel, struct SimDevice *dev, unsigned char *data, int len);
-  static void SignalRaised ( struct SimKernel *kernel, struct SimTask *task, int signalNumber);
-  static void PollEvent ( int flag, void *context);
+  static void SignalRaised (struct SimKernel *kernel, struct SimTask *task, int signalNumber);
+  static void PollEvent (int flag, void *context);
 
 
   // inherited from Object.
@@ -110,7 +110,7 @@ private:
   void RxFromDevice (Ptr<NetDevice> device, Ptr<const Packet> p,
                      uint16_t protocol, const Address & from,
                      const Address &to, NetDevice::PacketType type);
-  struct SimDevice *DevToDev (Ptr<NetDevice> dev);
+  struct SimDevice * DevToDev (Ptr<NetDevice> dev);
   void NotifyDeviceStateChange (Ptr<NetDevice> device);
   void NotifyDeviceStateChangeTask (Ptr<NetDevice> device);
   void NotifyAddDeviceTask (Ptr<NetDevice> device);

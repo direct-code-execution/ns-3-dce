@@ -38,7 +38,7 @@ NS_LOG_COMPONENT_DEFINE ("Dce");
 
 using namespace ns3;
 
-int *dce___errno_location (void)
+int * dce___errno_location (void)
 {
   GET_CURRENT_NOLOG ();
   return &current->err;
@@ -76,37 +76,37 @@ static bool is_gcapable (void)
 static bool is_set_ucapable (uid_t uid)
 {
   GET_CURRENT (uid);
-  return is_ucapable () ||
-         current->process->euid == uid ||
-         current->process->ruid == uid ||
-         current->process->suid == uid;
+  return is_ucapable ()
+         || current->process->euid == uid
+         || current->process->ruid == uid
+         || current->process->suid == uid;
 }
 static bool is_set_gcapable (gid_t gid)
 {
   GET_CURRENT (gid);
-  return is_gcapable () ||
-         current->process->egid == gid ||
-         current->process->rgid == gid ||
-         current->process->sgid == gid;
+  return is_gcapable ()
+         || current->process->egid == gid
+         || current->process->rgid == gid
+         || current->process->sgid == gid;
 }
 
 int dce_setresuid (uid_t ruid, uid_t euid, uid_t suid)
 {
   GET_CURRENT (ruid << euid << suid);
-  if (ruid != (uid_t)-1 &&
-      !is_set_ucapable (ruid))
+  if (ruid != (uid_t)-1
+      && !is_set_ucapable (ruid))
     {
       current->err = EPERM;
       return -1;
     }
-  if (euid != (uid_t)-1 &&
-      !is_set_ucapable (euid))
+  if (euid != (uid_t)-1
+      && !is_set_ucapable (euid))
     {
       current->err = EPERM;
       return -1;
     }
-  if (suid != (uid_t)-1 &&
-      !is_set_ucapable (suid))
+  if (suid != (uid_t)-1
+      && !is_set_ucapable (suid))
     {
       current->err = EPERM;
       return -1;
@@ -129,20 +129,20 @@ int dce_setresuid (uid_t ruid, uid_t euid, uid_t suid)
 int dce_setresgid (gid_t rgid, gid_t egid, gid_t sgid)
 {
   GET_CURRENT (rgid << egid << sgid);
-  if (rgid != (gid_t)-1 &&
-      !is_set_ucapable (rgid))
+  if (rgid != (gid_t)-1
+      && !is_set_ucapable (rgid))
     {
       current->err = EPERM;
       return -1;
     }
-  if (egid != (gid_t)-1 &&
-      !is_set_ucapable (egid))
+  if (egid != (gid_t)-1
+      && !is_set_ucapable (egid))
     {
       current->err = EPERM;
       return -1;
     }
-  if (sgid != (gid_t)-1 ||
-      !is_set_ucapable (sgid))
+  if (sgid != (gid_t)-1
+      || !is_set_ucapable (sgid))
     {
       current->err = EPERM;
       return -1;
@@ -260,7 +260,7 @@ void dce_abort ()
   Thread *current = Current ();
   NS_LOG_FUNCTION (current);
 
-  UtilsSendSignal ( Current ()->process, SIGABRT);
+  UtilsSendSignal (Current ()->process, SIGABRT);
   // If we are still alive force the exitation
   dce_exit (-2);
 }
@@ -283,15 +283,18 @@ int dce_gettimeofday (struct timeval *tv, struct timezone *tz)
   *tv = UtilsTimeToTimeval (UtilsSimulationTimeToTime (Now ()));
   return 0;
 }
-int dce_nanosleep (const struct timespec *req, struct timespec *rem) {
+int dce_nanosleep (const struct timespec *req, struct timespec *rem)
+{
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId ());
   NS_ASSERT (current != 0);
-  if (req == 0) {
+  if (req == 0)
+    {
       current->err = EFAULT;
       return -1;
     }
-  if ((req->tv_sec < 0) || (req->tv_nsec < 0) || (req->tv_nsec > 999999999)) {
+  if ((req->tv_sec < 0) || (req->tv_nsec < 0) || (req->tv_nsec > 999999999))
+    {
       current->err = EINVAL;
       return -1;
     }
@@ -304,20 +307,25 @@ int dce_nanosleep (const struct timespec *req, struct timespec *rem) {
   else
     {
       current->err = EINTR;
-      if (rem != 0) *rem = UtilsTimeToTimespec (remTime);
+      if (rem != 0)
+        {
+          *rem = UtilsTimeToTimespec (remTime);
+        }
       return -1;
     }
 }
 
-long int dce_random (void) {
+long int dce_random (void)
+{
   Thread *current = Current ();
   return current->process->rndVarible.GetInteger ();
 }
-int dce_rand (void) {
+int dce_rand (void)
+{
   Thread *current = Current ();
   return current->process->rndVarible.GetInteger ();
 }
-unsigned short int *dce_seed48 (unsigned short int seed16v[3])
+unsigned short int * dce_seed48 (unsigned short int seed16v[3])
 {
   Thread *current = Current ();
   seed48_r (seed16v, &(current->process->seed48Current));
@@ -360,7 +368,7 @@ long int dce_mrand48 (void)
 
   long int res;
 
-  jrand48_r ( current->process->seed48Current.__x,  &(current->process->seed48Current), &res);
+  jrand48_r (current->process->seed48Current.__x,  &(current->process->seed48Current), &res);
 
   return res;
 }
@@ -389,27 +397,29 @@ void dce_srand48 (long int seedval)
 {
   Thread *current = Current ();
 
-  srand48_r (seedval, &(current->process->seed48Current) );
+  srand48_r (seedval, &(current->process->seed48Current));
 }
 
 void dce_lcong48 (unsigned short param[7])
 {
   Thread *current = Current ();
 
-  lcong48_r (param, &(current->process->seed48Current) );
+  lcong48_r (param, &(current->process->seed48Current));
 }
 
 //ignore seeds as RandomVariable implementation ensures that we take different random streams.
 //TODO: support getting the same rng stream for several processes
-void dce_srandom (unsigned int seed) {
+void dce_srandom (unsigned int seed)
+{
   return;
 }
-void dce_srand (unsigned int seed) {
+void dce_srand (unsigned int seed)
+{
   return;
 }
 
-const char *dce_inet_ntop (int af, const void *src,
-                           char *dst, socklen_t cnt)
+const char * dce_inet_ntop (int af, const void *src,
+                            char *dst, socklen_t cnt)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << af << src << dst << cnt);
   Thread *current = Current ();
@@ -449,14 +459,14 @@ int dce_getopt (int argc, char * const argv[], const char *optstring)
   optopt = optoptsaved;
   return retval;
 }
-int dce_getopt_long (int argc, char * const argv[], const char *optstring, 
-					 const struct option *longopts, int *longindex)
+int dce_getopt_long (int argc, char * const argv[], const char *optstring,
+                     const struct option *longopts, int *longindex)
 {
-  NS_LOG_FUNCTION (Current () << "node" << UtilsGetNodeId () << argc << argv << optstring << 
+  NS_LOG_FUNCTION (Current () << "node" << UtilsGetNodeId () << argc << argv << optstring <<
                    longopts << longindex);
   NS_ASSERT (Current () != 0);
   Process *process = Current ()->process;
-  
+
   /* The following is pretty evil but it all comes down to the fact
    * that the libc does not export getopt_internal_r which is really the
    * function we want to call here.
@@ -536,8 +546,8 @@ int dce_setitimer (int which, const struct itimerval *value,
 
   current->process->itimer.Cancel ();
   current->process->itimerInterval = UtilsTimevalToTime (value->it_interval);
-  if (value->it_value.tv_sec == 0 &&
-      value->it_value.tv_usec == 0)
+  if (value->it_value.tv_sec == 0
+      && value->it_value.tv_usec == 0)
     {
       return 0;
     }
@@ -545,7 +555,7 @@ int dce_setitimer (int which, const struct itimerval *value,
                                                   &Itimer, current->process);
   return 0;
 }
-char *dce_getcwd (char *buf, size_t size)
+char * dce_getcwd (char *buf, size_t size)
 {
   Thread *current = Current ();
   NS_ASSERT (current != 0);
@@ -570,13 +580,13 @@ char *dce_getcwd (char *buf, size_t size)
         {
           buf = (char *)dce_malloc (size);
         }
-      buf[size-1] = 0;
+      buf[size - 1] = 0;
     }
   const char *source = current->process->cwd.c_str ();
   strcpy (buf, source);
   return buf;
 }
-char *dce_getwd (char *buf)
+char * dce_getwd (char *buf)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << buf);
   NS_ASSERT (Current () != 0);
@@ -591,7 +601,7 @@ char *dce_getwd (char *buf)
   strcpy (buf, source);
   return buf;
 }
-char *dce_get_current_dir_name (void)
+char * dce_get_current_dir_name (void)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -631,13 +641,13 @@ int dce_fchdir (int fd)
     }
   std::string p = PathOfFd (realFd);
 
-  if ( 0 == p.length() )
+  if (0 == p.length ())
     {
       current->err = EBADF;
       return -1;
     }
   std::string base = UtilsGetCurrentDirName () + "/" +  UtilsGetRealFilePath ("/");
-  current->process->cwd =  UtilsGetVirtualFilePath (std::string (p, base.length() - 1 ));
+  current->process->cwd =  UtilsGetVirtualFilePath (std::string (p, base.length () - 1));
   return 0;
 }
 unsigned dce_if_nametoindex (const char *ifname)
@@ -681,7 +691,7 @@ unsigned dce_if_nametoindex (const char *ifname)
       return 0;
     }
 }
-char *dce_if_indextoname (unsigned ifindex, char *ifname)
+char * dce_if_indextoname (unsigned ifindex, char *ifname)
 {
   struct ifreq ifr;
   int fd = dce_socket (AF_INET, SOCK_DGRAM, 0);
@@ -710,15 +720,15 @@ int dce_execv (const char *path, char *const argv[])
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << path);
 
-  std::string  fileName = SearchExecFile ( path, getuid (), getgid (), &(thread->err) );
+  std::string fileName = SearchExecFile (path, getuid (), getgid (), &(thread->err));
 
-  if  ( 0 == fileName.length () )
+  if  (0 == fileName.length ())
     {
       // Errno setted by FindExecFile
       return -1;
     }
 
-  return thread->process->manager->Execve (fileName.c_str (), path, argv, *(thread->process->penvp) );
+  return thread->process->manager->Execve (fileName.c_str (), path, argv, *(thread->process->penvp));
 }
 int dce_execl (const char *path, const char *arg, ...)
 {
@@ -728,9 +738,9 @@ int dce_execl (const char *path, const char *arg, ...)
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << path);
 
-  std::string fileName = SearchExecFile ( path, getuid (), getgid (), &(thread->err) );
+  std::string fileName = SearchExecFile (path, getuid (), getgid (), &(thread->err));
 
-  if  ( 0 == fileName.length () )
+  if  (0 == fileName.length ())
     {
       // Errno setted by FindExecFile
       return -1;
@@ -741,21 +751,25 @@ int dce_execl (const char *path, const char *arg, ...)
   va_list cp;
   va_copy (cp, ap);
   char *p =  0;
-  do {
+  do
+    {
       p = va_arg (cp, char *);
       nb++;
-    } while ( p );
+    }
+  while (p);
 
-  char const** argv = (char const **) dce_malloc ( nb * sizeof (char * )); // Use dce_malloc to be sure it will be freed when exec is successfull
+  char const** argv = (char const **) dce_malloc (nb * sizeof (char *)); // Use dce_malloc to be sure it will be freed when exec is successfull
 
   argv[0] = arg;
   nb = 1;
 
-  do {
+  do
+    {
       argv[nb++] = p = va_arg (ap, char *);
-    } while ( p );
+    }
+  while (p);
 
-  int retval = thread->process->manager->Execve (fileName.c_str (), path, (char* const*) argv, *(thread->process->penvp) );
+  int retval = thread->process->manager->Execve (fileName.c_str (), path, (char* const*) argv, *(thread->process->penvp));
 
   dce_free (argv);
 
@@ -766,15 +780,15 @@ int dce_execve (const char *path, char *const argv[], char *const envp[])
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << path);
 
-  std::string fileName = SearchExecFile ( path, getuid (), getgid (), &(thread->err) );
+  std::string fileName = SearchExecFile (path, getuid (), getgid (), &(thread->err));
 
-  if  ( 0 == fileName.length () )
+  if  (0 == fileName.length ())
     {
       // Errno setted by FindExecFile
       return -1;
     }
 
-  return thread->process->manager->Execve (fileName.c_str (), path, argv, envp );
+  return thread->process->manager->Execve (fileName.c_str (), path, argv, envp);
 }
 
 int dce_execlp (const char *file, const char *arg, ...)
@@ -786,16 +800,16 @@ int dce_execlp (const char *file, const char *arg, ...)
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << file);
 
   std::string vpath = "";
-  char *pvpath= seek_env ("PATH", *thread->process->penvp );
+  char *pvpath = seek_env ("PATH", *thread->process->penvp);
   if (pvpath)
     {
       vpath = std::string (pvpath);
     }
   std::string fileName = file;
 
-  fileName = SearchExecFile ( fileName, vpath, getuid (), getgid (), &(thread->err) );
+  fileName = SearchExecFile (fileName, vpath, getuid (), getgid (), &(thread->err));
 
-  if  ( 0 == fileName.length () )
+  if  (0 == fileName.length ())
     {
       // Errno setted by FindExecFile
       return -1;
@@ -805,21 +819,25 @@ int dce_execlp (const char *file, const char *arg, ...)
   va_list cp;
   va_copy (cp, ap);
   char *p =  0;
-  do {
+  do
+    {
       p = va_arg (cp, char *);
       nb++;
-    } while ( p );
+    }
+  while (p);
 
-  char const** argv = (char const **) dce_malloc ( nb * sizeof (char * )); // Use dce_malloc to be sure it will be freed when exec is successfull
+  char const** argv = (char const **) dce_malloc (nb * sizeof (char *)); // Use dce_malloc to be sure it will be freed when exec is successfull
 
   argv[0] = arg;
   nb = 1;
 
-  do {
+  do
+    {
       argv[nb++] = p = va_arg (ap, char *);
-    } while ( p );
+    }
+  while (p);
 
-  int retval = thread->process->manager->Execve (fileName.c_str (), file, (char* const*) argv, *(thread->process->penvp) );
+  int retval = thread->process->manager->Execve (fileName.c_str (), file, (char* const*) argv, *(thread->process->penvp));
 
   dce_free (argv);
 
@@ -831,20 +849,20 @@ int dce_execvp (const char *file, char *const argv[])
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << file);
 
   std::string vpath = "";
-  char *pvpath= seek_env ("PATH", *thread->process->penvp );
+  char *pvpath = seek_env ("PATH", *thread->process->penvp);
   if (pvpath)
     {
       vpath = std::string (pvpath);
     }
   std::string fileName = file;
-  fileName = SearchExecFile ( fileName, vpath, getuid (), getgid (), &(thread->err) );
-  if  ( 0 == fileName.length () )
+  fileName = SearchExecFile (fileName, vpath, getuid (), getgid (), &(thread->err));
+  if  (0 == fileName.length ())
     {
       // Errno setted by FindExecFile
       return -1;
     }
 
-  return thread->process->manager->Execve (fileName.c_str (), file, argv, *(thread->process->penvp) );
+  return thread->process->manager->Execve (fileName.c_str (), file, argv, *(thread->process->penvp));
 }
 int dce_execle (const char *path, const char *arg, ...)
 {
@@ -853,9 +871,9 @@ int dce_execle (const char *path, const char *arg, ...)
 
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << path);
-  std::string fileName = SearchExecFile ( path,  getuid (), getgid (), &(thread->err) );
+  std::string fileName = SearchExecFile (path,  getuid (), getgid (), &(thread->err));
 
-  if  ( 0 == fileName.length () )
+  if  (0 == fileName.length ())
     {
       // Errno setted by FindExecFile
       return -1;
@@ -864,30 +882,34 @@ int dce_execle (const char *path, const char *arg, ...)
   va_list cp;
   va_copy (cp, ap);
   char *p =  0;
-  do {
+  do
+    {
       p = va_arg (cp, char *);
       nb++;
-    } while ( p );
+    }
+  while (p);
 
   char const** envp = (char const **) va_arg (cp, char **);
-  char const** argv = (char const **) dce_malloc ( nb * sizeof (char * )); // Use dce_malloc to be sure it will be freed when exec is successfull
+  char const** argv = (char const **) dce_malloc (nb * sizeof (char *)); // Use dce_malloc to be sure it will be freed when exec is successfull
 
   argv[0] = arg;
   nb = 1;
 
-  do {
+  do
+    {
       argv[nb++] = p = va_arg (ap, char *);
-    } while ( p );
+    }
+  while (p);
 
   int retval = thread->process->manager->Execve (fileName.c_str (), path,
-      (char* const*) argv, (char* const*) envp );
+                                                 (char* const*) argv, (char* const*) envp);
 
   dce_free (argv);
 
   return retval;
 }
 
-char *dce_setlocale (int category, const char *locale)
+char * dce_setlocale (int category, const char *locale)
 {
   static char loc[] = "";
   return loc;
@@ -918,7 +940,7 @@ unsigned int dce_alarm (unsigned int s)
 
   unsigned int ret = 0;
 
-  if ( !dce_getitimer(ITIMER_REAL, &it))
+  if (!dce_getitimer (ITIMER_REAL, &it))
     {
       ret = it.it_value.tv_sec;
     }
@@ -939,7 +961,7 @@ ssize_t dce_readlink (const char *path, char *buf, size_t bufsize)
 
   std::string fullpath = UtilsGetRealFilePath (path);
 
-  ssize_t ret = readlink( fullpath.c_str (), buf, bufsize);
+  ssize_t ret = readlink (fullpath.c_str (), buf, bufsize);
 
   if (ret)
     {
@@ -949,7 +971,7 @@ ssize_t dce_readlink (const char *path, char *buf, size_t bufsize)
 
   int l = UtilsGetRealFilePath ("/").length ();
 
-  memcpy ( buf, buf + l , l);
+  memcpy (buf, buf + l, l);
   buf [l] = 0;
 
   return 0;
@@ -957,9 +979,9 @@ ssize_t dce_readlink (const char *path, char *buf, size_t bufsize)
 #ifdef HAVE_GETCPUFEATURES
 extern "C"
 {
-  extern const struct cpu_features *__get_cpu_features (void);
+extern const struct cpu_features * __get_cpu_features (void);
 }
-const struct cpu_features *dce___get_cpu_features (void)
+const struct cpu_features * dce___get_cpu_features (void)
 {
   return __get_cpu_features ();
 }

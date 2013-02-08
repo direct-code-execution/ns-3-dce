@@ -15,7 +15,7 @@ int main (int argc, char *argv[])
 {
   // Simple nanolseep() without interruption
   {
-    timespec req = {1, 5000};
+    timespec req = { 1, 5000};
     timespec rem;
 
     timeval start;
@@ -32,7 +32,7 @@ int main (int argc, char *argv[])
 
   // Simple nanolseep() without interruption: clock_gettime () version
   {
-    timespec req = {1, 5000};
+    timespec req = { 1, 5000};
     timespec rem;
 
     timespec start;
@@ -49,7 +49,7 @@ int main (int argc, char *argv[])
 
   // Simple nanolseep() without interruption: sysinfo (): uptime version
   {
-    timespec req = {1, 5000};
+    timespec req = { 1, 5000};
     timespec rem;
 
     struct sysinfo start;
@@ -71,7 +71,7 @@ int main (int argc, char *argv[])
     it.it_value.tv_sec = 1;
     it.it_value.tv_usec = 500000;
 
-    timespec req = {3, 0};
+    timespec req = { 3, 0};
     timespec rem;
     timeval end;
     timeval start;

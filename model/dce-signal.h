@@ -16,7 +16,7 @@ int dce_sigaction (int signum, const struct sigaction *act,
 int dce_kill (pid_t pid, int sig);
 int dce_pthread_kill (pthread_t thread, int sig);
 void dce_abort ();
-int dce_sigprocmask(int how, const sigset_t *set, sigset_t *oldset);
+int dce_sigprocmask (int how, const sigset_t *set, sigset_t *oldset);
 int dce_sigwait (const sigset_t *set, int *sig);
 
 #ifdef __cplusplus

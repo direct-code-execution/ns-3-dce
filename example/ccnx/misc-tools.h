@@ -5,13 +5,13 @@
 
 namespace ns3 {
 
-  void setPos (Ptr<Node> n, int x, int y, int z);
+void setPos (Ptr<Node> n, int x, int y, int z);
 
-  void RunIp (Ptr<Node> node, Time at, std::string str);
+void RunIp (Ptr<Node> node, Time at, std::string str);
 
-  void AddAddress (Ptr<Node> node, Time at, const char *name, const char *address);
+void AddAddress (Ptr<Node> node, Time at, const char *name, const char *address);
 
-  std::string Ipv4AddressToString (Ipv4Address ad);
+std::string Ipv4AddressToString (Ipv4Address ad);
 }
 
 #endif // MISC_TOOLS_H

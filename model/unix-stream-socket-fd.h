@@ -9,7 +9,7 @@ namespace ns3 {
 class UnixStreamSocketFd : public UnixSocketFd
 {
 public:
-  UnixStreamSocketFd (Ptr<Socket> sock, bool connected=0);
+  UnixStreamSocketFd (Ptr<Socket> sock, bool connected = 0);
   virtual ~UnixStreamSocketFd (void);
 private:
   enum State

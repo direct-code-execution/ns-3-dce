@@ -8,7 +8,7 @@ NS_LOG_COMPONENT_DEFINE ("SimuCxa");
 
 using namespace ns3;
 
-int 
+int
 dce___cxa_atexit (void (*func)(void *), void *arg, void *d)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << func << arg << d);

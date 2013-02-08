@@ -23,7 +23,7 @@ time_t dce_time (time_t *t)
   return time;
 }
 
-struct tm *dce_gmtime (const time_t *timep)
+struct tm * dce_gmtime (const time_t *timep)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -31,7 +31,7 @@ struct tm *dce_gmtime (const time_t *timep)
   return gmtime_r (timep, &Current ()->process->struct_tm);
 }
 
-struct tm *dce_localtime (const time_t *timep)
+struct tm * dce_localtime (const time_t *timep)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -39,7 +39,7 @@ struct tm *dce_localtime (const time_t *timep)
   return localtime_r (timep, &Current ()->process->struct_tm);
 }
 
-char *dce_ctime(const time_t *timep)
+char * dce_ctime (const time_t *timep)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -47,7 +47,7 @@ char *dce_ctime(const time_t *timep)
   return ctime_r (timep, Current ()->process->asctime_result);
 }
 
-char *dce_asctime(const struct tm *tm)
+char * dce_asctime (const struct tm *tm)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -55,13 +55,13 @@ char *dce_asctime(const struct tm *tm)
   return asctime_r (tm, Current ()->process->asctime_result);
 }
 
-int dce_clock_gettime(clockid_t c, struct timespec *tp)
+int dce_clock_gettime (clockid_t c, struct timespec *tp)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
-  if (0==tp)
+  if (0 == tp)
     {
-      Current () -> err = EFAULT;
+      Current ()->err = EFAULT;
       return -1;
     }
   *tp = UtilsTimeToTimespec (UtilsSimulationTimeToTime (Now ()));
@@ -78,12 +78,12 @@ int dce_clock_getres (clockid_t c, struct timespec *r)
   NS_ASSERT (Current () != 0);
 
   switch (c)
-  {
+    {
     case CLOCK_REALTIME:
       {
         if (0 == r)
           {
-            Current () -> err = EFAULT;
+            Current ()->err = EFAULT;
             return -1;
           }
         r->tv_sec = 0;
@@ -95,10 +95,10 @@ int dce_clock_getres (clockid_t c, struct timespec *r)
 
     default:
       {
-        Current () -> err = EINVAL;
+        Current ()->err = EINVAL;
         return -1;
       }
-  }
+    }
   return 0;
 }
 

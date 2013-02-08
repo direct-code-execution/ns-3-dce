@@ -20,13 +20,13 @@ char *dce_proginvname = 0;
 char *dce_proginvnameshort = 0;
 
 #define weak_alias(name, aliasname) \
-  extern __typeof (name) aliasname __attribute__ ((weak, alias (#name)))
+  extern __typeof (name) aliasname __attribute__ ((weak, alias (# name)))
 
-weak_alias(__progname, __progname_full);
+weak_alias (__progname, __progname_full);
 
-weak_alias(__environ,environ);
+weak_alias (__environ,environ);
 
-weak_alias( dce_proginvname,  program_invocation_name);
+weak_alias (dce_proginvname,  program_invocation_name);
 
-weak_alias( dce_proginvnameshort, program_invocation_short_name);
+weak_alias (dce_proginvnameshort, program_invocation_short_name);
 

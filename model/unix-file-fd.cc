@@ -17,18 +17,19 @@ namespace ns3 {
 
 UnixFileFdBase::UnixFileFdBase (int realFd)
   : m_realFd (realFd)
-{}
+{
+}
 UnixFileFdBase::~UnixFileFdBase ()
 {
   NS_LOG_FUNCTION (this << m_realFd);
   m_realFd = -1;
 }
-int 
+int
 UnixFileFdBase::PeekRealFd (void) const
 {
   return m_realFd;
 }
-ssize_t 
+ssize_t
 UnixFileFdBase::Write (const void *buf, size_t count)
 {
   Thread *current = Current ();
@@ -41,7 +42,7 @@ UnixFileFdBase::Write (const void *buf, size_t count)
     }
   return result;
 }
-ssize_t 
+ssize_t
 UnixFileFdBase::Read (void *buf, size_t count)
 {
   Thread *current = Current ();
@@ -55,7 +56,7 @@ UnixFileFdBase::Read (void *buf, size_t count)
   return result;
 }
 
-ssize_t 
+ssize_t
 UnixFileFdBase::Recvmsg (struct msghdr *msg, int flags)
 {
   Thread *current = Current ();
@@ -64,7 +65,7 @@ UnixFileFdBase::Recvmsg (struct msghdr *msg, int flags)
   current->err = ENOTSOCK;
   return -1;
 }
-ssize_t 
+ssize_t
 UnixFileFdBase::Sendmsg (const struct msghdr *msg, int flags)
 {
   Thread *current = Current ();
@@ -73,12 +74,12 @@ UnixFileFdBase::Sendmsg (const struct msghdr *msg, int flags)
   current->err = ENOTSOCK;
   return -1;
 }
-bool 
+bool
 UnixFileFdBase::Isatty (void) const
 {
   return ::isatty (m_realFd);
 }
-int 
+int
 UnixFileFdBase::Setsockopt (int level, int optname,
                             const void *optval, socklen_t optlen)
 {
@@ -88,7 +89,7 @@ UnixFileFdBase::Setsockopt (int level, int optname,
   current->err = ENOTSOCK;
   return -1;
 }
-int 
+int
 UnixFileFdBase::Getsockopt (int level, int optname,
                             void *optval, socklen_t *optlen)
 {
@@ -98,7 +99,7 @@ UnixFileFdBase::Getsockopt (int level, int optname,
   current->err = ENOTSOCK;
   return -1;
 }
-int 
+int
 UnixFileFdBase::Getsockname (struct sockaddr *name, socklen_t *namelen)
 {
   Thread *current = Current ();
@@ -107,7 +108,7 @@ UnixFileFdBase::Getsockname (struct sockaddr *name, socklen_t *namelen)
   current->err = ENOTSOCK;
   return -1;
 }
-int 
+int
 UnixFileFdBase::Getpeername (struct sockaddr *name, socklen_t *namelen)
 {
   Thread *current = Current ();
@@ -117,7 +118,7 @@ UnixFileFdBase::Getpeername (struct sockaddr *name, socklen_t *namelen)
   return -1;
 }
 
-int 
+int
 UnixFileFdBase::Ioctl (int request, char *argp)
 {
   Thread *current = Current ();
@@ -126,7 +127,7 @@ UnixFileFdBase::Ioctl (int request, char *argp)
   current->err = EINVAL;
   return -1;
 }
-int 
+int
 UnixFileFdBase::Bind (const struct sockaddr *my_addr, socklen_t addrlen)
 {
   Thread *current = Current ();
@@ -135,7 +136,7 @@ UnixFileFdBase::Bind (const struct sockaddr *my_addr, socklen_t addrlen)
   current->err = ENOTSOCK;
   return -1;
 }
-int 
+int
 UnixFileFdBase::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
 {
   Thread *current = Current ();
@@ -144,7 +145,7 @@ UnixFileFdBase::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
   current->err = ENOTSOCK;
   return -1;
 }
-int 
+int
 UnixFileFdBase::Listen (int backlog)
 {
   Thread *current = Current ();
@@ -153,7 +154,7 @@ UnixFileFdBase::Listen (int backlog)
   current->err = ENOTSOCK;
   return -1;
 }
-int 
+int
 UnixFileFdBase::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
 {
   Thread *current = Current ();
@@ -162,7 +163,7 @@ UnixFileFdBase::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
   current->err = ENOTSOCK;
   return -1;
 }
-int 
+int
 UnixFileFdBase::Shutdown (int how)
 {
   Thread *current = Current ();
@@ -186,7 +187,7 @@ UnixFileFdBase::Mmap (void *start, size_t length, int prot, int flags,
     }
   return retval;
 }
-off64_t 
+off64_t
 UnixFileFdBase::Lseek (off64_t offset, int whence)
 {
   Thread *current = Current ();
@@ -199,7 +200,7 @@ UnixFileFdBase::Lseek (off64_t offset, int whence)
     }
   return retval;
 }
-int 
+int
 UnixFileFdBase::Fxstat (int ver, struct ::stat *buf)
 {
   Thread *current = Current ();
@@ -212,7 +213,7 @@ UnixFileFdBase::Fxstat (int ver, struct ::stat *buf)
     }
   return retval;
 }
-int 
+int
 UnixFileFdBase::Fxstat64 (int ver, struct ::stat64 *buf)
 {
   Thread *current = Current ();
@@ -225,7 +226,7 @@ UnixFileFdBase::Fxstat64 (int ver, struct ::stat64 *buf)
     }
   return retval;
 }
-int 
+int
 UnixFileFdBase::Fcntl (int cmd, unsigned long arg)
 {
   NS_LOG_FUNCTION (this << Current () << cmd << arg);
@@ -238,7 +239,7 @@ UnixFileFdBase::Fcntl (int cmd, unsigned long arg)
     }
   return retval;
 }
-int 
+int
 UnixFileFdBase::Settime (int flags,
                          const struct itimerspec *new_value,
                          struct itimerspec *old_value)
@@ -249,7 +250,7 @@ UnixFileFdBase::Settime (int flags,
   current->err = EINVAL;
   return -1;
 }
-int 
+int
 UnixFileFdBase::Gettime (struct itimerspec *cur_value) const
 {
   NS_LOG_FUNCTION (this << Current () << cur_value);
@@ -260,7 +261,7 @@ UnixFileFdBase::Gettime (struct itimerspec *cur_value) const
 }
 
 
-bool 
+bool
 UnixFileFdBase::CanRecv (void) const
 {
   NS_LOG_FUNCTION (this << " fd:" << m_realFd);
@@ -308,13 +309,13 @@ UnixFileFdBase::Ftruncate (off_t length)
   Thread *current = Current ();
   NS_ASSERT (current != 0);
   NS_LOG_FUNCTION (this << current << length);
-	
+
   int retval = ::ftruncate (m_realFd, length);
   if (retval == -1)
     {
       current->err = errno;
     }
-  return retval;  
+  return retval;
 }
 int
 UnixFileFdBase::GetRealFd (void) const
@@ -324,7 +325,8 @@ UnixFileFdBase::GetRealFd (void) const
 
 UnixFileFd::UnixFileFd (int realFd)
   : UnixFileFdBase (realFd)
-{}
+{
+}
 UnixFileFd::~UnixFileFd ()
 {
   if (PeekRealFd () != -1)
@@ -332,7 +334,7 @@ UnixFileFd::~UnixFileFd ()
       ::close (PeekRealFd ());
     }
 }
-int 
+int
 UnixFileFd::Close (void)
 {
   Thread *current = Current ();
@@ -361,7 +363,7 @@ UnixFileFdBase::Poll (PollTable* ptable)
     {
       ret |= POLLOUT;
     }
-  if (HangupReceived () )
+  if (HangupReceived ())
     {
       ret |= POLLHUP;
     }
@@ -374,7 +376,8 @@ UnixFileFdBase::Poll (PollTable* ptable)
   return ret;
 }
 
-UnixFileFdLight::UnixFileFdLight (std::string path) : m_path (path), UnixFileFdBase ( -1 )
+UnixFileFdLight::UnixFileFdLight (std::string path) : m_path (path),
+                                                      UnixFileFdBase (-1)
 {
 
 }
@@ -389,7 +392,7 @@ UnixFileFdLight::Write (const void *buf, size_t count)
 {
   FILE *f = fopen (m_path.c_str (), "a");
 
-  if ( !f )
+  if (!f)
     {
       Current ()->err = errno;
       return -1;
@@ -416,16 +419,19 @@ UnixFileFdLight::CanSend (void) const
 
 TermUnixFileFd::TermUnixFileFd (int realFd)
   : UnixFileFdBase (realFd)
-{}
+{
+}
 TermUnixFileFd::~TermUnixFileFd ()
-{}
-int 
+{
+}
+int
 TermUnixFileFd::Close (void)
 {
   return 0;
 }
 
-UnixRandomFd::UnixRandomFd (std::string devPath) : m_devPath (devPath), UnixFileFdBase ( -1 )
+UnixRandomFd::UnixRandomFd (std::string devPath) : m_devPath (devPath),
+                                                   UnixFileFdBase (-1)
 {
 }
 
@@ -438,7 +444,7 @@ ssize_t
 UnixRandomFd::Read (void *buf, size_t count)
 {
   Ptr<DceNodeContext> nodeContext = DceNodeContext::GetNodeContext ();
-  NS_ASSERT ( 0 != nodeContext );
+  NS_ASSERT (0 != nodeContext);
 
   return nodeContext->RandomRead (buf, count);
 }
@@ -473,9 +479,9 @@ UnixRandomFd::Fxstat (int ver, struct ::stat *buf)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current << buf);
-  int tmpFd = open ( m_devPath.c_str (), O_RDONLY, 0);
+  int tmpFd = open (m_devPath.c_str (), O_RDONLY, 0);
 
-  if ( tmpFd < 0 )
+  if (tmpFd < 0)
     {
       current->err = errno;
       return -1;
@@ -495,9 +501,9 @@ UnixRandomFd::Fxstat64 (int ver, struct ::stat64 *buf)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current << buf);
-  int tmpFd = open ( m_devPath.c_str (), O_RDONLY, 0);
+  int tmpFd = open (m_devPath.c_str (), O_RDONLY, 0);
 
-  if ( tmpFd < 0 )
+  if (tmpFd < 0)
     {
       current->err = errno;
       return -1;

@@ -28,11 +28,14 @@ class DlmLoader : public Loader
 public:
   DlmLoader (int argc, char **argv, char **envp);
   virtual ~DlmLoader ();
-  virtual Loader *Clone (void) {return 0; /* XXX */}
+  virtual Loader * Clone (void)
+  {
+    return 0;                             /* XXX */
+  }
   virtual void UnloadAll (void);
-  virtual void *Load (std::string filename, int flag);
+  virtual void * Load (std::string filename, int flag);
   virtual void Unload (void *module);
-  virtual void *Lookup (void *module, std::string symbol);
+  virtual void * Lookup (void *module, std::string symbol);
 private:
   Lmid_t m_lmid;
   std::list<void *> m_loaded;
@@ -73,7 +76,7 @@ DlmLoader::~DlmLoader ()
     }
   dlLmidDelete (m_lmid);
 }
-void 
+void
 DlmLoader::UnloadAll (void)
 {
   NS_LOG_FUNCTION (this);
@@ -91,7 +94,7 @@ DlmLoader::Load (std::string filename, int flag)
   m_loaded.push_back (module);
   return module;
 }
-void 
+void
 DlmLoader::Unload (void *module)
 {
   NS_LOG_FUNCTION (this << module);
@@ -107,7 +110,7 @@ DlmLoader::Lookup (void *module, std::string symbol)
 }
 
 
-TypeId 
+TypeId
 DlmLoaderFactory::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::DlmLoaderFactory")
@@ -118,9 +121,11 @@ DlmLoaderFactory::GetTypeId (void)
 }
 
 DlmLoaderFactory::DlmLoaderFactory ()
-{}
+{
+}
 DlmLoaderFactory::~DlmLoaderFactory ()
-{}
+{
+}
 Loader *
 DlmLoaderFactory::Create (int argc, char **argv, char **envp)
 {

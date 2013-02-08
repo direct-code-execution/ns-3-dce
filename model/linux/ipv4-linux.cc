@@ -42,7 +42,7 @@ Ipv4Linux::GetTypeId (void)
   return tid;
 }
 
-Ipv4Linux::Ipv4Linux()
+Ipv4Linux::Ipv4Linux ()
 {
   NS_LOG_FUNCTION (this);
 }
@@ -117,7 +117,7 @@ Ipv4Linux::GetInterfaceForAddress (Ipv4Address address) const
 
 void
 Ipv4Linux::Send (Ptr<Packet> packet, Ipv4Address source,
-                   Ipv4Address destination, uint8_t protocol, Ptr<Ipv4Route> route)
+                 Ipv4Address destination, uint8_t protocol, Ptr<Ipv4Route> route)
 {
   NS_LOG_FUNCTION (this << "empty method.");
 }
@@ -175,7 +175,10 @@ Ipv4Linux::IsDestinationAddress (Ipv4Address address, uint32_t iif) const
     {
       for (uint32_t j = 0; j < GetNInterfaces (); j++)
         {
-          if (j == uint32_t (iif)) continue;
+          if (j == uint32_t (iif))
+            {
+              continue;
+            }
           for (uint32_t i = 0; i < GetNAddresses (j); i++)
             {
               Ipv4InterfaceAddress iaddr = GetAddress (j, i);
@@ -289,7 +292,7 @@ Ipv4Linux::RemoveAddress (uint32_t i, uint32_t addressIndex)
 
 Ipv4Address
 Ipv4Linux::SelectSourceAddress (Ptr<const NetDevice> device,
-    Ipv4Address dst, Ipv4InterfaceAddress::InterfaceAddressScope_e scope)
+                                Ipv4Address dst, Ipv4InterfaceAddress::InterfaceAddressScope_e scope)
 {
   NS_LOG_FUNCTION (this << device << dst << scope);
   Ipv4Address addr ("0.0.0.0");
@@ -303,8 +306,14 @@ Ipv4Linux::SelectSourceAddress (Ptr<const NetDevice> device,
       for (uint32_t j = 0; j < GetNAddresses (i); j++)
         {
           iaddr = GetAddress (i, j);
-          if (iaddr.IsSecondary ()) continue;
-          if (iaddr.GetScope () > scope) continue;
+          if (iaddr.IsSecondary ())
+            {
+              continue;
+            }
+          if (iaddr.GetScope () > scope)
+            {
+              continue;
+            }
           if (dst.CombineMask (iaddr.GetMask ())  == iaddr.GetLocal ().CombineMask (iaddr.GetMask ()) )
             {
               return iaddr.GetLocal ();
@@ -327,7 +336,10 @@ Ipv4Linux::SelectSourceAddress (Ptr<const NetDevice> device,
       for (uint32_t j = 0; j < GetNAddresses (i); j++)
         {
           iaddr = GetAddress (i, j);
-          if (iaddr.IsSecondary ()) continue;
+          if (iaddr.IsSecondary ())
+            {
+              continue;
+            }
           if (iaddr.GetScope () != Ipv4InterfaceAddress::LINK
               && iaddr.GetScope () <= scope)
             {
@@ -336,7 +348,7 @@ Ipv4Linux::SelectSourceAddress (Ptr<const NetDevice> device,
         }
     }
   NS_LOG_WARN ("Could not find source address for " << dst << " and scope "
-      << scope << ", returning 0");
+                                                    << scope << ", returning 0");
   return addr;
 }
 

@@ -38,16 +38,16 @@ public:
   std::string GetCmdLine (void) const;
 
 private:
-   int m_node;
-   int m_exitCode;
-   int m_pid;
-   int64_t m_ns3StartTime;
-   int64_t m_ns3EndTime;
-   long m_realStartTime;
-   long m_realEndTime;
-   double m_ns3Duration;
-   long m_realDuration;
-   std::string m_cmdLine;
+  int m_node;
+  int m_exitCode;
+  int m_pid;
+  int64_t m_ns3StartTime;
+  int64_t m_ns3EndTime;
+  long m_realStartTime;
+  long m_realEndTime;
+  double m_ns3Duration;
+  long m_realDuration;
+  std::string m_cmdLine;
 };
 
 class DceManagerHelper : public Object
@@ -56,16 +56,16 @@ public:
   static TypeId GetTypeId (void);
   virtual TypeId GetInstanceTypeId (void) const;
   DceManagerHelper ();
-  void SetScheduler (std::string type, 
-		     std::string n0 = "", const AttributeValue &v0 = EmptyAttributeValue (),
-		     std::string n1 = "", const AttributeValue &v1 = EmptyAttributeValue ());
-  void SetDelayModel (std::string type, 
+  void SetScheduler (std::string type,
+                     std::string n0 = "", const AttributeValue &v0 = EmptyAttributeValue (),
+                     std::string n1 = "", const AttributeValue &v1 = EmptyAttributeValue ());
+  void SetDelayModel (std::string type,
                       std::string n0 = "", const AttributeValue &v0 = EmptyAttributeValue (),
                       std::string n1 = "", const AttributeValue &v1 = EmptyAttributeValue ());
   void SetTaskManagerAttribute (std::string n0, const AttributeValue &v0);
   void SetLoader (std::string type);
   void SetNetworkStack (std::string type,
-			std::string n0 = "", const AttributeValue &v0 = EmptyAttributeValue ());
+                        std::string n0 = "", const AttributeValue &v0 = EmptyAttributeValue ());
   void SetAttribute (std::string n1, const AttributeValue &v1);
   void Install (NodeContainer nodes);
   // Path used by simulated methods 'execvp' and 'execlp'

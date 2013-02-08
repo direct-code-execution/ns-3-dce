@@ -19,9 +19,9 @@
 //         Gustavo Carneiro <gjc@inescporto.pt>
 
 #define NS_LOG_APPEND_CONTEXT                                   \
-  if (m_ipv4 && m_ipv4->GetObject<Node> ()) { \
+  if (m_ipv4 && m_ipv4->GetObject < Node > ()) { \
       std::clog << Simulator::Now ().GetSeconds () \
-                << " [node " << m_ipv4->GetObject<Node> ()->GetId () << "] "; }
+                << " [node " << m_ipv4->GetObject < Node > ()->GetId () << "] "; }
 
 #include <iomanip>
 #include "ns3/log.h"
@@ -54,7 +54,7 @@ Ipv4DceRouting::GetTypeId (void)
   return tid;
 }
 
-Ipv4DceRouting::Ipv4DceRouting () 
+Ipv4DceRouting::Ipv4DceRouting ()
 {
   NS_LOG_FUNCTION (this);
 }
@@ -63,17 +63,17 @@ Ipv4DceRouting::~Ipv4DceRouting ()
 {
 }
 
-void 
+void
 Ipv4DceRouting::NotifyInterfaceUp (uint32_t i)
 {
   NS_LOG_FUNCTION (this << i);
 
   Ipv4StaticRouting::NotifyInterfaceUp (i);
-  
+
   m_netlink->NotifyIfLinkMessage (m_ipv4->GetNetDevice (i)->GetIfIndex ());
 }
 
-void 
+void
 Ipv4DceRouting::NotifyInterfaceDown (uint32_t i)
 {
   NS_LOG_FUNCTION (this << i);
@@ -83,7 +83,7 @@ Ipv4DceRouting::NotifyInterfaceDown (uint32_t i)
   m_netlink->NotifyIfLinkMessage (m_ipv4->GetNetDevice (i)->GetIfIndex ());
 }
 
-void 
+void
 Ipv4DceRouting::NotifyAddAddress (uint32_t interface, Ipv4InterfaceAddress address)
 {
   NS_LOG_FUNCTION (this << interface << " " << address.GetLocal ());
@@ -91,7 +91,7 @@ Ipv4DceRouting::NotifyAddAddress (uint32_t interface, Ipv4InterfaceAddress addre
   Ipv4StaticRouting::NotifyAddAddress (interface, address);
   // NS_LOG_DEBUG ("Not implemented yet");
 }
-void 
+void
 Ipv4DceRouting::NotifyRemoveAddress (uint32_t interface, Ipv4InterfaceAddress address)
 {
   NS_LOG_FUNCTION (this << interface << " " << address.GetLocal ());
@@ -100,7 +100,7 @@ Ipv4DceRouting::NotifyRemoveAddress (uint32_t interface, Ipv4InterfaceAddress ad
   // NS_LOG_DEBUG ("Not implemented yet");
 }
 
-void 
+void
 Ipv4DceRouting::SetIpv4 (Ptr<Ipv4> ipv4)
 {
   // do some other stuff
@@ -112,7 +112,7 @@ Ipv4DceRouting::SetIpv4 (Ptr<Ipv4> ipv4)
   Ipv4StaticRouting::SetIpv4 (ipv4);
 }
 
-void 
+void
 Ipv4DceRouting::PrintRoutingTable (Ptr<OutputStreamWrapper> stream) const
 {
   *stream->GetStream () << std::endl;

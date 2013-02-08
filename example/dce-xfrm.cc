@@ -16,9 +16,9 @@ static void RunIp (Ptr<Node> node, Time at, std::string str)
   DceApplicationHelper process;
   ApplicationContainer apps;
   process.SetBinary ("ip");
-  process.SetStackSize (1<<16);
-  process.ResetArguments();
-  process.ParseArguments(str.c_str ());
+  process.SetStackSize (1 << 16);
+  process.ResetArguments ();
+  process.ParseArguments (str.c_str ());
   apps = process.Install (node);
   apps.Start (at);
 }
@@ -49,7 +49,7 @@ int main (int argc, char *argv[])
   //  processManager.SetLoader ("ns3::CopyLoaderFactory");
   processManager.SetTaskManagerAttribute ("FiberManagerType",
                                           StringValue ("UcontextFiberManager"));
-  processManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
+  processManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
   LinuxStackHelper stack;
   stack.Install (nodes);
 
@@ -59,7 +59,7 @@ int main (int argc, char *argv[])
 
   processManager.Install (nodes);
 
-  for (int n=0; n < 2; n++)
+  for (int n = 0; n < 2; n++)
     {
       RunIp (nodes.Get (n), Seconds (0.2), "link show");
       RunIp (nodes.Get (n), Seconds (0.3), "route show table all");
@@ -77,7 +77,7 @@ int main (int argc, char *argv[])
   RunIp (nodes.Get (0), Seconds (0.4), "xfrm policy");
   RunIp (nodes.Get (0), Seconds (0.4), "xfrm state");
 
- 
+
 
   Simulator::Stop (Seconds (200.0));
   Simulator::Run ();

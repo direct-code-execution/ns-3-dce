@@ -74,12 +74,12 @@ public:
   static void InstallAll (void);
 
   void SysctlSet (NodeContainer c, std::string path, std::string value);
-  static void SysctlGet (Ptr<Node> node, Time at, std::string path, 
+  static void SysctlGet (Ptr<Node> node, Time at, std::string path,
                          void (*callback)(std::string, std::string));
 private:
-  static void SysctlGetCallback (Ptr<Node> node, std::string path, 
+  static void SysctlGetCallback (Ptr<Node> node, std::string path,
                                  void (*callback)(std::string, std::string));
-  
+
 };
 
 } // namespace ns3

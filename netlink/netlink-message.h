@@ -29,16 +29,16 @@
 
 
 namespace ns3 {
-  class NetlinkPayload;
-  class GeneralMessage;
-  class InterfaceAddressMessage;
-  class InterfaceInfoMessage;
-  class RouteMessage;
-  class MultipartNetlinkMessage;
+class NetlinkPayload;
+class GeneralMessage;
+class InterfaceAddressMessage;
+class InterfaceInfoMessage;
+class RouteMessage;
+class MultipartNetlinkMessage;
 
 /**
 * \brief The Netlink message structure for an netlink packet
-* 
+*
 There are three levels to a Netlink message: The general Netlink
 message header, the IP service specific template, and the IP service
 specific data.
@@ -60,37 +60,37 @@ specific data.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 */
 
-  enum NetlinkMessageFlag
-  {
-    NETLINK_MSG_F_REQUEST = 1,  // It is request message.
-    NETLINK_MSG_F_MULTI = 2,    // Multipart message, terminated by NETLINK_MSG_DONE
-    NETLINK_MSG_F_ACK = 4,      // Reply with ack, with zero or error code
-    NETLINK_MSG_F_ECHO = 8,     // Echo this request 
+enum NetlinkMessageFlag
+{
+  NETLINK_MSG_F_REQUEST = 1,    // It is request message.
+  NETLINK_MSG_F_MULTI = 2,      // Multipart message, terminated by NETLINK_MSG_DONE
+  NETLINK_MSG_F_ACK = 4,        // Reply with ack, with zero or error code
+  NETLINK_MSG_F_ECHO = 8,       // Echo this request
 
-    /* Modifiers to Get request */
-    NETLINK_MSG_F_ROOT = 0x100,        // specify tree root
-    NETLINK_MSG_F_MATCH = 0x200,       // return all matching
-    NETLINK_MSG_F_ATOMIC = 0x400,      // atomic Get =
-    NETLINK_MSG_F_DUMP = (NETLINK_MSG_F_ROOT|NETLINK_MSG_F_MATCH),
+  /* Modifiers to Get request */
+  NETLINK_MSG_F_ROOT = 0x100,          // specify tree root
+  NETLINK_MSG_F_MATCH = 0x200,         // return all matching
+  NETLINK_MSG_F_ATOMIC = 0x400,        // atomic Get =
+  NETLINK_MSG_F_DUMP = (NETLINK_MSG_F_ROOT | NETLINK_MSG_F_MATCH),
 
-    /* Modifiers to NEW request */
-    NETLINK_MSG_F_REPLACE = 0x100, // Override existing = 
-    NETLINK_MSG_F_EXCL = 0x200,   // Do not touch, if it exists
-    NETLINK_MSG_F_CREATE = 0x400,  // Create, if it does not exist
-    NETLINK_MSG_F_APPEND = 0x800,  // Add to end of list = 
-  };
+  /* Modifiers to NEW request */
+  NETLINK_MSG_F_REPLACE = 0x100,   // Override existing =
+  NETLINK_MSG_F_EXCL = 0x200,     // Do not touch, if it exists
+  NETLINK_MSG_F_CREATE = 0x400,    // Create, if it does not exist
+  NETLINK_MSG_F_APPEND = 0x800,    // Add to end of list =
+};
 
-  enum NetlinkMessageType
-  {
-    NETLINK_MSG_NOOP = 0x1,          // Nothing.
-    NETLINK_MSG_ERROR = 0x2,         // Error
-    NETLINK_MSG_DONE = 0x3,          // End of a dump
-    NETLINK_MSG_OVERRUN = 0x4,       // Data lost
-    NETLINK_MSG_MIN_TYPE = 0x10,     // < 0x10: reserved control messages
-  };
+enum NetlinkMessageType
+{
+  NETLINK_MSG_NOOP = 0x1,            // Nothing.
+  NETLINK_MSG_ERROR = 0x2,           // Error
+  NETLINK_MSG_DONE = 0x3,            // End of a dump
+  NETLINK_MSG_OVERRUN = 0x4,         // Data lost
+  NETLINK_MSG_MIN_TYPE = 0x10,       // < 0x10: reserved control messages
+};
 
 #define NETLINK_MSG_ALIGNTO 4
-#define NETLINK_MSG_ALIGN(X)    (((X)+NETLINK_MSG_ALIGNTO-1) & ~(NETLINK_MSG_ALIGNTO-1) )
+#define NETLINK_MSG_ALIGN(X)    (((X) + NETLINK_MSG_ALIGNTO - 1) & ~(NETLINK_MSG_ALIGNTO - 1))
 
 class NetlinkMessageHeader : public ObjectBase
 {
@@ -121,11 +121,11 @@ public:
 
 private:
   static const uint32_t NETLINK_MSG_HEADER_SIZE = 16; /* size of the nlmsghdr field*/
-  uint32_t m_nlmsgLen;	/* Length of message including header */
-  uint16_t m_nlmsgType;	/* Message content */
-  uint16_t m_nlmsgFlags;	/* Additional flags */
-  uint32_t m_nlmsgSeq;	/* Sequence number */
-  uint32_t m_nlmsgPid;	/* Sending process PID */
+  uint32_t m_nlmsgLen;  /* Length of message including header */
+  uint16_t m_nlmsgType; /* Message content */
+  uint16_t m_nlmsgFlags;        /* Additional flags */
+  uint32_t m_nlmsgSeq;  /* Sequence number */
+  uint32_t m_nlmsgPid;  /* Sending process PID */
 };
 
 /**
@@ -135,7 +135,7 @@ class NetlinkMessageError : public NetlinkPayload
 {
 public:
   NetlinkMessageError ();
-  virtual ~NetlinkMessageError();
+  virtual ~NetlinkMessageError ();
 
   static TypeId GetTypeId (void);
   virtual TypeId GetInstanceTypeId (void) const;
@@ -146,13 +146,13 @@ public:
 
   void SetError (int32_t v);
   int32_t GetError (void) const;
-  void SetMsg(NetlinkMessageHeader v);
+  void SetMsg (NetlinkMessageHeader v);
   NetlinkMessageHeader GetMsg (void) const;
 
 private:
   static const int NETLINK_MSG_ERROR_SIZE = 20; /* size of the nlmsgerror field*/
   int32_t m_error;
-  NetlinkMessageHeader m_msg;        
+  NetlinkMessageHeader m_msg;
 };
 
 
@@ -174,7 +174,7 @@ public:
   uint32_t GetMsgSize (void) const;    //length of netlink message not including padding
   uint32_t GetPayloadSize (void) const; //length of message payload
   uint16_t GetMsgType (void) const;
-  uint8_t GetFamily(void) const;
+  uint8_t GetFamily (void) const;
 
   void SetHeader (NetlinkMessageHeader hdr);
   NetlinkMessageHeader GetHeader (void) const;
@@ -223,7 +223,7 @@ private:
   NetlinkMessageHeader m_hdr;
 
   //only one type of messages below exists in real world application
-  NetlinkMessageError m_errorMessage;  
+  NetlinkMessageError m_errorMessage;
   GeneralMessage m_genmsg;
   InterfaceInfoMessage m_interfaceTemplate;
   InterfaceAddressMessage m_addressTemplate;
@@ -243,7 +243,7 @@ public:
   virtual uint32_t Deserialize (Buffer::Iterator start);
 
   void AppendMessage (NetlinkMessage nlmsg);
-  void Clear();
+  void Clear ();
   uint32_t GetNMessages (void) const;
   NetlinkMessage GetMessage (uint32_t index) const;
 
