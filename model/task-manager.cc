@@ -102,7 +102,10 @@ TaskManager::TaskManager ()
   : m_current (0),
     m_scheduler (0),
     m_fiberManager (0),
-    m_disposing (0)
+    m_reSchedule (0),
+    m_disposing (0),
+    m_todoOnMain (0),
+    m_noSignal (0)
 {
   NS_LOG_FUNCTION (this);
 }
@@ -171,7 +174,6 @@ TaskManager::GarbageCollectDeadTasks (void)
       delete task;
     }
   m_deadTasks.clear ();
-  m_nextGc.Cancel ();
 }
 
 
@@ -206,6 +208,10 @@ static void SwitchNotifEatSignal (void)
     }
   Thread *current = Current ();
   if (0 == current)
+    {
+      return;
+    }
+  if (manager->GetNoSignal ())
     {
       return;
     }
@@ -293,7 +299,7 @@ TaskManager::Wakeup (Task *task)
     }
   task->m_state = Task::ACTIVE;
   m_scheduler->Enqueue (task);
-  if (!m_nextSchedule.IsRunning ())
+  if ((0 == m_current) && (!m_nextSchedule.IsRunning ()))
     {
       m_nextSchedule = Simulator::ScheduleNow (&TaskManager::Schedule, this);
     }
@@ -321,7 +327,7 @@ TaskManager::Sleep (Time timeout)
   current->m_state = Task::BLOCKED;
   if (!timeout.IsZero ())
     {
-      current->m_waitTimer = Simulator::Schedule (timeout, &TaskManager::EndWait, this, current);
+      m_waitQueue.push_back(Sleeper(current,timeout));
     }
   Schedule ();
   current->m_waitTimer.Cancel ();
@@ -353,10 +359,6 @@ TaskManager::Exit (void)
   current->m_state = Task::DEAD;
   current->m_waitTimer.Cancel ();
   m_deadTasks.push_back (current);
-  if (!m_nextGc.IsRunning ())
-    {
-      m_nextGc = Simulator::ScheduleNow (&TaskManager::GarbageCollectDeadTasks, this);
-    }
   Schedule ();
 }
 
@@ -399,12 +401,40 @@ TaskManager::Schedule (void)
             {
               next->m_switchNotifier (Task::TO, next->m_switchNotifierContext);
             }
+again:
           m_fiberManager->SwitchTo (m_mainFiber, next->m_fiber);
+          if (0 != m_todoOnMain)
+            {
+              m_current = next;
+              m_todoOnMain->Invoke ();
+              delete  m_todoOnMain;
+              m_todoOnMain = 0;
+              goto again;
+            }
+          if (m_reSchedule)
+            {
+              m_reSchedule = false;
+              if (m_reScheduleTime > Time (0))
+                {
+                  Simulator::Schedule (m_reScheduleTime, &TaskManager::Schedule, this);
+                }
+              else
+                {
+                  Simulator::ScheduleNow (&TaskManager::Schedule, this);
+                }
+            }
         }
       else
         {
           // but, we have nothing to schedule to.
         }
+      while (m_waitQueue.size () > 0)
+        {
+          Sleeper s = m_waitQueue.front ();
+          s.m_task->m_waitTimer = Simulator::Schedule (s.m_timeout, &TaskManager::EndWait, this, s.m_task);
+          m_waitQueue.pop_front ();
+        }
+      GarbageCollectDeadTasks ();
     }
   else
     {
@@ -417,7 +447,8 @@ TaskManager::Schedule (void)
         {
           // but before leaving, we check if we have further processes active, and,
           // if so, make sure we will schedule them later.
-          Simulator::Schedule (delay, &TaskManager::Schedule, this);
+          m_reSchedule = true;
+          m_reScheduleTime = delay;
         }
       struct Fiber *fiber = m_current->m_fiber;
       if (m_current->m_switchNotifier != 0)
@@ -469,6 +500,42 @@ TaskManager::GetStackSize (Task *task) const
 {
   return m_fiberManager->GetStackSize (task->m_fiber);
 }
+void
+TaskManager::ExecOnMain(EventImpl *e)
+{
+  if (m_current == 0)
+    {
+      e->Invoke ();
+      delete e;
+    }
+  else
+    {
+      m_todoOnMain = e;
+      struct Fiber *fiber = m_current->m_fiber;
+      m_current = 0;
+      m_noSignal = true;
+      m_fiberManager->SwitchTo (fiber, m_mainFiber);
+    }
+}
+EventId
+TaskManager::ScheduleMain (Time const &time, EventImpl *e)
+{
+  EventId ret;
 
+  ExecOnMain (MakeEvent (&TaskManager::MainSchedule, &ret, time ,e ));
 
+  return ret;
+}
+void
+TaskManager::MainSchedule (EventId *res,Time const &time, EventImpl *e)
+{
+    *res = Simulator::Schedule (time, e);
+}
+bool
+TaskManager::GetNoSignal ()
+{
+  bool ret =  m_noSignal;
+  m_noSignal = false;
+  return ret;
+}
 } // namespace ns3

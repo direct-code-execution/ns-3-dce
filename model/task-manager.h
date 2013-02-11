@@ -54,6 +54,14 @@ private:
   void *m_switchNotifierContext;
 };
 
+class Sleeper
+{
+public:
+  Sleeper (Task *t, Time to) : m_task (t), m_timeout(to) { }
+  Task * const m_task;
+  const Time m_timeout;
+};
+
 class TaskManager : public Object
 {
 public:
@@ -130,6 +138,17 @@ public:
 
   void SetSwitchNotify (void (*fn)(void));
   uint32_t GetStackSize (Task *task) const;
+
+  /**
+   * NS-3 prohibits to post event from a thread which is not the main thread,
+   * ExecOnMain call a callback using the main thread
+   * ScheduleMain use the Main thread to Schedule an event.
+   */
+  void ExecOnMain(EventImpl *e);
+  EventId ScheduleMain (Time const &time, EventImpl *e);
+
+  bool GetNoSignal ();
+
 private:
   enum FiberManagerType
   {
@@ -148,6 +167,8 @@ private:
   void GarbageCollectDeadTasks (void);
   void EndWait (Task *task);
   static void Trampoline (void *context);
+  static void MainSchedule (EventId *res,Time const &time, EventImpl *e);
+
 
   Task *m_current;
   Ptr<TaskScheduler> m_scheduler;
@@ -156,8 +177,12 @@ private:
   Fiber *m_mainFiber;
   uint32_t m_defaultStackSize;
   EventId m_nextSchedule;
-  EventId m_nextGc;
+  bool m_reSchedule;
+  Time m_reScheduleTime;
+  std::list<Sleeper> m_waitQueue;
   std::list<Task *> m_deadTasks;
+  EventImpl *m_todoOnMain;
+  bool m_noSignal; // I am not come back from a real thread interruption do not run signal ....
   bool m_disposing; // In order to never loop while disposing me.
 };
 

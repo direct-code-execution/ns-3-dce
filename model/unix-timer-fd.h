@@ -49,6 +49,7 @@ public:
 
 private:
   void TimerExpired (void);
+  void SettimeMain (Time t);
 
   Time m_period;
   uint64_t m_skipped;

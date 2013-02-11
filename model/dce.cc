@@ -551,8 +551,11 @@ int dce_setitimer (int which, const struct itimerval *value,
     {
       return 0;
     }
-  current->process->itimer = Simulator::Schedule (UtilsTimevalToTime (value->it_value),
-                                                  &Itimer, current->process);
+  TaskManager *manager = TaskManager::Current ();
+  current->process->itimer = manager->ScheduleMain (
+      UtilsTimevalToTime (value->it_value),
+      MakeEvent (&Itimer, current->process));
+
   return 0;
 }
 char * dce_getcwd (char *buf, size_t size)

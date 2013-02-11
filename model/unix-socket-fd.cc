@@ -149,14 +149,24 @@ UnixSocketFd::SendSocketData (Ptr<Socket> socket, uint32_t available)
   int pi = POLLOUT;
   WakeWaiters (&pi);
 }
-
+void
+UnixSocketFd::MainClose (int *res)
+{
+  *res = m_socket->Close ();
+}
 int
 UnixSocketFd::Close (void)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current);
   NS_ASSERT (current != 0);
-  int result = m_socket->Close ();
+
+  Callback<void, Ptr< Socket > > nil = MakeNullCallback<void, Ptr<Socket> > ();
+  m_socket->SetCloseCallbacks  ( nil, nil);
+  TaskManager *manager = TaskManager::Current ();
+  int result = -1;
+  manager->ExecOnMain (MakeEvent (&UnixSocketFd::MainClose, this, &result));
+
   if (result == -1)
     {
       current->err = ErrnoToSimuErrno ();
@@ -789,6 +799,11 @@ UnixSocketFd::Bind (const struct sockaddr *my_addr, socklen_t addrlen)
     }
   return result;
 }
+void
+UnixSocketFd::MainConnect (int *r, Address adr)
+{
+  *r = m_socket->Connect (adr);
+}
 int
 UnixSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
 {
@@ -797,7 +812,11 @@ UnixSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
   NS_ASSERT (current != 0);
 
   Address ad = PosixAddressToNs3Address (my_addr, addrlen);
-  int result = m_socket->Connect (ad);
+  TaskManager *manager = TaskManager::Current ();
+
+  int result = -1;
+  manager->ExecOnMain (MakeEvent (&UnixSocketFd::MainConnect, this, &result, ad ));
+
   if (result == -1)
     {
       current->err = ErrnoToSimuErrno ();
@@ -1051,4 +1070,5 @@ UnixSocketFd::GetPeekedFrom (void)
 {
   return m_peekedAddress;
 }
+
 } // namespace ns3

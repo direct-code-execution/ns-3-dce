@@ -362,7 +362,11 @@ UnixDatagramSocketFd::DoSendmsg (const struct msghdr *msg, int flags)
               ad = PosixAddressToNs3Address ((const struct sockaddr *)msg->msg_name,
                                              (socklen_t)msg->msg_namelen);
             }
-          result = m_socket->SendTo (packet, flags, ad);
+          TaskManager *manager = TaskManager::Current ();
+
+          result = -1;
+          manager->ExecOnMain (MakeEvent (&UnixDatagramSocketFd::MainSendTo,
+              this, &result, packet, flags, ad ));
         }
       else
         {
@@ -444,5 +448,10 @@ UnixDatagramSocketFd::Poll (PollTable* ptable)
     }
 
   return ret;
+}
+void
+UnixDatagramSocketFd::MainSendTo (int *r, Ptr<Packet> p, uint32_t f, Address ad)
+{
+  *r = m_socket->SendTo (p, f, ad);
 }
 } // namespace ns3

@@ -52,7 +52,6 @@ hg clone -r 55055ecdbd47 http://code.nsnam.org/ns-3-dev
 mkdir build
 cd ns-3-dev
 hg revert -a
-patch -p1 <../ns-3-dce/utils/remove-default-simulator-asserts.patch
 if [ "YES" == "$USE_OPT" ]
 then
 	CXXFLAGS='-O3' ./waf configure -d optimized --prefix=`pwd`/../build --enable-tests $MPI_SWITCH

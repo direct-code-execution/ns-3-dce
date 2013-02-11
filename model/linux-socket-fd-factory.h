@@ -123,6 +123,7 @@ private:
   void EventTrampoline (void (*fn)(void *context),
                         void *context, void (*pre_fn)(void),
                         Ptr<EventIdHolder> event);
+  static void SendMain (bool *r, NetDevice *d, Ptr<Packet> packet, const Address& dest, uint16_t protocolNumber);
 
   std::vector<std::pair<Ptr<NetDevice>,struct SimDevice *> > m_devices;
   std::string m_library;

@@ -11,6 +11,7 @@
 #include <poll.h>
 #include <fcntl.h>
 #include "file-usage.h"
+//#include "main-thread-executor.h"
 
 NS_LOG_COMPONENT_DEFINE ("UnixStreamSocketFd");
 
@@ -138,6 +139,11 @@ UnixStreamSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
     }
   return ret;
 }
+void
+UnixStreamSocketFd::MainSend (int *r, Ptr<Packet> p)
+{
+  *r = m_socket->Send (p, 0);
+}
 ssize_t
 UnixStreamSocketFd::DoSendmsg (const struct msghdr *msg, int flags)
 {
@@ -236,8 +242,11 @@ UnixStreamSocketFd::DoSendmsg (const struct msghdr *msg, int flags)
             }
           ssize_t availLen = std::min (len, (ssize_t)m_socket->GetTxAvailable ());
           Ptr<Packet> packet = Create<Packet> (buf, availLen);
-          int result;
-          result = m_socket->Send (packet, 0);
+          TaskManager *manager = TaskManager::Current ();
+          int result = -1;
+
+          manager->ExecOnMain( MakeEvent (&UnixStreamSocketFd::MainSend, this, &result, packet ));
+
           if (result == -1)
             {
               if (retval != 0)

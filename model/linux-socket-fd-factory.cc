@@ -198,10 +198,11 @@ LinuxSocketFdFactory::EventScheduleNs (struct SimKernel *kernel, __u64 ns, void 
 {
   LinuxSocketFdFactory *self = (LinuxSocketFdFactory *)kernel;
   Ptr<EventIdHolder> ev = Create<EventIdHolder> ();
-  EventId event = Simulator::Schedule (NanoSeconds (ns),
-                                       &LinuxSocketFdFactory::EventTrampoline,
-                                       self, fn, context, pre_fn, ev);
-  ev->id = event;
+  TaskManager *manager = TaskManager::Current ();
+
+  ev->id = manager->ScheduleMain(NanoSeconds (ns),
+      MakeEvent (&LinuxSocketFdFactory::EventTrampoline, self, fn, context, pre_fn, ev));
+
   return &ev->id;
 }
 void
@@ -292,6 +293,11 @@ LinuxSocketFdFactory::TaskYield (struct SimKernel *kernel)
   TaskManager::Current ()->Yield ();
 }
 void
+LinuxSocketFdFactory::SendMain (bool *r, NetDevice *dev, Ptr<Packet> p, const Address& d, uint16_t pro)
+{
+  *r = dev->Send (p, d, pro);
+}
+void
 LinuxSocketFdFactory::DevXmit (struct SimKernel *kernel, struct SimDevice *dev, unsigned char *data, int len)
 {
   LinuxSocketFdFactory *self = (LinuxSocketFdFactory *)kernel;
@@ -310,7 +316,10 @@ LinuxSocketFdFactory::DevXmit (struct SimKernel *kernel, struct SimDevice *dev, 
   uint16_t protocol = ntohs (hdr->h_proto);
   Mac48Address dest;
   dest.CopyFrom (hdr->h_dest);
-  nsDev->Send (p, dest, protocol);
+  TaskManager *manager = TaskManager::Current ();
+  bool r = false;
+
+  manager->ExecOnMain (MakeEvent (&LinuxSocketFdFactory::SendMain, &r, nsDev, p, dest, protocol ));
 }
 
 void

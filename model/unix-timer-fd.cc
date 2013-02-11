@@ -4,6 +4,7 @@
 #include "dce-manager.h"
 #include "ns3/log.h"
 #include "ns3/simulator.h"
+#include "task-manager.h"
 #include <errno.h>
 #include <sys/mman.h>
 #include <poll.h>
@@ -217,6 +218,13 @@ UnixTimerFd::TimerExpired (void)
       m_waiter->process->manager->Wakeup (m_waiter);
     }
 }
+void
+UnixTimerFd::SettimeMain (Time t)
+{
+  m_timer =  Simulator::Schedule ( t,
+      &UnixTimerFd::TimerExpired,
+      this);
+}
 int
 UnixTimerFd::Settime (int flags,
                       const struct itimerspec *new_value,
@@ -233,9 +241,8 @@ UnixTimerFd::Settime (int flags,
   Time initial = UtilsTimespecToTime (new_value->it_value);
   if (!initial.IsZero ())
     {
-      m_timer = Simulator::Schedule (initial,
-                                     &UnixTimerFd::TimerExpired,
-                                     this);
+      TaskManager::Current ()->ExecOnMain (MakeEvent (&UnixTimerFd::SettimeMain,
+          this, initial));
     }
   return 0;
 }

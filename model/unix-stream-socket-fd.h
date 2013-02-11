@@ -48,6 +48,8 @@ private:
 
   void SetPeerAddress (Address *a);
 
+  void MainSend (int *r, Ptr<Packet> p);
+
   std::list<std::pair<Ptr<Socket>,Address> > m_connectionQueue;
   int m_backlog;
   State m_state;
