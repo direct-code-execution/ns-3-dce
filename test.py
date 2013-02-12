@@ -592,6 +592,7 @@ def make_paths():
     dce_ldlibpath = ""
     dce_ldlibpath += os.path.join (NS3_BUILDDIR, "lib") + ":" \
         + os.path.join (NS3_BUILDDIR, "bin") + ":" \
+        + os.path.join (NS3_BUILDDIR, "bin_dce") + ":" \
         + os.path.join (NS3_PREFIX_DIR, "lib") + ":" \
         + os.path.join (NS3_PREFIX_DIR, "sbin") + ":" \
         + os.path.join (NS3_PREFIX_DIR, "bin_dce") + ":" \
