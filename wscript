@@ -475,8 +475,7 @@ def build(bld):
     bld.install_files('${PREFIX}/bin', 'build/bin/ns3test-dce', chmod=0755 )
     bld.install_files('${PREFIX}/bin', 'build/bin/ns3test-dce-vdl', chmod=0755 )
 
-    if bld.env['KERNEL_STACK']:
-        build_dce_kernel_examples(module)
+    build_dce_kernel_examples(module)
     
     bld.build_a_script = types.MethodType(build_a_script, bld)
 

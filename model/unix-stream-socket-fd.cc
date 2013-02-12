@@ -11,7 +11,6 @@
 #include <poll.h>
 #include <fcntl.h>
 #include "file-usage.h"
-//#include "main-thread-executor.h"
 
 NS_LOG_COMPONENT_DEFINE ("UnixStreamSocketFd");
 
@@ -139,6 +138,9 @@ UnixStreamSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
     }
   return ret;
 }
+/**
+ * Callback used to call the socket send using the main thread.
+ */
 void
 UnixStreamSocketFd::MainSend (int *r, Ptr<Packet> p)
 {

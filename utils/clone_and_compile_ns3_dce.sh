@@ -48,7 +48,7 @@ then
  	hg clone http://code.nsnam.org/furbani/ns-3-linux
 fi
 echo clone ns-3-dev
-hg clone -r 55055ecdbd47 http://code.nsnam.org/ns-3-dev
+hg clone -r 3c5ea0bd869f http://code.nsnam.org/ns-3-dev
 mkdir build
 cd ns-3-dev
 hg revert -a

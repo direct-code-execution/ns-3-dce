@@ -161,8 +161,8 @@ UnixSocketFd::Close (void)
   NS_LOG_FUNCTION (this << current);
   NS_ASSERT (current != 0);
 
-  Callback<void, Ptr< Socket > > nil = MakeNullCallback<void, Ptr<Socket> > ();
-  m_socket->SetCloseCallbacks  ( nil, nil);
+  Callback<void, Ptr<Socket> > nil = MakeNullCallback<void, Ptr<Socket> > ();
+  m_socket->SetCloseCallbacks ( nil, nil);
   TaskManager *manager = TaskManager::Current ();
   int result = -1;
   manager->ExecOnMain (MakeEvent (&UnixSocketFd::MainClose, this, &result));
