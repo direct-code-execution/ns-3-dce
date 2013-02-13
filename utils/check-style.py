@@ -88,6 +88,10 @@ sp_func_class_paren=Add
 sp_after_type=Add
 sp_type_func=Add
 sp_angle_paren=Add
+#sp_after_comma=Add
+sp_inside_paren=Remove
+sp_inside_angle=Remove
+sp_inside_fparen=Remove
 """
     level0 = """
 sp_func_proto_paren=Add
