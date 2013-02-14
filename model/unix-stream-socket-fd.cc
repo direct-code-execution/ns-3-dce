@@ -247,7 +247,7 @@ UnixStreamSocketFd::DoSendmsg (const struct msghdr *msg, int flags)
           TaskManager *manager = TaskManager::Current ();
           int result = -1;
 
-          manager->ExecOnMain( MakeEvent (&UnixStreamSocketFd::MainSend, this, &result, packet ));
+          manager->ExecOnMain (MakeEvent (&UnixStreamSocketFd::MainSend, this, &result, packet));
 
           if (result == -1)
             {

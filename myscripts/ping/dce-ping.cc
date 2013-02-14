@@ -42,7 +42,7 @@ int main (int argc, char *argv[])
   // Distributed simulation setup
   MpiInterface::Enable (&argc, &argv);
   GlobalValue::Bind ("SimulatorImplementationType",
-      StringValue ("ns3::DistributedSimulatorImpl"));
+                     StringValue ("ns3::DistributedSimulatorImpl"));
   systemId = MpiInterface::GetSystemId ();
   systemCount = MpiInterface::GetSize ();
 #endif
@@ -83,7 +83,7 @@ int main (int argc, char *argv[])
 
   if (useKernel)
     {
-      dceManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
+      dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
 
       AddAddress (nodes.Get (0), Seconds (0.1), "sim0", "10.1.1.1/8");
       RunIp (nodes.Get (0), Seconds (0.2), "link set sim0 up arp off");
@@ -97,14 +97,14 @@ int main (int argc, char *argv[])
   DceApplicationHelper dce;
   ApplicationContainer apps;
 
-  dce.SetStackSize (1<<20);
+  dce.SetStackSize (1 << 20);
 
   if ( systemId == node1->GetSystemId () )
     {
       // Launch ping on node 0
       dce.SetBinary ("ping");
-      dce.ResetArguments();
-      dce.ResetEnvironment();
+      dce.ResetArguments ();
+      dce.ResetEnvironment ();
       dce.AddArgument ("-c 10");
       dce.AddArgument ("-s 1000");
       dce.AddArgument ("10.1.1.2");
@@ -116,8 +116,8 @@ int main (int argc, char *argv[])
     {
       // Launch ping on node 1
       dce.SetBinary ("ping");
-      dce.ResetArguments();
-      dce.ResetEnvironment();
+      dce.ResetArguments ();
+      dce.ResetEnvironment ();
       dce.AddArgument ("-c 10");
       dce.AddArgument ("-s 1000");
       dce.AddArgument ("10.1.1.1");
@@ -135,7 +135,7 @@ int main (int argc, char *argv[])
 
   //anim.StartAnimation ();
 
-  Simulator::Stop (Seconds(40.0));
+  Simulator::Stop (Seconds (40.0));
   Simulator::Run ();
   Simulator::Destroy ();
 

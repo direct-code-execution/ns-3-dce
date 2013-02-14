@@ -48,7 +48,7 @@ public:
   void UnRegisterBinder (std::string path);
 
 private:
-  typedef std::map<std::string, LocalSocketFd* > BindMap;
+  typedef std::map<std::string, LocalSocketFd*> BindMap;
   BindMap m_bindByPath;
   size_t m_totalBuffersSize;
 };

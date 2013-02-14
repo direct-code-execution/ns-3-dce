@@ -32,7 +32,7 @@ void fill_addr (struct sockaddr_in &addr, int port, char *address)
       ad = address;
     }
   int res = inet_aton (ad, &(addr.sin_addr));
-  TEST_ASSERT_EQUAL ( res, 1);
+  TEST_ASSERT_EQUAL (res, 1);
 
   addr.sin_family = AF_INET;
   addr.sin_port = htons (port);
@@ -52,7 +52,7 @@ client3 (void *arg)
 
   sleep (1);
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   fill_addr (ad, 1236, (char*)arg);
   status = connect (sock, (struct sockaddr *) &ad, sizeof(ad) );
@@ -90,7 +90,7 @@ server3 (void *arg)
   int sockin = -1;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
-  TEST_ASSERT ( sock >= 0 );
+  TEST_ASSERT (sock >= 0);
 
   fill_addr (ad, 1236, (char*)arg);
   status = bind (sock, (struct sockaddr *) &ad, sizeof(ad));
@@ -100,7 +100,7 @@ server3 (void *arg)
   TEST_ASSERT_EQUAL (status, 0);
 
   sockin = accept (sock, NULL, NULL);
-  TEST_ASSERT ( sockin >= 0 );
+  TEST_ASSERT (sockin >= 0);
 
   status = close (sock);
   TEST_ASSERT_EQUAL (status, 0);
@@ -124,7 +124,7 @@ server3 (void *arg)
       printf ("Server3: send -> %d, errno: %d \n ",status, errno);
     }
   while (status > 0);
-  TEST_ASSERT ( ( status == -1 ) && (errno == EAGAIN) );
+  TEST_ASSERT ( (status == -1) && (errno == EAGAIN) );
 
   status = close (sockin);
   TEST_ASSERT_EQUAL (status, 0);
@@ -169,17 +169,17 @@ main (int argc, char *argv[])
 {
   signal (SIGPIPE, SIG_IGN);
 
-  readBuffer = (char *)malloc ( BUFF_LEN );
-  sendBuffer = (char *)malloc ( BUFF_LEN );
+  readBuffer = (char *)malloc (BUFF_LEN);
+  sendBuffer = (char *)malloc (BUFF_LEN);
 
-  if (argc>1)
+  if (argc > 1)
     {
-      if (0 == strcasecmp(argv[1], "-s"))
+      if (0 == strcasecmp (argv[1], "-s"))
         {
           server3 ((void*)argv[2]);
           return 0;
         }
-      if (0 == strcasecmp(argv[1], "-c"))
+      if (0 == strcasecmp (argv[1], "-c"))
         {
           client3 ((void*)argv[2]);
           return 0;

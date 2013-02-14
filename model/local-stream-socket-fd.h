@@ -108,7 +108,7 @@ private:
     REMOTECLOSED,
     CLOSED
   };
-  typedef std::list<LocalStreamSocketFd* > FifoCnx;
+  typedef std::list<LocalStreamSocketFd*> FifoCnx;
 
   enum State m_state;
   FifoCnx m_cnxQueue;

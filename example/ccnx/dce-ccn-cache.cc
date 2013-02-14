@@ -38,8 +38,8 @@ void SetPosition (Ptr<Node> n, int radius, int angle, int level)
 
   if (angle != 0)
     {
-      x += (float) radius * cos ( (M_PI * (float) angle) / 180.0 );
-      y = (float) radius * sin ( (M_PI * (float) angle) / 180.0 );
+      x += (float) radius * cos ( (M_PI * (float) angle) / 180.0);
+      y = (float) radius * sin ( (M_PI * (float) angle) / 180.0);
     }
   setPos (n, x, y, 0);
 
@@ -92,7 +92,7 @@ void LinkNodes (Ptr<Node> left, int leftNum,  Ptr<Node> right, int level, int id
   Ipv4AddressHelper address;
   std::ostringstream oss;
 
-  oss << "10." << ( r++ ) << ".1.0";
+  oss << "10." << (r++) << ".1.0";
 
   std::string network = oss.str ();
 
@@ -102,7 +102,7 @@ void LinkNodes (Ptr<Node> left, int leftNum,  Ptr<Node> right, int level, int id
 
   Ipv4InterfaceContainer interfaces = address.Assign (devices);
 
-  NS_LOG_FUNCTION ( interfaces.GetAddress (1) << " <-- " << interfaces.GetAddress (0));
+  NS_LOG_FUNCTION (interfaces.GetAddress (1) << " <-- " << interfaces.GetAddress (0));
 
   CcnClientHelper dce;
   ApplicationContainer config;
@@ -117,7 +117,7 @@ void LinkNodes (Ptr<Node> left, int leftNum,  Ptr<Node> right, int level, int id
   dce.AddArgument ("add");
   dce.AddArgument ("/");
   dce.AddArgument (useTcp ? "tcp" : "udp");
-  dce.AddArgument ( Ipv4AddressToString ( interfaces.GetAddress (1)) );
+  dce.AddArgument (Ipv4AddressToString (interfaces.GetAddress (1)) );
 
   config = dce.Install (left);
   config.Start (Seconds (0.1));
@@ -148,10 +148,10 @@ void LinkCenterNodes (NodeContainer nodes, int leftIdx, int rightIdx, int leftLe
 void LinkCircle (NodeContainer nodes,
                  int level, int centerIdx, int power, int radius, int i)
 {
-  int angle = 90 - ( i * 90 / power );
-  NS_LOG_FUNCTION (  level << centerIdx << power << i << angle ) ;
+  int angle = 90 - (i * 90 / power);
+  NS_LOG_FUNCTION (level << centerIdx << power << i << angle) ;
 
-  NS_LOG_FUNCTION (   (centerIdx + 1 +  i) << (centerIdx + 1 +  i + 1  ) );
+  NS_LOG_FUNCTION (   (centerIdx + 1 +  i) << (centerIdx + 1 +  i + 1) );
 
   SetPosition (nodes.Get (centerIdx + 1 +  i), radius,  angle, level);
   SetPosition (nodes.Get (centerIdx + 1 +  i + 1), radius, -angle, level);
@@ -168,7 +168,7 @@ int less = 1;
 int other = 49;
 int more = 50;
 
-void InstallGetters (NodeContainer nodes )
+void InstallGetters (NodeContainer nodes)
 {
   int getNumber = 0;
   CcnClientHelper dce;
@@ -332,15 +332,15 @@ main (int argc, char *argv[])
   dce.SetStdinFile ("/tmp/README");
   dce.AddFile ("/tmp/README", "/tmp/README");
 
-  dce.AddArgument ("-x" );
-  dce.AddArgument ("300" );
+  dce.AddArgument ("-x");
+  dce.AddArgument ("300");
   dce.AddArgument ("/A");
   dce.AddEnvironment ("HOME", "/root");
 
   ApplicationContainer put = dce.Install (nodes.Get (0));
-  put.Start (Seconds ( 0.15 ));
+  put.Start (Seconds (0.15));
 
-  InstallGetters ( nodes );
+  InstallGetters (nodes);
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 
   // Create the animation object and configure for specified output

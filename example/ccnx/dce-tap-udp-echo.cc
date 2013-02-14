@@ -68,7 +68,7 @@ using namespace ns3;
 NS_LOG_COMPONENT_DEFINE ("TapUDPEcho");
 
 int
-main ( int argc, char *argv[] )
+main (int argc, char *argv[])
 {
   std::string mode = "ConfigureLocal";
   std::string tapName = "thetap";

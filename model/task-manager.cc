@@ -327,7 +327,7 @@ TaskManager::Sleep (Time timeout)
   current->m_state = Task::BLOCKED;
   if (!timeout.IsZero ())
     {
-      m_waitQueue.push_back(Sleeper(current,timeout));
+      m_waitQueue.push_back (Sleeper (current,timeout));
     }
   Schedule ();
   current->m_waitTimer.Cancel ();
@@ -501,7 +501,7 @@ TaskManager::GetStackSize (Task *task) const
   return m_fiberManager->GetStackSize (task->m_fiber);
 }
 void
-TaskManager::ExecOnMain(EventImpl *e)
+TaskManager::ExecOnMain (EventImpl *e)
 {
   if (m_current == 0)
     {
@@ -522,14 +522,14 @@ TaskManager::ScheduleMain (Time const &time, EventImpl *e)
 {
   EventId ret;
 
-  ExecOnMain (MakeEvent (&TaskManager::MainSchedule, &ret, time ,e ));
+  ExecOnMain (MakeEvent (&TaskManager::MainSchedule, &ret, time,e));
 
   return ret;
 }
 void
 TaskManager::MainSchedule (EventId *res,Time const &time, EventImpl *e)
 {
-    *res = Simulator::Schedule (time, e);
+  *res = Simulator::Schedule (time, e);
 }
 bool
 TaskManager::GetNoSignal ()

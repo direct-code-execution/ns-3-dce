@@ -138,7 +138,7 @@ PollTable::PollTable ()
 
 PollTable::~PollTable ()
 {
-  for (std::list < PollTableEntry* >::iterator i = m_pollEntryList.begin ();
+  for (std::list <PollTableEntry*>::iterator i = m_pollEntryList.begin ();
        i != m_pollEntryList.end (); ++i)
     {
       delete (*i);

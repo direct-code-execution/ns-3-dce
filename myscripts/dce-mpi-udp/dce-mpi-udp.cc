@@ -26,7 +26,7 @@ using namespace ns3;
 
 // Run Hint :  $ mpirun -np 2 dce-mpi-udp
 
-int 
+int
 main (int argc, char *argv[])
 {
   // Distributed simulation setup
@@ -81,27 +81,27 @@ main (int argc, char *argv[])
   DceApplicationHelper dce;
   ApplicationContainer apps;
 
-  dce.SetStackSize (1<<20);
+  dce.SetStackSize (1 << 20);
 
-  if (0==systemId)
+  if (0 == systemId)
     {
       dce.SetBinary ("udp-server");
-      dce.ResetArguments();
+      dce.ResetArguments ();
       apps = dce.Install (node1);
       apps.Start (Seconds (4.0));
     }
 
-  if (1==systemId)
+  if (1 == systemId)
     {
       dce.SetBinary ("udp-client");
-      dce.ResetArguments();
+      dce.ResetArguments ();
       dce.AddArgument ("10.1.1.1");
       apps = dce.Install (node2);
       apps.Start (Seconds (4.5));
     }
 
 
-  Simulator::Stop (Seconds(1050.0));
+  Simulator::Stop (Seconds (1050.0));
   Simulator::Run ();
   Simulator::Destroy ();
 

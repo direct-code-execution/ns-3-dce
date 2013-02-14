@@ -32,7 +32,7 @@ using namespace ns3;
 void
 CreateFiles ()
 {
-  std::ofstream osf("files-0/index.html", std::fstream::trunc);
+  std::ofstream osf ("files-0/index.html", std::fstream::trunc);
   osf << "<HTML><HEAD><TITLE>Hello</TITLE></HEAD><BODY><H3>HELLO</H3>"
       << "<P>is all right ?</BODY></HTML>" << std::endl;
   osf.close ();
@@ -101,8 +101,8 @@ main (int argc, char *argv[])
   dce.SetBinary ("wget");
   dce.ResetArguments ();
   dce.ResetEnvironment ();
-  dce.AddArgument("-r");
-  dce.AddArgument("http://10.1.1.1/index.html");
+  dce.AddArgument ("-r");
+  dce.AddArgument ("http://10.1.1.1/index.html");
 
   server = dce.Install (nodes.Get (1));
   server.Start (Seconds (2));

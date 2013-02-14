@@ -224,7 +224,7 @@ struct Thread
   Time lastTime; // Last time of a possible infinite loop checkpoint.
   Waiter *childWaiter; // Not zero if thread waiting for a child in wait or waitall ...
   PollTable *pollTable; // No 0 if a poll is running on this thread
-  std::pair < UnixFd*, WaitQueueEntry* > ioWait; // Filled if the current thread is currently waiting for IO
+  std::pair <UnixFd*, WaitQueueEntry*> ioWait;   // Filled if the current thread is currently waiting for IO
 };
 
 } // namespace ns3

@@ -114,7 +114,7 @@ int dce_poll (struct pollfd *fds, nfds_t nfds, int timeout)
   table->FreeWait ();
   delete (table);
 
-  for (std::map <int, FileUsage* >::iterator i = toUnRef.begin ();
+  for (std::map <int, FileUsage*>::iterator i = toUnRef.begin ();
        i != toUnRef.end (); ++i)
     {
       i->second->DecUsage ();

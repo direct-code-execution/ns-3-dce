@@ -103,13 +103,13 @@ main (int argc, char *argv[])
       DceApplicationHelper process;
       ApplicationContainer a;
       process.SetBinary ("ip");
-      process.SetStackSize (1<<16);
-      process.ResetArguments();
-      process.ParseArguments("route add 224.0.0.0/4 dev sim0");
-      for (int n=0;n<2;n++)
+      process.SetStackSize (1 << 16);
+      process.ResetArguments ();
+      process.ParseArguments ("route add 224.0.0.0/4 dev sim0");
+      for (int n = 0; n < 2; n++)
         {
           a = process.Install (nodes.Get (n));
-          a.Start (Seconds(0.001));
+          a.Start (Seconds (0.001));
         }
     }
   dceManager.Install (nodes);
@@ -117,7 +117,7 @@ main (int argc, char *argv[])
   DceApplicationHelper dce;
   ApplicationContainer server,client;
 
-  dce.SetStackSize (1<<20);
+  dce.SetStackSize (1 << 20);
   dce.SetBinary ("ssmpingd");
   server = dce.Install (nodes.Get (0));
   server.Start (Seconds (2.0));
@@ -129,7 +129,7 @@ main (int argc, char *argv[])
 
   pointToPoint.EnablePcapAll ("ping-mt1", false);
 
-  Simulator::Stop (Seconds(63.0));
+  Simulator::Stop (Seconds (63.0));
   Simulator::Run ();
   Simulator::Destroy ();
   return 0;

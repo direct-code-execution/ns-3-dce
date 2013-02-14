@@ -36,9 +36,9 @@
 //
 // To use this example:
 //  1) You need to decide on a physical device on your real system, and either
-//     overwrite the hard-configured device name below (eth0) or pass this 
+//     overwrite the hard-configured device name below (eth0) or pass this
 //     device name in as a command-line argument
-//  2) The host device must be set to promiscuous mode 
+//  2) The host device must be set to promiscuous mode
 //     (e.g. "sudo ifconfig eth0 promisc")
 //  3) Be aware that ns-3 will generate a fake mac address, and that in
 //     some enterprise networks, this may be considered bad form to be
@@ -46,10 +46,10 @@
 //  4) You will need to assign an IP address to the ns-3 simulation node that
 //     is consistent with the subnet that is active on the host device's link.
 //     That is, you will have to assign an IP address to the ns-3 node as if
-//     it were on your real subnet.  Search for "Ipv4Address localIp" and 
+//     it were on your real subnet.  Search for "Ipv4Address localIp" and
 //     replace the string "1.2.3.4" with a valid IP address.
 //  5) You will need to configure a default route in the ns-3 node to tell it
-//     how to get off of your subnet. One thing you could do is a 
+//     how to get off of your subnet. One thing you could do is a
 //     'netstat -rn' command and find the IP address of the default gateway
 //     on your host.  Search for "Ipv4Address gateway" and replace the string
 //     "1.2.3.4" string with the gateway IP address.
@@ -66,7 +66,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("DcePingEmulationExample");
+NS_LOG_COMPONENT_DEFINE ("DcePingEmulationExample");
 
 static void
 PingRtt (std::string context, Time rtt)
@@ -84,7 +84,7 @@ main (int argc, char *argv[])
   std::string local ("138.96.196.50");
   std::string sLocalMask ("255.255.240.0");
   //
-  // Allow the user to override any of the defaults at run-time, via 
+  // Allow the user to override any of the defaults at run-time, via
   // command-line arguments
   //
   CommandLine cmd;
@@ -96,7 +96,7 @@ main (int argc, char *argv[])
 
   Ipv4Address remoteIp (remote.c_str ());
   Ipv4Address localIp (local.c_str ());
-  NS_ABORT_MSG_IF(localIp == "1.2.3.4", "You must change the local IP address before running this example");
+  NS_ABORT_MSG_IF (localIp == "1.2.3.4", "You must change the local IP address before running this example");
 
   Ipv4Mask localMask (sLocalMask.c_str ());
 
@@ -122,23 +122,23 @@ main (int argc, char *argv[])
   Ptr<Node> node = CreateObject<Node> ();
 
   //
-  // Create an emu device, allocate a MAC address and point the device to the 
+  // Create an emu device, allocate a MAC address and point the device to the
   // Linux device name.  The device needs a transmit queueing discipline so
-  // create a droptail queue and give it to the device.  Finally, "install" 
+  // create a droptail queue and give it to the device.  Finally, "install"
   // the device into the node.
   //
-  // Do understand that the ns-3 allocated MAC address will be sent out over 
-  // your network since the emu net device will spoof it.  By default, this 
+  // Do understand that the ns-3 allocated MAC address will be sent out over
+  // your network since the emu net device will spoof it.  By default, this
   // address will have an Organizationally Unique Identifier (OUI) of zero.
   // The Internet Assigned Number Authority IANA
-  // 
+  //
   //  http://www.iana.org/assignments/ethernet-numbers
   //
   // reports that this OUI is unassigned, and so should not conflict with
   // real hardware on your net.  It may raise all kinds of red flags in a
   // real environment to have packets from a device with an obviously bogus
   // OUI flying around.  Be aware.
-  // 
+  //
   NS_LOG_INFO ("Create Device");
   Ptr<EmuNetDevice> device = CreateObject<EmuNetDevice> ();
   device->SetAttribute ("Address", Mac48AddressValue ("00:00:00:00:00:02"));
@@ -178,7 +178,7 @@ main (int argc, char *argv[])
   // "1.2.3.4" string.
   //
   Ipv4Address gateway ("138.96.192.250");
-  NS_ABORT_MSG_IF(gateway == "1.2.3.4", "You must change the gateway IP address before running this example");
+  NS_ABORT_MSG_IF (gateway == "1.2.3.4", "You must change the gateway IP address before running this example");
 
   Ipv4StaticRoutingHelper ipv4RoutingHelper;
   Ptr<Ipv4StaticRouting> staticRouting = ipv4RoutingHelper.GetStaticRouting (ipv4);

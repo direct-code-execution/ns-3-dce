@@ -102,7 +102,7 @@ main (int argc, char *argv[])
     {
       InternetStackHelper stack;
       stack.Install (nodes);
-      }
+    }
   else
     {
       dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
@@ -198,8 +198,8 @@ main (int argc, char *argv[])
     }
   else
     {
-      dce.ResetArguments();
-      dce.ResetEnvironment();
+      dce.ResetArguments ();
+      dce.ResetEnvironment ();
       dce.SetBinary ("my-serveur");
       dce.AddArgument ("5000");
       dce.AddArgument ("6291456");
@@ -207,8 +207,8 @@ main (int argc, char *argv[])
       apps = dce.Install (nodes.Get (0));
       apps.Start (Seconds (0.1));
 
-      dce.ResetArguments();
-      dce.ResetEnvironment();
+      dce.ResetArguments ();
+      dce.ResetEnvironment ();
       dce.SetBinary ("my-client");
       dce.AddArgument ("10.1.1.1");
       dce.AddArgument ("5000");

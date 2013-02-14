@@ -69,7 +69,7 @@ int main (int argc, char *argv[])
   cmd.AddValue ("kernel", "Use kernel linux IP stack.", useKernel);
   cmd.Parse (argc, argv);
 
-  NS_LOG_INFO ( "useTcp: " << useTcp );
+  NS_LOG_INFO ("useTcp: " << useTcp);
 
   NodeContainer nodes;
   nodes.Create (nNodes);
@@ -100,16 +100,16 @@ int main (int argc, char *argv[])
 
   for (int n = 0; n < (nNodes - 1) ; n++)
     {
-      devices = pointToPoint.Install (nodes.Get (n), nodes.Get ( 1 + n ) );
+      devices = pointToPoint.Install (nodes.Get (n), nodes.Get (1 + n) );
 
       std::vector<Ipv4Address> addrs;
 
       Ipv4InterfaceContainer interfaces = address.Assign (devices);
       address.NewNetwork ();
 
-      vInterfaces.push_back ( interfaces );
-      addrs.push_back ( vInterfaces[n].GetAddress ( 0 ));
-      addrs.push_back ( vInterfaces[n].GetAddress ( 1 ) );
+      vInterfaces.push_back (interfaces);
+      addrs.push_back (vInterfaces[n].GetAddress (0));
+      addrs.push_back (vInterfaces[n].GetAddress (1) );
       networks.push_back (addrs);
     }
 
@@ -139,8 +139,8 @@ int main (int argc, char *argv[])
     {
       float r = startR * deltaR * currentAngle / 360;
       double a =  ((currentAngle) * 2.0 * M_PI) / 360.0  ;
-      float x = r * cos ( a );
-      float y = r * sin ( a );
+      float x = r * cos (a);
+      float y = r * sin (a);
 
       if ( x < 0)
         {
@@ -171,8 +171,8 @@ int main (int argc, char *argv[])
     {
       float r = startR * deltaR * currentAngle / 360;
       double a =  (currentAngle  * 2.0 * M_PI) / 360.0  ;
-      int x = r * cos ( a );
-      int y = r * sin ( a );
+      int x = r * cos (a);
+      int y = r * sin (a);
 
       currentAngle += angle;
 
@@ -221,10 +221,10 @@ int main (int argc, char *argv[])
           dce.AddArgument ("add");
           dce.AddArgument ("/NODE0");
           dce.AddArgument (useTcp ? "tcp" : "udp");
-          dce.AddArgument ( Ipv4AddressToString ( networks[n - 1][0] ) );
+          dce.AddArgument (Ipv4AddressToString (networks[n - 1][0]) );
 
           apps = dce.Install (nodes.Get (n));
-          apps.Start (Seconds ( ( 22.0 + n ) / 100  )); // Every 0.01s from time 2s
+          apps.Start (Seconds ( (22.0 + n) / 100));     // Every 0.01s from time 2s
         }
     }
 
@@ -235,13 +235,13 @@ int main (int argc, char *argv[])
   dce.SetBinary ("ccnpoke");
   dce.SetStdinFile ("/tmp/README");
   dce.AddFile ("/tmp/README","/tmp/README");
-  dce.AddArgument ("-x" );
-  dce.AddArgument ("3540" );
+  dce.AddArgument ("-x");
+  dce.AddArgument ("3540");
   dce.AddArgument ("/NODE0/LeReadme");
   dce.AddEnvironment ("HOME", "/root");
 
   apps = dce.Install (nodes.Get (0));
-  apps.Start (Seconds ( (( 20.0 + nNodes ) / 100 ) + 0.5 ) ) ;
+  apps.Start (Seconds ( ((20.0 + nNodes) / 100) + 0.5) ) ;
 
 
   // Retrieve the file using last NODE using a big CCN_LINGER value in order to have a chance of having a
@@ -258,7 +258,7 @@ int main (int argc, char *argv[])
   dce.AddArgument ("/NODE0/LeReadme");
 
   apps = dce.Install (nodes.Get (nNodes - 1));
-  apps.Start (Seconds ( (( 20.0 + nNodes ) / 100 ) + 0.5 ) ) ;
+  apps.Start (Seconds ( ((20.0 + nNodes) / 100) + 0.5) ) ;
 
   // The second get is very fast but not furious :) because of cache usage the data is already in the local node !
   dce.ResetArguments ();

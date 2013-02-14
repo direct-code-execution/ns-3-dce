@@ -902,11 +902,11 @@ LocalDatagramSocketFd::ClearAll (bool andWakeUp)
       m_peer = 0;
       freeOne->RemoveConnected (this, andWakeUp);
     }
-  std::set< LocalDatagramSocketFd* > toFree = m_myPeers;
+  std::set<LocalDatagramSocketFd*> toFree = m_myPeers;
 
   m_myPeers.clear ();
 
-  std::set< LocalDatagramSocketFd* >::iterator i;
+  std::set<LocalDatagramSocketFd*>::iterator i;
 
   for (i = toFree.begin (); i != toFree.end (); ++i)
     {

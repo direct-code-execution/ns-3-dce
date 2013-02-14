@@ -57,7 +57,10 @@ private:
 class Sleeper
 {
 public:
-  Sleeper (Task *t, Time to) : m_task (t), m_timeout(to) { }
+  Sleeper (Task *t, Time to) : m_task (t),
+                               m_timeout (to)
+  {
+  }
   Task * const m_task;
   const Time m_timeout;
 };
@@ -144,7 +147,7 @@ public:
    * ExecOnMain call a callback using the main thread
    * ScheduleMain use the Main thread to Schedule an event.
    */
-  void ExecOnMain(EventImpl *e);
+  void ExecOnMain (EventImpl *e);
   EventId ScheduleMain (Time const &time, EventImpl *e);
 
   bool GetNoSignal ();

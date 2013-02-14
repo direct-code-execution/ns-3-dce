@@ -9,7 +9,7 @@ void setPos (Ptr<Node> n, int x, int y, int z)
 {
   Ptr<ConstantPositionMobilityModel> loc = CreateObject<ConstantPositionMobilityModel> ();
   n->AggregateObject (loc);
-  Vector locVec2 ( x, y, z);
+  Vector locVec2 (x, y, z);
   loc->SetPosition (locVec2);
 }
 
@@ -19,9 +19,9 @@ void RunIp (Ptr<Node> node, Time at, std::string str)
   DceApplicationHelper process;
   ApplicationContainer apps;
   process.SetBinary ("ip");
-  process.SetStackSize (1<<16);
-  process.ResetArguments();
-  process.ParseArguments(str.c_str ());
+  process.SetStackSize (1 << 16);
+  process.ResetArguments ();
+  process.ParseArguments (str.c_str ());
   apps = process.Install (node);
   apps.Start (at);
 }

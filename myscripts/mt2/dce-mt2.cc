@@ -63,11 +63,11 @@ main (int argc, char *argv[])
   DceApplicationHelper dce;
   ApplicationContainer apps;
 
-  dce.SetStackSize (1<<20);
+  dce.SetStackSize (1 << 20);
 
   // Sender
   dce.SetBinary ("mcsend");
-  dce.ResetArguments();
+  dce.ResetArguments ();
   dce.AddArgument ("225.1.2.4");
   dce.AddArgument ("1234");
   apps = dce.Install (nodes.Get (0));
@@ -75,13 +75,13 @@ main (int argc, char *argv[])
 
   // Receiver
   dce.SetBinary ("mcreceive");
-  dce.ResetArguments();
+  dce.ResetArguments ();
   dce.AddArgument ("225.1.2.4");
   dce.AddArgument ("1234");
   apps = dce.Install (nodes.Get (1));
   apps.Start (Seconds (1));
 
-  Simulator::Stop (Seconds(111.0));
+  Simulator::Stop (Seconds (111.0));
   Simulator::Run ();
   Simulator::Destroy ();
   return 0;

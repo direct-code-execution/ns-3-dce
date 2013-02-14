@@ -4,21 +4,23 @@
 static int good = 0;
 int init_thing ()
 {
-  if (good==0)
+  if (good == 0)
     {
-      good = (int) time(NULL);
+      good = (int) time (NULL);
     }
   else
-    good = -45;
+    {
+      good = -45;
+    }
 }
 
 int get_thing ()
 {
-   return good;
+  return good;
 }
 
 void test_singleton ()
-{  
+{
   printf ("pointer %ld  %d \n",fred::A<>::getSingleton ()->getRef (), fred::A<>::getSingleton ()->getRef ()->getV ());
   fred::A<>::getSingleton ()->getRef ()->setV (55);
 }

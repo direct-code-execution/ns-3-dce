@@ -19,7 +19,7 @@ private:
   void CreateKeystore ();
   void CopyFile (std::string from, std::string to);
   std::string GetKeystoreTemplate (void);
-  std::vector< std::pair <std::string, std::string > > m_files;
+  std::vector<std::pair <std::string, std::string> > m_files;
 
   void CopyRealFileToVirtual (int nodeId, std::string from, std::string to);
 

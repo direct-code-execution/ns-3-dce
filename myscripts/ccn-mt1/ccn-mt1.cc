@@ -31,9 +31,9 @@ NS_LOG_COMPONENT_DEFINE ("FirstScriptExample");
 void
 CreateReadme ()
 {
-  std::ofstream osf("/tmp/README", std::fstream::trunc);
+  std::ofstream osf ("/tmp/README", std::fstream::trunc);
 
-  for (int l=0; l < 1000; l++)
+  for (int l = 0; l < 1000; l++)
     {
       osf << "The wanted data is here :)" << std::endl;
     }
@@ -94,13 +94,13 @@ main (int argc, char *argv[])
       DceApplicationHelper process;
       ApplicationContainer a;
       process.SetBinary ("ip");
-      process.SetStackSize (1<<16);
-      process.ResetArguments();
-      process.ParseArguments("route add 224.0.0.0/4 dev sim0");
-      for (int n=0;n<2;n++)
+      process.SetStackSize (1 << 16);
+      process.ResetArguments ();
+      process.ParseArguments ("route add 224.0.0.0/4 dev sim0");
+      for (int n = 0; n < 2; n++)
         {
           a = process.Install (nodes.Get (n));
-          a.Start (Seconds(0.001));
+          a.Start (Seconds (0.001));
         }
     }
 
@@ -109,23 +109,23 @@ main (int argc, char *argv[])
   CcnClientHelper dce;
   ApplicationContainer apps, putter, getter;
 
-  dce.SetStackSize (1<<20);
+  dce.SetStackSize (1 << 20);
 
   dce.SetBinary ("ccnd");
-  dce.ResetArguments();
-  dce.ResetEnvironment();
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
 
-  dce.AddEnvironment("CCND_CAP", "50000");
-  dce.AddEnvironment("CCND_DEBUG", "-1");
-  dce.AddEnvironment("CCN_LOCAL_PORT", "");
+  dce.AddEnvironment ("CCND_CAP", "50000");
+  dce.AddEnvironment ("CCND_DEBUG", "-1");
+  dce.AddEnvironment ("CCN_LOCAL_PORT", "");
 
-  dce.AddEnvironment("CCND_CAP", "");
-  dce.AddEnvironment("CCND_AUTOREG", "");
-  dce.AddEnvironment("CCND_LISTEN_ON", "");
-  dce.AddEnvironment("CCND_MTU", "");
-  dce.AddEnvironment("CCND_LOCAL_SOCKNAME", "");
-  dce.AddEnvironment("CCND_DATA_PAUSE_MICROSEC", "");
-  dce.AddEnvironment("CCND_KEYSTORE_DIRECTORY", "");
+  dce.AddEnvironment ("CCND_CAP", "");
+  dce.AddEnvironment ("CCND_AUTOREG", "");
+  dce.AddEnvironment ("CCND_LISTEN_ON", "");
+  dce.AddEnvironment ("CCND_MTU", "");
+  dce.AddEnvironment ("CCND_LOCAL_SOCKNAME", "");
+  dce.AddEnvironment ("CCND_DATA_PAUSE_MICROSEC", "");
+  dce.AddEnvironment ("CCND_KEYSTORE_DIRECTORY", "");
 
   apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds (0.1));
@@ -145,23 +145,23 @@ main (int argc, char *argv[])
   dce.AddArgument ("1234");
 
   apps = dce.Install (nodes.Get (0));
-    apps.Start (Seconds (0.2));
+  apps.Start (Seconds (0.2));
 
-    apps = dce.Install (nodes.Get (1));
-      apps.Start (Seconds (0.2));
+  apps = dce.Install (nodes.Get (1));
+  apps.Start (Seconds (0.2));
 
-  dce.ResetArguments();
+  dce.ResetArguments ();
 //  dce.ResetEnvironment();
   dce.SetBinary ("ccnpoke");
   dce.SetStdinFile ("/tmp/README");
   CreateReadme ();
   dce.AddFile ("/tmp/README", "/tmp/README");
   dce.AddArgument ("ccnx:/LeReadme");
-  dce.AddEnvironment("HOME", "/root");
+  dce.AddEnvironment ("HOME", "/root");
   apps = dce.Install (nodes.Get (1));
   apps.Start (Seconds (1.0));
 
-  dce.ResetArguments();
+  dce.ResetArguments ();
   dce.SetBinary ("ccnpeek");
   dce.SetStdinFile ("");
   dce.AddArgument ("-c");
@@ -171,7 +171,7 @@ main (int argc, char *argv[])
 
   pointToPoint.EnablePcapAll ("ccn-mt1", false);
 
-  Simulator::Stop (Seconds(111.0));
+  Simulator::Stop (Seconds (111.0));
   Simulator::Run ();
   Simulator::Destroy ();
   return 0;

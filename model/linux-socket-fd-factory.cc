@@ -200,8 +200,8 @@ LinuxSocketFdFactory::EventScheduleNs (struct SimKernel *kernel, __u64 ns, void 
   Ptr<EventIdHolder> ev = Create<EventIdHolder> ();
   TaskManager *manager = TaskManager::Current ();
 
-  ev->id = manager->ScheduleMain(NanoSeconds (ns),
-      MakeEvent (&LinuxSocketFdFactory::EventTrampoline, self, fn, context, pre_fn, ev));
+  ev->id = manager->ScheduleMain (NanoSeconds (ns),
+                                  MakeEvent (&LinuxSocketFdFactory::EventTrampoline, self, fn, context, pre_fn, ev));
 
   return &ev->id;
 }
@@ -319,7 +319,7 @@ LinuxSocketFdFactory::DevXmit (struct SimKernel *kernel, struct SimDevice *dev, 
   TaskManager *manager = TaskManager::Current ();
   bool r = false;
 
-  manager->ExecOnMain (MakeEvent (&LinuxSocketFdFactory::SendMain, &r, nsDev, p, dest, protocol ));
+  manager->ExecOnMain (MakeEvent (&LinuxSocketFdFactory::SendMain, &r, nsDev, p, dest, protocol));
 }
 
 void

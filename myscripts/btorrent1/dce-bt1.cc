@@ -14,7 +14,7 @@
 //           +---------------------+
 //                100 Mbps, 1 ms
 //
-// This experience do bittorent ! 
+// This experience do bittorent !
 //
 //  Node 0 : server
 //
@@ -34,7 +34,7 @@ using namespace ns3;
 void
 CreateFiles ()
 {
-  std::ofstream osf("files-0/index.html", std::fstream::trunc);
+  std::ofstream osf ("files-0/index.html", std::fstream::trunc);
   osf << "<HTML><HEAD><TITLE>Hello</TITLE></HEAD><BODY><H3>HELLO</H3>"
       << "<P>is all right ?</BODY></HTML>" << std::endl;
   osf.close ();
@@ -85,7 +85,7 @@ main (int argc, char *argv[])
   Ipv4InterfaceContainer interfaces = address.Assign (devices);
 
   // setup ip routes
- // Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+  // Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 
   dceManager.Install (nodes);
 
@@ -107,7 +107,7 @@ main (int argc, char *argv[])
   dce.ResetArguments ();
   dce.ResetEnvironment ();
   dce.SetBinary ("client_test");
-  dce.AddArgument("mycat.tor");
+  dce.AddArgument ("mycat.tor");
   server = dce.Install (nodes.Get (0));
   server.Start (Seconds (2));
 
@@ -115,7 +115,7 @@ main (int argc, char *argv[])
   dce.ResetArguments ();
   dce.ResetEnvironment ();
   dce.SetBinary ("client_test");
-  dce.AddArgument("mycat.tor");
+  dce.AddArgument ("mycat.tor");
   server = dce.Install (nodes.Get (1));
   server.Start (Seconds (3));
 

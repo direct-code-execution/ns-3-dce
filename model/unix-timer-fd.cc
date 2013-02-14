@@ -221,9 +221,9 @@ UnixTimerFd::TimerExpired (void)
 void
 UnixTimerFd::SettimeMain (Time t)
 {
-  m_timer =  Simulator::Schedule ( t,
-      &UnixTimerFd::TimerExpired,
-      this);
+  m_timer =  Simulator::Schedule (t,
+                                  &UnixTimerFd::TimerExpired,
+                                  this);
 }
 int
 UnixTimerFd::Settime (int flags,
@@ -242,7 +242,7 @@ UnixTimerFd::Settime (int flags,
   if (!initial.IsZero ())
     {
       TaskManager::Current ()->ExecOnMain (MakeEvent (&UnixTimerFd::SettimeMain,
-          this, initial));
+                                                      this, initial));
     }
   return 0;
 }

@@ -552,7 +552,7 @@ DceManager::Clone (Thread *thread)
   clone->pid = AllocatePid ();
   thread->process->children.insert (clone->pid);
   // dup each file descriptor.
-  for (std::map <int, FileUsage* >::iterator i = thread->process->openFiles.begin ();
+  for (std::map <int, FileUsage*>::iterator i = thread->process->openFiles.begin ();
        i != thread->process->openFiles.end (); ++i)
     {
       int fd = i->first;
@@ -736,7 +736,7 @@ DceManager::DeleteProcess (struct Process *process, ProcessEndCause type)
       // We have a Current so we can call dce_close !
       std::map<int,FileUsage *> openFiles = process->openFiles;
 
-      for (std::map <int, FileUsage* >::iterator i = openFiles.begin ();
+      for (std::map <int, FileUsage*>::iterator i = openFiles.begin ();
            i != openFiles.end (); ++i)
         {
           int fd = i->first;
@@ -782,7 +782,7 @@ DceManager::DeleteProcess (struct Process *process, ProcessEndCause type)
   // Delete File References Memory
   std::map<int,FileUsage *> openFiles = process->openFiles;
   process->openFiles.clear ();
-  for (std::map <int, FileUsage* >::iterator i = openFiles.begin ();
+  for (std::map <int, FileUsage*>::iterator i = openFiles.begin ();
        i != openFiles.end (); ++i)
     {
       FileUsage* fu = i->second;

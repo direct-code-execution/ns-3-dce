@@ -162,7 +162,7 @@ UnixSocketFd::Close (void)
   NS_ASSERT (current != 0);
 
   Callback<void, Ptr<Socket> > nil = MakeNullCallback<void, Ptr<Socket> > ();
-  m_socket->SetCloseCallbacks ( nil, nil);
+  m_socket->SetCloseCallbacks (nil, nil);
   TaskManager *manager = TaskManager::Current ();
   int result = -1;
   manager->ExecOnMain (MakeEvent (&UnixSocketFd::MainClose, this, &result));
@@ -815,7 +815,7 @@ UnixSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
   TaskManager *manager = TaskManager::Current ();
 
   int result = -1;
-  manager->ExecOnMain (MakeEvent (&UnixSocketFd::MainConnect, this, &result, ad ));
+  manager->ExecOnMain (MakeEvent (&UnixSocketFd::MainConnect, this, &result, ad));
 
   if (result == -1)
     {
@@ -937,7 +937,7 @@ UnixSocketFd::ClearSocket (void)
 {
   if (m_socket)
     {
-      Callback<void, Ptr< Socket > > nil = MakeNullCallback<void, Ptr<Socket> > ();
+      Callback<void, Ptr<Socket> > nil = MakeNullCallback<void, Ptr<Socket> > ();
 
       Callback<void, Ptr<Socket>, const Address &> nil2 = MakeNullCallback<void, Ptr<Socket>, const Address &> ();
       Callback<bool, Ptr<Socket>, const Address &> nil3 = MakeNullCallback<bool, Ptr<Socket>, const Address &> ();
@@ -948,7 +948,7 @@ UnixSocketFd::ClearSocket (void)
       m_socket->SetCloseCallbacks  (nil, nil);
 
       m_socket->SetRecvCallback (MakeNullCallback<void, Ptr<Socket> > ());
-      m_socket->SetSendCallback (MakeNullCallback<void,Ptr<Socket>,uint32_t > ());
+      m_socket->SetSendCallback (MakeNullCallback<void,Ptr<Socket>,uint32_t> ());
     }
 
   m_socket = 0;

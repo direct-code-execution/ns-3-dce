@@ -15,9 +15,9 @@ void RunIp (Ptr<Node> node, Time at, std::string str)
   DceApplicationHelper process;
   ApplicationContainer apps;
   process.SetBinary ("ip");
-  process.SetStackSize (1<<16);
-  process.ResetArguments();
-  process.ParseArguments(str.c_str ());
+  process.SetStackSize (1 << 16);
+  process.ResetArguments ();
+  process.ParseArguments (str.c_str ());
   apps = process.Install (node);
   apps.Start (at);
 }
@@ -86,11 +86,11 @@ int main (int argc, char *argv[])
   Ipv4AddressHelper address;
   address.SetBase ("10.1.1.0", "255.255.255.0");
 
-  for (int n=1 ; n < nb ; n ++)
+  for (int n = 1 ; n < nb ; n++)
     {
       NodeContainer n2;
 
-      n2.Add (nodes.Get (n-1));
+      n2.Add (nodes.Get (n - 1));
       n2.Add (nodes.Get (n));
 
       if (useCsma)
@@ -118,12 +118,12 @@ int main (int argc, char *argv[])
   DceApplicationHelper dce;
   ApplicationContainer apps;
 
-  dce.SetStackSize (1<<20);
+  dce.SetStackSize (1 << 20);
 
   // Launch iperf client on node 0
   dce.SetBinary ("iperf");
-  dce.ResetArguments();
-  dce.ResetEnvironment();
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
   dce.AddArgument ("-c");
   dce.AddArgument ("10.1.1.1");
   dce.AddArgument ("-i");
@@ -137,14 +137,14 @@ int main (int argc, char *argv[])
       dce.AddArgument (bandWidth);
     }
 
-  apps = dce.Install (nodes.Get (nb-1));
+  apps = dce.Install (nodes.Get (nb - 1));
   apps.Start (Seconds (0.7));
   apps.Stop (Seconds (20));
 
   // Launch iperf server on node 1
   dce.SetBinary ("iperf");
-  dce.ResetArguments();
-  dce.ResetEnvironment();
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
   dce.AddArgument ("-s");
   dce.AddArgument ("-P");
   dce.AddArgument ("1");
@@ -158,14 +158,14 @@ int main (int argc, char *argv[])
 
   if (useCsma)
     {
-      csma.EnablePcap (useKernel?"iperf-csma-kernel":"iperf-csma-ns3", devices, false);
+      csma.EnablePcap (useKernel ? "iperf-csma-kernel" : "iperf-csma-ns3", devices, false);
     }
   else
     {
-      pointToPoint.EnablePcapAll (useKernel?"iperf-p2p-kernel":"iperf-p2p-ns3", false);
+      pointToPoint.EnablePcapAll (useKernel ? "iperf-p2p-kernel" : "iperf-p2p-ns3", false);
     }
 
-  Simulator::Stop (Seconds(400.0));
+  Simulator::Stop (Seconds (400.0));
   Simulator::Run ();
   Simulator::Destroy ();
 

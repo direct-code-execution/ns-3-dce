@@ -104,7 +104,7 @@ private:
   // Filled when CONNECTED
   LocalDatagramSocketFd* m_peer;
   // When I am BINDED I could have much peers.
-  std::set< LocalDatagramSocketFd* > m_myPeers;
+  std::set<LocalDatagramSocketFd*> m_myPeers;
 };
 
 } // namespace ns3

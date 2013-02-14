@@ -156,7 +156,7 @@ Ipv4Linux::IsDestinationAddress (Ipv4Address address, uint32_t iif) const
   if (address.IsMulticast ())
     {
 #ifdef NOTYET
-      if (MulticastCheckGroup (iif, address ))
+      if (MulticastCheckGroup (iif, address))
 #endif
       if (true)
         {

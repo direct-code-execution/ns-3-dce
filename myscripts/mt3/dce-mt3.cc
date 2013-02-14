@@ -33,7 +33,7 @@ using namespace ns3;
 void
 CreateReadme ()
 {
-  std::ofstream osf("/tmp/README", std::fstream::trunc);
+  std::ofstream osf ("/tmp/README", std::fstream::trunc);
 
   osf << "The wanted data is here :)" ;
 
@@ -60,13 +60,13 @@ AdvancePosition (Ptr<Node> node)
 
   Time t = Simulator::Now ();
 
-  int frac = (t.GetMilliSeconds() % 1000);
+  int frac = (t.GetMilliSeconds () % 1000);
 
-  float angle =  2.0 * M_PI * frac /1000.0;
+  float angle =  2.0 * M_PI * frac / 1000.0;
 
-  SetPosition (node, Vector ( r * cos (angle), r* sin (angle), 0 ));
+  SetPosition (node, Vector (r * cos (angle), r * sin (angle), 0));
 
-  Simulator::Schedule ( MilliSeconds (10) , &AdvancePosition, node);
+  Simulator::Schedule (MilliSeconds (10), &AdvancePosition, node);
 
 }
 int
@@ -85,8 +85,8 @@ main (int argc, char *argv[])
   mob.Install (nodes);
 
   SetPosition (nodes.Get (0), Vector (0,0,0));
-  SetPosition (nodes.Get (1), Vector (r/2,0,0));
-  SetPosition (nodes.Get (2), Vector (-r/2,0,0));
+  SetPosition (nodes.Get (1), Vector (r / 2,0,0));
+  SetPosition (nodes.Get (2), Vector (-r / 2,0,0));
   SetPosition (nodes.Get (3), Vector (r,0,0));
 
   Simulator::Schedule (Seconds (0.0), &AdvancePosition, nodes.Get (3));
@@ -157,24 +157,24 @@ main (int argc, char *argv[])
       DceApplicationHelper process;
       ApplicationContainer a;
       process.SetBinary ("ip");
-      process.SetStackSize (1<<16);
-      process.ResetArguments();
-      process.ParseArguments("route add 224.0.0.0/4 dev sim1");
-      for (int n=0;n<4;n++)
+      process.SetStackSize (1 << 16);
+      process.ResetArguments ();
+      process.ParseArguments ("route add 224.0.0.0/4 dev sim1");
+      for (int n = 0; n < 4; n++)
         {
           a = process.Install (nodes.Get (n));
-          a.Start (Seconds(0.001));
+          a.Start (Seconds (0.001));
         }
     }
 
   DceApplicationHelper dce;
   ApplicationContainer apps;
 
-  dce.SetStackSize (1<<20);
+  dce.SetStackSize (1 << 20);
 
   // Sender
   dce.SetBinary ("mcsend");
-  dce.ResetArguments();
+  dce.ResetArguments ();
   dce.AddArgument ("225.1.2.4");
   dce.AddArgument ("1234");
   apps = dce.Install (nodes.Get (3));
@@ -182,7 +182,7 @@ main (int argc, char *argv[])
 
   // Receiver
   dce.SetBinary ("mcreceive");
-  dce.ResetArguments();
+  dce.ResetArguments ();
   dce.AddArgument ("225.1.2.4");
   dce.AddArgument ("1234");
   apps = dce.Install (nodes.Get (2));
@@ -190,7 +190,7 @@ main (int argc, char *argv[])
 
   // Receiver
   dce.SetBinary ("mcreceive");
-  dce.ResetArguments();
+  dce.ResetArguments ();
   dce.AddArgument ("225.1.2.4");
   dce.AddArgument ("1234");
   apps = dce.Install (nodes.Get (1));
@@ -199,7 +199,7 @@ main (int argc, char *argv[])
   // Create the animation object and configure for specified output
   AnimationInterface anim ("dce-mt3.xml");
 
-  Simulator::Stop (Seconds(105.0));
+  Simulator::Stop (Seconds (105.0));
   Simulator::Run ();
   Simulator::Destroy ();
   return 0;

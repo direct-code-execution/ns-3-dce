@@ -106,10 +106,10 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("DceTapVlc");
+NS_LOG_COMPONENT_DEFINE ("DceTapVlc");
 
 int
-main( int argc, char *argv[] )
+main (int argc, char *argv[])
 {
   std::string mode = "ConfigureLocal";
   std::string tapName = "thetap";
@@ -122,9 +122,9 @@ main( int argc, char *argv[] )
   cmd.AddValue ("tapName", "Name of the OS tap device", tapName);
   cmd.AddValue ("dr", "DataRate default : 1800Mbps", dataRate);
   cmd.Parse (argc, argv);
-  LogComponentEnable("DceTapVlc", LOG_LEVEL_INFO);
+  LogComponentEnable ("DceTapVlc", LOG_LEVEL_INFO);
 
-  std::string copy = "cp "+videofile+" files-1/tmp/video";
+  std::string copy = "cp " + videofile + " files-1/tmp/video";
 
   // Create need directories
   mkdir ("files-1",0744);
@@ -133,7 +133,7 @@ main( int argc, char *argv[] )
   // Copy the video file to /tmp of NODE 1.
   int ret = system (copy.c_str ());
 
-  if ( !WIFEXITED(ret) || ( 0 != WEXITSTATUS (ret)))
+  if ( !WIFEXITED (ret) || (0 != WEXITSTATUS (ret)))
     {
       std::cout << "Unable to copy the video file named:" << videofile << std::endl;
       return 0;
@@ -173,44 +173,44 @@ main( int argc, char *argv[] )
   CcnClientHelper dce;
   ApplicationContainer apps;
 
-  dce.SetStackSize (1<<20);
+  dce.SetStackSize (1 << 20);
 
   // Launch ccnd daemon on node 1
   dce.SetBinary ("ccnd");
-  dce.ResetArguments();
-  dce.ResetEnvironment();
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
 
-  dce.AddEnvironment("CCND_CAP", "50000");
+  dce.AddEnvironment ("CCND_CAP", "50000");
 //  dce.AddEnvironment("CCND_DEBUG", "-1");
-  dce.AddEnvironment("CCND_CAP", "");
-  dce.AddEnvironment("CCND_AUTOREG", "");
-  dce.AddEnvironment("CCND_LISTEN_ON", "");
-  dce.AddEnvironment("CCND_MTU", "");
-  dce.AddEnvironment("CCND_LOCAL_SOCKNAME", "");
-  dce.AddEnvironment("CCND_DATA_PAUSE_MICROSEC", "");
-  dce.AddEnvironment("CCND_KEYSTORE_DIRECTORY", "");
-  dce.AddEnvironment("CCND_LISTEN_ON", "10.0.0.2");
+  dce.AddEnvironment ("CCND_CAP", "");
+  dce.AddEnvironment ("CCND_AUTOREG", "");
+  dce.AddEnvironment ("CCND_LISTEN_ON", "");
+  dce.AddEnvironment ("CCND_MTU", "");
+  dce.AddEnvironment ("CCND_LOCAL_SOCKNAME", "");
+  dce.AddEnvironment ("CCND_DATA_PAUSE_MICROSEC", "");
+  dce.AddEnvironment ("CCND_KEYSTORE_DIRECTORY", "");
+  dce.AddEnvironment ("CCND_LISTEN_ON", "10.0.0.2");
 
   apps = dce.Install (nodes.Get (1));
   apps.Start (Seconds (1.0));
 
   // Launch the repository on node 1 : ccnr , with a repository in dir /REPO
   dce.SetBinary ("ccnr");
-  dce.ResetArguments();
-  dce.ResetEnvironment();
-  dce.AddEnvironment("CCNR_DIRECTORY", "/REPO/");
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
+  dce.AddEnvironment ("CCNR_DIRECTORY", "/REPO/");
   apps = dce.Install (nodes.Get (1));
   apps.Start (Seconds (2.0));
 
   // Publish the video file to the repository : SyncTest -put  /tmp/video ccnx:///VIDEO/bunny.ts
   // The video file has been copied in node 1 at the start of the scenario
   dce.SetBinary ("SyncTest");
-  dce.ResetArguments();
-  dce.ResetEnvironment();
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
   dce.AddEnvironment ("HOME", "/root");
-  dce.AddArgument("-put");
-  dce.AddArgument("/tmp/video");
-  dce.AddArgument("ccnx:///VIDEO/bunny.ts");
+  dce.AddArgument ("-put");
+  dce.AddArgument ("/tmp/video");
+  dce.AddArgument ("ccnx:///VIDEO/bunny.ts");
 
   apps = dce.Install (nodes.Get (1));
   apps.Start (Seconds (5.0));

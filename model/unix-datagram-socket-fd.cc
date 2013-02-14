@@ -366,7 +366,7 @@ UnixDatagramSocketFd::DoSendmsg (const struct msghdr *msg, int flags)
 
           result = -1;
           manager->ExecOnMain (MakeEvent (&UnixDatagramSocketFd::MainSendTo,
-                               this, &result, packet, flags, ad));
+                                          this, &result, packet, flags, ad));
         }
       else
         {

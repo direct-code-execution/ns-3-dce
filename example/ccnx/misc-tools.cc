@@ -9,7 +9,7 @@ void setPos (Ptr<Node> n, int x, int y, int z)
 {
   Ptr<ConstantPositionMobilityModel> loc = CreateObject<ConstantPositionMobilityModel> ();
   n->AggregateObject (loc);
-  Vector locVec2 ( x, y, z);
+  Vector locVec2 (x, y, z);
   loc->SetPosition (locVec2);
 }
 

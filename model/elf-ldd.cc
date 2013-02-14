@@ -57,7 +57,7 @@ public:
   string GetName (bool full) const;
   bool GetArch32 () const;
   bool GetArch64 () const;
-  set < pair<string,string> > GetLibs () const;
+  set <pair<string,string> > GetLibs () const;
   vector <string> GetPath () const;
   string GetSoname () const;
   bool SearchLibs ();
@@ -70,7 +70,7 @@ private:
   // Short Name
   const string m_sName;
   // Set of library found in elf file short
-  set < pair<string,string> > m_libs;
+  set <pair<string,string> > m_libs;
   // vector of paths found in elf file (in DT_PATH and DT_RUNPATH) each entry is checked before (exists on this computer).
   vector <string> m_path;
   // DT_SONAME seen
@@ -142,7 +142,7 @@ SharedLibrary::SetSoName (string s)
 {
   m_soname = s;
 }
-set < pair<string,string> >
+set <pair<string,string> >
 SharedLibrary::GetLibs () const
 {
   return m_libs;
@@ -192,9 +192,9 @@ bool
 SharedLibrary::SearchLibs ()
 {
   int count = 0;
-  set< pair<string,string> > n;
+  set<pair<string,string> > n;
 
-  for (set< pair<string,string> >::const_iterator i = m_libs.begin (); i != m_libs.end (); ++i)
+  for (set<pair<string,string> >::const_iterator i = m_libs.begin (); i != m_libs.end (); ++i)
     {
       bool f = 0;
       pair <string,string> p = *i;
@@ -242,7 +242,7 @@ SharedLibrary::CalcDepth (int max, map <string, SharedLibrary*> &mapScanned)
       return 1;
     }
   int calc = 0;
-  for (set< pair<string,string> >::const_iterator i = m_libs.begin (); i != m_libs.end (); ++i)
+  for (set<pair<string,string> >::const_iterator i = m_libs.begin (); i != m_libs.end (); ++i)
     {
       if (!mapScanned[(*i).second]->CalcDepth (max - 1, mapScanned))
         {
@@ -380,7 +380,7 @@ ElfLdd::ExtractLibraries (std::string sName, std::string fullPath)
 void
 ElfLdd::Loop (std::string s, std::string f)
 {
-  set< pair<string,string> > todo;
+  set<pair<string,string> > todo;
   set<string> done;
   map <string, SharedLibrary*> mapScanned;
   todo.insert (make_pair (s,f));
@@ -410,9 +410,9 @@ ElfLdd::Loop (std::string s, std::string f)
             {
               done.insert (name.second);
               mapScanned [name.second] = l;
-              set < pair<string,string> > full = l->GetLibs ();
+              set <pair<string,string> > full = l->GetLibs ();
 
-              for (set < pair<string,string> >::const_iterator ii = full.begin ();
+              for (set <pair<string,string> >::const_iterator ii = full.begin ();
                    ii != full.end (); ++ii)
                 {
                   string lalib = (*ii).second;
