@@ -98,6 +98,7 @@ server1 (void *arg)
   address.sun_family = AF_UNIX;
   strcpy (address.sun_path, SOCK_PATH);
 
+  unlink (SOCK_PATH);
   status = bind (sock, (struct sockaddr *) &address, SUN_LEN (&address));
   TEST_ASSERT_EQUAL (status, 0);
 

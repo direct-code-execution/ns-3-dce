@@ -76,7 +76,7 @@ PYTHON = ""
 # This will be given a prefix and a suffix when the waf config file is
 # read.
 #
-test_runner_name = "ns3test-dce-vdl"
+test_runner_name = "ns3test-dce"
 
 #
 # If the user has constrained us to run certain kinds of tests, we can tell waf
@@ -598,9 +598,6 @@ def make_paths():
         + os.path.join (NS3_PREFIX_DIR, "bin_dce") + ":" \
         + os.path.join (NS3_PREFIX_DIR, "bin")
 
-    os.environ["NS_ATTRIBUTE_DEFAULT"] = "ns3::DceManagerHelper::LoaderFactory=ns3::DlmLoaderFactory[];" \
-        "ns3::TaskManager::FiberManagerType=UcontextFiberManager"
-
     keys = os.environ.keys()
     for key in keys:
         if key == "DYLD_LIBRARY_PATH":
@@ -1005,7 +1002,7 @@ def run_tests():
     # match what is done in the wscript file.
     #
     if not len(options.test_runner_name):
-        test_runner_name = "ns3test-dce-vdl"
+        test_runner_name = "ns3test-dce"
     else:
         test_runner_name = options.test_runner_name
 
@@ -1571,7 +1568,7 @@ def run_tests():
                 crashed_tests = crashed_tests + 1
                 status = "CRASH"
 
-        print "%s: %s %s" % (status, kind, job.display_name)
+        print "%s: %s %s %.3f s" % (status, kind, job.display_name, job.elapsed_time)
 
         if job.is_example or job.is_pyexample:
             #
@@ -1799,7 +1796,7 @@ def main(argv):
                       metavar="XML-FILE",
                       help="write detailed test results into XML-FILE.xml")
 
-    parser.add_option("-z", "--runner_name", action="store", type="string", dest="test_runner_name", default="ns3test-dce-vdl",
+    parser.add_option("-z", "--runner_name", action="store", type="string", dest="test_runner_name", default="ns3test-dce",
                       help="specify runner program name")
 
     global options

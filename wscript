@@ -134,15 +134,13 @@ def dce_kw(**kw):
     return d
 
 def build_dce_tests(module, bld, kern):
-    if kern:
-        module.add_runner_test(needed=['core', 'dce', 'internet'],  source=['test/dce-manager-test.cc', 'test/with-kernel.cc'])
-        module.add_runner_test(needed=['core', 'dce', 'internet'],  source=['test/dce-manager-test.cc', 'test/with-kernel.cc'],
-                               linkflags = ['-Wl,--dynamic-linker=' + os.path.abspath (bld.env.PREFIX + '/lib/ldso')], name='vdl')
-    else:
-        module.add_runner_test(needed=['core', 'dce', 'internet'], source=['test/dce-manager-test.cc','test/without-kernel.cc'])
-        module.add_runner_test(needed=['core', 'dce', 'internet'], source=['test/dce-manager-test.cc','test/without-kernel.cc'],
-                               linkflags = ['-Wl,--dynamic-linker=' + os.path.abspath (bld.env.PREFIX + '/lib/ldso')], name='vdl')
-    	    
+    module.add_runner_test(needed=['core', 'dce', 'internet'],  
+                           source=['test/dce-manager-test.cc'])
+    module.add_runner_test(needed=['core', 'dce', 'internet'],
+                           source=['test/dce-manager-test.cc'],
+                           linkflags = ['-Wl,--dynamic-linker=' + os.path.abspath (bld.env.PREFIX + '/lib/ldso')], 
+                           name='vdl')
+
     module.add_test(features='cxx cxxshlib', source=['test/test-macros.cc'], 
                     target='lib/test', linkflags=['-Wl,-soname=libtest.so'])
     bld.install_files('${PREFIX}/lib', 'lib/libtest.so', chmod=0755 )

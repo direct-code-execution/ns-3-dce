@@ -17,7 +17,6 @@ extern "C" void dce_manager_test_store_test_error (const char *s)
 {
   g_testError = s;
 }
-extern "C" bool useKernel (void);
 
 using namespace ns3;
 namespace ns3 {
@@ -234,9 +233,23 @@ DceManagerTestSuite::DceManagerTestSuite ()
       AddTestCase (new DceManagerTestCase (tests[i].name,  Seconds (tests[i].duration),
                                            tests[i].stdinfile,
                                            tests[i].useNet,
-                                           useKernel (),
+                                           false,
                                            isUctxFiber ? tests[i].skipUctx : false
                                            ));
+    }
+  TypeId tid;
+  bool kern = TypeId::LookupByNameFailSafe ("ns3::LinuxSocketFdFactory", &tid);
+  if (kern)
+    {
+      for (unsigned int i = 0; i < sizeof(tests) / sizeof(testPair); i++)
+        {
+          AddTestCase (new DceManagerTestCase (tests[i].name,  Seconds (tests[i].duration),
+                                               tests[i].stdinfile,
+                                               tests[i].useNet,
+                                               true,
+                                               isUctxFiber ? tests[i].skipUctx : false
+                                               ));
+        }
     }
 }
 
