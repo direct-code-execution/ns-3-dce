@@ -439,24 +439,14 @@ class Module:
     def add_runner_test(self, needed = [], name = None, **kw):
         import os
         import tempfile
-
+        runner_filename = 'utils/test-runner.cc'
         if not name is None:
             target='ns3test-%s-%s' % (self._name, name)
         else:
             target='ns3test-%s' % self._name
         target = os.path.join('bin', target)
         kw['target'] = target
-        handle, filename = tempfile.mkstemp(suffix='.cc')
-        os.write (handle, """
-#include "ns3/test.h"
-
-int main (int argc, char *argv[])
-{
-  return ns3::TestRunner::Run(argc, argv);
-}
-""")
-        os.close(handle)
-        kw['source'] = kw['source'] + [os.path.relpath(filename, self._bld.bldnode.abspath())]
+        kw['source'] = kw['source'] + [os.path.relpath(runner_filename, self._bld.srcnode.abspath())]
         self.add_test(needed, **kw)
 
         if kw['target'].find("bin_dce") == -1:
