@@ -18,7 +18,7 @@ static void test_fork (void)
   char * toto = strdup ("tintin");
   char * houla = (char*)42;
 
-  printf ("Before Fork toto: %lx %s \nhoula %lx\n", toto, toto, houla);
+  printf ("Before Fork toto: %p %s \nhoula %p\n", toto, toto, houla);
 
   pid_t pid = fork ();
 
@@ -27,7 +27,7 @@ static void test_fork (void)
   if (pid == 0)
     {
       // child.
-      printf ("CHILD toto: %lx %s \nhoula %lx\n", toto, toto, houla);
+      printf ("CHILD toto: %p %s \nhoula %p\n", toto, toto, houla);
       printf ("I am the child ! \n");
       TEST_ASSERT_EQUAL (parent, 1);
       TEST_ASSERT_EQUAL (g_static, 1);
@@ -44,7 +44,7 @@ static void test_fork (void)
     }
   else
     {
-      printf ("FATHER toto: %lx %s \nhoula %lx\n", toto, toto, houla);
+      printf ("FATHER toto: %p %s \nhoula %p\n", toto, toto, houla);
       printf ("I am the father, my son pid is %d\n", pid);
       TEST_ASSERT_EQUAL (parent, 1);
       TEST_ASSERT_EQUAL (g_static, 1);
@@ -191,7 +191,7 @@ void big_fork_exec (int prof)
         {
           int st = 0;
 
-          printf ("Father %lx %s\n", copy,copy);
+          printf ("Father %p %s\n", copy,copy);
 
           sprintf (copy,"changed string !");
 
@@ -220,7 +220,7 @@ void big_fork_exec (int prof)
 
           sleep (1);
 
-          printf ("Before exec ! %s %lx \n", copy, copy);
+          printf ("Before exec ! %s %p \n", copy, copy);
           free (copy);
 
           int ret = execv ("build/bin/test-fork", args);

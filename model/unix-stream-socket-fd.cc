@@ -80,7 +80,8 @@ UnixStreamSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
     }
 
   uint32_t totalAvailable = 0;
-  const uint8_t *buf = 0;
+  uint32_t count = msg->msg_iov[0].iov_len;
+  uint8_t *buf = (uint8_t *)msg->msg_iov[0].iov_base;
   size_t toCopy = 0;
   ssize_t ret = 0;
   Ptr<Packet> packet = 0;
@@ -92,7 +93,7 @@ UnixStreamSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
 
   if (isPeekedData ())
     {
-      buf = m_peekedData->PeekData ();
+      m_peekedData->CopyData (buf, count);
       toCopy = m_peekedData->GetSize ();
 
       if (toCopy > totalAvailable)
@@ -111,7 +112,7 @@ UnixStreamSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
           return -1;
         }
       NS_ASSERT (packet->GetSize () <= totalAvailable);
-      buf = packet->PeekData ();
+      packet->CopyData (buf, count);
       toCopy = packet->GetSize ();
       Ns3AddressToPosixAddress (from, (struct sockaddr*)msg->msg_name, &msg->msg_namelen);
       if (flags & MSG_PEEK)

@@ -21,6 +21,6 @@ int get_thing ()
 
 void test_singleton ()
 {
-  printf ("pointer %ld  %d \n",fred::A<>::getSingleton ()->getRef (), fred::A<>::getSingleton ()->getRef ()->getV ());
+  printf ("pointer %p  %d \n", fred::A<>::getSingleton ()->getRef (), fred::A<>::getSingleton ()->getRef ()->getV ());
   fred::A<>::getSingleton ()->getRef ()->setV (55);
 }
