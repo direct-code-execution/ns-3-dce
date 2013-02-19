@@ -649,6 +649,8 @@ def make_paths():
         if options.verbose:
             print "os.environ[\"LD_LIBRARY_PATH\"] == %s" % os.environ["LD_LIBRARY_PATH"]
         os.environ["DCE_PATH"] = os.environ["LD_LIBRARY_PATH"]
+        os.environ['DCE_ROOT'] = os.pathsep.join([os.path.join(NS3_BUILDDIR), \
+                                                os.path.join(NS3_PREFIX_DIR)])
 
 #
 # Short note on generating suppressions:
