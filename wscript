@@ -52,7 +52,8 @@ def search_file(files):
     return None
 
 def configure(conf):
-    os.environ['PKG_CONFIG_PATH'] = os.path.join(conf.env.PREFIX, 'lib', 'pkgconfig')
+    if not 'PKG_CONFIG_PATH' in os.environ:
+        os.environ['PKG_CONFIG_PATH']= os.path.join(conf.env.PREFIX, 'lib', 'pkgconfig')
     ns3waf.check_modules(conf, ['core', 'network', 'internet'], mandatory = True)
     ns3waf.check_modules(conf, ['point-to-point', 'tap-bridge', 'netanim'], mandatory = False)
     ns3waf.check_modules(conf, ['wifi', 'point-to-point', 'csma', 'mobility'], mandatory = False)
