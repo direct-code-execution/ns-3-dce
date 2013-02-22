@@ -102,12 +102,13 @@ def get_proc_env(os_env=None):
     proc_env[pathvar] = os.pathsep.join([proc_env[pathvar], \
                                              os.path.join(bld.out_dir, 'lib'), \
                                              os.path.join(bld.out_dir, 'bin'), \
-                                             os.path.join(bld.env.PREFIX, 'lib'), \
-                                             os.path.join(bld.env.PREFIX, 'bin')])
+                                             os.path.join(bld.env.NS3_DIR, 'lib'), \
+                                             os.path.join(bld.env.NS3_DIR, 'bin')])
+
 
     proc_env['DCE_PATH'] = os.pathsep.join([os.path.join(bld.out_dir, 'bin_dce'), \
-                                                os.path.join(bld.env.PREFIX, 'sbin'), \
-                                                os.path.join(bld.env.PREFIX, 'bin_dce'), \
+                                                os.path.join(bld.env.NS3_DIR, 'sbin'), \
+                                                os.path.join(bld.env.NS3_DIR, 'bin_dce'), \
                                                 proc_env[pathvar]])
 
     proc_env['DCE_ROOT'] = os.pathsep.join([os.path.join(bld.out_dir), \

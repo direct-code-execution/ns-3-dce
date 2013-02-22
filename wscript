@@ -24,6 +24,14 @@ def options(opt):
                    help=('Enable use of DCE and NS-3 optimized compilation'),
                    dest='enable_opt', action='store_true',
                    default=False)    
+    opt.add_option('--with-ns3',
+                   help=('Specify the installed directory of ns-3-dev'),
+                   dest='with_ns3', type='string',
+                   default=None)    
+    opt.add_option('--with-elf-loader',
+                   help=('Specify the installed directory of elf-loader'),
+                   dest='with_elf_loader', type='string',
+                   default=None)    
     opt.add_option('--cwd',
                    help=('Set the working directory for a program.'),
                    action="store", type="string", default=None,
@@ -52,8 +60,13 @@ def search_file(files):
     return None
 
 def configure(conf):
-    if not 'PKG_CONFIG_PATH' in os.environ:
-        os.environ['PKG_CONFIG_PATH']= os.path.join(conf.env.PREFIX, 'lib', 'pkgconfig')
+    if Options.options.with_ns3 is not None and os.path.isdir(Options.options.with_ns3):
+        conf.env['NS3_DIR']= os.path.abspath(Options.options.with_ns3)
+        if not 'PKG_CONFIG_PATH' in os.environ:
+            os.environ['PKG_CONFIG_PATH']= os.path.join(Options.options.with_ns3, 'lib', 'pkgconfig')
+        else:
+            os.environ['PKG_CONFIG_PATH']+= os.path.join(Options.options.with_ns3, 'lib', 'pkgconfig')
+
     ns3waf.check_modules(conf, ['core', 'network', 'internet'], mandatory = True)
     ns3waf.check_modules(conf, ['point-to-point', 'tap-bridge', 'netanim'], mandatory = False)
     ns3waf.check_modules(conf, ['wifi', 'point-to-point', 'csma', 'mobility'], mandatory = False)
@@ -94,6 +107,9 @@ def configure(conf):
     conf.env['NS3_ENABLED_MODULES'] = []
     conf_myscripts(conf)
     
+    if Options.options.with_elf_loader is not None and os.path.isdir(Options.options.with_elf_loader):
+         conf.env['ELF_LOADER_PATH'] = Options.options.with_elf_loader
+
     conf.recurse(os.path.join('utils'))
     ns3waf.print_feature_summary(conf)
     
@@ -137,10 +153,11 @@ def dce_kw(**kw):
 def build_dce_tests(module, bld, kern):
     module.add_runner_test(needed=['core', 'dce', 'internet'],  
                            source=['test/dce-manager-test.cc'])
-    module.add_runner_test(needed=['core', 'dce', 'internet'],
-                           source=['test/dce-manager-test.cc'],
-                           linkflags = ['-Wl,--dynamic-linker=' + os.path.abspath (bld.env.PREFIX + '/lib/ldso')], 
-                           name='vdl')
+    if bld.env['ELF_LOADER_PATH']:
+        module.add_runner_test(needed=['core', 'dce', 'internet'],
+                               source=['test/dce-manager-test.cc'],
+                               linkflags = ['-Wl,--dynamic-linker=' + os.path.abspath (bld.env['ELF_LOADER_PATH'] + '/ldso')], 
+                               name='vdl')
 
     module.add_test(features='cxx cxxshlib', source=['test/test-macros.cc'], 
                     target='lib/test', linkflags=['-Wl,-soname=libtest.so'])

@@ -556,13 +556,13 @@ def read_waf_config():
             import ast
             key, table = line.split('= ')
             table = ast.literal_eval(table)
-            prefix_dir = table['prefix']
+            ns3_dir = table['with_ns3']
     global NS3_BASEDIR
     NS3_BASEDIR = top_dir
     global NS3_BUILDDIR
     NS3_BUILDDIR = out_dir
-    global NS3_PREFIX_DIR
-    NS3_PREFIX_DIR = prefix_dir
+    global NS3_INSTALL_DIR
+    NS3_INSTALL_DIR = os.path.abspath(ns3_dir)
     for line in open("%s/c4che/_cache.py" % out_dir).readlines():
         for item in interesting_config_items:
             if line.startswith(item):
@@ -593,10 +593,10 @@ def make_paths():
     dce_ldlibpath += os.path.join (NS3_BUILDDIR, "lib") + ":" \
         + os.path.join (NS3_BUILDDIR, "bin") + ":" \
         + os.path.join (NS3_BUILDDIR, "bin_dce") + ":" \
-        + os.path.join (NS3_PREFIX_DIR, "lib") + ":" \
-        + os.path.join (NS3_PREFIX_DIR, "sbin") + ":" \
-        + os.path.join (NS3_PREFIX_DIR, "bin_dce") + ":" \
-        + os.path.join (NS3_PREFIX_DIR, "bin")
+        + os.path.join (NS3_INSTALL_DIR, "lib") + ":" \
+        + os.path.join (NS3_INSTALL_DIR, "sbin") + ":" \
+        + os.path.join (NS3_INSTALL_DIR, "bin_dce") + ":" \
+        + os.path.join (NS3_INSTALL_DIR, "bin")
 
     keys = os.environ.keys()
     for key in keys:
@@ -650,7 +650,7 @@ def make_paths():
             print "os.environ[\"LD_LIBRARY_PATH\"] == %s" % os.environ["LD_LIBRARY_PATH"]
         os.environ["DCE_PATH"] = os.environ["LD_LIBRARY_PATH"]
         os.environ['DCE_ROOT'] = os.pathsep.join([os.path.join(NS3_BUILDDIR), \
-                                                os.path.join(NS3_PREFIX_DIR)])
+                                                os.path.join(NS3_INSTALL_DIR)])
 
 #
 # Short note on generating suppressions:
@@ -1008,6 +1008,12 @@ def run_tests():
     else:
         test_runner_name = options.test_runner_name
 
+    if test_runner_name == "ns3test-dce-vdl":
+        # set dce-runner path
+        dce_runner_path = os.path.join (os.path.dirname(os.path.abspath(__file__)), 'build', 'bin', 'dce-runner')
+    else:
+        dce_runner_path = ""
+
     #
     # Run waf to make sure that everything is built, configured and ready to go
     # unless we are explicitly told not to.  We want to be careful about causing
@@ -1261,6 +1267,8 @@ def run_tests():
     # Now, spin up one thread per processor which will eventually mean one test
     # per processor running concurrently.
     #
+    # for now, we don't wanna make it parallel due to the conflict of written directories (i.e., files-0/var/)
+    processors = 1
     for i in range(processors):
         thread = worker_thread(input_queue, output_queue)
         threads.append(thread)
@@ -1364,9 +1372,6 @@ def run_tests():
                     test_name = test.split(' ', 1)[0] 
                     test_name = os.path.basename(test_name)
 
-                    # set dce-runner path
-                    dce_runner_path = os.path.join (os.path.dirname(os.path.abspath(__file__)), 'build', 'bin', 'dce-runner')
-
                     # Don't try to run this example if it isn't runnable.
                     if test_name in ns3_runnable_programs:
                         if eval(do_run):
@@ -1378,7 +1383,10 @@ def run_tests():
                             job.set_cwd(testpy_output_dir)
                             job.set_basedir(os.getcwd())
                             job.set_tempdir(testpy_output_dir)
-                            job.set_shell_command("" + dce_runner_path + " " + test)
+                            if len(dce_runner_path):
+                                job.set_shell_command("" + dce_runner_path + " " + test)
+                            else:
+                                job.set_shell_command(test)
                             job.set_build_path(options.buildpath)
 
                             if options.valgrind and not eval(do_valgrind_run):
@@ -1401,9 +1409,6 @@ def run_tests():
         if example_name not in ns3_runnable_programs:
             print "Example %s is not runnable." % example_name
         else:
-            # set dce-runner path
-            dce_runner_path = os.path.join (os.path.dirname(os.path.abspath(__file__)), 'build', 'bin', 'dce-runner')
-
             #
             # If you tell me to run an example, I will try and run the example
             # irrespective of any condition.
@@ -1416,7 +1421,10 @@ def run_tests():
             job.set_cwd(testpy_output_dir)
             job.set_basedir(os.getcwd())
             job.set_tempdir(testpy_output_dir)
-            job.set_shell_command("" + dce_runner_path + " " + example_path)
+            if len(dce_runner_path):
+                job.set_shell_command("" + dce_runner_path + " " + example_path)
+            else:
+                job.set_shell_command(example_path)
             job.set_build_path(options.buildpath)
 
             if options.verbose:
@@ -1465,7 +1473,10 @@ def run_tests():
                             job.set_cwd(testpy_output_dir)
                             job.set_basedir(os.getcwd())
                             job.set_tempdir(testpy_output_dir)
-                            job.set_shell_command("" + dce_runner_path + " " + test)
+                            if len(dce_runner_path):
+                                job.set_shell_command("" + dce_runner_path + " " + test)
+                            else:
+                                job.set_shell_command(test)
                             job.set_build_path("")
 
                             #
