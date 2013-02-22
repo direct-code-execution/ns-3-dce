@@ -417,7 +417,6 @@ def build(bld):
         'model/elf-dependencies.cc',
         'model/elf-cache.cc',
         'model/cooja-loader-factory.cc',
-        'model/copy-loader-factory.cc',
         'model/dlm-loader-factory.cc',
         'model/socket-fd-factory.cc',
         'model/ns3-socket-fd-factory.cc',
