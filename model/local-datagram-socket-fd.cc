@@ -636,7 +636,7 @@ LocalDatagramSocketFd::Recvmsg (struct msghdr *msg, int flags)
       return -1;
     }
 
-  ssize_t retval = 0;
+  size_t retval = 0;
   for (uint32_t i = 0; i < msg->msg_iovlen; ++i)
     {
       uint8_t *buf = (uint8_t *) msg->msg_iov[i].iov_base;

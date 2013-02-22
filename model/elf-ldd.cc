@@ -191,7 +191,7 @@ SharedLibrary::GetName (bool full) const
 bool
 SharedLibrary::SearchLibs ()
 {
-  int count = 0;
+  uint32_t count = 0;
   set<pair<string,string> > n;
 
   for (set<pair<string,string> >::const_iterator i = m_libs.begin (); i != m_libs.end (); ++i)

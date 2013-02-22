@@ -241,7 +241,6 @@ int dce_scandir (const char *dirp, struct dirent ***namelist,
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
-  Thread *current = Current ();
 
   std::string vPath = UtilsGetRealFilePath (std::string (dirp));
 

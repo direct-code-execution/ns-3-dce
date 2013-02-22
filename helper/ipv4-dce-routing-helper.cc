@@ -40,6 +40,7 @@ Ipv4DceRoutingHelper::Ipv4DceRoutingHelper ()
 }
 
 Ipv4DceRoutingHelper::Ipv4DceRoutingHelper (const Ipv4DceRoutingHelper &o)
+  : Ipv4StaticRoutingHelper (o)
 {
 }
 

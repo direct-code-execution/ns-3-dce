@@ -149,7 +149,7 @@ void TaskManager::DoDispose (void)
                   for (std::vector<FILE *>::const_iterator i = p->openStreams.begin ();
                        i != p->openStreams.end (); ++i)
                     {
-                      int status = fflush (*i);
+                      fflush (*i);
                     }
                 }
               gDisposingThreadContext = 0;

@@ -151,7 +151,7 @@ int dce_getnameinfo (const struct sockaddr *sa, socklen_t salen, char *host,
           {
             int r = snprintf (serv, servlen, "%d",  htons (inAddr->sin_port));
 
-            if (r > servlen)
+            if (r > (int)servlen)
               {
                 return EAI_OVERFLOW;
               }
@@ -169,7 +169,7 @@ int dce_getnameinfo (const struct sockaddr *sa, socklen_t salen, char *host,
 
             int r = snprintf (host, hostlen, "%s", oss.str ().c_str ());
 
-            if (r > hostlen)
+            if (r > (int)hostlen)
               {
                 return EAI_OVERFLOW;
               }
@@ -245,7 +245,6 @@ netlink_request (struct netlink_handle *h, int type)
 {
   int ret;
   struct sockaddr_nl snl;
-  int save_errno;
   struct netlink_res *nlm_next;
   struct sockaddr_nl nladdr;
   struct nlmsghdr *nlmh;

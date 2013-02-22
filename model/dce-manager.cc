@@ -170,10 +170,9 @@ int (*DceManager::PrepareDoStartProcess (Thread * current)) (int, char **)
   //        free all local variable in particular the std library ones before the main execution
   //        because main call will reset allocation counters of std library then we must not free std::string
   //        after the main call !
-  int retval = -1;
   int err = 0;
   int (*main)(int, char **) = 0;
-  struct ::Libc *libc = GetLibc ();
+  GetLibc ();
   UnixFd *unixFd = 0;
 
   if (current->process->stdinFilename.length () > 0)
@@ -1241,9 +1240,10 @@ DceManager::SetDefaultSigHandler (std::vector<SignalHandler> &signalHandlers)
 int
 DceManager::Execve (const char *path, const char *argv0, char *const argv[], char *const envp[])
 {
-  Process pTemp = { 0 } ;
+  Process pTemp;
   Process *process = Current ()->process;
   std::vector<std::pair<std::string,std::string> > envs;
+  memset (&pTemp, 0, sizeof (Process));
 
   // Parse Verify environnement and arguments
   if (CopyEnv (envp, envs))

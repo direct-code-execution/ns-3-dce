@@ -98,7 +98,7 @@ int main (int argc, char *argv[])
   std::vector<Ipv4InterfaceContainer> vInterfaces;
   std::vector<std::vector<Ipv4Address> > networks;
 
-  for (int n = 0; n < (nNodes - 1) ; n++)
+  for (uint32_t n = 0; n < (nNodes - 1) ; n++)
     {
       devices = pointToPoint.Install (nodes.Get (n), nodes.Get (1 + n) );
 
@@ -135,7 +135,7 @@ int main (int argc, char *argv[])
 
   // Calculate maxX and maxY;
 
-  for (int n = 0; n < nNodes ; n++)
+  for (uint32_t n = 0; n < nNodes ; n++)
     {
       float r = startR * deltaR * currentAngle / 360;
       double a =  ((currentAngle) * 2.0 * M_PI) / 360.0  ;
@@ -167,7 +167,7 @@ int main (int argc, char *argv[])
   float centerY = maxY / 2;
   currentAngle = 360;
 
-  for (int n = 0; n < nNodes ; n++)
+  for (uint32_t n = 0; n < nNodes ; n++)
     {
       float r = startR * deltaR * currentAngle / 360;
       double a =  (currentAngle  * 2.0 * M_PI) / 360.0  ;
@@ -209,7 +209,7 @@ int main (int argc, char *argv[])
       apps.Start (Seconds (3599));
     }
 
-  for (int n = 0; n < nNodes ; n++)
+  for (uint32_t n = 0; n < nNodes ; n++)
     {
       if ( n > 0 )
         { // Forward /NODE0 interrest to prec node

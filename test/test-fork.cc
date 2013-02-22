@@ -67,7 +67,6 @@ static void test_fork (void)
 static void *
 test_wait_fork_thread (void *arg)
 {
-  pid_t pid = *((pid_t*) arg);
   int status = 0;
 
   printf ("Thread about to wait \n");
@@ -223,7 +222,7 @@ void big_fork_exec (int prof)
           printf ("Before exec ! %s %p \n", copy, copy);
           free (copy);
 
-          int ret = execv ("build/bin/test-fork", args);
+          execv ("build/bin/test-fork", args);
 
           return;
         }
@@ -234,7 +233,6 @@ void
 first_test (void)
 {
   pid_t pid = fork ();
-  char c;
 
   if (-1 == pid)
     {
@@ -313,7 +311,7 @@ int main (int argc, char *argv[])
 
       test_fork ();
 
-      pid_t w = wait (0);
+      wait (0);
 
       test_wait_fork ();
 

@@ -113,7 +113,7 @@ int
 DceNodeContext::RandomRead (void *buf, size_t count)
 {
   uint8_t *crsr = (uint8_t*)buf;
-  for (int i = 0; i < count; i++)
+  for (uint32_t i = 0; i < count; i++)
     {
       *crsr++ = GetNextRnd ();
     }

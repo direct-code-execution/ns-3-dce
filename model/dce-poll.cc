@@ -28,7 +28,6 @@ int dce_poll (struct pollfd *fds, nfds_t nfds, int timeout)
   PollTable *currentTable = table;
 
   NS_ASSERT (current != 0);
-  int validFdCount = 0;
 
   if (0 == timeout)
     {

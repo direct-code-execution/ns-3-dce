@@ -293,7 +293,7 @@ GetTimeStamp ()
   std::ostringstream oss;
   oss << ((long)now.GetSeconds ());
   std::string sec = oss.str ();
-  int indent = 10;
+  uint32_t indent = 10;
   std::string padding = "";
   if (sec.length () < indent)
     {

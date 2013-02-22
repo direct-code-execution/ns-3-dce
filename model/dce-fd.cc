@@ -399,7 +399,7 @@ ssize_t dce_readv (int fd, const struct iovec *iov, int iovcnt)
       if (r >= 0)
         {
           ret += r;
-          if (!r || (r < iov[b].iov_len))
+          if (!r || (r < (ssize_t)iov[b].iov_len))
             {
               return ret;
             }

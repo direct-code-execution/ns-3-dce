@@ -24,18 +24,6 @@ const char *bins[] = {
   "asapi_01"
 };
 
-static void RunIp (Ptr<Node> node, Time at, std::string str)
-{
-  DceApplicationHelper process;
-  ApplicationContainer apps;
-  process.SetBinary ("ip");
-  process.SetStackSize (1 << 16);
-  process.ResetArguments ();
-  process.ParseArguments (str.c_str ());
-  apps = process.Install (node);
-  apps.Start (at);
-}
-
 void
 PrintTcpFlags (std::string key, std::string value)
 {
@@ -45,8 +33,6 @@ PrintTcpFlags (std::string key, std::string value)
 int main (int argc, char *argv[])
 {
   CommandLine cmd;
-  char linkType = 'p'; // P2P
-  bool reliable = true;
 
   cmd.Parse (argc, argv);
   NodeContainer nodes;
@@ -69,7 +55,7 @@ int main (int argc, char *argv[])
 
   processManager.Install (nodes);
 
-  for (int n = 0; n < nodes.GetN (); n++)
+  for (uint32_t n = 0; n < nodes.GetN (); n++)
     {
       //      RunIp (nodes.Get (n), Seconds (0.2), "link set lo up");
       // RunIp (nodes.Get (n), Seconds (0.2), "link show");

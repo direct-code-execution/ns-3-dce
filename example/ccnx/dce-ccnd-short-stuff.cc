@@ -48,7 +48,6 @@ CreateFiles ()
 
 int main (int argc, char *argv[])
 {
-  int i = 0;
   CommandLine cmd;
   cmd.Parse (argc, argv);
 

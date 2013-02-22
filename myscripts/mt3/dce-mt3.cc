@@ -46,12 +46,6 @@ SetPosition (Ptr<Node> node, Vector position)
   mobility->SetPosition (position);
 }
 
-static Vector
-GetPosition (Ptr<Node> node)
-{
-  Ptr<MobilityModel> mobility = node->GetObject<MobilityModel> ();
-  return mobility->GetPosition ();
-}
 float r = 50.0;
 static void
 AdvancePosition (Ptr<Node> node)

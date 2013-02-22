@@ -175,7 +175,7 @@ void InstallGetters (NodeContainer nodes)
 
   for (int turn = 0; turn < 2; turn++)
     {
-      for (int n = 0; n < GetNodes.size () ; n++)
+      for (uint32_t n = 0; n < GetNodes.size () ; n++)
         {
           int nodeNum = GetNodes [n];
 
@@ -183,8 +183,6 @@ void InstallGetters (NodeContainer nodes)
             {
 
               getNumber++;
-
-              int percent = getNumber % 100;
 
               dce.SetStackSize (1 << 20);
               dce.ResetArguments ();

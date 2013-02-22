@@ -68,12 +68,6 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("DcePingEmulationExample");
 
-static void
-PingRtt (std::string context, Time rtt)
-{
-  NS_LOG_UNCOND ("Received Response with RTT = " << rtt);
-}
-
 int
 main (int argc, char *argv[])
 {

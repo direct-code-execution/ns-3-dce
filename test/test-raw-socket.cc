@@ -33,7 +33,6 @@ test1_client (void *arg)
   int status;
   struct sockaddr_in ad;
   int sock = -1;
-  size_t tot = 0;
 
   sleep (1);
 
@@ -142,7 +141,7 @@ void
 test1 ()
 {
   pthread_t t1r, t1c, t1s;
-  int rawFd, st, tcp4;
+  int rawFd, st;
 
   rawFd = socket (AF_PACKET, SOCK_RAW, htons (ETH_P_ALL));
 //  rawFd = socket (AF_PACKET, SOCK_RAW, htons(ETH_P_IP));
@@ -168,13 +167,11 @@ test1 ()
 void*
 test2_client (void *arg)
 {
-  int rawFd, st, tcp4;
-  struct sockaddr_ll dest =
-  {
-    0
-  };
+  int rawFd, st;
+  struct sockaddr_ll dest;
   char buffer [1024 * 1];
 
+  memset (&dest, 0, sizeof (struct sockaddr_ll));
   rawFd = socket (AF_PACKET, SOCK_RAW, htons (ETH_P_ALL));
   // rawFd = socket (AF_PACKET, SOCK_RAW, htons(ETH_P_IP));
   TEST_ASSERT (rawFd >= 0);
@@ -184,9 +181,9 @@ test2_client (void *arg)
   dest.sll_ifindex = 1;
 
   sleep (1);
-  for (int i = 0; i < sizeof (buffer); i++)
+  for (uint32_t i = 0; i < sizeof (buffer); i++)
     {
-      buffer [ i ] = i & 0xff;
+      buffer [i] = i & 0xff;
     }
 
   st = sendto (rawFd, buffer, sizeof(buffer), 0, (sockaddr*) &dest, sizeof(dest));
@@ -199,7 +196,7 @@ test2_client (void *arg)
 void*
 test2_server (void *arg)
 {
-  int rawFd, st, tcp4;
+  int rawFd, st;
   char buffer [1024 * 10];
   struct sockaddr_ll from;
   socklen_t l =  sizeof(from);

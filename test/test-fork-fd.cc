@@ -57,7 +57,7 @@ father1 ()
   TEST_ASSERT (sock >= 0);
 
   fill_addr (ad, 2000);
-encore:
+
   status = connect (sock, (struct sockaddr *) &ad, sizeof(ad));
   printf ("father1: connect -> %d\n",status);
   TEST_ASSERT_EQUAL (status, 0)
@@ -104,7 +104,6 @@ first_child1 ()
   int status;
   int sock = -1;
   int sockin = -1;
-  size_t tot = 0;
   struct sockaddr_in ad;
   char buf[1024];
 

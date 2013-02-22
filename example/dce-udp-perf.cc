@@ -82,7 +82,7 @@ int main (int argc, char *argv[])
   if (useKernel)
     {
       // Set the routes
-      for (int n = 0; n < nHops + 1; n++)
+      for (uint32_t n = 0; n < nHops + 1; n++)
         {
           if (n < nHops)
             {
