@@ -1,8 +1,10 @@
-DCE - GETTING STARTED
----------------------
+.. include:: replace.txt
+
+Getting Started
+***************
 
 Introduction
-************
+============
 
 The DCE ns-3 module provides facilities to execute within ns-3 existing
 implementations of userspace and kernelspace network protocols. 
@@ -13,180 +15,91 @@ known to run within DCE, hence allowing network protocol experimenters and
 researchers to use the unmodified implementation of their protocols for
 real-world deployments and simulations.
 
+.. _build-dce:
 
+Build DCE
+=========
 
-Prerequisite
-************
+DCE offers two major modes of operation:
+ 1. The basic mode, where DCE use the |ns3| TCP stacks,
+ 2. The advanced mode, where DCE uses a Linux network stack instead.
 
-DCE has been tested only on few systems see:  `Ns-3-dce portability <http://www.nsnam.org/wiki/index.php/Ns-3-dce_portability>`_.
-Now I am using it well with a Fedora 14 x86-64 and glibc 2.13-1.
+Building DCE basic mode
+-----------------------
 
-Building options
-****************
-
-DCE offers two majors mode of operation:
- 1. The basic mode, where DCE use the NS3 TCP stacks,
- 2. The advanced mode, where DCE uses a linux network stack instead.
-
-Building ns-3 and DCE
-*********************
-
-First you need to download NS-3 DCE using mercurial:
+First you need to download Bake using Mercurial and set some variables:
 
 ::
 
-  $ mkdir test_build_ns3_dce
-  $ cd test_build_ns3_dce
-  $ hg clone http://code.nsnam.org/furbani/ns-3-dce 
+  $ hg clone http://code.nsnam.org/bake bake
+  $ export BAKE_HOME=`pwd`/bake
+  $ export PATH=$PATH:$BAKE_HOME
+  $ export PYTHONPATH=$PYTHONPATH:$BAKE_HOME
 
-
-DCE brings a script to retrieve the other sources and build the whole things:
-
-:: 
-
-  $ ls ns-3-dce/utils/clone_and_compile_ns3_dce.sh
-
-You should edit this file if you want to try the advanced mode and change the following line:
+then you must to create a directory for DCE and install it using bake:
 
 ::
 
-  USE_KERNEL=NO
-
-to
-
-::
-
-  USE_KERNEL=YES
-
-then you can build the project:
+  $ mkdir dce
+  $ cd dce
+  $ bake.py configure -e dce-ns3
+  $ bake.py install
+ 
+the output should look likes this:
 
 ::
 
-  $ ns-3-dce/utils/clone_and_compile_ns3_dce.sh
-  clone readversiondef
-  ...
-  2 files updated, 0 files merged, 0 files removed, 0 files unresolved
-  clone ns-3-dce
-  ...
-  2105 files updated, 0 files merged, 0 files removed, 0 files unresolved
-  ...
-  Launch NS3TEST-DCE
-  PASS process-manager 16.030ms
-    PASS Check that process "test-empty" completes correctly. 1.220ms
-    PASS Check that process "test-sleep" completes correctly. 0.030ms
-    PASS Check that process "test-pthread" completes correctly. 0.020ms
-    PASS Check that process "test-mutex" completes correctly. 0.110ms
-    PASS Check that process "test-once" completes correctly. 0.030ms
-    PASS Check that process "test-pthread-key" completes correctly. 0.020ms
-    PASS Check that process "test-sem" completes correctly. 0.040ms
-    PASS Check that process "test-malloc" completes correctly. 0.030ms
-    PASS Check that process "test-malloc-2" completes correctly. 0.020ms
-    PASS Check that process "test-fd-simple" completes correctly. 0.030ms
-    PASS Check that process "test-strerror" completes correctly. 0.030ms
-    PASS Check that process "test-stdio" completes correctly. 0.030ms
-    PASS Check that process "test-string" completes correctly. 0.030ms
-    PASS Check that process "test-netdb" completes correctly. 0.220ms
-    PASS Check that process "test-env" completes correctly. 0.030ms
-    PASS Check that process "test-cond" completes correctly. 0.100ms
-    PASS Check that process "test-timer-fd" completes correctly. 0.030ms
-    PASS Check that process "test-stdlib" completes correctly. 0.030ms
-    PASS Check that process "test-select" completes correctly. 0.080ms
-    PASS Check that process "test-nanosleep" completes correctly. 0.030ms
-    PASS Check that process "test-random" completes correctly. 0.030ms
-    PASS Check that process "test-fork" completes correctly. 0.030ms
-    PASS Check that process "test-local-socket" completes correctly. 12.840ms
-    PASS Check that process "test-poll" completes correctly. 0.090ms
-    PASS Check that process "test-tcp-socket" completes correctly. 0.880ms
-    
-DCE is compiled after a few minutes and if the tests completed successfully, you should see the directories:
+  Installing selected module and dependencies.
+  Please, be patient, this may take a while!
+  >> Downloading ccnx
+  >> Download ccnx - OK
+  >> Downloading iperf
+  >> Download iperf - OK
+  >> Downloading ns-3-dev-dce
+  >> Download ns-3-dev-dce - OK
+  >> Downloading dce-ns3
+  >> Download dce-ns3 - OK
+  >> Building ccnx
+  >> Built ccnx - OK
+  >> Building iperf
+  >> Built iperf - OK
+  >> Building ns-3-dev-dce
+  >> Built ns-3-dev-dce - OK
+  >> Building dce-ns3
+  >> Built dce-ns3 - OK
+
+Building DCE advanced mode (with Linux kernel)
+----------------------------------------------
+If you would like to try Linux network stack instead of |ns3| network stack, you can try the advanced mode.
+The difference to build the advanced mode is the different module name *dce-linux* instead of *dce-ns3* (basic mode).
 
 ::
 
-  $ ls
-  build  ns-3-dev  ns-3-dce  readversiondef ns-3-linux iproute2-2.6.33
+  $ mkdir dce
+  $ cd dce
+  $ bake.py configure -e dce-linux
+  $ bake.py install
 
-Where:
- 1. *build* contains the result of compilation: some binaries some libs and some include files usable to do your simulations scripts.
-
- 2. *ns-3-dev* contains the current sources of NS3, 
-
- 3. *ns-3-dce* contains the DCE sources,
-
- 4. *readversiondef* contains source of a tool used by DCE build system. 
-
- 5. *ns-3-linux* (only in advanced mode) contains source of a linux kernel + some glue code for DCE / Kernel communication.
-
- 6. *iproute2-2.6.33* (only in advanced mode) contains source of *ip* tool needed to be compiled for DCE in order to configure ip routes of the slave kernel used by DCE.
 
 Examples
-********
+========
+If you got succeed to build DCE, you can try an example script which is already included in DCE package.
+  
+Example: Simple UDP socket application
+--------------------------------------
 
-Under example directory there is the sources files of DCE examples simulations.
+This example execute the binaries named udp-client and udp-server under |ns3| using DCE.
+These 2 binaries are written using POSIX socket API in order to send and receive UDP packets.
 
-Example: DCE UDP EXAMPLE
-########################
+If you would like to see what is going on this script, please refer to the :ref:`user's guide<dce-udp-simple-example>`.
 
-This example execute the binaries named udp-client and udp-server under NS3 using DCE.
-
-These 2 binaries are writen using libc api in order to send and receive udp packets.
-
-Please take time to look at the source dce-udp-simple.cc which is our NS3 simulation "script":
-
-::
-
-  int main (int argc, char *argv[])
-  {
-    CommandLine cmd;
-    cmd.Parse (argc, argv);
-  
-    NodeContainer nodes;
-    nodes.Create (1);
-  
-    InternetStackHelper stack;
-    stack.Install (nodes);
-  
-    DceManagerHelper dceManager;
-    dceManager.Install (nodes);
-  
-    DceApplicationHelper dce;
-    ApplicationContainer apps;
-  
-    dce.SetStackSize (1<<20);
-  
-    dce.SetBinary ("udp-server");
-    dce.ResetArguments();
-    apps = dce.Install (nodes.Get (0));
-    apps.Start (Seconds (4.0));
-  
-    dce.SetBinary ("udp-client");
-    dce.ResetArguments();
-    dce.AddArgument ("127.0.0.1");
-    apps = dce.Install (nodes.Get (0));
-    apps.Start (Seconds (4.5));
-  
-    Simulator::Stop (Seconds(1000100.0));
-    Simulator::Run ();
-    Simulator::Destroy ();
-  
-    return 0;
-  }
-  
-You can notice that we create a NS-3 Node with an Internet Stack (please refer to `NS-3 <http://www.nsnam.org/documentation/>`_ doc. for more info),
-and we can also see 2 new Helpers:
-
- 1. DceManagerHelper which is used to Manage DCE loading system in each node where DCE will be used.
- 2. DceApplicationHelper which is used to describe real application to be lauched by DCE within NS-3 simulation environnement.
- 
-As you have already set the environnement variables you can launch this simulation from anywhere:
 
 ::
 
-  $ cd /tmp
-  $ mkdir my_test
-  $ cd my_test
-  $ dce-udp-simple
+  $ cd source/dce
+  $ ./waf --run dce-udp-simple
   $ ls 
-    elf-cache  files-0
+    elf-cache  files-0 exitprocs
   $ ls -lR files-0
     files-0:
     total 4
@@ -216,7 +129,7 @@ As you have already set the environnement variables you can launch this simulati
     -rw------- 1 furbani planete  22 Sep  2 17:02 stdout
 
 This simulation produces two directories, the content of elf-cache is not important now for us, but files-0 is.
-files-0 contains first node's file system, it also contains the output files of the dce applications launched on this node. In the /var/log directory there is some directories named with the virtual pid of corresponding DCE applications. Under these directories there is always 4 files:
+files-0 contains first node's file system, it also contains the output files of the dce applications launched on this node. In the /var/log directory there are some directories named with the virtual pid of corresponding DCE applications. Under these directories there is always 4 files:
 
 1. cmdline: which contains the command line of the corresponding DCE application, in order to help you to retrieve what is it,
 2. stdout: contains the stdout produced by the execution of the corresponding application,
@@ -225,325 +138,97 @@ files-0 contains first node's file system, it also contains the output files of 
               
 Before launching a simulation, you may also create files-xx directories and provide files required by the applications to be executed correctly.
 
-DCE LINUX Example
-#################
+Example: iperf
+--------------
 
-This example shows how to use DCE in advanced mode, with a linux kernel IP stack.
-It uses also the binaries *udp-server* and *udp-client* like the above example, there is also *tcp-server* and *tcp-client* if you choose the reliable transport option.
-Two other binaries are needed: the linux kernel stack named *libnet-next-2.6.so* and the tool needed to configure this kernel stack named *ip*.
-This example simulates an exchange of data between too nodes, using TCP or UDP, and the nodes are linked by one of three possible links , Wifi, Point 2 point or CSMA.
-The main executable is named *dce-linux*, it cames with too options:
+This example shows the usage of iperf with DCE. You are able to generate traffic by well-know traffic generator `iperf` in your simulation.
+For more detail of the scenario description, please refer to the :ref:`user's guide<dce-iperf-example>`.
 
-1. linkType allow to choose the link type between c, w or p for Csma, Wifi or Point 2 point,
-2. reliable allow to choose transport between TCP (1) or UDP (0).
-
-The following code snippet show how to enable DCE advanced mode (you can see it in the source file dce-linux.cc under example directory):
+Once you successfully installed DCE with bake, you can execute the example using iperf.
 
 ::
 
-  DceManagerHelper processManager;
- // processManager.SetLoader ("ns3::DlmLoaderFactory");
-  processManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("libnet-next-2.6.so"));
-  processManager.Install (nodes);
-
-  for (int n=0; n < 2; n++)
-    {
-      AddAddress (nodes.Get (n), Seconds (0.1), "sim0", "10.0.0.", 2 + n, "/8" );
-      RunIp (nodes.Get (n), Seconds (0.11), ( 'p' == linkType )? "link set sim0 up arp off":"link set sim0 up arp on");
-      RunIp (nodes.Get (n), Seconds (0.2), "link show");
-      RunIp (nodes.Get (n), Seconds (0.3), "route show table all");
-      RunIp (nodes.Get (n), Seconds (0.4), "addr list");
-    }
-
-The first important call is *SetNetworkStack* used to indicate which file contains the linux kernel stack.
-Then in the for loop we setup on each nodes the network interfaces using the ip executable to configure the kernel stack.
-Because this source code factorizes some call, it is not very readeable so below there is the corresponding calls to ip executable with the arguments:
-
-::
-
-   ip -f inet addr add 10.0.0.2 dev sim0        // set the ip adresse of the first (sim0) net device of the corresponding node
-   ip link set sim0 up arp on                   // enable the use of the device use arp off instead for P2P link
-   ip link show
-   ip route show table all
-   ip addr list
-
-Quagga Example
-##############
-
-`Quagga <http://www.quagga.net/about.php>`_ is a routing software suite, providing implementations of OSPFv2, OSPFv3, RIP v1 and v2, RIPng and BGP-4 for Unix platforms, particularly FreeBSD, Linux, Solaris and NetBSD.
-
-For more information, see the latest support `document <http://www.nsnam.org/~thehajime/ns-3-dce-quagga/index.html>`_.
-         
-CCNx examples
-#############
-
-Under example/ccnx there is more realistics examples using the implementation of an experimental protocol named CCN. In this examples we use the `PARC  <http://www.parc.com>`_ implementation named `CCNx <http://www.ccnx.org>`_ (c) in its early version 0.6.1.
+  $ cd source/dce
+  $ ./waf --run dce-ipef
   
-CCNx setup
-==========
-
-In order to run ccnx binaries you must compile them with some required compilator and linker parameters.
-The principe here is to obtain Position Independent Executable. 
-To obtain this type of exe you should use the gcc -fPIC when compiling sources, and the option -pie when linking your exe.
-For CNNx we notice that (under linux) its configure script sets by default the -fPIC option, you can check it in the generated file named conf.mk under directory ccnx.0.6.1/csrc:
-::
-
-  $ cat cscr/conf.mk
-  ...
-  PLATCFLAGS=-fPIC
-  ...
-
-Then you should start the make like this:
+As we saw in the previous example the experience creates directories containing the outputs of different executables,
+take a look at the server (node 1) output:
 
 ::
 
-  $ make MORE_LDLIBS=-pie
+  $ cat files-1/var/log/*/stdout
+  ------------------------------------------------------------
+  Server listening on TCP port 5001
+  TCP window size:  124 KByte (default)
+  ------------------------------------------------------------
+  [  4] local 10.1.1.2 port 5001 connected with 10.1.1.1 port 49153
+  [ ID] Interval       Transfer     Bandwidth
+  [  4]  0.0-11.2 sec  5.75 MBytes  4.30 Mbits/sec
 
-
-CCNx installation example
-+++++++++++++++++++++++++
-
-::
-
-  $ cd /where/is/ns-3-dce/
-  $ wget http://www.ccnx.org/releases/ccnx-0.6.1.tar.gz
-  $ tar zxf ccnx-0.6.1.tar.gz && cd ccnx-0.6.1
-  $ INSTALL_BASE=$PWD/../build ./configure
-  $ make MORE_LDLIBS=-pie && make install
  
-CCNx simple test in real world
-++++++++++++++++++++++++++++++
-
-Before using it within DCE we will do a little test in real world.  For this we will start the ccnd daemon, publish a file, and request the file, then you end up stopping the ccnd daemon.
-
-::
- 
-  $ pwd
-  /where/is/ns-3-dce/  
-  $ cd build/bin
-  $ ls -l ccnd
-  -rwxr-xr-x 1 furbani planete 426969 Feb  7 15:54 ccnd
-  $ ./ccndstart
-  1328704870.766811 ccnd[5211]: CCND_DEBUG=1 CCND_CAP=50000
-  1328704870.766964 ccnd[5211]: listening on /tmp/.ccnd.sock
-  1328704870.767043 ccnd[5211]: accepting ipv4 datagrams on fd 4 rcvbuf 126976
-  1328704870.767068 ccnd[5211]: accepting ipv4 connections on fd 5
-  1328704870.767122 ccnd[5211]: accepting ipv6 datagrams on fd 6 rcvbuf 126976
-  1328704870.767152 ccnd[5211]: accepting ipv6 connections on fd 7
-  1328704870.812268 ccnd[5211]: accepted client fd=8 id=6
-  1328704870.812322 ccnd[5211]: shutdown client fd=8 id=6
-  1328704870.812332 ccnd[5211]: recycling face id 6 (slot 6)
-  $ echo HELLO >file
-  $ ./ccnput /H <file &
-  $ ./ccnget -c /H
-  HELLO
-  [1]+  Done                    ./ccnput /H < file
-  $ ./ccndstop
-
-Before running the CCN daemon within DCE we make a final verification, we use readelf tool to verify that ccnd executable is of type **DYN**:
+the client (node-0) output bellow:
 
 ::
 
-  $ readelf -h ccnd
-  ELF Header:
-  Magic:   7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00 
-  Class:                             ELF64
-  Data:                              2's complement, little endian
-  Version:                           1 (current)
-  OS/ABI:                            UNIX - System V
-  ABI Version:                       0
-  Type:                              DYN (Shared object file)
-  Machine:                           Advanced Micro Devices X86-64
-  Version:                           0x1
-  Entry point address:               0x31d0
-  Start of program headers:          64 (bytes into file)
-  Start of section headers:          395872 (bytes into file)
-  Flags:                             0x0
-  Size of this header:               64 (bytes)
-  Size of program headers:           56 (bytes)
-  Number of program headers:         8
-  Size of section headers:           64 (bytes)
-  Number of section headers:         39
-  Section header string table index: 36
+  $ cat files-0/var/log/*/stdout
+  ------------------------------------------------------------
+  Client connecting to 10.1.1.2, TCP port 5001
+  TCP window size:  124 KByte (default)
+  ------------------------------------------------------------
+  [  3] local 10.1.1.1 port 49153 connected with 10.1.1.2 port 5001
+  [ ID] Interval       Transfer     Bandwidth
+  [  3]  0.0- 1.0 sec   640 KBytes  5.24 Mbits/sec
+  [  3]  1.0- 2.0 sec   512 KBytes  4.19 Mbits/sec
+  [  3]  2.0- 3.0 sec   640 KBytes  5.24 Mbits/sec
+  [  3]  3.0- 4.0 sec   512 KBytes  4.19 Mbits/sec
+  [  3]  4.0- 5.0 sec   512 KBytes  4.19 Mbits/sec
+  [  3]  5.0- 6.0 sec   640 KBytes  5.24 Mbits/sec
+  [  3]  6.0- 7.0 sec   512 KBytes  4.19 Mbits/sec
+  [  3]  7.0- 8.0 sec   640 KBytes  5.24 Mbits/sec
+  [  3]  8.0- 9.0 sec   512 KBytes  4.19 Mbits/sec
+  [  3]  9.0-10.0 sec   640 KBytes  5.24 Mbits/sec
+  [  3]  0.0-10.2 sec  5.75 MBytes  4.72 Mbits/sec
 
-Example CCNX-SIMPLE
-###################
 
-This simulation launches a *ccnd* daemon, publishes a file using *ccnput* and retrieves this data using *ccnget* command, all commands are on a single node:
+if you have already built the advanced mode, you can use Linux network stack over iperf.
 
 ::
 
-  $ ./waf --run dce-ccnd-simple --cv=6
+  $ cd source/dce
+  $ ./waf --run "dce-ipef --kernel=1"
 
-Verify the status of execution:
-
-::
-
-  $ cat files-0/var/log/*/status
-  Start Time: NS3 Time:          0s (                   +0.0ns) , REAL Time: 1328707904
-        Time: NS3 Time:          0s (                   +0.0ns) , REAL Time: 1328707904 --> Starting: /user/furbani/home/dev/dce/dev/ns-3-dce/build/bin/ccnd
-        Time: NS3 Time:         59s (         +59001000000.0ns) , REAL Time: 1328707905 --> Exit (0)
-  Start Time: NS3 Time:          1s (          +1000000000.0ns) , REAL Time: 1328707904
-        Time: NS3 Time:          1s (          +1000000000.0ns) , REAL Time: 1328707904 --> Starting: /user/furbani/home/dev/dce/dev/ns-3-dce/build/bin/ccnput
-        Time: NS3 Time:          2s (          +2001000000.0ns) , REAL Time: 1328707905 --> Exit (0)
-  Start Time: NS3 Time:          2s (          +2000000000.0ns) , REAL Time: 1328707905
-        Time: NS3 Time:          2s (          +2000000000.0ns) , REAL Time: 1328707905 --> Starting: /user/furbani/home/dev/dce/dev/ns-3-dce/build/bin/ccnget
-        Time: NS3 Time:          2s (          +2002000000.0ns) , REAL Time: 1328707905 --> Exit (0)
-  Start Time: NS3 Time:         59s (         +59000000000.0ns) , REAL Time: 1328707905
-        Time: NS3 Time:         59s (         +59000000000.0ns) , REAL Time: 1328707905 --> Starting: /user/furbani/home/dev/dce/dev/ns-3-dce/build/bin/ccndsmoketest
-        Time: NS3 Time:         59s (         +59001000000.0ns) , REAL Time: 1328707905 --> Exit (0)
-
-Verify the output of the command *ccnget*:
+the command line option **--kernel=1** makes the simulation use the Linux kernel stack instead of |ns3| network stack.
 
 ::
 
-  $ cat files-0/var/log/53514/stdout
-  The wanted data is here :)
-
-
-
-
-Example CCND LINEAR MULTIPLE
-############################
-
-This simulation uses multiple nodes placed in a line, each node are linked 2 by 2 by a point to point link, each node holds a ccnd daemon, the first node put a file (with ccnput), and the last node fetch this file (with ccnget). Also each node minus the first one forward interrests starting with /NODE0 to its predecessor.
-
-  .. image:: images/ccnd-linear-multiple-1.png
-
-The launch script dce-ccnd-linear-multiple offer 4 options:
-
+  $ cat files-1/var/log/*/stdout
+  ------------------------------------------------------------
+  Server listening on TCP port 5001
+  TCP window size: 85.3 KByte (default)
+  ------------------------------------------------------------
+  [  4] local 10.1.1.2 port 5001 connected with 10.1.1.1 port 60120
+  [ ID] Interval       Transfer     Bandwidth
+  [  4]  0.0-11.2 sec  5.88 MBytes  4.41 Mbits/sec
+  
 ::
 
-  $ ./build/bin/dce-ccnd-linear-multiple --PrintHelp
-  --PrintHelp: Print this help message.
-  --PrintGroups: Print the list of groups.
-  --PrintTypeIds: Print all TypeIds.
-  --PrintGroup=[group]: Print all TypeIds of group.
-  --PrintAttributes=[typeid]: Print all attributes of typeid.
-  --PrintGlobals: Print the list of globals.
-  User Arguments:
-      --nNodes: Number of nodes to place in the line
-      --tcp: Use TCP to link ccnd daemons.
-      --kernel: Use kernel linux IP stack.
-      --cv: Ccnx version 4 for 0.4.x variantes and 5 for 0.5.x variantes, default: 4
+  $ cat files-0/var/log/*/stdout
+  ------------------------------------------------------------
+  Client connecting to 10.1.1.2, TCP port 5001
+  TCP window size: 16.0 KByte (default)
+  ------------------------------------------------------------
+  [  3] local 10.1.1.1 port 60120 connected with 10.1.1.2 port 5001
+  [ ID] Interval       Transfer     Bandwidth
+  [  3]  0.0- 1.0 sec   512 KBytes  4.19 Mbits/sec
+  [  3]  1.0- 2.0 sec   640 KBytes  5.24 Mbits/sec
+  [  3]  2.0- 3.0 sec   640 KBytes  5.24 Mbits/sec
+  [  3]  3.0- 4.0 sec   512 KBytes  4.19 Mbits/sec
+  [  3]  4.0- 5.0 sec   640 KBytes  5.24 Mbits/sec
+  [  3]  5.0- 6.0 sec   512 KBytes  4.19 Mbits/sec
+  [  3]  6.0- 7.0 sec   640 KBytes  5.24 Mbits/sec
+  [  3]  7.0- 8.0 sec   640 KBytes  5.24 Mbits/sec
+  [  3]  8.0- 9.0 sec   512 KBytes  4.19 Mbits/sec
+  [  3]  9.0-10.0 sec   640 KBytes  5.24 Mbits/sec
+  [  3]  0.0-10.2 sec  5.88 MBytes  4.84 Mbits/sec
 
-
- 1. nNodes allows to choose the Number of Nodes,
- 2. tcp allows to use TCP or if not UDP to connect the ccnd deamons (via forwarding interrest).
- 3. kernel allows to use Linux IP Stack (only working in advanced mode) instead of NS3 one.
-
-for example with 200 nodes and TCP transport you should see this in the first ccnget output command:
-
-::
-
-  $ ./build/bin/dce-ccnd-linear-multiple --nNodes=200 --tcp=1 --kernel=0 --cv=6
-  $ cat files-199/var/log/30916/status
-  Start Time: NS3 Time:          2s (          +2700000000.0ns) , REAL Time: 1328710217
-        Time: NS3 Time:          2s (          +2700000000.0ns) , REAL Time: 1328710217 --> Starting: /user/furbani/home/dev/dce/dev/ns-3-dce/build/bin/ccnget
-        Time: NS3 Time:          4s (          +4399711801.0ns) , REAL Time: 1328710218 --> Exit (0)
-  $ cat files-199/var/log/30916/stdout
-  The wanted data is here :)[
-
-You can see that the first get take about 1.6 seconds.
-This example produce also a netanim file named *NetAnimLinear.xml* that you can use with the  `NetAnim <http://www.nsnam.org/wiki/index.php/NetAnim>`_ tool in order to visualize packets moving through the Network:
-
-  .. image:: images/netanim-1.png
-
-
-Example VLC Player
-##################
-
-This demonstration show how to watch video using VLC CCN and NS3.
-
-Prerequisite
-============
-
-You should be able to build and run the CCN plugin for VLC in order to display Video using CCNx. 
-So you should follow carefully the instructions delivered in CCNx distribution in the directory :  ccnx-0.6.1/apps/vlc 
-
-You should ensure that the executable named *ns3-dev-tap-creator-debug* is owned by *root* and have the sticky bit setted :
-
-::
-
-   $ cd build/bin
-   $ su
-   # chown root ns3-dev-tap-creator-debug
-   # chmod +s ns3-dev-tap-creator-debug
-
-Overview
-========
-
-In this example we use other exe than *ccnd*:
-
-1. *vlc* the well known media player
-2. *ccnr* is a CCN repository used to serve the Video file
-3. *SyncTest* used to fill the repository with our Video file
-
-The first exe is not usable under DCE: *vlc* use a graphical interface and DCE do not supports this kind of application.
-
-So *vlc* will be launched normally outside of DCE environnement.
-We will also use 2 *ccnd*:
-
-1. the first *ccnd* will be launched normally outside DCE, it will be the server for *vlc* player ,it will use the standard CCNx port ie 9596.
-2. the second *ccnd* will be launched inside DCE listening on second node.
-
-then we install ccn route like this : first *ccnd* forward every interests starting by /VIDEO/ to second *ccnd*.
-
-In order to link real world and NS3 network we use the NS-3 TAP BRIDGE functionnality which is more documented there: `Tap NetDevice <http://www.nsnam.org/docs/release/3.12/models/singlehtml/index.html#document-tap>`_
-
-A schema of our network:
-
-::
-
-  +----------+
-  | external |
-  |  Linux   |
-  |   Host   | 1 ccnd on standard port (9596)
-  |          |
-  | "thetap" | 1 vlc client querying ccnx:///VIDEO/bunny.ts
-  +----------+
-  | 10.0.0.1 |
-  +----------+
-       |           node0         node1
-       |       +----------+    +----------+
-       +-------|  tap     |    |          |
-               | bridge   |    |          |
-               +----------+    +----------+
-               |  CSMA    |    |  CSMA    |
-               +----------+    +----------+
-               | 10.0.0.1 |    | 10.0.0.2 |  ccnd and ccnr
-               +----------+    +----------+
-                     |               |
-                     |               |
-                     |               |
-                     =================
-                      CSMA LAN 10.0.0
-
-
-Before running the launch script you should edit it to furnish a Video file in the corresponding variable :
-
-::
-
-  $ vi run-tap-vlc.sh
-  .... 
-  VIDEOFILE=big_buck_bunny_240p_mpeg4.ts
-  .... 
-
-Note also that NS3 is launched in real time mode in order to communicate to real world.
-
-Run :
-
-::
-
-  $ cd $BASEDCE/myscripts/ccn-tap-vlc
-  $ ./run-ccn-vlc.sh
-
-If all is right you should see a *vlc* window playing the video, then after 600 seconds the script stops itself
-if you interrupt the script before you should terminate real the processes ie:
-
-1. 1 instances of *ccnd*
-2. and 1 *dce-ccn-vlc*
-
-Note that if you replay the video (url: ccnx:///VIDEO/bunny.ts) the content should be cached in first *ccnd* so in this case 
-NS3/DCE will probably not be used for the second delivery of the video.
-
+Interestingly, the two results between two network stacks are slightly different, though the difference is out of scope of this document.

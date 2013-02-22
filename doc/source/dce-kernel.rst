@@ -1,28 +1,29 @@
-DCE - KERNEL DEVELOPPER DOCUMENTATION
-=====================================
+.. include:: replace.txt
+Kernel Developer Information
+****************************
 
-This technical documentation is intended for developers who want to build a linux kernel in order to use with DCE.
-A first part will describe the architecture and the second will show how we went from a net-next kernel 2.6 has a linux kernel-stable 3.4.5.
+This technical documentation is intended for developers who want to build a Linux kernel in order to use with DCE.
+A first part will describe the architecture and the second will show how we went from a net-next kernel 2.6 has a Linux kernel-stable 3.4.5.
 
 Prerequisite
-************
+============
 
-You must be familiar with NS-3, DCE and Linux Kernel Developpement.
+You must be familiar with |ns3|, DCE and Linux Kernel Developpement.
 
 Download
-********
+========
 
 The source code can be found in the following repository: http://code.nsnam.org/furbani/ns-3-linux.
 You must use mercurial to download the source code.
 
 Goal
-****
+====
 
-The goal of this work is to use the real implementation of the Linux Network Stack within the Simulation environnement furnished by NS-3. 
+The goal of this work is to use the real implementation of the Linux Network Stack within the Simulation environnement furnished by |ns3|. 
 
 
 Solution
-********
+========
 
 The solution chosen was to use the Linux kernel source, compile the Net part and make a dynamic library and interface the result with DCE.
 
@@ -30,22 +31,22 @@ The following schema show the differents parts between a software user space app
 
   .. image:: images/appli_2_network.png
 
-The following schema show the same application running under DCE and NS-3 and using a real kernel network stack:
+The following schema show the same application running under DCE and |ns3| and using a real kernel network stack:
 
   .. image:: images/appli_2_network_dce.png
 
-The green parts are implemented in ns-3-linux source files, the grays parts comes from the linux kernel sources and are not modified at all or with only few changes.
+The green parts are implemented in ns-3-linux source files, the grays parts comes from the Linux kernel sources and are not modified at all or with only few changes.
 Application should not be modified at all.
 
 
 Concepts
-********
+========
 
 If you need a more theorical documentation you can read the chapter 4.5 of this Ph.D thesis `Experimentation Tools for Networking Research <http://cutebugs.net/files/thesis.pdf>`_.
 
 
 List of files and usage
-***********************
+=======================
 
 After doing the cloning of the source, 
 
@@ -80,13 +81,13 @@ The main file is the **Makefile** its role is to recover the kernel source, comp
   $ ls ns-3-linux/sim/include
   asm  generated  sim-assert.h  sim.h  sim-init.h  sim-printf.h  sim-types.h
 
-These directories contains the architecture specific code and the code doing the interface between the kernel and DCE and NS-3.  
+These directories contains the architecture specific code and the code doing the interface between the kernel and DCE and |ns3|.  
 Ideally we should not change a line of code outside the kernel arch portion, but in practice we make small changes : see the patchs files.
 
-Recall: the code of linux source is mainly C so it is very easy to port to new architecture, the architecture specific code is contained in a specific directory under arch/XXX directory where XXX name recall the processor used. In our case we have chosen to create a special architecture for our environment NS3 + DCE, we called **sim**.
+Recall: the code of Linux source is mainly C so it is very easy to port to new architecture, the architecture specific code is contained in a specific directory under arch/XXX directory where XXX name recall the processor used. In our case we have chosen to create a special architecture for our environment NS3 + DCE, we called **sim**.
 
 Interfaces between Kernel and DCE
-*********************************
+=================================
 In order to install a kernel on a Node DCE do the following steps:
 
 1. Load the shared library containing the kernel compilation result,
@@ -96,7 +97,7 @@ In order to install a kernel on a Node DCE do the following steps:
 5. before finish **sim_init** must initialize the kernel to put it in a running state ready to be usable.
  
 Kernel -> DCE
-#############
+-------------
 
 Methods (there is also one variable) of DCE called by the kernels are the following:
 
@@ -121,7 +122,7 @@ Methods (there is also one variable) of DCE called by the kernels are the follow
 there are located in the source file **linux-socket-fd-factory.cc** of DCE.
 
 DCE -> Kernel
-#############
+-------------
 
 Methods of Kernel (sim part) called by DCE are the following:
 
@@ -158,12 +159,12 @@ Methods of Kernel (sim part) called by DCE are the following:
 the corresponding sources are located in the **sim** directory.
 
 Build net-next 2.6 kernel
-*************************
+=========================
 
 All build operations are done using the make command with the **Makefile** file under the directory **ns-3-linux**.
 
 Make Setup
-##########
+----------
 
 First you should call **make setup** in order to download the source of the kernel:
 
@@ -186,17 +187,17 @@ This sources correspond to a specific version well tested with DCE the net-next 
 Now the directory **net-next-2.6** contains the kernel sources. 
 
 Make Menuconfig
-###############
+---------------
 
 Use **make menuconfig** to configure your kernel, note that modules are not supported by our architecture so options chosen as modules will not be included in the result kernel.
 
 Build
-#####
+-----
 
 Finally **make** will compile all the needed sources and produce a file named **libnet-next-2.6.so**: this is the library contains our net-next kernel suitable for DCE usage.
 
 Usage
-#####
+-----
 
 To use this kernel you should:
 
@@ -208,14 +209,14 @@ For this you should give to the waf configure the path to the **ns-3-linux** dir
   $ ./waf configure ----enable-kernel-stack=/ABSOLUTE-PATH-TO/ns-3-linux
 
 
-2. In your NS-3 scenario you should indicate the good kernel file: (the file should be located in a directory presents in the DCE_PATH env. variable)
+2. In your |ns3| scenario you should indicate the good kernel file: (the file should be located in a directory presents in the DCE_PATH env. variable)
 
 ::
 
    dceManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("libnet-next-2.6.so"));
 
 Test
-####
+----
 
 Use DCE unit test:
 
@@ -260,14 +261,14 @@ Use DCE unit test:
 All is OK.
 
 net-next 2.6 to linux-stable 3.4.5
-**********************************
+==================================
 
 Now we will try to use a more recent linux kernel.
 We start with a fresh clone of the ns-3-linux sources.
 
 
 Makefile
-########
+--------
 
 First we need to modify the makefile in order to change the kernel downloaded.
 For that we need to modify the value of 2 variables:
@@ -279,7 +280,7 @@ For that we need to modify the value of 2 variables:
 Also we need to remove the patch target named **.target.ts** because the patch will not pass for this newer version of kernel. 
 
 First Build
-###########
+-----------
 
 Now we can try to build:
 
@@ -311,19 +312,19 @@ Now we can try to build:
 Ok now we will try to fix the compilation errors trying not to change too the kernel source. In the following we will list the main difficulties encountered.
 
 First Error
-###########
+-----------
 
 Recall: the linux source directory **include/asm-generic** contains a C reference implementation of some code that should be written in assembly langage for the target architecture. So this code is intented to help the developper to port to new architectures. 
 So our sim implementation use many of these **asm-generic** include files.
 The first warning show that our code redefine a method defined elsewhere in kernel sources, so the fix is to remove our definition of this function in opur file named **sim/include/asm/irqflags.h**.
 
 Second Error
-############
+------------
 
 The file **asm/barrier.h** is missing, we just create under sim/include/asm directory and the implementation is to include the generic one ie: **include/asm-generic/barrier.h**.
 
 Change in sim method
-####################
+--------------------
 
 Another problem arise the function named **kern_mount_data** defined in **sim/fs.c** do not compile any more. 
 So we need to investigate about this function:
@@ -340,7 +341,7 @@ So at this time we can comment the failing line and insert a **sim_assert (false
 Remark: **sim_assert (false);** is a macro used to crash the execution, we often place it in functions that we need to emulate because required by the linker but that should never be called.
 
 Change in our makefile
-######################
+----------------------
 
 After we have the following problem while compiling **sim/glue.c** the macro **IS_ENABLED** is not defined. After some search we found that we need to include **linux/kconfig.h** in many files. So we modify our makefile to fix like this:
 
@@ -360,7 +361,7 @@ After we have the following problem while compiling **sim/glue.c** the macro **I
  	perl $(SRCDIR)$(KERNEL_DIR)/kernel/timeconst.pl $(CONFIG_HZ) > $@
 
 Change in kernel source
-#######################
+-----------------------
 
 Our **sim/slab.c** do not compile, in this case we want to use our implementation of memory allocation and to do this it is easier to modify slightly an include file in the kernel sources **include/linux/slab.h** :
 
@@ -381,7 +382,7 @@ Our **sim/slab.c** do not compile, in this case we want to use our implementatio
 As we have already written we do not recommend to change the kernel sources to facilitate future upgrades.
 
 First Launch
-############
+------------
 
 After a few corrections we finally get a library containing the kernel named **liblinux-stable.so**. At this moment we need to try it using DCE. For the beginning we will try with ns3test-dce executable.
 
@@ -417,13 +418,13 @@ named **vmlinux-main**); we also need to indicate that we want only the object *
   +fs/_to_keep=read_write.o
 
 Fake Function
-#############
+-------------
 
 We continue to try our kernel library, now another symbol is missing **generic_file_aio_read**, this symbol is defined in the source **mm/filemap.cc**, it is referenced at least by **read_write.c**.
 In this case we decided to create a fake function because the source **mm/filemap.cc** is voluminous and we do not want to take all the kernel sources. So we create a new source under **sim** directory named **sim/filemap.c** the body of the function is  **sim_assert (false);** so if this function called sometimes we will be warned and we will write a more accurate version.
 
 Assert
-######
+------
 
 Later we meet again the function **kern_mount_data**, thanks to the presence of the sim_assert:
 
@@ -483,7 +484,7 @@ So this function is called by the initialisation, we must provide an implementat
 Here we do not want to integrate all the code namespace.c, so we copy and paste the function named **kern_mount_data**. This solution has the advantage of minimizing code size, the disadvantage is that it can introduce problems if the next version of the kernel need changes in this function.
 
 Conclusion
-**********
+==========
 
 We will not describe the rest of the port here. But after some iteration we end up with a version that works correctly. Sometimes we should not hesitate to use **gdb** to trace the actual execution and correct accordingly code.
 The rules that we can gain from this experience's are as follows:

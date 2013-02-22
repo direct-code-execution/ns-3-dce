@@ -1,3 +1,4 @@
+.. include:: replace.txt
 DCE - POLL IMPLEMENTATION
 *************************
 
@@ -20,7 +21,8 @@ The return integer of this function is a mask of poll events which have already 
 The behavior of this function is as follows:
 1. It is not a blocking function, it immediately returns the mask of events regardless of event desired by the caller of poll. 
 2. if **pwait** is not NULL then it add **pwait** in the wait queue of **file**, and secondly a pointer to the wait queue is stored in the poll table **pwait**.
-   Thus an event on the file will ascend to the poll, and in the opposite direction when the poll ends it can de-register itself from the wait queue of the file.
+
+Thus an event on the file will ascend to the poll, and in the opposite direction when the poll ends it can de-register itself from the wait queue of the file.
    
 Now that we know the function **poll** of **file**, we can study the **poll** system call, here the following pseudo code commented:
 
@@ -68,22 +70,16 @@ DCE implementation
 As we have already seen, the poll will look like that of the kernel.
 Firstly we create a virtual method named Poll in the class UnixFd.
 This method will do the same job that the function **poll** seen early in the struct file of the kernel linux implementation.
-Before writing the function dce_poll which is our implementation of poll we need to create some classes for mimic the role of the poll
- table and the wait queues.
+Before writing the function dce_poll which is our implementation of poll we need to create some classes for mimic the role of the poll table and the wait queues.
+
 So we add 2 sources files named wait-queue.h and wait-queue.cc in order to implements poll table and wait queue.
+
 It is also on this occasion that I deleted all the objects used to wait which was allocated on the stack, and I replaced by objects 
 allocated in the heap. 
 Concerning the dce-poll function it looks like the kernel one with some differences.
 The more important difference is that the PollTable can not be allocated on the stack so it cannot be a local variable, so the PollTable
- object
- is allocated with a C++ new. I guess you're wondering why the poll table can not be allocated on the stack, it is because of the 
- fork implementation of DCE.
-Indeed, if a process makes a fork, this creates another stack which use the same memory addresses, thus another thread of the
- same process can not 
- use an object allocated on this stack, and when a event of a file want to wake up the poll thread it will use especially this poll table.
-So allocating the Poll Table in the heap generates a side effect which is that we need to release this memory if another thread call exit while we are within the dce-poll.
-So we need to register the Poll Table somewhere in a DCE data, and the DCE place choosen is the thread struct (in file **model/process.h**), 
-because each thread can be in doing a poll. Thus there is a new field in struct thread which is:
+object is allocated with a C++ new. I guess you're wondering why the poll table can not be allocated on the stack, it is because of the fork implementation of DCE.
+Indeed, if a process makes a fork, this creates another stack which use the same memory addresses, thus another thread of the same process can not use an object allocated on this stack, and when a event of a file want to wake up the poll thread it will use especially this poll table. So allocating the Poll Table in the heap generates a side effect which is that we need to release this memory if another thread call exit while we are within the dce-poll. So we need to register the Poll Table somewhere in a DCE data, and the DCE place choosen is the thread struct (in file **model/process.h**), because each thread can be in doing a poll. Thus there is a new field in struct thread which is:
 
 ::
 
@@ -97,10 +93,10 @@ Poll kernel implementation
 
 Concerning the kernel implementation the dce-poll method is the same but the difference cames from the Poll method specialized 
 implementation of the class herited from UnixFd and which correspond to a File Descriptor open with the help of the Kernel Linux.
-For example the class LinuxSocketFd  represents a socket which is opened in the kernel, therefore the method **poll** of
- LinuxSocketFdFactory will do much work.
+For example the class LinuxSocketFd  represents a socket which is opened in the kernel, therefore the method **poll** of LinuxSocketFdFactory will do much work.
+
 Now look at the interface between DCE and the kernel, in the direction DCE to kernel, we use 2 functions which are **sock_poll** and
- **sock_pollfreewait**, and in the other direction there is **sim_poll_event**.
+**sock_pollfreewait**, and in the other direction there is **sim_poll_event**.
 **sock_poll** obviously has the same semantics as the kernel poll.
 **sock_poll** has the following signature:
  
@@ -108,7 +104,7 @@ Now look at the interface between DCE and the kernel, in the direction DCE to ke
  
     void sock_poll (struct SimSocket *s, void *ret);
     
-where **s** represents the socket int the kernel and **ret** is a pointer to a data structure of type **struct poll_table_ref:
+where **s** represents the socket int the kernel and **ret** is a pointer to a data structure of type **struct poll_table_ref**:
 
 ::
  
@@ -119,8 +115,7 @@ where **s** represents the socket int the kernel and **ret** is a pointer to a d
   };
 
 This structure allows the kernel to pass a reference to the poll table DCE via the opaque field.
-This reference will be used by the kernel only to warn DCE that event just happened on socket, this using the function
- **sim_poll_event (void *ref)**.
+This reference will be used by the kernel only to warn DCE that event just happened on socket, this using the function **sim_poll_event (void \*ref)**.
 In return this function modifies the value of opaque and assign it a pointer to a core structure which represents an 
 entry in the wait queue of the socket. This value will be used by DCE for unregister it from the wait queue using the function 
 **sock_pollfreewait function (void * ref)**.
