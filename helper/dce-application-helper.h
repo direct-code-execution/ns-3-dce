@@ -9,13 +9,36 @@
 
 namespace ns3 {
 
+/**
+ * \brief Configuration helper for the application executed with DCE.
+ *
+ */
 class DceApplicationHelper
 {
 public:
+  /**
+   * Construct a DceApplicationHelper
+   */
   DceApplicationHelper ();
+
+  /**
+   * \param filename the name of executable file to run
+   */
   void SetBinary (std::string filename);
+
+  /**
+   * \param stackSize stack size for this application.
+   */
   void SetStackSize (uint32_t stackSize);
+
+  /**
+   * \param filename specify the filename to use as a stdin
+   */
   void SetStdinFile (std::string filename);
+
+  /**
+   * \param arg add an argument for the main executable
+   */
   void AddArgument (std::string arg);
   void AddArguments (std::string a0, std::string a1);
   void AddArguments (std::string a0, std::string a1, std::string a2);

@@ -8,6 +8,8 @@ import sys
 import types
 # local modules
 import wutils
+import subprocess
+import Logs
 
 def options(opt):
     opt.tool_options('compiler_cc') 
@@ -109,6 +111,11 @@ def configure(conf):
     
     if Options.options.with_elf_loader is not None and os.path.isdir(Options.options.with_elf_loader):
          conf.env['ELF_LOADER_PATH'] = Options.options.with_elf_loader
+
+    try:
+        conf.find_program('doxygen', var='DOXYGEN')
+    except WafError:
+        pass
 
     conf.recurse(os.path.join('utils'))
     ns3waf.print_feature_summary(conf)
@@ -568,6 +575,49 @@ def build(bld):
                 gen.post()
         bld.env['PRINT_BUILT_MODULES_AT_END'] = False 
 
+def _doxygen(bld):
+    env = wutils.bld.env
+    proc_env = wutils.get_proc_env()
+
+    if not env['DOXYGEN']:
+        Logs.error("waf configure did not detect doxygen in the system -> cannot build api docs.")
+        raise SystemExit(1)
+        return
+
+    # try:
+    #     program_obj = wutils.find_program('print-introspected-doxygen', env)
+    # except ValueError: 
+    #     Logs.warn("print-introspected-doxygen does not exist")
+    #     raise SystemExit(1)
+    #     return
+
+    # prog = program_obj.path.find_or_declare(program_obj.target).abspath()
+
+    # if not os.path.exists(prog):
+    #     Logs.error("print-introspected-doxygen has not been built yet."
+    #                " You need to build ns-3 at least once before "
+    #                "generating doxygen docs...")
+    #     raise SystemExit(1)
+
+    # # Create a header file with the introspected information.
+    # doxygen_out = open(os.path.join('doc', 'introspected-doxygen.h'), 'w')
+    # if subprocess.Popen([prog], stdout=doxygen_out, env=proc_env).wait():
+    #     raise SystemExit(1)
+    # doxygen_out.close()
+
+    # # Create a text file with the introspected information.
+    # text_out = open(os.path.join('doc', 'ns3-object.txt'), 'w')
+    # if subprocess.Popen([prog, '--output-text'], stdout=text_out, env=proc_env).wait():
+    #     raise SystemExit(1)
+    # text_out.close()
+
+    #_getVersion()
+    doxygen_config = os.path.join('doc', 'doxygen.conf')
+    if subprocess.Popen([env['DOXYGEN'], doxygen_config]).wait():
+        Logs.error("Doxygen build returned an error.")
+        raise SystemExit(1)
+
+
 from waflib import Context, Build
 class Ns3ShellContext(Context.Context):
     """run a shell with an environment suitably modified to run locally built programs"""
@@ -596,6 +646,49 @@ class Ns3ShellContext(Context.Context):
             'NS3_EXECUTABLE_PATH': os.pathsep.join(env['NS3_EXECUTABLE_PATH']),
             }
         wutils.run_argv([shell], env, os_env)
+
+class Ns3DoxygenContext(Context.Context):
+    """do a full build, generate the introspected doxygen and then the doxygen"""
+    cmd = 'doxygen'
+    def execute(self):
+        # first we execute the build
+	bld = Context.create_context("build")
+	bld.options = Options.options # provided for convenience
+	bld.cmd = "build"
+	bld.execute()
+        _doxygen(bld)
+
+from waflib import Context, Build
+class Ns3SphinxContext(Context.Context):
+    """build the Sphinx documentation: manual, tutorial, models"""
+    
+    cmd = 'sphinx'
+
+    def sphinx_build(self, path):
+        print
+        print "[waf] Building sphinx docs for " + path
+        if subprocess.Popen(["make", "SPHINXOPTS=-N", "-k",
+                             "html", "singlehtml", "latexpdf" ],
+                            cwd=path).wait() :
+            Logs.error("Sphinx build of " + path + " returned an error.")
+            raise SystemExit(1)
+
+    def execute(self):
+        #_getVersion()
+        for sphinxdir in [""] :
+            self.sphinx_build(os.path.join("doc", sphinxdir))
+     
+
+from waflib import Context, Build
+class Ns3DocContext(Context.Context):
+    """build all the documentation: doxygen, manual, tutorial, models"""
+    
+    cmd = 'docs'
+
+    def execute(self):
+        steps = ['doxygen', 'sphinx']
+        Options.commands = steps + Options.commands
+        
 
 def shutdown(ctx):
     bld = wutils.bld

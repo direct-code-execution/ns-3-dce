@@ -15,4 +15,5 @@ glob:**/files-*
 ^NetAnim
 \.pyc$
 testpy-output
-
+doxygen.log
+doc/html

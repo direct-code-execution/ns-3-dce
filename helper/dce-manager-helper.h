@@ -10,31 +10,54 @@
 
 namespace ns3 {
 
-/* Container of information of a DCE finished process */
+/**
+ * \brief Container of information of a DCE finished process
+ *
+ */
 class ProcStatus
 {
 public:
   ProcStatus (int n, int e, int p, int64_t ns, int64_t ne, long rs, long re, double nd, long rd, std::string cmd);
 
-  /* node ID */
+  /**
+   * returns node ID information
+   */
   int GetNode (void) const;
-  /* exit code */
+  /**
+   * returns exit code
+   */
   int GetExitCode (void) const;
-  /* Simulated pid */
+  /**
+   * returns Simulated pid
+   */
   int GetPid (void) const;
-  /* Start Time in Simulated Time the unit is nanoseconds */
+  /**
+   * returns Start Time in Simulated Time the unit is nanoseconds
+   */
   int64_t GetSimulatedStartTime (void) const;
-  /* End Time in Simulated Time the unit is nanoseconds */
+  /**
+   * returns End Time in Simulated Time the unit is nanoseconds
+   */
   int64_t GetSimulatedEndTime (void) const;
-  /* Real Start Time (time_t) */
+  /**
+   * returns Real Start Time (time_t)
+   */
   long GetRealStartTime (void) const;
-  /* Real End Time  */
+  /**
+   * returns Real End Time
+   */
   long GetRealEndTime (void) const;
-  /* Simulated duration in seconds */
+  /**
+   * returns Simulated duration in seconds
+   */
   double GetSimulatedDuration (void) const;
-  /* real duration in seconds */
+  /**
+   * returns real duration in seconds
+   */
   long GetRealDuration (void) const;
-  /* Command Line argv[] */
+  /**
+   * returns Command Line argv[]
+   */
   std::string GetCmdLine (void) const;
 
 private:
@@ -50,29 +73,120 @@ private:
   std::string m_cmdLine;
 };
 
+/**
+ * \brief configure required instances for DCE-capable nodes
+ *
+ */
 class DceManagerHelper : public Object
 {
 public:
   static TypeId GetTypeId (void);
   virtual TypeId GetInstanceTypeId (void) const;
+
+  /**
+   * Construct a DceManagerHelper
+   */
   DceManagerHelper ();
+
+  /**
+   * \param type the name of the TaskScheduler to set
+   * \param n0 the name of the attribute to set to the TaskScheduler
+   * \param v0 the value of the attribute to set to the TaskScheduler
+   * \param n1 the name of the attribute to set to the TaskScheduler
+   * \param v1 the value of the attribute to set to the TaskScheduler
+   *
+   * Set these attributes on each ns3::TaskScheduler
+   */
   void SetScheduler (std::string type,
                      std::string n0 = "", const AttributeValue &v0 = EmptyAttributeValue (),
                      std::string n1 = "", const AttributeValue &v1 = EmptyAttributeValue ());
+
+  /**
+   * \param type the name of the ProcessDelayModel to set
+   * (ns3::RandomProcessDelayModel and ns3::TimeOfDayProcessDelayModel are available)
+   * \param n0 the name of the attribute to set to the ProcessDelayModel
+   * \param v0 the value of the attribute to set to the ProcessDelayModel
+   * \param n1 the name of the attribute to set to the ProcessDelayModel
+   * \param v1 the value of the attribute to set to the ProcessDelayModel
+   *
+   * Set these attributes on each ns3::ProcessDelayModel
+   */
   void SetDelayModel (std::string type,
                       std::string n0 = "", const AttributeValue &v0 = EmptyAttributeValue (),
                       std::string n1 = "", const AttributeValue &v1 = EmptyAttributeValue ());
+
+  /**
+   * \param n0 the name of the attribute to set to the ns3::TaskManager
+   * \param v0 the value of the attribute to set to the ns3::TaskManager
+   *
+   * Set these attributes on each ns3::TaskManager
+   */
   void SetTaskManagerAttribute (std::string n0, const AttributeValue &v0);
+
+  /**
+   * \param type the name of loader set to the ns3::LoaderFactory
+   (ns3::CoojaLoaderFactory[] and ns3::DlmLoaderFactory[] are available)
+   *
+   */
   void SetLoader (std::string type);
+
+  /**
+   * \param type the name of the ns3::SocketFdFactory to set
+   * (ns3::Ns3SocketFdFactory and ns3::LinuxSocketFdFactory are available)
+   * \param n0 the name of the attribute to set to the ns3::SocketFdFactory
+   * \param v0 the value of the attribute to set to the ns3::SocketFdFactory
+   *
+   * Set these attributes on each ns3::SocketFdFactory
+   */
   void SetNetworkStack (std::string type,
                         std::string n0 = "", const AttributeValue &v0 = EmptyAttributeValue ());
+
+  /**
+   * \param n1 the name of the attribute to set to the ns3::DceManager
+   * \param v1 the value of the attribute to set to the ns3::DceManager
+   *
+   * Set these attributes on each ns3::DceManager
+   */
   void SetAttribute (std::string n1, const AttributeValue &v1);
+
+  /**
+   * \param nodes a set of nodes
+   *
+   * This method creates all of DCE related instances to run an applicaion 
+   * binary on nodes.
+   */
   void Install (NodeContainer nodes);
-  // Path used by simulated methods 'execvp' and 'execlp'
+
+  /**
+   * \param p the name of path
+   *
+   * This method configures the path used by simulated methods
+   * 'execvp' and 'execlp'
+   */
   void SetVirtualPath (std::string p);
+
+  /**
+   * This method returns the path used by simulated methods
+   * 'execvp' and 'execlp'
+   */
   std::string GetVirtualPath () const;
-  /* Return a Vector of Finished Process */
+  
+  /**
+   *
+   * This method returns a Vector of process information 
+   * that are already finished.
+   */
   static std::vector<ProcStatus> GetProcStatus (void);
+
+  /**
+   * \param node a node to configure route information
+   * \param dest destination address for a route information
+   * \param mask network mask for a route information
+   * \param gateway gateway address for a route information
+   * \param metric a metric value
+   *
+   * This method configures a route information for Linux kernel on the node.
+   */
   void AddRoute (Ptr<Node> node, std::string dest, std::string mask, std::string gateway, int metric);
 
 private:
