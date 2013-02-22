@@ -1424,7 +1424,7 @@ def run_tests():
             if len(dce_runner_path):
                 job.set_shell_command("" + dce_runner_path + " " + example_path)
             else:
-                job.set_shell_command(example_path)
+                job.set_shell_command("bin/" + example_path)
             job.set_build_path(options.buildpath)
 
             if options.verbose:

@@ -67,7 +67,7 @@ def configure(conf):
         if not 'PKG_CONFIG_PATH' in os.environ:
             os.environ['PKG_CONFIG_PATH']= os.path.join(Options.options.with_ns3, 'lib', 'pkgconfig')
         else:
-            os.environ['PKG_CONFIG_PATH']+= os.path.join(Options.options.with_ns3, 'lib', 'pkgconfig')
+            os.environ['PKG_CONFIG_PATH']+= ":" + os.path.join(Options.options.with_ns3, 'lib', 'pkgconfig')
 
     ns3waf.check_modules(conf, ['core', 'network', 'internet'], mandatory = True)
     ns3waf.check_modules(conf, ['point-to-point', 'tap-bridge', 'netanim'], mandatory = False)
@@ -244,10 +244,6 @@ def build_dce_examples(module, bld):
                        target='bin/dce-udp-simple',
                        source=['example/dce-udp-simple.cc'])
     
-    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point'], 
-                       target='bin/dce-udp-perf',
-                       source=['example/dce-udp-perf.cc'])
-
     module.add_example(needed = ['core', 'internet', 'dce'], 
                        target='bin/dce-ccnd-simple',
                        source=['example/ccnx/dce-ccnd-simple.cc'])
@@ -292,6 +288,10 @@ def build_dce_examples(module, bld):
 #                       source=['example/dce-cout-bug.cc'])
                                                                 
 def build_dce_kernel_examples(module):
+    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point'], 
+                       target='bin/dce-udp-perf',
+                       source=['example/dce-udp-perf.cc'])
+
     module.add_example(needed = ['core', 'network', 'dce'], 
                        target='bin/dce-linux-simple',
                        source=['example/dce-linux-simple.cc'])
@@ -497,7 +497,8 @@ def build(bld):
     bld.install_files('${PREFIX}/bin', 'build/bin/ns3test-dce', chmod=0755 )
     bld.install_files('${PREFIX}/bin', 'build/bin/ns3test-dce-vdl', chmod=0755 )
 
-    build_dce_kernel_examples(module)
+    if bld.env['KERNEL_STACK']:
+        build_dce_kernel_examples(module)
     
     bld.build_a_script = types.MethodType(build_a_script, bld)
 
