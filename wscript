@@ -10,6 +10,7 @@ import types
 import wutils
 import subprocess
 import Logs
+from waflib.Errors import WafError
 
 def options(opt):
     opt.tool_options('compiler_cc') 
