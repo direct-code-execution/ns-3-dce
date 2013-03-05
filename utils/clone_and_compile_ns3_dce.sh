@@ -96,7 +96,7 @@ if [ "YES" == "$USE_KERNEL" ]
 then
     WAF_KERNEL=--enable-kernel-stack=`pwd`/../ns-3-linux
 fi
-./waf configure --prefix=`pwd`/../build --verbose $WAF_KERNEL $MPI_SWITCH $OPT_SWITCH
+./waf configure --with-ns3=`pwd`/../build --prefix=`pwd`/../build --verbose $WAF_KERNEL $MPI_SWITCH $OPT_SWITCH
 ./waf
 ./waf install
 export LD_LIBRARY_PATH=$SAVE_LDLP:`pwd`/build/lib:`pwd`/build/bin:`pwd`/../build/lib
