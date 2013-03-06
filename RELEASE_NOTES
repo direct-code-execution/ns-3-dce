@@ -1,0 +1,30 @@
+
+		ns-3-dce RELEASE NOTES
+
+This file contains Direct Code Execution release notes (most recent releases first).  
+
+Please refer the page http://www.nsnam.org/projects/direct-code-execution/ for detailed instructions
+
+Release 1.0
+=============
+
+Availability
+------------
+Please use the following to download using mercurial:
+hg clone http://code.nsnam.org/ns-3-dce
+
+Supported platforms
+-------------------
+- Fedora Core 15 
+- Ubuntu 10.04
+
+New user-visible features
+-------------------------
+- 
+
+Bugs fixed
+----------
+- 
+
+Known issues
+------------
