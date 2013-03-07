@@ -496,7 +496,8 @@ def build(bld):
                            name='netlink')
 
     bld.install_files('${PREFIX}/bin', 'build/bin/ns3test-dce', chmod=0755 )
-    bld.install_files('${PREFIX}/bin', 'build/bin/ns3test-dce-vdl', chmod=0755 )
+    if bld.env['ELF_LOADER_PATH']:
+        bld.install_files('${PREFIX}/bin', 'build/bin/ns3test-dce-vdl', chmod=0755 )
 
     if bld.env['KERNEL_STACK']:
         build_dce_kernel_examples(module)
