@@ -6,6 +6,8 @@
 #include <linux/rtnetlink.h>
 #include <errno.h>
 #include <sys/select.h>
+#include <sys/ioctl.h>
+#include <sys/time.h>
 #include <pthread.h>
 #include <netinet/ip.h>
 #include <unistd.h>
@@ -448,8 +450,66 @@ void test_netlink (void)
 
 }
 
+// The following test checks for the timestamp of the received data
+void test_timestamp ()
+{
+  int sock;
+  const char buf[12] = "0123456789\0";
+  struct msghdr msg;
+  struct iovec iov[2];
+  static struct sockaddr_in dst;
+  struct timeval recv_time;
+  int on = 1;
+  int ret = 0;
+
+  // ICMP Raw sock
+  sock = socket (AF_INET, SOCK_RAW, IPPROTO_ICMP);
+  TEST_ASSERT_UNEQUAL (sock, -1);
+
+  // sockopt IP_PKTINFO
+  ret = setsockopt (sock, IPPROTO_IP, IP_PKTINFO, &on, sizeof (on));
+  TEST_ASSERT_UNEQUAL (sock, -1);
+
+  // sendmsg
+  memset (&dst, 0, sizeof (dst));
+  dst.sin_family = AF_INET;
+  dst.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
+
+  iov[0].iov_base = (void *) buf;
+  iov[0].iov_len = sizeof (buf);
+  msg.msg_name = &dst;
+  msg.msg_namelen = sizeof (dst);
+  msg.msg_iov = &iov[0];
+  msg.msg_iovlen = 1;
+  msg.msg_control = NULL;
+  msg.msg_controllen = 0;
+
+  ret = sendmsg (sock, &msg, 0);
+  TEST_ASSERT_EQUAL (ret, sizeof (buf));
+  OUTPUT ("RAW send ret = " << ret);
+
+  // recvmsg with MSG_PEEK
+  iov[0].iov_base = (void *) buf;
+  iov[0].iov_len = 2;
+  ret = recvmsg (sock, &msg, MSG_PEEK);
+  TEST_ASSERT_EQUAL (ret, 2);
+  OUTPUT ("RAW recv PEEK ret = " << ret);
+
+  if (0 == ioctl(sock, SIOCGSTAMP, &recv_time))
+    {
+      struct timeval now;
+
+      // On LinuxKernel supports SIOCGSTAMP
+      // the ioctl time must be very close to now !
+      gettimeofday(&now, NULL);
+      OUTPUT ("Now seconds : " << now.tv_sec << " and timestamp : " << recv_time.tv_sec );
+      TEST_ASSERT ( abs(recv_time.tv_sec - now.tv_sec) < 2 );
+    }
+}
+
 int main (int argc, char *argv[])
 {
+  test_timestamp ();
   test_raw ();
   test_raw6 ();
   test_udp ();
