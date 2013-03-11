@@ -60,7 +60,7 @@ void test_raw (void)
   // recvmsg
   struct in_pktinfo *pktinfo;
   struct cmsghdr *cmsg;
-  char cbuff [sizeof (*cmsg) + sizeof (*pktinfo)];
+  char cbuff [CMSG_SPACE (sizeof (struct in_pktinfo))];
   char buf2[32];
   iov[0].iov_base = (void *) buf2;
   iov[0].iov_len = sizeof (buf2);
@@ -69,7 +69,7 @@ void test_raw (void)
   msg.msg_iov = &iov[0];
   msg.msg_iovlen = 1;
   msg.msg_control = cbuff;
-  msg.msg_controllen = CMSG_SPACE (sizeof (struct in_pktinfo));
+  msg.msg_controllen = sizeof (cbuff);
   ret = recvmsg (sock, &msg, 0);
   TEST_ASSERT_EQUAL (ret, sizeof (buf2));
   OUTPUT ("RAW recv ret = " << ret);
