@@ -42,8 +42,9 @@ then you must to create a directory for DCE and install it using bake:
 
   $ mkdir dce
   $ cd dce
-  $ bake.py configure -e dce-ns3
-  $ bake.py install
+  $ ../bake.py configure -e dce-ns3
+  $ ../bake.py download
+  $ ../bake.py build
  
 the output should look likes this:
 
@@ -77,8 +78,9 @@ The difference to build the advanced mode is the different module name *dce-linu
 
   $ mkdir dce
   $ cd dce
-  $ bake.py configure -e dce-linux
-  $ bake.py install
+  $ ../bake.py configure -e dce-linux
+  $ ../bake.py download
+  $ ../bake.py build
 
 
 Examples

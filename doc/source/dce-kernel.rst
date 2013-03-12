@@ -222,7 +222,7 @@ Use DCE unit test:
 
 ::
   
-  $ ./build/bin/ns3test-dce --verbose
+  $ ./waf --run "test-runner --verbose"
   PASS process-manager 9.470ms
   PASS Check that process "test-empty" completes correctly. 0.920ms
   PASS Check that process "test-sleep" completes correctly. 0.080ms
@@ -384,11 +384,11 @@ As we have already written we do not recommend to change the kernel sources to f
 First Launch
 ------------
 
-After a few corrections we finally get a library containing the kernel named **liblinux-stable.so**. At this moment we need to try it using DCE. For the beginning we will try with ns3test-dce executable.
+After a few corrections we finally get a library containing the kernel named **liblinux-stable.so**. At this moment we need to try it using DCE. For the beginning we will try with test-runner executable.
 
 ::
 
-  $BASEDCE/build/bin/ns3test-dce
+  ./test.py
   assert failed. cond="handle != 0", msg="Could not open elf-cache/0/libnet-next-2.6.so elf-cache/0/liblinux-stable.so: undefined symbol: noop_llseek", file=../model/cooja-loader-factory.cc, line=225
   terminate called without an active exception
   Aborted (core dumped)
