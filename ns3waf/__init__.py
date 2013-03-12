@@ -265,7 +265,8 @@ def _build_library(bld, name, *k, **kw):
     ccdefines = ['NS3_MODULE_COMPILATION']
     cxxdefines = ['NS3_MODULE_COMPILATION']
     includes = _dirs(source)
-    target = os.path.join('lib', 'ns3-%s' % name)
+    out_relpath = os.path.relpath(bld.out_dir, str(bld.out_dir) + "/" + bld.path.relpath_gen(bld.srcnode))
+    target = os.path.join(out_relpath, 'lib', 'ns3-%s' % name)
     if not bld.env['NS3_ENABLE_STATIC']:
         if bld.env['CXX_NAME'] in ['gcc', 'icc'] and bld.env['WL_SONAME_SUPPORTED']:
             linkflags.append('-Wl,--soname=%s' % _c_libname(bld, name))
@@ -430,24 +431,26 @@ class Module:
         kw['use'] = kw.get('use', []) + modules_uselib(self._bld, needed)
         if 'features' not in kw:
             kw['features'] = 'cxx cxxprogram'
-        self._bld(**kw)
+        program = self._bld(**kw)
+
         if kw['target'].find("bin_dce") == -1:
             object_name = "%s" % (kw['target'])
             object_name = os.path.basename(object_name)
+            program.is_ns3_program = True
             self._bld.env.append_value('NS3_RUNNABLE_PROGRAMS', object_name)
 
     def add_runner_test(self, needed = [], name = None, **kw):
         import os
-        import tempfile
-        runner_filename = 'utils/test-runner.cc'
         if not name is None:
-            target='ns3test-%s-%s' % (self._name, name)
+            target='%s-test-%s' % (self._name, name)
         else:
-            target='ns3test-%s' % self._name
-        target = os.path.join('bin', target)
+            target='%s-test' % (self._name)
         kw['target'] = target
-        kw['source'] = kw['source'] + [os.path.relpath(runner_filename, self._bld.srcnode.abspath())]
-        self.add_test(needed, **kw)
+        kw['use'] = kw.get('use', []) + modules_uselib(self._bld, needed)
+        _build_library(self._bld, target, **kw)
+
+        out_relpath = os.path.relpath(self._bld.out_dir, str(self._bld.out_dir) + "/" + self._bld.path.relpath_gen(self._bld.srcnode))
+        self._bld.env.append_value('NS3_ENABLED_MODULE_TEST_LIBRARIES', out_relpath + "/lib/ns3-"+target)
 
         if kw['target'].find("bin_dce") == -1:
             object_name = "%s" % (kw['target'])
@@ -487,7 +490,13 @@ class Module:
         kw['install_path'] = None
         if 'features' not in kw:
             kw['features'] = 'cxx cxxprogram'
-        self._bld(**kw)
+        program = self._bld(**kw)
+
+        if kw['target'].find("bin_dce") == -1:
+            object_name = "%s" % (kw['target'])
+            object_name = os.path.basename(object_name)
+            program.is_ns3_program = True
+            self._bld.env.append_value('NS3_RUNNABLE_PROGRAMS', object_name)
 
 
 def create_module(bld, name, *k, **kw):

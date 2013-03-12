@@ -28,6 +28,7 @@ import signal
 import xml.dom.minidom
 import shutil
 import re
+import glob
 
 from utils import get_list_from_file
 
@@ -76,7 +77,7 @@ PYTHON = ""
 # This will be given a prefix and a suffix when the waf config file is
 # read.
 #
-test_runner_name = "ns3test-dce"
+test_runner_name = "test-runner"
 
 #
 # If the user has constrained us to run certain kinds of tests, we can tell waf
@@ -1004,11 +1005,11 @@ def run_tests():
     # match what is done in the wscript file.
     #
     if not len(options.test_runner_name):
-        test_runner_name = "ns3test-dce"
+        test_runner_name = "test-runner"
     else:
         test_runner_name = options.test_runner_name
 
-    if test_runner_name == "ns3test-dce-vdl":
+    if test_runner_name == "test-runner-vdl":
         # set dce-runner path
         dce_runner_path = os.path.join (os.path.dirname(os.path.abspath(__file__)), 'build', 'bin', 'dce-runner')
     else:
@@ -1108,6 +1109,22 @@ def run_tests():
         example_directory    = os.path.join(module_directory, "examples")
         examples_to_run_path = os.path.join(module_directory, "test", "examples-to-run.py")
         cpp_executable_dir   = os.path.join(NS3_BUILDDIR, example_directory)
+        python_script_dir    = os.path.join(example_directory)
+
+        # Parse this module's file.
+        parse_examples_to_run_file(
+            examples_to_run_path,
+            cpp_executable_dir,
+            python_script_dir,
+            example_tests,
+            python_tests)
+
+    # myscripts sub directories retrieve
+    for sub in glob.glob('myscripts/*/example'):
+        # Set the directories and paths for this example. 
+        example_directory    = os.path.join(sub)
+        examples_to_run_path = os.path.join(sub, "examples-to-run.py")
+        cpp_executable_dir   = os.path.join(NS3_BUILDDIR, sub.replace('example', ''), "bin")
         python_script_dir    = os.path.join(example_directory)
 
         # Parse this module's file.
@@ -1424,7 +1441,12 @@ def run_tests():
             if len(dce_runner_path):
                 job.set_shell_command("" + dce_runner_path + " " + example_path)
             else:
-                job.set_shell_command("bin/" + example_path)
+                example_path = "bin/" + example_path
+                if os.path.exists(NS3_BUILDDIR + "/" + example_path) is False:
+                    # try to find myscripts directory
+                    example_path = glob.glob(NS3_BUILDDIR + '/myscripts/*/bin/' + example_name)[0]
+                    example_path.replace(NS3_BUILDDIR, "")
+                job.set_shell_command(example_path)
             job.set_build_path(options.buildpath)
 
             if options.verbose:
@@ -1809,7 +1831,7 @@ def main(argv):
                       metavar="XML-FILE",
                       help="write detailed test results into XML-FILE.xml")
 
-    parser.add_option("-z", "--runner_name", action="store", type="string", dest="test_runner_name", default="ns3test-dce",
+    parser.add_option("-z", "--runner_name", action="store", type="string", dest="test_runner_name", default="test-runner",
                       help="specify runner program name")
 
     global options

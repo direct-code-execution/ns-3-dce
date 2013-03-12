@@ -53,8 +53,8 @@ def find_program(program_name, env):
     #top_dir = os.path.abspath(Options.cwd_launch)
     found_programs = []
     for obj in bld.all_task_gen:
-        #if not getattr(obj, 'is_ns3_program', False):
-        #    continue
+        if not getattr(obj, 'is_ns3_program', False):
+            continue
 
         ## filter out programs not in the subtree starting at the launch dir
         if not (obj.path.abspath().startswith(launch_dir)

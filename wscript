@@ -161,11 +161,6 @@ def dce_kw(**kw):
 def build_dce_tests(module, bld, kern):
     module.add_runner_test(needed=['core', 'dce', 'internet'],  
                            source=['test/dce-manager-test.cc'])
-    if bld.env['ELF_LOADER_PATH']:
-        module.add_runner_test(needed=['core', 'dce', 'internet'],
-                               source=['test/dce-manager-test.cc'],
-                               linkflags = ['-Wl,--dynamic-linker=' + os.path.abspath (bld.env['ELF_LOADER_PATH'] + '/ldso')], 
-                               name='vdl')
 
     module.add_test(features='cxx cxxshlib', source=['test/test-macros.cc'], 
                     target='lib/test', linkflags=['-Wl,-soname=libtest.so'])
@@ -495,16 +490,24 @@ def build(bld):
                            source=['test/netlink-socket-test.cc'],
                            name='netlink')
 
-    bld.install_files('${PREFIX}/bin', 'build/bin/ns3test-dce', chmod=0755 )
-    if bld.env['ELF_LOADER_PATH']:
-        bld.install_files('${PREFIX}/bin', 'build/bin/ns3test-dce-vdl', chmod=0755 )
-
     if bld.env['KERNEL_STACK']:
         build_dce_kernel_examples(module)
     
     bld.build_a_script = types.MethodType(build_a_script, bld)
 
     add_myscripts(bld)
+    # build test-runner
+    module.add_test(**dce_kw(target='bin/test-runner', 
+                             source = ['utils/test-runner.cc'],
+                             use = bld.env['NS3_ENABLED_MODULE_TEST_LIBRARIES'],
+                             needed = ['core']))
+    bld.env.append_value('NS3_RUNNABLE_PROGRAMS', 'bin/test-runner')
+    if bld.env['ELF_LOADER_PATH']:
+        module.add_test(**dce_kw(target='bin/test-runner-vdl', 
+                                 source = ['utils/test-runner.cc'],
+                                 use = bld.env['NS3_ENABLED_MODULE_TEST_LIBRARIES'],
+                                 linkflags = ['-Wl,--dynamic-linker=' + os.path.abspath (bld.env['ELF_LOADER_PATH'] + '/ldso')], 
+                                 needed = ['core']))
 
     bld.add_group('dce_version_files')
     
@@ -671,6 +674,7 @@ class Ns3SphinxContext(Context.Context):
         print
         print "[waf] Building sphinx docs for " + path
         if subprocess.Popen(["make", "SPHINXOPTS=-N", "-k",
+                             "BUILDDIR=" + os.getcwd () + "/doc/build/" + os.path.basename(path.replace("/doc" ,"")),
                              "html", "singlehtml", "latexpdf" ],
                             cwd=path).wait() :
             Logs.error("Sphinx build of " + path + " returned an error.")
@@ -678,8 +682,9 @@ class Ns3SphinxContext(Context.Context):
 
     def execute(self):
         #_getVersion()
-        for sphinxdir in [""] :
-            self.sphinx_build(os.path.join("doc", sphinxdir))
+        import glob
+        for sphinxdir in ["./doc"] + glob.glob('myscripts/*/doc') :
+            self.sphinx_build(sphinxdir)
      
 
 from waflib import Context, Build

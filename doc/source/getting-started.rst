@@ -149,7 +149,7 @@ Once you successfully installed DCE with bake, you can execute the example using
 ::
 
   $ cd source/dce
-  $ ./waf --run dce-ipef
+  $ ./waf --run dce-iperf
   
 As we saw in the previous example the experience creates directories containing the outputs of different executables,
 take a look at the server (node 1) output:
@@ -195,7 +195,7 @@ if you have already built the advanced mode, you can use Linux network stack ove
 ::
 
   $ cd source/dce
-  $ ./waf --run "dce-ipef --kernel=1"
+  $ ./waf --run "dce-iperf --kernel=1"
 
 the command line option **--kernel=1** makes the simulation use the Linux kernel stack instead of |ns3| network stack.
 
