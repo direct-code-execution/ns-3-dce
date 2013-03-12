@@ -468,7 +468,7 @@ UnixSocketFd::Setsockopt (int level, int optname,
       break;
     default:
       {
-        std::cout << "Unsupported sockopt\n";
+        NS_LOG_WARN ("Unsupported sockopt: level = " << level);
         current->err = ENOPROTOOPT;
         return -1;
       } break;
