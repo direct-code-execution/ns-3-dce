@@ -309,6 +309,7 @@ public:
   virtual void DeleteRawSocket (Ptr<Socket> socket);
 
   static void InstallNode (Ptr<Node> node);
+  void PopulateRoutingTable ();
 
 private:
   // Indirect the Ipv4 attributes through private pure virtual methods
@@ -324,6 +325,7 @@ private:
   bool m_ipForward;
   bool m_weakEsModel;
   Ipv4InterfaceList m_interfaces;
+  uint64_t m_nanoSec;
 };
 }
 #endif // IPV4_LINUX_H

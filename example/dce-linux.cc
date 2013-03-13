@@ -106,6 +106,7 @@ int main (int argc, char *argv[])
   DceManagerHelper processManager;
   // processManager.SetLoader ("ns3::DlmLoaderFactory");
   processManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
+  processManager.Install (nodes);
   LinuxStackHelper stack;
   stack.Install (nodes);
 
@@ -113,8 +114,8 @@ int main (int argc, char *argv[])
   address.SetBase ("10.0.0.0", "255.255.255.0");
   Ipv4InterfaceContainer interfaces = address.Assign (devices);
 
-  processManager.Install (nodes);
-
+  Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+  LinuxStackHelper::PopulateRoutingTables ();
 
   for (int n = 0; n < 2; n++)
     {

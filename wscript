@@ -158,7 +158,7 @@ def dce_kw(**kw):
     d['linkflags'] = d.get('linkflags', []) + ['-pie'] + ['-lrt'] + debug_dl
     return d
 
-def build_dce_tests(module, bld, kern):
+def build_dce_tests(module, bld):
     module.add_runner_test(needed=['core', 'dce', 'internet'],  
                            source=['test/dce-manager-test.cc'])
 
@@ -480,7 +480,7 @@ def build(bld):
                                   includes=kernel_includes,
                                   lib=['dl'])
 #                                  lib=['dl','efence'])
-    build_dce_tests(module, bld, bld.env['KERNEL_STACK'])
+    build_dce_tests(module, bld)
     build_dce_examples(module, bld)
 
     # no idea to solve this two-way dependency (dce <-> netlink)

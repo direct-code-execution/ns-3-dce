@@ -25,12 +25,28 @@
 #include "ns3/ipv4-static-routing-helper.h"
 #include "ns3/ipv4-global-routing-helper.h"
 #include "ns3/ipv4-interface.h"
+#include "ns3/ipv4-global-routing.h"
+#include "ns3/ipv4-routing-table-entry.h"
+#include "ns3/dce-application-helper.h"
 
 NS_LOG_COMPONENT_DEFINE ("Ipv4Linux");
 
 namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (Ipv4Linux);
+
+static void
+RunIp (Ptr<Node> node, Time at, std::string str)
+{
+  DceApplicationHelper process;
+  ApplicationContainer apps;
+  process.SetBinary ("ip");
+  process.SetStackSize (1 << 16);
+  process.ResetArguments ();
+  process.ParseArguments (str.c_str ());
+  apps = process.Install (node);
+  apps.Start (at);
+}
 
 TypeId
 Ipv4Linux::GetTypeId (void)
@@ -43,6 +59,7 @@ Ipv4Linux::GetTypeId (void)
 }
 
 Ipv4Linux::Ipv4Linux ()
+  : m_nanoSec (0)
 {
   NS_LOG_FUNCTION (this);
 }
@@ -255,6 +272,18 @@ Ipv4Linux::AddAddress (uint32_t i, Ipv4InterfaceAddress address)
     {
       m_routingProtocol->NotifyAddAddress (i, address);
     }
+
+  std::ostringstream oss;
+  Ptr<Node> node = this->GetObject<Node> ();
+  oss << "-f inet addr add ";
+  address.GetLocal ().Print (oss);
+  oss << '/' << address.GetMask ().GetPrefixLength () << " dev sim" << i;
+  RunIp (node, NanoSeconds (++m_nanoSec), oss.str ());
+  oss.str ("");
+  oss << "link set sim" << i << " up arp " 
+      << ((interface->GetDevice ()->IsPointToPoint ()) ? "off" : "on");
+  RunIp (node, NanoSeconds (++m_nanoSec), oss.str ());
+
   return retVal;
 }
 
@@ -496,4 +525,22 @@ Ipv4Linux::DeleteRawSocket (Ptr<Socket> socket)
 {
 
 }
+
+void
+Ipv4Linux::PopulateRoutingTable ()
+{
+  // Only support Ipv4GlobalRouting
+  Ptr<Node> node = this->GetObject<Node> ();
+  Ptr<Ipv4GlobalRouting> globalRouting = DynamicCast<Ipv4GlobalRouting> (GetRoutingProtocol ());
+  NS_ASSERT_MSG (globalRouting, "No global routing");
+
+  for (uint32_t i = 0; i < globalRouting->GetNRoutes (); i++)
+    {
+      Ipv4RoutingTableEntry route = globalRouting->GetRoute (i);
+      std::ostringstream oss;
+      oss << "route add to " << route.GetDest () << '/' << route.GetDestNetworkMask () << " via " << route.GetGateway ();
+      RunIp (node, NanoSeconds (++m_nanoSec), oss.str ());
+    }
+}
+
 }

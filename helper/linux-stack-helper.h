@@ -73,12 +73,52 @@ public:
    */
   static void InstallAll (void);
 
+  /**
+   * Configure Linux kernel parameters with traditional 'sysctl' interface.
+   *
+   * \param c NodeContainer that holds the set of nodes to configure this parameter.
+   * \param path a string value for sysctl parameter. it starts from '.' following the name of parameter.
+   *             e.g., ".net.ipv4.conf.default.forwarding"
+   * \param value a string value to set for sysctl parameter.
+   */
   void SysctlSet (NodeContainer c, std::string path, std::string value);
+
+  /**
+   * Obtain Linux kernel state with traditional 'sysctl' interface.
+   *
+   * \param node The node pointer Ptr<Node> that will ask the status.
+   * \param at the delta from the begining of simulation to ask this query.
+   * \param path a string value for sysctl parameter. it starts from '.' following the name of parameter.
+   *             e.g., ".net.ipv4.conf.default.forwarding"
+   * \param callback a callback function to parse the result of sysctl query.
+   */
   static void SysctlGet (Ptr<Node> node, Time at, std::string path,
                          void (*callback)(std::string, std::string));
+
+  /**
+   * Populate routing information to all the nodes in network from GlobalRoutingTable.
+   *
+   * Limitation:
+   * 1) This method SHOULD call after Ipv4GlobalRoutingHelper::PopulateRoutingTables () so that
+   * LinuxStackHelper can obtain the route information.
+   * 2) This feature is only available for IPv4 route information. IPv6 is not implemented.
+   *
+   */
+  static void PopulateRoutingTables ();
+
+  /**
+   * Execute "ip" command (of Linux) on a specific node to configure the ip address/route/etc information.
+   *
+   * \param node The node pointer Ptr<Node> to configure.
+   * \param at the delta from the begining of simulation to execute this command.
+   * \param str a string for the command line argument of ip command. e.g., "route add 10.0.1.0/24 via 10.0.0.1"
+   */
+  static void RunIp (Ptr<Node> node, Time at, std::string str);
+
 private:
   static void SysctlGetCallback (Ptr<Node> node, std::string path,
                                  void (*callback)(std::string, std::string));
+
 
 };
 

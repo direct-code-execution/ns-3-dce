@@ -170,7 +170,7 @@ public:
    * 'execvp' and 'execlp'
    */
   std::string GetVirtualPath () const;
-  
+
   /**
    *
    * This method returns a Vector of process information 
@@ -178,23 +178,7 @@ public:
    */
   static std::vector<ProcStatus> GetProcStatus (void);
 
-  /**
-   * \param node a node to configure route information
-   * \param dest destination address for a route information
-   * \param mask network mask for a route information
-   * \param gateway gateway address for a route information
-   * \param metric a metric value
-   *
-   * This method configures a route information for Linux kernel on the node.
-   */
-  void AddRoute (Ptr<Node> node, std::string dest, std::string mask, std::string gateway, int metric);
-
 private:
-  static void RunIp (Ptr<Node> node, Time at, std::string str);
-  static void AddAddress (Ptr<Node> node, Time at, std::string name, std::string address);
-  void AddRoutes (Ptr<Node> node, std::string r);
-  void AddRoute (Ptr<Node> node, std::string r);
-
   ObjectFactory m_loaderFactory;
   ObjectFactory m_schedulerFactory;
   ObjectFactory m_taskManagerFactory;

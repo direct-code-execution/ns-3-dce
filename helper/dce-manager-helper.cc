@@ -28,8 +28,6 @@ UniformVariable g_firstPid;
 
 NS_OBJECT_ENSURE_REGISTERED (DceManagerHelper);
 
-unsigned long DceManagerHelper::nanoCpt = 0;
-
 TypeId
 DceManagerHelper::GetTypeId (void)
 {
@@ -122,60 +120,6 @@ DceManagerHelper::Install (NodeContainer nodes)
       node->AggregateObject (CreateObject<LocalSocketFdFactory> ());
       manager->AggregateObject (CreateObject<DceNodeContext> ());
       manager->SetVirtualPath (GetVirtualPath ());
-
-      TypeId b = TypeId::LookupByName ("ns3::Ns3SocketFdFactory");
-      TypeId c = m_networkStackFactory.GetTypeId ();
-
-      // Job specific for Linux Stack
-      if (b != c)
-        {
-          Ptr<Ipv4Linux> stack = node->GetObject<Ipv4Linux> ();
-
-          if (stack)
-            {
-              uint32_t nbi =  stack->GetNInterfaces ();
-              std::ostringstream oss;
-
-              // Add adresses to interfaces.
-              for (uint32_t i = 0; i < nbi; i++)
-                {
-                  uint32_t nba = stack->GetNAddresses (i);
-                  Ptr<NetDevice> device =  stack->GetNetDevice (i);
-
-                  oss.clear ();
-                  oss.str ("");
-                  oss << "sim" << i;
-                  std::string deviceName = oss.str ();
-
-                  for (uint32_t a = 0; a < nba; a++)
-                    {
-                      Ipv4InterfaceAddress ia = stack->GetAddress (i,a);
-
-                      oss.clear ();
-                      oss.str ("");
-                      ia.GetLocal ().Print (oss);
-                      oss << '/' ;
-                      ia.GetMask ().Print (oss);
-                      std::string addrMask = oss.str ();
-                      AddAddress (node,  NanoSeconds (++nanoCpt), deviceName, addrMask);
-                      oss.clear ();
-                      oss.str ("");
-                      oss << "link set " << deviceName << " up arp " <<  ((device->IsPointToPoint ()) ? "off" : "on");
-                      RunIp (node, NanoSeconds (++nanoCpt), oss.str ());
-                    }
-                }
-              // Install static routes.
-              Ptr<Ipv4RoutingProtocol> rp =  stack->GetRoutingProtocol ();
-              if (rp)
-                {
-                  oss.clear ();
-                  oss.str ("");
-                  Ptr<OutputStreamWrapper> s = Create<OutputStreamWrapper> (&oss);
-                  rp->PrintRoutingTable (s);
-                  AddRoutes (node, oss.str ());
-                }
-            }
-        }
     }
 }
 void
@@ -187,138 +131,6 @@ std::string
 DceManagerHelper::GetVirtualPath () const
 {
   return m_virtualPath;
-}
-void
-DceManagerHelper::RunIp (Ptr<Node> node, Time at, std::string str)
-{
-  DceApplicationHelper process;
-  ApplicationContainer apps;
-  process.SetBinary ("ip");
-  process.SetStackSize (1 << 16);
-  process.ResetArguments ();
-  process.ParseArguments (str.c_str ());
-  apps = process.Install (node);
-  apps.Start (at);
-}
-
-void
-DceManagerHelper::AddAddress (Ptr<Node> node, Time at, std::string name, std::string address)
-{
-  std::ostringstream oss;
-  oss << "-f inet addr add " << address << " dev " << name;
-  RunIp (node, at, oss.str ());
-}
-
-void
-DceManagerHelper::AddRoutes (Ptr<Node> node, std::string r)
-{
-  char *c = (char*)r.c_str ();
-  bool first = true;
-
-  while (*c)
-    {
-      char *d = c;
-      while (*c && (*c != '\n'))
-        {
-          c++;
-        }
-      if (c > d)
-        {
-          std::string ligne (d, c - d);
-
-          if (first)
-            {
-              first = false;
-            }
-          else
-            {
-              AddRoute (node, ligne);
-            }
-        }
-      if (*c)
-        {
-          c++;
-        }
-    }
-}
-void
-DceManagerHelper::AddRoute (Ptr<Node> node, std::string r)
-{
-  char *c = (char*)r.c_str ();
-  char *dd = c;
-  while (*c && ((*c != ' ') && (*c != '\t')))
-    {
-      c++;
-    }
-  if (!(*c))
-    {
-      return;
-    }
-  std::string desti (dd, c - dd);
-  while (*c && ((*c == ' ') || (*c == '\t')))
-    {
-      c++;
-    }
-  if (!(*c))
-    {
-      return;
-    }
-  char *gg = c;
-  while (*c && ((*c != ' ') && (*c != '\t')))
-    {
-      c++;
-    }
-  if (!(*c))
-    {
-      return;
-    }
-  std::string gateway (gg, c - gg);
-  while (*c && ((*c == ' ') || (*c == '\t')))
-    {
-      c++;
-    }
-  if (!(*c))
-    {
-      return;
-    }
-  char *mm = c;
-  while (*c && ((*c != ' ') && (*c != '\t')))
-    {
-      c++;
-    }
-  if (!(*c))
-    {
-      return;
-    }
-  std::string mask (mm, c - mm);
-  while (*c && ((*c == ' ') || (*c == '\t')))
-    {
-      c++;
-    }
-  if (!(*c))
-    {
-      return;
-    }
-  char *ff = c;
-  while (*c && ((*c != ' ') && (*c != '\t')))
-    {
-      c++;
-    }
-  if (!(*c))
-    {
-      return;
-    }
-  std::string flags (ff, c - ff);
-
-  // Create routes with flag H or G
-  if ((std::string::npos != flags.find ('H')) || (std::string::npos != flags.find ('h'))
-      || (std::string::npos != flags.find ('G'))|| (std::string::npos != flags.find ('g')))
-    {
-      std::ostringstream oss;
-
-      oss << "route add to " << desti << '/' << mask << " via " << gateway << " metric 1";
-      RunIp (node, NanoSeconds (++nanoCpt), oss.str ());
-    }
 }
 
 std::vector<ProcStatus>
@@ -445,15 +257,6 @@ DceManagerHelper::GetProcStatus (void)
     }
 
   return res;
-}
-
-void
-DceManagerHelper::AddRoute (Ptr<Node> node, std::string dest, std::string mask, std::string gateway, int metric)
-{
-  std::ostringstream oss;
-
-  oss << "route add to " << dest << '/' << mask << " via " << gateway << " metric " << metric;
-  RunIp (node, NanoSeconds (++nanoCpt), oss.str ());
 }
 
 ProcStatus::ProcStatus (int n, int e, int p, int64_t ns, int64_t ne, long rs, long re, double nd, long rd, std::string cmd)

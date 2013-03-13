@@ -87,12 +87,14 @@ int main (int argc, char *argv[])
           if (n < nHops)
             {
               Ipv4Address monte = interfaces[n].GetAddress (0, 0);
-              dceManager.AddRoute (nodes.Get (n), Ipv4AddressToString (serverAddress), "255.255.255.255", Ipv4AddressToString (monte), 1);
+              LinuxStackHelper::RunIp (nodes.Get (n), Seconds (0.1), "route add "
+                                       + Ipv4AddressToString (serverAddress) + "/32 via " + Ipv4AddressToString (monte));
             }
           if (n > 1)
             {
               Ipv4Address desc = interfaces[n - 1].GetAddress (1, 0);
-              dceManager.AddRoute (nodes.Get (n), Ipv4AddressToString (clientAddress), "255.255.255.255", Ipv4AddressToString (desc), 1);
+              LinuxStackHelper::RunIp (nodes.Get (n), Seconds (0.1), "route add "
+                                       + Ipv4AddressToString (clientAddress) + "/32 via " + Ipv4AddressToString (desc));
             }
         }
     }

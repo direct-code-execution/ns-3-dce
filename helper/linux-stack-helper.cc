@@ -20,6 +20,7 @@
 #include "linux-stack-helper.h"
 #include "ipv4-linux.h"
 #include "linux-socket-fd-factory.h"
+#include "dce-application-helper.h"
 #include "ns3/node.h"
 #include "ns3/node-container.h"
 #include "ns3/names.h"
@@ -58,6 +59,34 @@ LinuxStackHelper::InstallAll (void)
 #endif
 }
 
+void
+LinuxStackHelper::PopulateRoutingTables ()
+{
+#ifdef KERNEL_STACK
+  NodeContainer c =  NodeContainer::GetGlobal ();
+  for (NodeContainer::Iterator i = c.Begin (); i != c.End (); ++i)
+    {
+      Ptr<Node> node = *i;
+      Ptr<Ipv4Linux> ipv4 = node->GetObject<Ipv4Linux> ();
+      ipv4->PopulateRoutingTable ();
+    }
+#endif
+}
+
+void
+LinuxStackHelper::RunIp (Ptr<Node> node, Time at, std::string str)
+{
+#ifdef KERNEL_STACK
+  DceApplicationHelper process;
+  ApplicationContainer apps;
+  process.SetBinary ("ip");
+  process.SetStackSize (1 << 16);
+  process.ResetArguments ();
+  process.ParseArguments (str.c_str ());
+  apps = process.Install (node);
+  apps.Start (at);
+#endif
+}
 
 void
 LinuxStackHelper::SysctlGetCallback (Ptr<Node> node, std::string path,
