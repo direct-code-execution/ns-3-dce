@@ -27,7 +27,7 @@
 #include "ns3/ipv4-interface.h"
 #include "ns3/ipv4-global-routing.h"
 #include "ns3/ipv4-routing-table-entry.h"
-#include "ns3/dce-application-helper.h"
+#include "../../helper/dce-application-helper.h"
 
 NS_LOG_COMPONENT_DEFINE ("Ipv4Linux");
 
