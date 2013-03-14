@@ -62,16 +62,16 @@ DceManagerTestCase::Finished (int *pstatus, uint16_t pid, int status)
 void
 DceManagerTestCase::DoRun (void)
 {
+  if (m_skip)
+    {
+      return;
+    }
+
   NodeContainer nodes;
   nodes.Create (1);
   DceApplicationHelper dce;
   ApplicationContainer apps;
   DceManagerHelper dceManager;
-
-  if (m_skip)
-    {
-      return;
-    }
 
   if (m_useNet)
     {
