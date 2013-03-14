@@ -62,7 +62,7 @@ Now that you have compiled your executable you can use it within |ns3| script wi
 
 The directory named ``myscripts`` is a good place to place your scripts. To create a new script you should create a new directory under ``myscripts``, and put your sources and a configuration file for waf build system, this file should be named ``wscript``.  For starters, you may refer to the contents of the directory ``myscripts/ping``.
 
-For more detail, please refer :ref:`DCE API document<dce-doxygen>`.
+For more detail, please refer `DCE API (doxygen) document <../../html/index.html>`_.
 
 Compile the script
 ------------------
@@ -89,7 +89,7 @@ Using your application as a DCE sub-module
 ==========================================
 If your application has a configuration file to modify the behavior of applications, introducing a particular Helper class will be helpful to handle your application. In this section, we will give you an advanced way of using your application with DCE.
 
-Some of existing submodule are following this way. You can find `ns-3-dce-quagga <http://www.nsnam.org/~thehajime/ns-3-dce-quagga/index.html>`_ and `ns-3-dce-umip <http://www.nsnam.org/~thehajime/ns-3-dce-umip/index.html>`_ as examples to add sub-module.
+Some of existing submodule are following this way. You can find `ns-3-dce-quagga <../ns-3-dce-quagga/html/index.html>`_ and `ns-3-dce-umip <../ns-3-dce-umip/html/index.html>`_ as examples to add sub-module.
 
 Obtaining DCE sub-module template
 ---------------------------------

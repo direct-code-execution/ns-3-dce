@@ -1,7 +1,7 @@
 .. include:: replace.txt
 
-Getting Started
-***************
+Quick Start Guide
+*****************
 
 Introduction
 ============
@@ -31,20 +31,20 @@ First you need to download Bake using Mercurial and set some variables:
 
 ::
 
-  $ hg clone http://code.nsnam.org/bake bake
-  $ export BAKE_HOME=`pwd`/bake
-  $ export PATH=$PATH:$BAKE_HOME
-  $ export PYTHONPATH=$PYTHONPATH:$BAKE_HOME
+  hg clone http://code.nsnam.org/bake bake
+  export BAKE_HOME=`pwd`/bake
+  export PATH=$PATH:$BAKE_HOME
+  export PYTHONPATH=$PYTHONPATH:$BAKE_HOME
 
 then you must to create a directory for DCE and install it using bake:
 
 ::
 
-  $ mkdir dce
-  $ cd dce
-  $ ../bake.py configure -e dce-ns3
-  $ ../bake.py download
-  $ ../bake.py build
+   mkdir dce
+   cd dce
+   ../bake.py configure -e dce-ns3
+   ../bake.py download
+   ../bake.py build
  
 the output should look likes this:
 
@@ -76,11 +76,11 @@ The difference to build the advanced mode is the different module name *dce-linu
 
 ::
 
-  $ mkdir dce
-  $ cd dce
-  $ ../bake.py configure -e dce-linux
-  $ ../bake.py download
-  $ ../bake.py build
+   mkdir dce
+   cd dce
+   ../bake.py configure -e dce-linux
+   ../bake.py download
+   ../bake.py build
 
 
 Examples
@@ -150,8 +150,8 @@ Once you successfully installed DCE with bake, you can execute the example using
 
 ::
 
-  $ cd source/dce
-  $ ./waf --run dce-iperf
+  cd source/dce
+  ./waf --run dce-iperf
   
 As we saw in the previous example the experience creates directories containing the outputs of different executables,
 take a look at the server (node 1) output:
@@ -196,8 +196,8 @@ if you have already built the advanced mode, you can use Linux network stack ove
 
 ::
 
-  $ cd source/dce
-  $ ./waf --run "dce-iperf --kernel=1"
+  cd source/dce
+  ./waf --run "dce-iperf --kernel=1"
 
 the command line option **--kernel=1** makes the simulation use the Linux kernel stack instead of |ns3| network stack.
 

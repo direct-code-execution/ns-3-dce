@@ -1,6 +1,6 @@
 .. include:: replace.txt
 Installation
-============
+************
 
 In order to install DCE you must follow the tutorial :ref:`build-dce`.
 
