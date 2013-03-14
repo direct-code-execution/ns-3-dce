@@ -1231,7 +1231,11 @@ client14 (void *arg)
   timeOut.tv_usec = 0;
 
   FD_SET (sock, &readFd);
-  FD_SET (0, &readFd);
+  // check only if we use tty
+  if (isatty (0))
+    {
+      FD_SET (0, &readFd);
+    }
 
   status = select (maxFd, &readFd, NULL, NULL, &timeOut);
   printf ("Client14: select -> %d, errno: %d \n", status, errno);

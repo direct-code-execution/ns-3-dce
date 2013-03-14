@@ -42,7 +42,11 @@ test_poll_read (int fd, int timeOutSec, bool needSuccess)
 static void
 test_poll_stdin (void)
 {
-  TEST_ASSERT (test_poll_read (0, 1, false));
+  // check only if we use tty
+  if (isatty (0))
+    {
+      TEST_ASSERT (test_poll_read (0, 1, false));
+    }
 }
 
 static bool
@@ -353,9 +357,13 @@ test_poll_stdout_stdin (void)
   int ret = -1;
   time_t before, after;
 
-  duo[0].fd = 0;
-  duo[0].events = POLLIN;
-  duo[0].revents = 0;
+  // check only if we use tty
+  if (isatty (0))
+    {
+      duo[0].fd = 0;
+      duo[0].events = POLLIN;
+      duo[0].revents = 0;
+    }
 
   duo[1].fd = 1;
   duo[1].events = POLLOUT;
@@ -759,6 +767,12 @@ static void *
 client_last (void *arg)
 {
   struct pollfd theInput;
+
+  // check only if we use tty
+  if (!isatty (0))
+    {
+      return arg;
+    }
 
   theInput.fd = 0;
   theInput.events = POLLIN;

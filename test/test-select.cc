@@ -90,7 +90,11 @@ test_select_read (int fd, int timeOutSec, bool needSuccess)
 static void
 test_select_stdin (void)
 {
-  TEST_ASSERT (test_select_read (0, 1, false));
+  // check only if we use tty
+  if (isatty (0))
+    {
+      TEST_ASSERT (test_select_read (0, 1, false));
+    }
 }
 
 static bool
@@ -701,8 +705,12 @@ test_select_stdout_stdin (void)
 
   timeOut.tv_sec = 10;
   timeOut.tv_usec = 0;
-  FD_ZERO (&rFd);
-  FD_SET (sock, &rFd);
+  // check only if we use tty
+  if (isatty (0))
+    {
+      FD_ZERO (&rFd);
+      FD_SET (sock, &rFd);
+    }
   FD_ZERO (&wFd);
   FD_SET (1, &wFd);
 
