@@ -329,7 +329,10 @@ def build_a_script(bld, name, needed = [], **kw):
     kw['use'] = kw.get('use', []) + ns3waf.modules_uselib(bld, needed)
     if 'features' not in kw:
         kw['features'] = 'cxx cxxprogram'
-    bld(**kw)
+    program = bld(**kw)
+    program.is_ns3_program = True
+    bld.env.append_value('NS3_RUNNABLE_PROGRAMS', name)
+
 
 # Add directories under myscripts dir
 def add_myscripts(bld):
@@ -338,6 +341,11 @@ def add_myscripts(bld):
             continue
         if os.path.isdir(os.path.join('myscripts', dir)):
              bld.add_subdirs(os.path.join('myscripts', dir))
+        elif dir.endswith(".cc"):
+            bld.build_a_script('dce',
+                               needed = bld.env['NS3_MODULES_FOUND'] + ['dce'],
+                               target='bin/' + os.path.splitext(dir)[0],
+                               source=[os.path.join('myscripts', dir)])
 
 # Configure directories under myscripts dir
 def conf_myscripts(conf):
