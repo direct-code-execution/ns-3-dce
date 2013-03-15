@@ -12,8 +12,10 @@ def build(bld):
            bld.program(source='dce-runner.c', 
                        target=target,
                        cflags = [ '-fPIC'], 
-                       linkflags  = ['-pie','-ldl','-Wl,--dynamic-linker=' + linkerpath ] )
+                       linkflags = ['-pie','-ldl','-Wl,--dynamic-linker=' + linkerpath ],
+                       is_ns3_program = True)
            bld.install_files(os.path.join('${PREFIX}', 'bin'), [target], chmod=0755)
+           bld.env.append_value('NS3_RUNNABLE_PROGRAMS', 'dce-runner')
 
 
 

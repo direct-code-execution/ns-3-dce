@@ -16,8 +16,9 @@ This document is for the people who want to use your application in |ns3| using 
    dce-user-config
    dce-user-newapps
    dce-user-usecases
+   dce-user-elfloader
    dce-user-debug
-..   dce-user-test
    dce-user-tech
    dce-user-internal
+..   dce-user-test
 

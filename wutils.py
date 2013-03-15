@@ -235,6 +235,9 @@ def run_program(program_string, env, command_template=None, cwd=None, visualize=
             cwd = Options.options.cwd_launch
         else:
             cwd = Options.cwd_launch
+    if (Options.options.dlm):
+        dummy_program_name, dce_runner = get_run_program('dce-runner', command_template)
+        execvec = dce_runner + execvec
     if visualize:
         execvec.append("--SimulatorImplementationType=ns3::VisualSimulatorImpl")
     return run_argv(execvec, env, cwd=cwd)

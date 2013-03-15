@@ -60,6 +60,7 @@ int main (int argc, char *argv[])
   argv[-1] = (char*)((long)argc);
   argv[0] = argv[1];
   argv[1] = "--ns3::DceManagerHelper::LoaderFactory=ns3::DlmLoaderFactory[]";
+  argv[2] = "--ns3::TaskManager::FiberManagerType=UcontextFiberManager";
 #if defined (__x86_64__)
   __asm__ ("\txor %%rbp,%%rbp\n"
 	   "\txor %%rdx,%%rdx\n"

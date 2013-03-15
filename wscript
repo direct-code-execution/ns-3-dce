@@ -48,6 +48,9 @@ def options(opt):
                    help=('Run a locally built program; argument can be a program name,'
                          ' or a command starting with the program name.'),
                    type="string", default='', dest='run')
+    opt.add_option('--dlmloader',
+                   help=('Run with DlmLoaderFactory,'),
+                   action="store_true", default=False, dest='dlm')
     opt.add_option('--visualize',
                    help=('Modify --run arguments to enable the visualizer'),
                    action="store_true", default=False, dest='visualize')
