@@ -26,7 +26,7 @@ This document consists of the following parts:
 Outlook
 =======
 
-- To run an application using DCE, it is **not** necessary to **change** these sources. However you will need to **recompile** it.
+- To run an application using DCE, it is **not** necessary to **change** its sources. However you will need to **recompile** them.
 - The simulation is executed wholly within a **single process** which greatly facilitates the **debugging**.
 - DCE is very **memory-efficient**, thanks to the way it loads the executables similarly to shared libraries.
 
@@ -64,7 +64,7 @@ Tested Applications
 - Mobilt IPv6 daemon (umip)
 - Linux kernel (from 2.6.36 to 3.7 versions)
 - http server (thttpd)
-- torrent (opentracker)
+- torrent (libtorrent from rasterbar + opentracker)
 
 Tested Environment
 ==================
