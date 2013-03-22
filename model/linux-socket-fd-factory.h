@@ -84,6 +84,19 @@ private:
   static void Free (struct SimKernel *kernel, void *buffer);
   static void * Memcpy (struct SimKernel *kernel, void *dst, const void *src, unsigned long size);
   static void * Memset (struct SimKernel *kernel, void *dst, char value, unsigned long size);
+  static int AtExit (struct SimKernel *kernel, void (*function)(void));
+  static int Access (struct SimKernel *kernel, const char *pathname, int mode);
+  static char *Getenv (struct SimKernel *kernel, const char *name);
+  static int Mkdir (struct SimKernel *kernel, const char *pathname, mode_t mode);
+  static int Open (struct SimKernel *kernel, const char *pathname, int flags);
+  static size_t Fread (struct SimKernel *kernel, void *ptr, size_t size, size_t nmemb, FILE *stream);
+  static size_t Fwrite (struct SimKernel *kernel, const void *ptr, size_t size, size_t nmemb, FILE *stream);
+  static FILE* FdOpen (struct SimKernel *kernel, int fd, const char *mode);
+  static int __Fxstat (struct SimKernel *kernel, int ver, int fd, void *buf);
+  static int Fseek(struct SimKernel *kernel, FILE *stream, long offset, int whence);
+  static void Setbuf(struct SimKernel *kernel, FILE *stream, char *buf);
+  static long Ftell(struct SimKernel *kernel, FILE *stream);
+  static int Fclose (struct SimKernel *kernel, FILE *fp);
   static unsigned long Random (struct SimKernel *kernel);
   static void *EventScheduleNs (struct SimKernel *kernel, __u64 ns, void (*fn)(void *context), void *context,
                                 void (*pre_fn)(void));
@@ -138,6 +151,7 @@ private:
   std::vector<Ptr<LinuxDeviceStateListener> > m_listeners;
   double m_rate;
   RandomVariable m_ranvar;
+  uint16_t m_pid;
 };
 
 } // namespace ns3

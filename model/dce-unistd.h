@@ -50,6 +50,7 @@ off_t dce_lseek (int fildes, off_t offset, int whence);
 off64_t dce_lseek64 (int fildes, off64_t offset, int whence);
 int dce_unlink (const char *pathname);
 int dce_rmdir (const char *pathname);
+int dce_access (const char *pathname, int mode);
 pid_t dce_fork (void);
 int dce_execv (const char *path, char *const argv[]);
 int dce_execl (const char *path, const char *arg, ...);

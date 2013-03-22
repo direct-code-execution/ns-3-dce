@@ -22,6 +22,10 @@ namespace ns3 {
 
 uint32_t UtilsGetNodeId (void)
 {
+  if (gDisposingThreadContext)
+    {
+      return gDisposingThreadContext->process->nodeId;
+    }
   return Simulator::GetContext ();
 }
 static std::string UtilsGetRealFilePath (uint32_t node)
@@ -106,7 +110,7 @@ Thread *gDisposingThreadContext = 0;
 
 Thread * Current (void)
 {
-  if (0 != gDisposingThreadContext)
+  if (gDisposingThreadContext)
     {
       return gDisposingThreadContext;
     }

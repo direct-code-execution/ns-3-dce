@@ -17,3 +17,4 @@ glob:**/files-*
 testpy-output
 doxygen.log
 doc/html
+lcov-report

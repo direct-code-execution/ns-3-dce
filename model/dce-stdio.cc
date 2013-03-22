@@ -366,9 +366,9 @@ int dce_fclose (FILE *fp)
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
 
-  if (fp == *current->process->pstdout
-      || fp == *current->process->pstderr
-      || fp == *current->process->pstdin)
+  if ((current->process->pstdout && fp == *current->process->pstdout)
+      || (current->process->pstdin && fp == *current->process->pstderr)
+      || (current->process->pstdin && fp == *current->process->pstdin))
     {
       return 0;
     }

@@ -93,6 +93,7 @@ public:
                   std::vector<std::string> args,
                   std::vector<std::pair<std::string,std::string> > envs,
                   uid_t uid, uid_t euid, uid_t gid, uid_t egid);
+  uint16_t StartInternalTask ();
   void SetFinishedCallback (uint16_t pid, Callback<void,uint16_t,int> cb);
   void Stop (uint16_t pid);
 

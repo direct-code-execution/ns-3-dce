@@ -20,5 +20,5 @@ This document is for the people who want to use your application in |ns3| using 
    dce-user-debug
    dce-user-tech
    dce-user-internal
-..   dce-user-test
+   dce-user-test
 

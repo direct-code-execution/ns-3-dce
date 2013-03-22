@@ -8,6 +8,11 @@
 #include "task-manager.h"
 #include "kingsley-alloc.h"
 #include "file-usage.h"
+#include "dce-unistd.h"
+#include "dce-stdlib.h"
+#include "sys/dce-stat.h"
+#include "dce-fcntl.h"
+#include "dce-stdio.h"
 #include "sim/include/sim-init.h"
 #include "ns3/log.h"
 #include "ns3/string.h"
@@ -166,6 +171,81 @@ void *
 LinuxSocketFdFactory::Memset (struct SimKernel *kernel, void *dst, char value, unsigned long size)
 {
   return memset (dst, value, size);
+}
+int
+LinuxSocketFdFactory::AtExit (struct SimKernel *kernel, void (*function)(void))
+{
+  NS_LOG_FUNCTION (kernel << function);
+  LinuxSocketFdFactory *self = (LinuxSocketFdFactory *)kernel;
+  Ptr<DceManager> manager = self->GetObject<DceManager> ();
+  Process *p = manager->SearchProcess (self->m_pid);
+
+  // Register process-level atexit store
+  struct AtExitHandler handler;
+  handler.type = AtExitHandler::NORMAL;
+  handler.value.normal = function;
+  p->atExitHandlers.push_back (handler);
+  return 0;
+}
+int
+LinuxSocketFdFactory::Access (struct SimKernel *kernel, const char *pathname, int mode)
+{
+  return dce_access (pathname, mode);
+}
+char*
+LinuxSocketFdFactory::Getenv (struct SimKernel *kernel, const char *name)
+{
+  return dce_getenv (name);
+}
+int
+LinuxSocketFdFactory::Mkdir (struct SimKernel *kernel, const char *pathname, mode_t mode)
+{
+  return dce_mkdir (pathname, mode);
+}
+int
+LinuxSocketFdFactory::Open (struct SimKernel *kernel, const char *pathname, int flags)
+{
+  return dce_open (pathname, flags, 0666);
+}
+int
+LinuxSocketFdFactory::__Fxstat (struct SimKernel *kernel, int ver, int fd, void *buf)
+{
+  return dce___fxstat (ver, fd, (struct stat *)buf);
+}
+int
+LinuxSocketFdFactory::Fseek(struct SimKernel *kernel, FILE *stream, long offset, int whence)
+{
+  return dce_fseek (stream, offset, whence);
+}
+void
+LinuxSocketFdFactory::Setbuf(struct SimKernel *kernel, FILE *stream, char *buf)
+{
+  return dce_setbuf (stream, buf);
+}
+long
+LinuxSocketFdFactory::Ftell(struct SimKernel *kernel, FILE *stream)
+{
+  return dce_ftell (stream);
+}
+FILE*
+LinuxSocketFdFactory::FdOpen (struct SimKernel *kernel, int fd, const char *mode)
+{
+  return dce_fdopen (fd, mode);
+}
+size_t
+LinuxSocketFdFactory::Fread (struct SimKernel *kernel, void *ptr, size_t size, size_t nmemb, FILE *stream)
+{
+  return dce_fread (ptr, size, nmemb, stream);
+}
+size_t
+LinuxSocketFdFactory::Fwrite (struct SimKernel *kernel, const void *ptr, size_t size, size_t nmemb, FILE *stream)
+{
+  return dce_fwrite (ptr, size, nmemb, stream);
+}
+int
+LinuxSocketFdFactory::Fclose (struct SimKernel *kernel, FILE *fp)
+{
+  return dce_fclose (fp);
 }
 unsigned long
 LinuxSocketFdFactory::Random (struct SimKernel *kernel)
@@ -573,6 +653,19 @@ LinuxSocketFdFactory::InitializeStack (void)
   imported.free = &LinuxSocketFdFactory::Free;
   imported.memcpy = &LinuxSocketFdFactory::Memcpy;
   imported.memset = &LinuxSocketFdFactory::Memset;
+  imported.atexit = &LinuxSocketFdFactory::AtExit;
+  imported.access = &LinuxSocketFdFactory::Access;
+  imported.getenv = &LinuxSocketFdFactory::Getenv;
+  imported.mkdir = &LinuxSocketFdFactory::Mkdir;
+  imported.open = &LinuxSocketFdFactory::Open;
+  imported.__fxstat = &LinuxSocketFdFactory::__Fxstat;
+  imported.fseek = &LinuxSocketFdFactory::Fseek;
+  imported.setbuf = &LinuxSocketFdFactory::Setbuf;
+  imported.ftell = &LinuxSocketFdFactory::Ftell;
+  imported.fdopen = &LinuxSocketFdFactory::FdOpen;
+  imported.fread = &LinuxSocketFdFactory::Fread;
+  imported.fwrite = &LinuxSocketFdFactory::Fwrite;
+  imported.fclose = &LinuxSocketFdFactory::Fclose;
   imported.random = &LinuxSocketFdFactory::Random;
   imported.event_schedule_ns = &LinuxSocketFdFactory::EventScheduleNs;
   imported.event_cancel = &LinuxSocketFdFactory::EventCancel;
@@ -585,6 +678,10 @@ LinuxSocketFdFactory::InitializeStack (void)
   imported.dev_xmit = &LinuxSocketFdFactory::DevXmit;
   imported.signal_raised = &LinuxSocketFdFactory::SignalRaised;
   imported.poll_event = &LinuxSocketFdFactory::PollEvent;
+  // create internal process
+  Ptr<DceManager> manager = this->GetObject<DceManager> ();
+  m_pid = manager->StartInternalTask ();  
+
   init (m_exported, &imported, (struct SimKernel *)this);
 
   // update the linux device list with simulation device list

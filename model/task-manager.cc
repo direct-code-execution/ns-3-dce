@@ -14,6 +14,7 @@
 #include "process.h"
 #include "utils.h"
 #include "process-delay-model.h"
+#include "dce-cxa.h"
 
 namespace ns3 {
 
@@ -143,6 +144,8 @@ void TaskManager::DoDispose (void)
             {
               gDisposingThreadContext = it->second->threads.back ();
 
+              // call atexit handler for linux kernel
+              dce___cxa_finalize (0);
               if (0 != gDisposingThreadContext)
                 {
                   Process *p = it->second;

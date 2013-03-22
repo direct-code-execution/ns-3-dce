@@ -15,6 +15,10 @@ char * dce_getenv (const char *name)
   NS_ASSERT (Current () != 0);
   struct Thread *current = Current ();
   char ***penvp = current->process->penvp;
+  if (!penvp)
+    {
+      return NULL;
+    }
   return seek_env (name, *penvp);
 }
 int dce_putenv (char *string)

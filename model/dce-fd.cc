@@ -185,6 +185,10 @@ int dce_rmdir (const char *pathname)
 {
   DEFINE_FORWARDER_PATH (rmdir, pathname);
 }
+int dce_access (const char *pathname, int mode)
+{
+  DEFINE_FORWARDER_PATH (access, pathname, mode);
+}
 int dce_close (int fd)
 {
   int retval = 0;

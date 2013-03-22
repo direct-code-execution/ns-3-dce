@@ -413,7 +413,17 @@ DceManager::Start (std::string name, std::string stdinfilename, uint32_t stackSi
   thread->task = task;
   return process->pid;
 }
-
+uint16_t
+DceManager::StartInternalTask ()
+{
+  std::vector<std::string> nullargs;
+  std::vector<std::pair<std::string,std::string> > nullenvs;
+  struct Process *process = CreateProcess ("internal", "dummy-stdin", nullargs, nullenvs, 0);
+  struct Thread *thread = CreateThread (process);
+  Task *task = new Task ();
+  task->SetContext (thread);
+  return process->pid;
+}
 
 uint16_t
 DceManager::AllocatePid (void)
