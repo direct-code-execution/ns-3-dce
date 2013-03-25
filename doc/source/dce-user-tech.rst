@@ -2,6 +2,11 @@
 Technical Information
 =====================
 
+.. toctree::
+   :maxdepth: 1
+
+   dce-user-internal
+
 Limitations
 -----------
 
@@ -21,3 +26,4 @@ Below there is the list of the systems calls supported by DCE, the column named 
    :header: "System Call Name","Domain","Include file","Type","Remarks"
    :widths: 50,10,10,7,23
    :file: api_cov.csv
+
