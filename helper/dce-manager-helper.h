@@ -152,7 +152,7 @@ public:
   /**
    * \param nodes a set of nodes
    *
-   * This method creates all of DCE related instances to run an applicaion 
+   * This method creates all of DCE related instances to run an applicaion
    * binary on nodes.
    */
   void Install (NodeContainer nodes);
@@ -173,7 +173,7 @@ public:
 
   /**
    *
-   * This method returns a Vector of process information 
+   * This method returns a Vector of process information
    * that are already finished.
    */
   static std::vector<ProcStatus> GetProcStatus (void);

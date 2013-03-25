@@ -280,7 +280,7 @@ Ipv4Linux::AddAddress (uint32_t i, Ipv4InterfaceAddress address)
   oss << '/' << address.GetMask ().GetPrefixLength () << " dev sim" << i;
   RunIp (node, NanoSeconds (++m_nanoSec), oss.str ());
   oss.str ("");
-  oss << "link set sim" << i << " up arp " 
+  oss << "link set sim" << i << " up arp "
       << ((interface->GetDevice ()->IsPointToPoint ()) ? "off" : "on");
   RunIp (node, NanoSeconds (++m_nanoSec), oss.str ());
 

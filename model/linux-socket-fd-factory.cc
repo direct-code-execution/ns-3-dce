@@ -213,17 +213,17 @@ LinuxSocketFdFactory::__Fxstat (struct SimKernel *kernel, int ver, int fd, void 
   return dce___fxstat (ver, fd, (struct stat *)buf);
 }
 int
-LinuxSocketFdFactory::Fseek(struct SimKernel *kernel, FILE *stream, long offset, int whence)
+LinuxSocketFdFactory::Fseek (struct SimKernel *kernel, FILE *stream, long offset, int whence)
 {
   return dce_fseek (stream, offset, whence);
 }
 void
-LinuxSocketFdFactory::Setbuf(struct SimKernel *kernel, FILE *stream, char *buf)
+LinuxSocketFdFactory::Setbuf (struct SimKernel *kernel, FILE *stream, char *buf)
 {
   return dce_setbuf (stream, buf);
 }
 long
-LinuxSocketFdFactory::Ftell(struct SimKernel *kernel, FILE *stream)
+LinuxSocketFdFactory::Ftell (struct SimKernel *kernel, FILE *stream)
 {
   return dce_ftell (stream);
 }
@@ -680,7 +680,7 @@ LinuxSocketFdFactory::InitializeStack (void)
   imported.poll_event = &LinuxSocketFdFactory::PollEvent;
   // create internal process
   Ptr<DceManager> manager = this->GetObject<DceManager> ();
-  m_pid = manager->StartInternalTask ();  
+  m_pid = manager->StartInternalTask ();
 
   init (m_exported, &imported, (struct SimKernel *)this);
 
