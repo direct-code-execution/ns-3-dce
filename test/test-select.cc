@@ -706,9 +706,9 @@ test_select_stdout_stdin (void)
   timeOut.tv_sec = 10;
   timeOut.tv_usec = 0;
   // check only if we use tty
+  FD_ZERO (&rFd);
   if (isatty (0))
     {
-      FD_ZERO (&rFd);
       FD_SET (sock, &rFd);
     }
   FD_ZERO (&wFd);
@@ -719,7 +719,7 @@ test_select_stdout_stdin (void)
   ret = select (1 + 1, &rFd, &wFd, NULL, &timeOut);
   after = time (NULL);
 
-  printf ("After select -> %d before time %ld after time %ld errno:%d \n ", ret, before,after, errno);
+  printf ("After select -> %d before time %ld after time %ld errno:%d, \n ", ret, before, after, errno);
 
   // time difference must not exceed 1 second
   TEST_ASSERT ((1 == ret) &&  ((after - before) <= 1));
