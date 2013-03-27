@@ -119,8 +119,7 @@ def get_proc_env(os_env=None):
         pymoddir = pymoddir.get_bld().abspath()
     else:
         pymoddir = ""
-    pyvizdir = os.path.join(bld.env.PREFIX, '..', 'ns-3-dev', 'src', 'visualizer')
-    pyvizdir = pyvizdir + ":" + os.path.join(bld.env.PREFIX, 'lib', 'python2.6', 'site-packages')
+    pyvizdir = os.path.join(bld.env.NS3_DIR, 'lib', 'python2.6', 'site-packages')
     if 'PYTHONPATH' in proc_env:
         proc_env['PYTHONPATH'] = os.pathsep.join([pymoddir, pyvizdir] + [proc_env['PYTHONPATH']])
     else:
