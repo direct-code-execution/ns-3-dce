@@ -166,6 +166,7 @@ def build_dce_tests(module, bld):
     tests_source = [
         'test/dce-manager-test.cc', 
         'test/dce-cradle-test.cc',
+        'test/dce-mptcp-test.cc',
         ]
     module.add_runner_test(needed=['core', 'dce', 'internet'],  
                            source=tests_source)
@@ -328,6 +329,14 @@ def build_dce_kernel_examples(module):
     module.add_example(needed = ['core', 'network', 'dce', 'wifi', 'point-to-point', 'csma', 'mobility' ],
                        target='bin/dce-ltp',
                        source=['example/dce-ltp.cc'])
+
+    module.add_example(needed = ['core', 'network', 'dce', 'point-to-point', 'mobility'],
+                       target='bin/dce-iperf-mptcp',
+                       source=['example/dce-iperf-mptcp.cc'])
+
+    module.add_example(needed = ['core', 'network', 'dce', 'point-to-point', 'mobility', 'applications'],
+                       target='bin/dce-cradle-mptcp',
+                       source=['example/dce-cradle-mptcp.cc'])
 
     module.add_example(needed = ['core', 'network', 'dce', 'point-to-point', 'applications'],
                        target='bin/dce-cradle-simple',

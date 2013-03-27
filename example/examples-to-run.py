@@ -36,6 +36,8 @@ cpp_examples = [
     ("dce-mt2 --kernel=1", "True", "True"),
     ("dce-mt3 --kernel=1", "True", "True"),
     ("dce-xfrm", "False", "False"),
+    ("dce-cradle-mptcp", "True", "True"),
+    ("dce-iperf-mptcp", "True", "True"),
 #    ("dce-ltp", "True", "True"),
 ]
 

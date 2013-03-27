@@ -1,0 +1,61 @@
+diff --git a/Makefile b/Makefile
+index d4eed71..e0006fd 100644
+--- a/Makefile
++++ b/Makefile
+@@ -36,7 +36,7 @@ WFLAGS += -Wmissing-declarations -Wold-style-definition
+ CFLAGS = $(WFLAGS) $(CCOPTS) -I../include $(DEFINES)
+ YACCFLAGS = -d -t -v
+ 
+-SUBDIRS=lib ip tc bridge misc netem genl man
++SUBDIRS=lib ip
+ 
+ LIBNETLINK=../lib/libnetlink.a ../lib/libutil.a
+ LDLIBS += $(LIBNETLINK)
+diff --git a/ip/ipnetns.c b/ip/ipnetns.c
+index b047b97..989ee46 100644
+--- a/ip/ipnetns.c
++++ b/ip/ipnetns.c
+@@ -29,6 +29,7 @@
+ #define MNT_DETACH	0x00000002	/* Just detach from the tree */
+ #endif /* MNT_DETACH */
+ 
++#ifdef NETNS_ENABLE
+ #ifndef HAVE_SETNS
+ static int setns(int fd, int nstype)
+ {
+@@ -52,6 +53,7 @@ static int usage(void)
+ 	fprintf(stderr, "       ip netns monitor\n");
+ 	return EXIT_FAILURE;
+ }
++#endif  /* NETNS_ENABLE */
+ 
+ int get_netns_fd(const char *name)
+ {
+@@ -68,6 +70,7 @@ int get_netns_fd(const char *name)
+ 	return open(path, O_RDONLY);
+ }
+ 
++#ifdef NETNS_ENABLE
+ static int netns_list(int argc, char **argv)
+ {
+ 	struct dirent *entry;
+@@ -447,9 +450,11 @@ static int netns_monitor(int argc, char **argv)
+ 	}
+ 	return EXIT_SUCCESS;
+ }
++#endif  /* NETNS_ENABLE */
+ 
+ int do_netns(int argc, char **argv)
+ {
++#ifdef NETNS_ENABLE
+ 	if (argc < 1)
+ 		return netns_list(0, NULL);
+ 
+@@ -478,6 +483,7 @@ int do_netns(int argc, char **argv)
+ 	if (matches(*argv, "monitor") == 0)
+ 		return netns_monitor(argc-1, argv+1);
+ 
++#endif
+ 	fprintf(stderr, "Command \"%s\" is unknown, try \"ip netns help\".\n", *argv);
+ 	return EXIT_FAILURE;
+ }
