@@ -168,7 +168,7 @@ def build_dce_tests(module, bld):
         'test/dce-cradle-test.cc',
         'test/dce-mptcp-test.cc',
         ]
-    module.add_runner_test(needed=['core', 'dce', 'internet'],  
+    module.add_runner_test(needed=['core', 'dce', 'internet', 'applications'],
                            source=tests_source)
 
     module.add_test(features='cxx cxxshlib', source=['test/test-macros.cc'], 
