@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
 
 NS_LOG_COMPONENT_DEFINE ("LinuxSocketFdFactory");
 
@@ -826,12 +827,12 @@ LinuxSocketFdFactory::Bind (struct SimSocket *socket, const struct sockaddr *my_
   return retval;
 }
 int
-LinuxSocketFdFactory::Connect (struct SimSocket *socket, const struct sockaddr *my_addr, socklen_t addrlen)
+LinuxSocketFdFactory::Connect (struct SimSocket *socket, const struct sockaddr *my_addr,
+                               socklen_t addrlen, int flags)
 {
-  GET_CURRENT (socket << my_addr << addrlen);
-  // XXX: handle O_NONBLOCK with flags.
+  GET_CURRENT (socket << my_addr << addrlen << flags);
   m_loader->NotifyStartExecute ();
-  int retval = m_exported->sock_connect (socket, my_addr, addrlen, 0);
+  int retval = m_exported->sock_connect (socket, my_addr, addrlen, flags);
   m_loader->NotifyEndExecute ();
   if (retval < 0)
     {

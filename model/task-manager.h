@@ -139,6 +139,12 @@ public:
    */
   static TaskManager * Current (void);
 
+  /**
+   * Preempt the task to schedule.
+   */
+  void EnterHiTask (Task *task);
+  void LeaveHiTask (Task *task);
+
   void SetSwitchNotify (void (*fn)(void));
   uint32_t GetStackSize (Task *task) const;
 
@@ -174,6 +180,7 @@ private:
 
 
   Task *m_current;
+  Task *m_hightask;
   Ptr<TaskScheduler> m_scheduler;
   Ptr<ProcessDelayModel> m_delayModel;
   FiberManager *m_fiberManager;

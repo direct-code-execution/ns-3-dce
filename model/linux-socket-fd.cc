@@ -117,7 +117,7 @@ LinuxSocketFd::Bind (const struct sockaddr *my_addr, socklen_t addrlen)
 int
 LinuxSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
 {
-  return m_factory->Connect (m_socket, my_addr, addrlen);
+  return m_factory->Connect (m_socket, my_addr, addrlen, m_statusFlags);
 }
 int
 LinuxSocketFd::Listen (int backlog)

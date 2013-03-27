@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Author: Frédéric Urbani
+ *         Hajime Tazaki <tazaki@nict.go.jp>
  */
 
 #include "ipv4-linux.h"
@@ -28,6 +29,10 @@
 #include "ns3/ipv4-global-routing.h"
 #include "ns3/ipv4-routing-table-entry.h"
 #include "../../helper/dce-application-helper.h"
+#include "linux-ipv4-raw-socket-factory-impl.h"
+#include "linux-udp-socket-factory-impl.h"
+#include "linux-tcp-socket-factory-impl.h"
+#include "linux-dccp-socket-factory-impl.h"
 
 NS_LOG_COMPONENT_DEFINE ("Ipv4Linux");
 
@@ -494,6 +499,15 @@ Ipv4Linux::InstallNode (Ptr<Node> node)
   Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> ();
   Ptr<Ipv4RoutingProtocol> ipv4Routing = globalRouting.Create (node);
   ipv4->SetRoutingProtocol (ipv4Routing);
+  // Socket related stuff
+  Ptr<LinuxIpv4RawSocketFactoryImpl> ipv4rawFactory = CreateObject<LinuxIpv4RawSocketFactoryImpl> ();
+  node->AggregateObject (ipv4rawFactory);
+  Ptr<LinuxUdpSocketFactoryImpl> udpFactory = CreateObject<LinuxUdpSocketFactoryImpl> ();
+  node->AggregateObject (udpFactory);
+  Ptr<LinuxTcpSocketFactoryImpl> tcpFactory = CreateObject<LinuxTcpSocketFactoryImpl> ();
+  node->AggregateObject (tcpFactory);
+  Ptr<LinuxDccpSocketFactoryImpl> dccpFactory = CreateObject<LinuxDccpSocketFactoryImpl> ();
+  node->AggregateObject (dccpFactory);
 }
 Ptr<Ipv4Interface>
 Ipv4Linux::GetInterface (uint32_t index) const

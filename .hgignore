@@ -13,6 +13,9 @@ glob:**/files-*
 ^ccnx-*
 ^doc/build
 ^NetAnim
+output
+\.pcap
+core
 \.pyc$
 testpy-output
 doxygen.log

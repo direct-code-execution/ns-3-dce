@@ -119,13 +119,17 @@ public:
   void SetVirtualPath (std::string p);
   std::string GetVirtualPath () const;
   static void AppendProcFile (Process *p);
+  uint16_t StartTemporaryTask ();
+  void StopTemporaryTask (uint16_t pid);
+  void ResumeTemporaryTask (uint16_t pid);
+  void SuspendTemporaryTask (uint16_t pid);
+  struct Process* CreateProcess (std::string name, std::string stdinfilename, std::vector<std::string> args,
+                                 std::vector<std::pair<std::string,std::string> > envs, int pid);
 
 private:
   // inherited from Object.
   virtual void DoDispose (void);
 
-  struct Process * CreateProcess (std::string name, std::string stdinfilename, std::vector<std::string> args,
-                                  std::vector<std::pair<std::string,std::string> > envs, int pid);
   static int (*PrepareDoStartProcess (Thread * current)) (int, char **);
   static void DoStartProcess (void *context);
   bool CheckProcessContext (void) const;

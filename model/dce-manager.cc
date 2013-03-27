@@ -424,6 +424,52 @@ DceManager::StartInternalTask ()
   task->SetContext (thread);
   return process->pid;
 }
+uint16_t
+DceManager::StartTemporaryTask ()
+{
+  std::vector<std::string> nullargs;
+  std::vector<std::pair<std::string,std::string> > envs;
+  struct Process *process = CreateProcess ("dummy", "dummy-stdin", nullargs, envs, 0);
+  struct Thread *thread = CreateThread (process);
+  Task *task = new Task ();
+  task->SetContext (thread);
+  thread->task = task;
+  NS_LOG_FUNCTION (this << process->pid << thread << TaskManager::Current ()->CurrentTask ());
+  TaskManager::Current ()->EnterHiTask (task);
+  return process->pid;
+}
+
+void
+DceManager::ResumeTemporaryTask (uint16_t pid)
+{
+  Process *process = SearchProcess (pid);
+  Thread *thread = process->threads.front ();
+  NS_LOG_FUNCTION (this << process->pid << thread << thread->task << TaskManager::Current ()->CurrentTask ());
+  TaskManager::Current ()->EnterHiTask (thread->task);
+  return;
+}
+
+void
+DceManager::SuspendTemporaryTask (uint16_t pid)
+{
+  Process *process = SearchProcess (pid);
+  Thread *thread = process->threads.front ();
+  NS_LOG_FUNCTION (this << process->pid << TaskManager::Current ()->CurrentTask ());
+  TaskManager::Current ()->LeaveHiTask (thread->task);
+  return;
+}
+void
+DceManager::StopTemporaryTask (uint16_t pid)
+{
+  NS_LOG_FUNCTION (this);
+  Process *process = SearchProcess (pid);
+  Thread *thread = process->threads.front ();
+  Task *task = thread->task;
+  DeleteProcess (process, PEC_EXIT);
+  NS_LOG_FUNCTION (this << process->pid << TaskManager::Current ()->CurrentTask ());
+  TaskManager::Current ()->LeaveHiTask (task);
+  return;
+}
 
 uint16_t
 DceManager::AllocatePid (void)

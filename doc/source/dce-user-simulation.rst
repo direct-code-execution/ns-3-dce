@@ -9,5 +9,6 @@ Writing Simulation Scripts
 
    dce-user-config
    dce-user-newapps
+   dce-cradle 
    dce-user-usecases
 

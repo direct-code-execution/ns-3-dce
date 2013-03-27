@@ -106,7 +106,8 @@ TaskManager::TaskManager ()
     m_reSchedule (0),
     m_disposing (0),
     m_todoOnMain (0),
-    m_noSignal (0)
+    m_noSignal (0),
+    m_hightask (0)
 {
   NS_LOG_FUNCTION (this);
 }
@@ -171,7 +172,10 @@ TaskManager::GarbageCollectDeadTasks (void)
       Task *task = m_deadTasks.front ();
       m_deadTasks.pop_front ();
       NS_LOG_DEBUG ("delete " << task);
-      m_fiberManager->Delete (task->m_fiber);
+      if (task->m_fiber)
+        {
+          m_fiberManager->Delete (task->m_fiber);
+        }
       task->m_waitTimer.Cancel ();
       task->m_fiber = 0;
       delete task;
@@ -284,7 +288,10 @@ TaskManager::Stop (Task *task)
   // we can delete the task immediately.
   NS_LOG_DEBUG ("delete " << task << " fiber=" << task->m_fiber);
   m_scheduler->Dequeue (task);
-  m_fiberManager->Delete (task->m_fiber);
+  if (task->m_fiber)
+    {
+      m_fiberManager->Delete (task->m_fiber);
+    }
   task->m_state = Task::DEAD;
   task->m_waitTimer.Cancel ();
   task->m_fiber = 0;
@@ -365,9 +372,28 @@ TaskManager::Exit (void)
   Schedule ();
 }
 
+void
+TaskManager::EnterHiTask (Task *task)
+{
+  NS_LOG_FUNCTION (this << task << m_hightask);
+  NS_ASSERT (m_hightask == NULL);
+  m_hightask = task;
+}
+void
+TaskManager::LeaveHiTask (Task *task)
+{
+  NS_LOG_FUNCTION (this << task << m_hightask);
+  NS_ASSERT (m_hightask == task);
+  m_hightask = NULL;
+}
+
 Task *
 TaskManager::CurrentTask (void)
 {
+  if (m_hightask)
+    {
+      return m_hightask;
+    }
   return m_current;
 }
 TaskManager *
@@ -405,7 +431,10 @@ TaskManager::Schedule (void)
               next->m_switchNotifier (Task::TO, next->m_switchNotifierContext);
             }
 again:
-          m_fiberManager->SwitchTo (m_mainFiber, next->m_fiber);
+          if (next->m_fiber)
+            {
+              m_fiberManager->SwitchTo (m_mainFiber, next->m_fiber);
+            }
           if (0 != m_todoOnMain)
             {
               m_current = next;
@@ -459,7 +488,10 @@ again:
           m_current->m_switchNotifier (Task::FROM, m_current->m_switchNotifierContext);
         }
       m_current = 0;
-      m_fiberManager->SwitchTo (fiber, m_mainFiber);
+      if (fiber)
+        {
+          m_fiberManager->SwitchTo (fiber, m_mainFiber);
+        }
     }
 }
 

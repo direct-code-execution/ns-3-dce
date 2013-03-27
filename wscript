@@ -79,6 +79,7 @@ def configure(conf):
     ns3waf.check_modules(conf, ['point-to-point-layout'], mandatory = False)
     ns3waf.check_modules(conf, ['mpi'], mandatory = False)
     ns3waf.check_modules(conf, ['visualizer'], mandatory = False)
+    ns3waf.check_modules(conf, ['applications'], mandatory = False)
     conf.check_tool('compiler_cc')
     conf.check(header_name='stdint.h', define_name='HAVE_STDINT_H', mandatory=False)
     conf.check(header_name='inttypes.h', define_name='HAVE_INTTYPES_H', mandatory=False)
@@ -162,8 +163,12 @@ def dce_kw(**kw):
     return d
 
 def build_dce_tests(module, bld):
+    tests_source = [
+        'test/dce-manager-test.cc', 
+        'test/dce-cradle-test.cc',
+        ]
     module.add_runner_test(needed=['core', 'dce', 'internet'],  
-                           source=['test/dce-manager-test.cc'])
+                           source=tests_source)
 
     module.add_test(features='cxx cxxshlib', source=['test/test-macros.cc'], 
                     target='lib/test', linkflags=['-Wl,-soname=libtest.so'])
@@ -324,6 +329,14 @@ def build_dce_kernel_examples(module):
                        target='bin/dce-ltp',
                        source=['example/dce-ltp.cc'])
 
+    module.add_example(needed = ['core', 'network', 'dce', 'point-to-point', 'applications'],
+                       target='bin/dce-cradle-simple',
+                       source=['example/dce-cradle-simple.cc'])
+
+    module.add_example(needed = ['core', 'network', 'dce', 'point-to-point', 'applications', 'internet'],
+                       target='bin/dce-tcp-ns3-nsc-comparison',
+                       source=['example/dce-tcp-ns3-nsc-comparison.cc'])
+
 # Add a script to build system 
 def build_a_script(bld, name, needed = [], **kw):
     external = [i for i in needed if not i == name]
@@ -458,6 +471,15 @@ def build(bld):
         'model/elf-ldd.cc',
         'model/dce-termio.cc',
         'model/process-delay-model.cc',
+        'model/linux/linux-socket-impl.cc',
+        'model/linux/linux-ipv4-raw-socket-factory.cc',
+        'model/linux/linux-ipv4-raw-socket-factory-impl.cc',
+        'model/linux/linux-udp-socket-factory.cc',
+        'model/linux/linux-udp-socket-factory-impl.cc',
+        'model/linux/linux-tcp-socket-factory.cc',
+        'model/linux/linux-tcp-socket-factory-impl.cc',
+        'model/linux/linux-dccp-socket-factory.cc',
+        'model/linux/linux-dccp-socket-factory-impl.cc',
         # helper.
         'helper/ipv4-dce-routing-helper.cc',
         'helper/dce-manager-helper.cc',
@@ -475,6 +497,11 @@ def build(bld):
         'model/ipv4-dce-routing.h',
         'model/linux/ipv4-linux.h',
         'model/process-delay-model.h',        
+        'model/linux/linux-socket-impl.h',
+        'model/linux/linux-ipv4-raw-socket-factory.h',
+        'model/linux/linux-udp-socket-factory.h',
+        'model/linux/linux-tcp-socket-factory.h',
+        'model/linux/linux-dccp-socket-factory.h',
         'helper/dce-manager-helper.h',
         'helper/dce-application-helper.h',
         'helper/ccn-client-helper.h',

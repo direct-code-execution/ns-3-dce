@@ -32,7 +32,7 @@ main (int argc, char *argv[])
   memset (buf, 0, 10240);
   ssize_t tot = 0;
 
-  for (uint32_t i = 0; i < 100; i++)
+  for (uint32_t i = 0; i < 1000; i++)
     {
       ssize_t n = 10240;
       while (n > 0)
