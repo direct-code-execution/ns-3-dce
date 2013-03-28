@@ -212,8 +212,22 @@ DceMptcpTestSuite::DceMptcpTestSuite ()
     bool isSkip;
   } testPair;
 
+  // XXX
+  char *envVar = getenv ("NS_DCE_MPTCP_ENABLE");
+  bool isMptcpSkip = true;
+  if (envVar != 0)
+    {
+      std::string env = std::string (envVar);
+      std::string::size_type val = 0;
+      val = env.find ("1", 0);
+      if (val != std::string::npos)
+        {
+          isMptcpSkip = false;
+        }
+    }
+
   const testPair tests[] = {
-    {"tcp", "ns3::LinuxTcpSocketFactory", 30, false},
+    {"tcp", "ns3::LinuxTcpSocketFactory", 30, isMptcpSkip},
   };
 
   Packet::EnablePrinting ();
