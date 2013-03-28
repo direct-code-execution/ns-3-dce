@@ -32,6 +32,7 @@ namespace ns3 {
 Ptr<Socket>
 LinuxDccpSocketFactoryImpl::CreateSocket (void)
 {
+#ifdef KERNEL_STACK
   Ptr<LinuxSocketImpl> socket = CreateObject<LinuxSocketImpl> ();
   Ptr<Node> node = this->GetObject<Node> ();
   socket->SetNode (node);
@@ -40,6 +41,7 @@ LinuxDccpSocketFactoryImpl::CreateSocket (void)
   socket->SetAttribute ("Protocol", UintegerValue (IPPROTO_DCCP));
   socket->CreateSocket ();
   return socket;
+#endif
 }
 
 

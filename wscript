@@ -165,9 +165,13 @@ def dce_kw(**kw):
 def build_dce_tests(module, bld):
     tests_source = [
         'test/dce-manager-test.cc', 
-        'test/dce-cradle-test.cc',
-        'test/dce-mptcp-test.cc',
         ]
+    if bld.env['KERNEL_STACK']:
+        tests_source += [
+            'test/dce-cradle-test.cc',
+            'test/dce-mptcp-test.cc',
+            ]
+        
     module.add_runner_test(needed=['core', 'dce', 'internet', 'applications'],
                            source=tests_source)
 
@@ -399,9 +403,11 @@ def build(bld):
         kernel_source = [
             'model/linux-socket-fd-factory.cc',
             'model/linux-socket-fd.cc',
+            'model/linux/linux-socket-impl.cc',
             ]
         kernel_headers = [
             'model/linux-socket-fd-factory.h',
+            'model/linux/linux-socket-impl.h',
             ]
         kernel_includes = [bld.env['KERNEL_STACK']]
     else:
@@ -480,7 +486,6 @@ def build(bld):
         'model/elf-ldd.cc',
         'model/dce-termio.cc',
         'model/process-delay-model.cc',
-        'model/linux/linux-socket-impl.cc',
         'model/linux/linux-ipv4-raw-socket-factory.cc',
         'model/linux/linux-ipv4-raw-socket-factory-impl.cc',
         'model/linux/linux-udp-socket-factory.cc',
@@ -506,7 +511,6 @@ def build(bld):
         'model/ipv4-dce-routing.h',
         'model/linux/ipv4-linux.h',
         'model/process-delay-model.h',        
-        'model/linux/linux-socket-impl.h',
         'model/linux/linux-ipv4-raw-socket-factory.h',
         'model/linux/linux-udp-socket-factory.h',
         'model/linux/linux-tcp-socket-factory.h',
