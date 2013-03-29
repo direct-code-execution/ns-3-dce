@@ -1,4 +1,10 @@
 #!/bin/bash
+
+echo "This script is obsolted."
+echo "Please use bake to install dce and ns-3-dce. exit"
+echo "For more information, http://www.nsnam.org/projects/direct-code-execution/"
+exit
+
 # this script checkout NS3 and DCE sources, and build them.
 USE_KERNEL=NO
 USE_MPI=NO
