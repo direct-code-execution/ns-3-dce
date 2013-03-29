@@ -72,6 +72,10 @@ int main (int argc, char *argv[])
 
   // setup ip routes
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+  if (useKernel)
+    {
+      LinuxStackHelper::PopulateRoutingTables ();
+    }
 
   dceManager.Install (nodes);
 
