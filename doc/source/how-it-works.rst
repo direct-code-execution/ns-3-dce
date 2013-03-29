@@ -1,3 +1,4 @@
+.. include:: replace.txt
 
 .. _how-it-works:
 
@@ -10,15 +11,15 @@ If your are interrested to know why DCE exists and how it can works, you should 
 Introduction
 ============
 
-You know that the goal of DCE is to execute actual binaries within NS3.
-More precisely a binary executed by DCE perceives time and space of NS-3, rather than the real environnenent.
+You know that the goal of DCE is to execute actual binaries within |ns3|.
+More precisely a binary executed by DCE perceives time and space of |ns3|, rather than the real environnenent.
 
 To do this, DCE does a job equivalent to an operating system like:
 
-1. DCE loads in memory the code and data of executables,
+1. DCE loads in memory the code and data of executable,
 2. DCE plays the role of intermediary between the executable and the environment through the systems functions called by executables,
 3. DCE manages and monitors the execution of processes and handles liberate the memory and close open files when the stop process.
-4. DCE manages the scheduling of the varions virtual processes and threads.
+4. DCE manages the scheduling of the various virtual processes and threads.
 
 Main classes and main data structures
 =====================================
@@ -26,7 +27,7 @@ Main classes and main data structures
 DceManager
 ----------
 
-The **DceManager** is somewhat the entry point of DCE because it is this class that will create virtual processes and manage their execution.
+The **DceManager** is somewhat the entry point of DCE. It will create virtual processes and manages their execution.
 There is an instance of **DceManager** which is associated to each node which need to virtualize the execution of a process.
 In reality, the developer uses the classes **DceManagerHelper** and **DceApplicationHelper**. 
 
@@ -99,8 +100,9 @@ The same way the libraries used by the executable must also be linked with the e
 DCE offers several actually Loader:
 
 1. **CoojaLoader**: it has the following characteristics: it loads into memory only a copy of the code, by cons it duplicates data (ie global variables and static). For each change of context there are 2 memory copies: backup data of the current context then restoration of context memory that will take control. Comment: it is rather reliable,the size of the copied memory size depends on the total static and global variables, and in general there is little, in a well designed executable. 
-2. **CopyLoader**: This is the simplest, it copies each executable and libraries before loading them in order that dlopen loads a new copy of the code and data. Comment: there is no operation during the particular context changes, but the memory consumption is important.
-3. **DlmLoader** : Uses a specialized loader to not duplicate the code but only the data but without special operations to do when changing context. Comment: offers the best performance in memory and cpu, but not very reliable especially during the unloading phase.
+2. **DlmLoader** : Uses a specialized loader to not duplicate the code but only the data but without special operations to do when changing context. Comment: offers the best performance in memory and cpu, but not very reliable especially during the unloading phase.
+
+.. 2. **CopyLoader**: This is the simplest, it copies each executable and libraries before loading them in order that dlopen loads a new copy of the code and data. Comment: there is no operation during the particular context changes, but the memory consumption is important.
 
 
 Follow a very simple example
@@ -123,7 +125,7 @@ This executable used by the scenario do only a sleep of ten seconds:
     return 1;
   }
 
-The NS3/DCE scenario execute **tenseconds** one time starting at time zero:
+The |ns3|/DCE scenario execute **tenseconds** one time starting at time zero:
 
 :: 
 
@@ -324,7 +326,7 @@ Now we can put a breakpoint before the sleep of **tenseconds** and follow the co
   
 We can notice that **sleep** call **dce_sleep** which call **Wait**, this **Wait** method is from the class **TaskManager**.
 **TaskManager** is a major class of **DCE** and we will detail it below.
-Basically **Wait** schedules and event in NS3 event queue (in order to be woken up after sleep time) and give the control to another **Task**.   
+Basically **Wait** schedules and event in |ns3| event queue (in order to be woken up after sleep time) and give the control to another **Task**.   
 Now we can put a breakpoint in **ns3::DefaultSimulatorImpl::ProcessOneEvent** and see the time advance up to 10s:
 
 ::
@@ -353,11 +355,11 @@ Now we can put a breakpoint in **ns3::DefaultSimulatorImpl::ProcessOneEvent** an
   
 This next event will wake the thread 2 will therefore complete the **sleep** of our scenario.
 
-In summary we saw briefly that DCE uses the events of NS3 to schedule the execution between different tasks.
+In summary we saw briefly that DCE uses the events of |ns3| to schedule the execution between different tasks.
 
-TODO
-====
+.. TODO
+.. ====
 
-Explain how to implement a missing method. Show the error message then implement it ...
+.. Explain how to implement a missing method. Show the error message then implement it ...
 
 
