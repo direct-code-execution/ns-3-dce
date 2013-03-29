@@ -91,7 +91,7 @@ int main (int argc, char *argv[])
       cmd_oss << "route add 10.2.0.0/16 via " << if2.GetAddress (1, 0) << " dev sim1";
       LinuxStackHelper::RunIp (routers.Get (i), Seconds (0.2), cmd_oss.str ().c_str ());
 
-      setPos (routers.Get (i), 50, i * 50, 0);
+      setPos (routers.Get (i), 50, i * 20, 0);
     }
 
   // default route
@@ -129,8 +129,8 @@ int main (int argc, char *argv[])
 
   apps.Start (Seconds (4));
 
-  setPos (nodes.Get (0), 0, 50 * (nRtrs - 1) / 2, 0);
-  setPos (nodes.Get (1), 100, 50 * (nRtrs - 1) / 2, 0);
+  setPos (nodes.Get (0), 0, 20 * (nRtrs - 1) / 2, 0);
+  setPos (nodes.Get (1), 100, 20 * (nRtrs - 1) / 2, 0);
 
   Simulator::Stop (Seconds (200.0));
   Simulator::Run ();
