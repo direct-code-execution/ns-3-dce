@@ -326,7 +326,8 @@ def _build_headers(bld, name, headers):
         print >> outfile, "#endif"
 
         outfile.close()
-    target = os.path.join('include', 'ns3', '%s-module.h' % name)
+    out_relpath = os.path.relpath(bld.out_dir, str(bld.out_dir) + "/" + bld.path.relpath_gen(bld.srcnode))
+    target = os.path.join(out_relpath, 'include', 'ns3', '%s-module.h' % name)
     bld(rule=run, source=headers, target=target)
     bld(use=[target], target='NS3_HEADERS_%s' % name.upper(),
         export_includes=['include'])
@@ -419,6 +420,7 @@ class Module:
         _build_library(bld, name, *k, **kw)
         _build_headers(bld, name, kw.get('headers'))
         _build_pkgconfig(bld, name, kw.get('use', []))
+        bld.env['NS3_MODULES_FOUND'] = bld.env['NS3_MODULES_FOUND'] + [name]
     def add_example(self, needed = [], **kw):
         import os
         if not self._needed_ok:
