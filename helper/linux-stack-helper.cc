@@ -136,7 +136,7 @@ LinuxStackHelper::SysctlSet (NodeContainer c, std::string path, std::string valu
         {
           continue;
         }
-      Simulator::ScheduleWithContext (node->GetId (), Seconds (0.0),
+      Simulator::ScheduleWithContext (node->GetId (), Seconds (0.1),
                                       MakeEvent (&LinuxSocketFdFactory::Set, sock,
                                                  path, value));
     }
