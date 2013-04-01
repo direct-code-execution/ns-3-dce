@@ -145,10 +145,13 @@ def _check_win32(conf):
 def _check_dependencies(conf, required, mandatory):
     found = []
     for module in required:
-        retval = conf.check_cfg(package = 'libns3-dev-%s-%s'  % (module.lower() , conf.env['LIB_SUFFIX']) ,
-                                args='--cflags --libs', mandatory=mandatory,
-                                msg="Checking for ns3-%s" % module.lower(),
-                                uselib_store='NS3_%s' % module.upper())
+        try:
+            retval = conf.check_cfg(package = 'libns3-dev-%s-%s'  % (module.lower() , conf.env['LIB_SUFFIX']) ,
+                                    args='--cflags --libs', mandatory=mandatory,
+                                    msg="Checking for ns3-%s" % module.lower(),
+                                    uselib_store='NS3_%s' % module.upper())
+        except conf.errors.ConfigurationError:
+            retval = None
         if not retval is None:
             found.append(module)
     import copy
