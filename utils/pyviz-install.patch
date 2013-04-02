@@ -1,5 +1,3 @@
-Bug 1612 - pyviz (visualizer) will not be installed
-
 diff --git a/src/visualizer/wscript b/src/visualizer/wscript
 --- a/src/visualizer/wscript
 +++ b/src/visualizer/wscript
@@ -15,7 +13,7 @@ diff --git a/src/visualizer/wscript b/src/visualizer/wscript
 +        'visualizer/__init__.py',
 +        'visualizer/svgitem.py',
 +        ]
-+    pyviz = bld.new_task_gen(features='py')
++    pyviz = bld(features='py')
 +    pyviz.source = vissrc
 +    pyviz.install_path = '${PYTHONARCHDIR}/visualizer'
 +
@@ -26,7 +24,7 @@ diff --git a/src/visualizer/wscript b/src/visualizer/wscript
 +        'visualizer/plugins/show_last_packets.py',
 +        'visualizer/plugins/wifi_intrastructure_link.py'
 +        ]
-+    pyvizplug = bld.new_task_gen(features='py')
++    pyvizplug = bld(features='py')
 +    pyvizplug.source = visplugin_src
 +    pyvizplug.install_path = '${PYTHONARCHDIR}/visualizer/plugins'
 +
