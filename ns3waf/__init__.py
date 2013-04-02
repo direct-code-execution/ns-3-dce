@@ -258,6 +258,7 @@ def _dirs(source):
     return uniq(dirs)
 
 def _build_library(bld, name, *k, **kw):
+    bld.set_group('ns3modulebuild')
     import os
     source = kw.get('source')
     if source is None:
@@ -300,6 +301,7 @@ def _build_library(bld, name, *k, **kw):
 
 
 def _build_headers(bld, name, headers):
+    bld.set_group('ns3moduleheader')
     if headers is None:
         return
     import os
@@ -400,6 +402,7 @@ Cflags: %s
     outfile.close()
 
 def _build_pkgconfig(bld, name, use):
+    bld.set_group('ns3modulebuild')
     import os
     def run(task):
         _generate_pcfile(bld, name, use, bld.env['PREFIX'], task.outputs[0].abspath())

@@ -397,6 +397,8 @@ def build(bld):
     bld.env['NS3_RUNNABLE_PROGRAMS'] = []
     bld.env['NS3_RUNNABLE_SCRIPTS'] = []
 
+    bld.add_group('ns3moduleheader')
+    bld.add_group('ns3modulebuild')
     build_netlink(bld)
 
     if bld.env['KERNEL_STACK']:
