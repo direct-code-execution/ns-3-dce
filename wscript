@@ -577,26 +577,26 @@ def build(bld):
     # The very small libc used to replace the glibc
     # and forward to the dce_* code
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc', 'model/libc-global-variables.cc'],
-              target='lib/c-ns3', cflags=['-g'],
+              target='lib/c-ns3', cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage'],
               defines=['LIBSETUP=libc_setup'],
-              linkflags=['-nostdlib', 
+              linkflags=['-nostdlib', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'libc.version'),
                          '-Wl,-soname=libc.so.6'])
     # The very small libpthread used to replace the glibc
     # and forward to the dce_* code
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc'],
-              target='lib/pthread-ns3', cflags=['-g'],
+              target='lib/pthread-ns3', cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage'],
               defines=['LIBSETUP=libpthread_setup'],
-              linkflags=['-nostdlib', '-lc',
+              linkflags=['-nostdlib', '-lc', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'libpthread.version'),
                          '-Wl,-soname=libpthread.so.0'])
 
     # The very small librt used to replace the glibc
     # and forward to the dce_* code
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc'],
-              target='lib/rt-ns3', cflags=['-g'],
+              target='lib/rt-ns3', cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage'],
               defines=['LIBSETUP=librt_setup'],
-              linkflags=['-nostdlib', '-lc',
+              linkflags=['-nostdlib', '-lc', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'librt.version'),
                          '-Wl,-soname=librt.so.1'])
 
