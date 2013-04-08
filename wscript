@@ -115,7 +115,10 @@ def configure(conf):
     conf_myscripts(conf)
     
     if Options.options.with_elf_loader is not None and os.path.isdir(Options.options.with_elf_loader):
-         conf.env['ELF_LOADER_PATH'] = Options.options.with_elf_loader
+         if os.path.exists(Options.options.with_elf_loader + '/ldso'):
+             conf.env['ELF_LOADER_PATH'] = Options.options.with_elf_loader
+         else:
+             Logs.warn("elf-loader does not exist")
 
     try:
         conf.find_program('doxygen', var='DOXYGEN')
