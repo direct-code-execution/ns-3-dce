@@ -96,6 +96,7 @@ def configure(conf):
     conf.env.append_value('LINKFLAGS', '-pthread')
     conf.check (lib='dl', mandatory = True)
     conf.check_cc(fragment='int main() {__get_cpu_features();}\n', msg='Checking for glibc get_cpu_features', define_name='HAVE_GETCPUFEATURES', mandatory=False)
+    conf.check_cc(fragment='int main() {__secure_getenv("test");}\n', msg='Checking for glibc __secure_getenv', define_name='HAVE___SECURE_GETENV', mandatory=False)
      
     vg_h = conf.check(header_name='valgrind/valgrind.h', mandatory=False)
     vg_memcheck_h = conf.check(header_name='valgrind/memcheck.h', mandatory=False)

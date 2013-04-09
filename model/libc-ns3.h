@@ -96,7 +96,9 @@ DCE (strtoul)
 DCE (strtoull)
 DCET (double, strtod)
 DCE (getenv)
+#ifdef HAVE___SECURE_GETENV
 NATIVE (__secure_getenv)
+#endif
 DCE (putenv)
 DCE (setenv)
 DCE (unsetenv)
