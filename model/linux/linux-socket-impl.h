@@ -22,6 +22,7 @@
 
 #include "ns3/socket.h"
 #include "ns3/event-id.h"
+#include <sys/socket.h>
 
 namespace ns3 {
 
