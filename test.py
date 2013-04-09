@@ -797,6 +797,7 @@ class Job:
         self.returncode = False
         self.elapsed_time = 0
         self.build_path = ""
+        self.err_messages = ""
 
     #
     # A job is either a standard job or a special job indicating that a worker
@@ -985,6 +986,7 @@ class worker_thread(threading.Thread):
                     print standard_err
                     print "---------- end standard err ----------"
 
+                job.err_messages = standard_err
                 self.output_queue.put(job)
 
 #
@@ -1630,6 +1632,7 @@ def run_tests():
                 f.write('  <Result>SKIP</Result>\n')
             else:
                 f.write('  <Result>CRASH</Result>\n')
+                f.write('  <CrashDetails>%s  </CrashDetails>\n' % job.err_messages)
 
             f.write('  <Time real="%.3f"/>\n' % job.elapsed_time)
             f.write('</Example>\n')
@@ -1698,7 +1701,8 @@ def run_tests():
                     f = open(xml_results_file, 'a')
                     f.write("<Test>\n")
                     f.write("  <Name>%s</Name>\n" % job.display_name)
-                    f.write('  <Result>CRASH</Suite>\n')
+                    f.write('  <Result>CRASH</Result>\n')
+                    f.write('  <CrashDetails>%s  </CrashDetails>\n' % job.err_messages)
                     f.write("</Test>\n")
                     f.close()
 
