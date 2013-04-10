@@ -19,13 +19,12 @@ do
 
 #gcov *.gcda
 find $1 -name "*.gcno" | grep -v files- | cpio -pud ${node}/ > /dev/null
-../ns-3-dev-dce/utils/lcov/lcov --no-checksum -q -c -d ${node}${APP_SRC_DIR} -b ${APP_SRC_DIR} -o dce-run-${node}.info 
+./utils/lcov/lcov -q -c -d ${node}${APP_SRC_DIR} -b ${APP_SRC_DIR} -o dce-run-${node}.info 
 CMD_OPT="$CMD_OPT"" -a dce-run-${node}.info"
 
 done
 
-../ns-3-dev-dce/utils/lcov/lcov --no-checksum -q ${CMD_OPT} -o dce-run.info
-#../ns-3-dev-dce/utils/lcov/genhtml -q --legend -o ${HTML_DIR} dce-run.info > /dev/null
+./utils/lcov/lcov -q ${CMD_OPT} -o dce-run.info
 
 rm -f dce-run-files-*.info
 #rm -f dce-run.info
