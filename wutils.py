@@ -120,7 +120,11 @@ def get_proc_env(os_env=None):
     else:
         pymoddir = ""
     import glob
-    pyvizdir = glob.glob(bld.env.NS3_DIR + '/lib/python*/site-packages')[0]
+    pyns3dir = glob.glob(bld.env.NS3_DIR + '/lib/python*/site-packages')
+    if len(pyns3dir) is not 0:
+        pyvizdir = pyns3dir[0]
+    else:
+        pyvizdir = ''
     if 'PYTHONPATH' in proc_env:
         proc_env['PYTHONPATH'] = os.pathsep.join([pymoddir, pyvizdir] + [proc_env['PYTHONPATH']])
     else:
