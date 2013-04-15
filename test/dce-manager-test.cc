@@ -196,6 +196,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
     {  "test-bug-multi-select", 30, "", true, false},
     {  "test-tsearch", 0, "", false, false},
     {  "test-clock-gettime", 0, "", false, false},
+    {  "test-gcc-builtin-apply", 0, "", false, false},
     // XXX: not completely tested      {  "test-signal", 30, "" , false},
   };
 

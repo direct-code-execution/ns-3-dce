@@ -12,6 +12,7 @@ struct Libc
 #define DCE(name) void (*name ## _fn) (...);
 
 #define DCET(rtype, name) DCE (name)
+#define NATIVET(rtype, name) NATIVE (name)
 
 #define DCE_EXPLICIT(name,rtype,...) rtype (*name ## _fn) (__VA_ARGS__);
 #include "libc-ns3.h"

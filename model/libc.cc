@@ -15,6 +15,7 @@ extern "C" {
 // \see http://tigcc.ticalc.org/doc/gnuexts.html#SEC67___builtin_apply_args
 // FIXME: 120925: 128 was heuristically picked to pass the test under 32bits environment.
 #define NATIVE DCE
+#define NATIVET DCET
 #define NATIVE_WITH_ALIAS DCE_WITH_ALIAS
 #define NATIVE_WITH_ALIAS2 DCE_WITH_ALIAS2
 

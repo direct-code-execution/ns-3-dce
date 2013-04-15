@@ -24,7 +24,7 @@ New user-visible features
 
 Bugs fixed
 ----------
-- 
+- Bug 1624 - glibc-2.15/2.16 on 32bit oses broke dce-iperf
 
 Known issues
 ------------

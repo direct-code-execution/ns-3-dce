@@ -89,7 +89,7 @@ DCE (realloc)
 NATIVE (atoi)
 NATIVE (atol)
 NATIVE (atoll)
-NATIVE (atof)
+NATIVET (double, atof)
 DCE_WITH_ALIAS2 (strtol, __strtol_internal)
 DCET (long long int, strtoll)
 DCE (strtoul)
@@ -584,6 +584,7 @@ NATIVE (__cmsg_nxthdr)
 #undef DCET
 #undef DCE_EXPLICIT
 #undef NATIVE
+#undef NATIVET
 #undef NATIVE_WITH_ALIAS
 #undef NATIVE_WITH_ALIAS2
 #undef NATIVE_EXPLICIT

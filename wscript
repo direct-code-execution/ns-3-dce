@@ -222,6 +222,7 @@ def build_dce_tests(module, bld):
              ['test-tsearch', []],
              ['test-signal', []],
              ['test-clock-gettime', []],
+             ['test-gcc-builtin-apply', []],
              ]
     for name,uselib in tests:
         module.add_test(**dce_kw(target='bin_dce/' + name, source = ['test/' + name + '.cc'],

@@ -151,6 +151,7 @@ void libc_dce (struct Libc **libc)
 
 #define NATIVE(name)                                                    \
   (*libc)->name ## _fn = (func_t)name;
+#define NATIVET(rtype, name) NATIVE(name)
 
 #define NATIVE_EXPLICIT(name, type)                             \
   (*libc)->name ## _fn = (func_t)((type)name);
