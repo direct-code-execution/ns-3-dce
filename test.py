@@ -744,9 +744,17 @@ def run_job_synchronously(shell_command, directory, valgrind, is_python, build_p
         else:
             path_cmd = os.path.join (NS3_BUILDDIR, shell_command)
 
+    xml_valgrind_opt = ''
     if valgrind:
-        cmd = "valgrind --suppressions=%s --leak-check=full --show-reachable=yes --error-exitcode=2 %s" % (suppressions_path, 
-            path_cmd)
+        if options.valgrind_xml:
+            start = shell_command.find('--test-name=') + len('--test-name=')
+            end = shell_command.find(' ', start, -1)
+            if start is not len('--test-name=')-1:
+                xml_valgrind_opt = '--xml=yes --xml-file=valgrind-%s-memcheck.xml'% (shell_command[start:end])
+            else:
+                xml_valgrind_opt = '--xml=yes --xml-file=valgrind-%s-memcheck.xml'% (os.path.basename(path_cmd))
+        cmd = "valgrind --suppressions=%s --leak-check=full --show-reachable=yes --error-exitcode=2 %s %s" % (suppressions_path,
+            xml_valgrind_opt, path_cmd)
     else:
         cmd = path_cmd
 
@@ -1796,6 +1804,9 @@ def main(argv):
 
     parser.add_option("-g", "--grind", action="store_true", dest="valgrind", default=False,
                       help="run the test suites and examples using valgrind")
+
+    parser.add_option("-d", "--grind-xml", action="store_true", dest="valgrind_xml", default=False,
+                      help="generate xml report for valgrind test (with -g option)")
 
     parser.add_option("-k", "--kinds", action="store_true", dest="kinds", default=False,
                       help="print the kinds of tests available")
