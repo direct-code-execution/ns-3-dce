@@ -289,6 +289,10 @@ def build_dce_examples(module, bld):
     module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
                        target='bin/dce-ccn-cache',
                        source=['example/ccnx/dce-ccn-cache.cc', 'example/ccnx/misc-tools.cc'])
+
+    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim', 'csma'], 
+                       target='bin/dce-iperf',
+                       source=['example/dce-iperf.cc', 'example/ccnx/misc-tools.cc'])
                        
 #    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
 #                       target='bin/dce-xorp-simple',
@@ -317,10 +321,6 @@ def build_dce_kernel_examples(module):
     module.add_example(needed = ['core', 'network', 'dce', 'csma'], 
                        target='bin/dce-dccp',
                        source=['example/dce-dccp.cc'])
-
-    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim', 'csma'], 
-                       target='bin/dce-iperf',
-                       source=['example/dce-iperf.cc', 'example/ccnx/misc-tools.cc'])
     
     module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
                        target='bin/dce-ccnd-udp-2-nodes',

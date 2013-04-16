@@ -98,7 +98,7 @@ If you would like to see what is going on this script, please refer to the :ref:
 
 ::
 
-  $ cd source/dce
+  $ cd source/ns-3-dce
   $ ./waf --run dce-udp-simple
   $ ls 
     elf-cache  files-0 exitprocs
@@ -150,7 +150,7 @@ Once you successfully installed DCE with bake, you can execute the example using
 
 ::
 
-  cd source/dce
+  cd source/ns-3-dce
   ./waf --run dce-iperf
   
 As we saw in the previous example the experience creates directories containing the outputs of different executables,
@@ -196,7 +196,7 @@ if you have already built the advanced mode, you can use Linux network stack ove
 
 ::
 
-  cd source/dce
+  cd source/ns-3-dce
   ./waf --run "dce-iperf --kernel=1"
 
 the command line option **--kernel=1** makes the simulation use the Linux kernel stack instead of |ns3| network stack.

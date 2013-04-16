@@ -9,6 +9,7 @@
 #include "ccnx/misc-tools.h"
 
 using namespace ns3;
+NS_LOG_COMPONENT_DEFINE ("DceIperf");
 // ===========================================================================
 //
 //         node 0                 node 1
@@ -61,9 +62,15 @@ int main (int argc, char *argv[])
     }
   else
     {
+#ifdef KERNEL_STACK
       dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
       LinuxStackHelper stack;
       stack.Install (nodes);
+#else
+      NS_LOG_ERROR ("Linux kernel stack for DCE is not available. build with dce-linux module.");
+      // silently exit
+      return 0;
+#endif
     }
 
   Ipv4AddressHelper address;
@@ -72,10 +79,12 @@ int main (int argc, char *argv[])
 
   // setup ip routes
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+#ifdef KERNEL_STACK
   if (useKernel)
     {
       LinuxStackHelper::PopulateRoutingTables ();
     }
+#endif
 
   dceManager.Install (nodes);
 
