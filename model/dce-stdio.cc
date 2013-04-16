@@ -90,6 +90,10 @@ int my_write_unconditional (_IO_FILE *file)
   errno = EBADF;
   return -1;
 }
+off64_t my_seek_unconditional (_IO_FILE *file, off64_t where, int whence)
+{
+  return -1;
+}
 int my_stat (_IO_FILE *file, void *buf)
 {
   int result = dce_fstat64 (file->_fileno, (struct stat64 *)buf);
@@ -343,6 +347,7 @@ int dce_fclose_unconditional (FILE *file)
   memcpy (&vtable, fp->vtable, sizeof(struct my_IO_jump_t));
   vtable.__close = (void*)my_close_unconditional;
   vtable.__write = (void*)my_write_unconditional;
+  vtable.__seek = (void*)my_seek_unconditional;
   fp->vtable = &vtable;
   fclose (file);
   return 0;
