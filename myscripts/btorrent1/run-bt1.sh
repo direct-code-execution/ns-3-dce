@@ -12,7 +12,7 @@ cp erel_working.jpg mycat.tor files-0
 echo copy torrent file to node 1
 cp mycat.tor files-1
 echo run scenario dce-bt1
-dce-runner $BASEDCE/build/myscripts/btorrent1/bin/dce-bt1
+../../waf --run dce-bt1
 echo the file erel_working.jpg must exist in node 1
 echo ls -l files-1
 ls -l files-1

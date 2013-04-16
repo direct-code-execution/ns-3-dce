@@ -28,7 +28,7 @@ tar xf libowfat-0.28.tar.bz2
 ln -s libowfat-0.28 libowfat   # this link is mandatory because opentracker links against ../libowfat/libowfat.a
 cd libowfat
 # Apply a patch to the makefiles
-patch -p1 < dce-libowfat028.patch
+patch -p1 < ../dce-libowfat028.patch
 make
 
 As result you must have a brand new library file named libowfat.a.
@@ -39,7 +39,7 @@ cd ..
 cvs -d :pserver:anoncvs@cvs.erdgeist.org:/home/cvsroot co opentracker
 cd opentracker
 CFLAGS=-fPIC LDFLAGS=-pie make
-cp opentracker $BASEDCE/build/bin_dce
+cp opentracker (bake build directory)/build/bin_dce
 
 ----------------------------------------------------------------------------------------------------------------
 
@@ -52,11 +52,11 @@ tar xf libtorrent-rasterbar-0.16.3.tar.gz
 mkdir rasterbar
 cd libtorrent-rasterbar-0.16.3
 ./configure --with-boost-system=mt --prefix=$PWD/../rasterbar --enable-tests --enable-examples --enable-debug --disable-dht --disable-geoip  --disable-pool-allocators
-patch -p1 < dce-libtorrent16.3.patch
+patch -p1 < ../dce-libtorrent16.3.patch
 make V=1
 make install
-cp ../rasterbar/bin/client_test $BASEDCE/build/bin_dce
-cp ../rasterbar/bin/make_torrent $BASEDCE/build/bin_dce
+cp ../rasterbar/bin/client_test (bake build directory)/build/bin_dce
+cp ../rasterbar/bin/make_torrent (bake build directory)/build/bin_dce
 
 -----------------------------------------------------------------------------------------------------------------
 
