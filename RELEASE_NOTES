@@ -6,21 +6,40 @@ This file contains Direct Code Execution release notes (most recent releases fir
 Please refer the page http://www.nsnam.org/projects/direct-code-execution/ for detailed instructions
 
 Release 1.0
-=============
+===========
 
 Availability
 ------------
-Please use the following to download using mercurial:
-hg clone http://code.nsnam.org/ns-3-dce
+In order to use DCE, please use bake tool to install DCE.
+The followings are the basic steps to use DCE.
 
-Supported platforms
--------------------
-- Fedora Core 15 
-- Ubuntu 10.04
+ % bake.py configure -e dce-ns3
+ % bake.py download
+ % bake.py build
+
+For more information, please refer the document.
+
+Tested platforms
+-----------------
+- Fedora Core 18 32bit
+- Ubuntu 10.04 32/64bit
+- Ubuntu 12.04 64bit
+- Ubuntu 12.10 64bit
 
 New user-visible features
 -------------------------
-- 
+- gcov coverage test support (Bug 1594)
+- DCE Cradle (Bug 1593)
+- Tested applications
+-- ccnx
+-- quagga
+-- umip
+-- iperf
+-- ping/ping6
+-- iproute (ip command)
+-- thttpd
+-- wget
+
 
 Bugs fixed
 ----------
@@ -28,3 +47,6 @@ Bugs fixed
 
 Known issues
 ------------
+- elf-loader with PthreadFiberManager crashes (Bug 1513)
+- no python binding (Bug 1455)
+- the lack of IPv6 support with LinuxStackHelper
