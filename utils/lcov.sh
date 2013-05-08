@@ -1,7 +1,8 @@
 #!/bin/bash
 #set -x
 
-DIRS=`/bin/ls files-* -d`
+TESTDIR=${TESTDIR:-.}
+DIRS=`find ${TESTDIR} -name "files-*" | sort`
 CMD_OPT=""
 KERN_DIR="ns-3-linux"
 KERN_DIR="net-next-sim"
@@ -17,14 +18,20 @@ cd ${DCE_DIR}
 for node in ${DIRS}
 do
 
+echo "Processing "${node}
 #gcov *.gcda
-find $1 -name "*.gcno" | grep -v files- | cpio -pud ${node}/ > /dev/null
-./utils/lcov/lcov -q -c -d ${node}${APP_SRC_DIR} -b ${APP_SRC_DIR} -o dce-run-${node}.info 
-CMD_OPT="$CMD_OPT"" -a dce-run-${node}.info"
+find $1 -name "*.gcno" | grep -v files- | cpio -pud ${node}/ |&grep -v blocks > /dev/null
+OUT_NODE=`echo ${node} |sed "s/CUT\//CUT\_/g"`
+./utils/lcov/lcov --rc lcov_branch_coverage=1 -q -c -d ${node}${APP_SRC_DIR} -b ${APP_SRC_DIR} -o dce-run-`basename ${OUT_NODE}`.info 
+CMD_OPT="$CMD_OPT"" -a dce-run-`basename ${OUT_NODE}`.info"
 
 done
 
-./utils/lcov/lcov -q ${CMD_OPT} -o dce-run.info
+./utils/lcov/lcov --rc lcov_branch_coverage=1 -q ${CMD_OPT} -o dce-run.info
 
-rm -f dce-run-files-*.info
+if [ -n "$HTML_REPORT" ] ; then
+ ./utils/lcov/genhtml --rc lcov_branch_coverage=1 -q dce-run.info -o lcov-report
+fi
+
+rm -f dce-run-*.info
 #rm -f dce-run.info
