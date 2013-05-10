@@ -14,7 +14,7 @@
 #ifndef __RTLD_OPENEXEC
 // internal glibc flag that we also use with the same semantics.
 #define __RTLD_OPENEXEC 0x20000000
-#endif 
+#endif
 
 static void *lookup_entry_point (void *h)
 {
@@ -57,9 +57,13 @@ int main (int argc, char *argv[])
       return 1;
     }
   void *entry = lookup_entry_point (h);
-  argv[-1] = (char*)((long)argc);
-  argv[0] = argv[1];
-  argv[1] = "--ns3::DceManagerHelper::LoaderFactory=ns3::DlmLoaderFactory[]";
+  argv[-1] = (char*)((long)argc + 1);
+  int i = 0;
+  for (i = 0; i < argc-1; i++)
+    {
+      argv[i] = argv[i+1];
+    }
+  argv[argc-1] = "--ns3::DceManagerHelper::LoaderFactory=ns3::DlmLoaderFactory[]";
   argv[argc] = "--ns3::TaskManager::FiberManagerType=UcontextFiberManager";
 #if defined (__x86_64__)
   __asm__ ("\txor %%rbp,%%rbp\n"
