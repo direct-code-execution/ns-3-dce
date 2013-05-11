@@ -123,26 +123,26 @@ The field **ret** is also affected in return and it contain the mask of poll eve
 already occured on the corresponding socket.
 Most of the kernel code is in the file sim-socket.c it consists of two structures, and the following functions:
 
-+------------------------+--------------------------------------------------------------------------------------------------------+
-+ NAME                   +  DESCRIPTION                                                                                           +
-+------------------------+--------------------------------------------------------------------------------------------------------+
-+ sim_pollwake           +  Function called by the kernel when the arrival of an event on the socket, if the event is expected    +
-+                        +  by DCE, the function forwards it to DCE.                                                              +
-+------------------------+--------------------------------------------------------------------------------------------------------+
-+ sim_pollwait           +  Function called by the kernel, its role is to register the poll table in the wait queue.              +
-+                        +                                                                                                        +
-+------------------------+--------------------------------------------------------------------------------------------------------+
-+ sim_sock_poll          +  Function called by DCE, it is the interface between the DCE's poll and the kernel's poll.             +
-+                        +                                                                                                        +
-+------------------------+--------------------------------------------------------------------------------------------------------+
-+ sim_sock_pollfreewait  +  Function called by DCE allows it to unregister from the wait queue.                                   +
-+                        +                                                                                                        +
-+------------------------+--------------------------------------------------------------------------------------------------------+
-+ struct poll_table_ref  +  This is the same struct as that of DCE.                                                               +
-+                        +                                                                                                        +
-+------------------------+--------------------------------------------------------------------------------------------------------+
-+ struct sim_ptable_entry+  This is used for the entry in the wait queue of the socket.                                           +
-+                        +                                                                                                        +
-+------------------------+--------------------------------------------------------------------------------------------------------+
++-------------------------+--------------------------------------------------------------------------------------------------------+
+| NAME                    |  DESCRIPTION                                                                                           |
++-------------------------+--------------------------------------------------------------------------------------------------------+
+| sim_pollwake            |  Function called by the kernel when the arrival of an event on the socket, if the event is expected    |
+|                         |  by DCE, the function forwards it to DCE.                                                              |
++-------------------------+--------------------------------------------------------------------------------------------------------+
+| sim_pollwait            |  Function called by the kernel, its role is to register the poll table in the wait queue.              |
+|                         |                                                                                                        |
++-------------------------+--------------------------------------------------------------------------------------------------------+
+| sim_sock_poll           |  Function called by DCE, it is the interface between the DCE's poll and the kernel's poll.             |
+|                         |                                                                                                        |
++-------------------------+--------------------------------------------------------------------------------------------------------+
+| sim_sock_pollfreewait   |  Function called by DCE allows it to unregister from the wait queue.                                   |
+|                         |                                                                                                        |
++-------------------------+--------------------------------------------------------------------------------------------------------+
+| struct poll_table_ref   |  This is the same struct as that of DCE.                                                               |
+|                         |                                                                                                        |
++-------------------------+--------------------------------------------------------------------------------------------------------+
+| struct sim_ptable_entry |  This is used for the entry in the wait queue of the socket.                                           |
+|                         |                                                                                                        |
++-------------------------+--------------------------------------------------------------------------------------------------------+
 
 # TODO add example , gdb breakpoint to follow the behavior in live

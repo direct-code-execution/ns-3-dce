@@ -21,10 +21,16 @@ For more information, please refer the document.
 
 Tested platforms
 -----------------
-- Fedora Core 18 32bit
-- Ubuntu 10.04 32/64bit
-- Ubuntu 12.04 64bit
+- Ubuntu 10.04 32bit/64bit
+- Ubuntu 10.10 32bit/64bit
+- Ubuntu 11.04 32bit/64bit
+- Ubuntu 11.10 32bit/64bit
+- Ubuntu 12.04 32bit/64bit
 - Ubuntu 12.10 64bit
+- Fedora 14 32bit/64bit
+- Fedora 15 32bit/64bit
+- Fedora 16 32bit/64bit
+- Fedora 18 32bit
 
 New user-visible features
 -------------------------

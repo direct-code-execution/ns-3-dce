@@ -182,6 +182,14 @@ htmlhelp_basename = 'DCE'
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
+#latex_documents = [
+#  ('index', 'ns-3-dce-manual.tex', u'ns-3 Direct Code Execution (DCE) Manual',
+#   u'ns-3 project', 'manual'),
+#]
+
+# The name of an image file (relative to this directory) to place at the top of
+# the title page.
+latex_logo = '../ns3_html_theme/static/ns-3.png'
 
 
 # The name of an image file (relative to this directory) to place at the top of

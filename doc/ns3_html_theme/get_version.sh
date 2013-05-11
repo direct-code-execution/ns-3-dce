@@ -179,7 +179,7 @@ if [ $PUBLIC -eq 1 ]; then
 	vers_href="http://code.nsnam.org/ns-3-dev/rev/$version"
 	version="<a href=\\\"$vers_href\\\">$version$dirty</a>"
 	
-	echo "var ns3_version = \"ns-3-dev @ $version\";"    >> $outf
+	echo "var ns3_version = \"ns-3-dce @ $version\";"    >> $outf
 	echo "var ns3_release = \"docs/\";" >> $outf
     fi
     echo "var ns3_local = \"\";"                             >> $outf
