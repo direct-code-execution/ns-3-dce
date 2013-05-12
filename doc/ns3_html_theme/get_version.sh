@@ -169,18 +169,18 @@ if [ $PUBLIC -eq 1 ]; then
     
     if [ $distance -eq 1 ]; then
 	# Like "http://www.nsnam.org/ns-3-14"
-	vers_href="http://www.nsnam.org/ns-3-${version#ns-3.}"
+	vers_href="http://www.nsnam.org/overview/projects/direct-code-execution/${version#ns-3.}"
 	vers_href="<a href=\\\"$vers_href\\\">$version$dirty</a>"
 	
 	echo "var ns3_version = \"Release $vers_href\";"     >> $outf
-	echo "var ns3_release = \"docs/release/${version#ns-}/\";" >> $outf
+	echo "var ns3_release = \"docs/dce/release/${version#dce-}/\";" >> $outf
     else
 	# Like "http://code.nsnam.org/ns-3-dev/rev/<hash>"
-	vers_href="http://code.nsnam.org/ns-3-dev/rev/$version"
+	vers_href="http://code.nsnam.org/ns-3-dce/rev/$version"
 	version="<a href=\\\"$vers_href\\\">$version$dirty</a>"
 	
 	echo "var ns3_version = \"ns-3-dce @ $version\";"    >> $outf
-	echo "var ns3_release = \"docs/\";" >> $outf
+	echo "var ns3_release = \"docs/dce/\";" >> $outf
     fi
     echo "var ns3_local = \"\";"                             >> $outf
     echo "var ns3_doxy  = \"doxygen/\";"                     >> $outf

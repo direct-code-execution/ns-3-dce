@@ -1,5 +1,7 @@
-var ns3_host = "file:///home/tazaki/hgworks/ns-3-dce-thehajime/ns-3-dev/";
-var ns3_version = "ns-3-dev @ 3c5ea0bd869f";
-var ns3_release = "doc/";
-var ns3_local = "build/";
-var ns3_doxy  = "html/";
+// ns3_version.js:  automatically generated
+//  public urls
+var ns3_host = "/";
+var ns3_version = "Release <a href=\"http://www.nsnam.org/overview/projects/direct-code-execution/dce-1.0\">dce-1.0</a>";
+var ns3_release = "docs/dce/release/1.0/";
+var ns3_local = "";
+var ns3_doxy  = "doxygen/";
