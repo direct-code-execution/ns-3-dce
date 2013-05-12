@@ -107,7 +107,7 @@ Writing wscript
 ---------------
 
 Writing bakeconf.xml (optional)
----------------------------
+-------------------------------
 
 Implementing helper class (optional)
 ------------------------------------

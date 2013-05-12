@@ -11,25 +11,28 @@ Team:
  Hajime Tazaki, Frederic Urbani, Thierry Turletti
 
 Key Result(s):
-*************
+**************
 .. one-sentence, easily accessible description of each result.
+
 TCP goodput performance in |dce_cradle| shows similar results with
 real network configuration and software on Linux.
 
 
 Source(s):
-*********
+**********
 .. papers (appropriately referenced, and with a link), websites, videos.
+
 The paper describing this text was submitted to Workshop on ns-3 2013 (under review).
 
 
 Contacts:
-********
+*********
 .. names / emails.
+
 Hajime Tazaki (tazaki at nict.go.jp)
 
 Introduction:
-************
+*************
 .. Briefly introduce the paper, its motivation, and explain the graph you hoped to replicate.
 
 |dce_cradle| allows us to use ns-3 native application with Linux kerne
@@ -54,7 +57,7 @@ We need to prepare the following simulation codes to conduct the experiment.
 
 
 Results:
-*******
+********
 .. Describe your results.  Do they appear to be the same as the paper?  Assuming you could replicate the key results, what other results do you have?
 
 While the experimentation with ns-3 native TCP stack shows about 83%

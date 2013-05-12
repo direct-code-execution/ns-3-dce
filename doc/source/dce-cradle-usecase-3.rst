@@ -11,27 +11,31 @@ Team:
  Hajime Tazaki, Frederic Urbani, Thierry Turletti
 
 Key Result(s):
-*************
+**************
 .. one-sentence, easily accessible description of each result.
+
 |dce_cradle| does not add much overhead in terms of scaling the
 duration of simulation time compared to Network Simulation Cradle and
 ns-3 native stack.
 
 
 Source(s):
-*********
+**********
 .. papers (appropriately referenced, and with a link), websites, videos.
+
 The paper describing this text was submitted to Workshop on ns-3 2013 (under review).
 
 
 Contacts:
-********
+*********
 .. names / emails.
+
 Hajime Tazaki (tazaki at nict.go.jp)
 
 Introduction:
-************
+*************
 .. Briefly introduce the paper, its motivation, and explain the graph you hoped to replicate.
+
 |dce_cradle| allows us to use ns-3 native application with Linux kerne
 as a network stack.  The key question is: how different/similar
 |dce_cradle| behaves ? This tutorial tries to answer this question
@@ -41,6 +45,7 @@ with showing the performance of actual simulation time.
 Methods:
 ********
 .. How was the experiment implemented and run?  What software and algorithms did you use?  This section might include graphs to validate that a project works as expected.
+
 We need to prepare the following simulation codes to conduct the experiment.
 
 * ns-3-dev
@@ -50,7 +55,7 @@ We need to prepare the following simulation codes to conduct the experiment.
 * |dce_cradle| `patch <https://codereview.appspot.com/download/issue6856090_7001.diff>`_
 
 Results:
-*******
+********
 .. Describe your results.  Do they appear to be the same as the paper?  Assuming you could replicate the key results, what other results do you have?
 
 

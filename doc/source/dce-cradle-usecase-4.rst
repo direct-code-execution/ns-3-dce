@@ -11,7 +11,7 @@ Team:
  Hajime Tazaki, Frederic Urbani, Thierry Turletti
 
 Key Result(s):
-*************
+**************
 .. one-sentence, easily accessible description of each result.
 
 DCCP goodput performance in |dce_cradle| also shows similar results
@@ -19,19 +19,20 @@ with real network configuration and software on Linux.
 
 
 Source(s):
-*********
+**********
 .. papers (appropriately referenced, and with a link), websites, videos.
 
 The paper describing this text was submitted to Workshop on ns-3 2013 (under review).
 
 
 Contacts:
-********
+*********
 .. names / emails.
+
 Hajime Tazaki (tazaki at nict.go.jp)
 
 Introduction:
-************
+*************
 .. Briefly introduce the paper, its motivation, and explain the graph you hoped to replicate.
 
 |dce_cradle| allows us to use ns-3 native application with Linux kerne
@@ -43,6 +44,7 @@ with showing DCCP goodput performance.
 Methods:
 ********
 .. How was the experiment implemented and run?  What software and algorithms did you use?  This section might include graphs to validate that a project works as expected.
+
 We need to prepare the following simulation codes to conduct the experiment.
 
 * ns-3-dev
@@ -53,7 +55,7 @@ We need to prepare the following simulation codes to conduct the experiment.
 * Linux TC (packet loss and delay injection)
 
 Results:
-*******
+********
 .. Describe your results.  Do they appear to be the same as the paper?  Assuming you could replicate the key results, what other results do you have?
 
 The goodput performance of DCCP with |dce_cradle| also obtains
