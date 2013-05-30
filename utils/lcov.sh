@@ -19,6 +19,12 @@ for node in ${DIRS}
 do
 
 echo "Processing "${node}
+GCDA=`find ${node} -name "*.gcda"|wc -l`
+if [ ${GCDA} == "0" ] ; then
+  echo "skipping"
+  continue
+fi
+
 #gcov *.gcda
 find $1 -name "*.gcno" | grep -v files- | cpio -pud ${node}/ |&grep -v blocks > /dev/null
 OUT_NODE=`echo ${node} |sed "s/CUT\//CUT\_/g"`
