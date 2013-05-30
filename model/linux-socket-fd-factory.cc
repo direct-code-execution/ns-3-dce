@@ -442,9 +442,14 @@ LinuxSocketFdFactory::RxFromDevice (Ptr<NetDevice> device, Ptr<const Packet> p,
     unsigned char   h_source[6];
     uint16_t        h_proto;
   } *hdr = (struct ethhdr *)packet.buffer;
-  Mac48Address realFrom = Mac48Address::ConvertFrom (from);
+  TypeId tid;
+  if (TypeId::LookupByNameFailSafe ("ns3::LteUeNetDevice", &tid) && 
+      device->GetInstanceTypeId () != tid)
+    {
+      Mac48Address realFrom = Mac48Address::ConvertFrom (from);
+      realFrom.CopyTo (hdr->h_source);
+    }
   Mac48Address realTo = Mac48Address::ConvertFrom (to);
-  realFrom.CopyTo (hdr->h_source);
   realTo.CopyTo (hdr->h_dest);
   hdr->h_proto = ntohs (protocol);
   m_exported->dev_rx (dev, packet);
@@ -533,8 +538,18 @@ LinuxSocketFdFactory::NotifyAddDeviceTask (Ptr<NetDevice> device)
 
   m_devices.push_back (std::make_pair (device,dev));
   Ptr<Node> node = GetObject<Node> ();
-  node->RegisterProtocolHandler (MakeCallback (&LinuxSocketFdFactory::RxFromDevice, this),
-                                 0, device, true);
+  TypeId tid;
+  if (TypeId::LookupByNameFailSafe ("ns3::LteUeNetDevice", &tid) && 
+      device->GetInstanceTypeId () == tid)
+    {
+      node->RegisterProtocolHandler (MakeCallback (&LinuxSocketFdFactory::RxFromDevice, this),
+                                     0, device, false);
+    }
+  else
+    {
+      node->RegisterProtocolHandler (MakeCallback (&LinuxSocketFdFactory::RxFromDevice, this),
+                                     0, device, true);
+    }
   NotifyDeviceStateChangeTask (device);
 }
 

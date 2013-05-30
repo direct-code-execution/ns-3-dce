@@ -355,6 +355,10 @@ def build_dce_kernel_examples(module):
                        target='bin/dce-mptcp-handoff-v4v6',
                        source=['example/dce-mptcp-handoff-v4v6.cc'])
 
+    module.add_example(needed = ['core', 'network', 'dce', 'point-to-point', 'mobility', 'wifi', 'lte'],
+                       target='bin/dce-mptcp-lte-wifi',
+                       source=['example/dce-mptcp-lte-wifi.cc'])
+
     module.add_example(needed = ['core', 'network', 'dce', 'point-to-point', 'applications'],
                        target='bin/dce-cradle-simple',
                        source=['example/dce-cradle-simple.cc'])

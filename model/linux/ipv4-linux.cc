@@ -286,7 +286,7 @@ Ipv4Linux::AddAddress (uint32_t i, Ipv4InterfaceAddress address)
   RunIp (node, NanoSeconds (++m_nanoSec), oss.str ());
   oss.str ("");
   oss << "link set sim" << i << " up arp "
-      << ((interface->GetDevice ()->IsPointToPoint ()) ? "off" : "on");
+      << ((interface->GetDevice ()->NeedsArp ()) ? "on" : "off");
   RunIp (node, NanoSeconds (++m_nanoSec), oss.str ());
 
   return retVal;
