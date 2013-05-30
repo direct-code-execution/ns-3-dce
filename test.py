@@ -1014,12 +1014,13 @@ def run_tests():
     # Add the proper prefix and suffix to the test-runner name to
     # match what is done in the wscript file.
     #
-    if not len(options.test_runner_name):
+    if not options.dlm_test_runner:
         test_runner_name = "test-runner"
     else:
-        test_runner_name = options.test_runner_name
+        test_runner_name = "test-runner-vdl"
 
-    if test_runner_name == "test-runner-vdl":
+    if options.dlm_test_runner:
+        os.environ["NS_ATTRIBUTE_DEFAULT"] = 'ns3::DceManagerHelper::LoaderFactory=ns3::DlmLoaderFactory[];ns3::TaskManager::FiberManagerType=UcontextFiberManager'
         # set dce-runner path
         dce_runner_path = os.path.join (os.path.dirname(os.path.abspath(__file__)), 'build', 'bin', 'dce-runner')
     else:
@@ -1846,8 +1847,8 @@ def main(argv):
                       metavar="XML-FILE",
                       help="write detailed test results into XML-FILE.xml")
 
-    parser.add_option("-z", "--runner_name", action="store", type="string", dest="test_runner_name", default="test-runner",
-                      help="specify runner program name")
+    parser.add_option("-z", "--dlm", action="store_true", dest="dlm_test_runner", default=False,
+                      help="execute test runner with external elf-loader.")
 
     global options
     options = parser.parse_args()[0]
