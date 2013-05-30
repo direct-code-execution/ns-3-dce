@@ -1325,8 +1325,8 @@ def run_tests():
             job.set_is_example(False)
             job.set_is_pyexample(False)
             job.set_display_name(test)
-            job.set_tmp_file_name(os.path.join(testpy_output_dir, "%s.xml" % test))
-            job.set_cwd(os.getcwd())
+            job.set_tmp_file_name(os.path.join("%s.xml" % test))
+            job.set_cwd(testpy_output_dir)
             job.set_basedir(os.getcwd())
             job.set_tempdir(testpy_output_dir)
             if (options.multiple):
@@ -1702,7 +1702,7 @@ def run_tests():
             else:
                 if job.returncode == 0 or job.returncode == 1 or job.returncode == 2:
                     f_to = open(xml_results_file, 'a')
-                    f_from = open(job.tmp_file_name)
+                    f_from = open(os.path.join(testpy_output_dir, job.tmp_file_name))
                     f_to.write(f_from.read())
                     f_to.close()
                     f_from.close()

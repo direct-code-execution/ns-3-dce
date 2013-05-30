@@ -129,6 +129,9 @@ DceMptcpTestCase::DoRun (void)
       cmd_oss << "route add 10.1.0.0/16 via " << if1.GetAddress (1, 0) << " dev sim0";
       LinuxStackHelper::RunIp (routers.Get (i), Seconds (0.2), cmd_oss.str ().c_str ());
 
+      // delete address at 20sec
+      LinuxStackHelper::RunIp (nodes.Get (0), Seconds (20), "-f inet addr delete 10.1.1.1/24 dev sim1");
+
       // Right link
       pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("100Mbps"));
       pointToPoint.SetChannelAttribute ("Delay", StringValue ("1ns"));

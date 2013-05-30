@@ -77,9 +77,9 @@ def configure(conf):
     ns3waf.check_modules(conf, ['point-to-point', 'tap-bridge', 'netanim'], mandatory = False)
     ns3waf.check_modules(conf, ['wifi', 'point-to-point', 'csma', 'mobility'], mandatory = False)
     ns3waf.check_modules(conf, ['point-to-point-layout'], mandatory = False)
-    ns3waf.check_modules(conf, ['mpi'], mandatory = False)
+    ns3waf.check_modules(conf, ['mpi', 'lte'], mandatory = False)
     ns3waf.check_modules(conf, ['visualizer'], mandatory = False)
-    ns3waf.check_modules(conf, ['applications'], mandatory = False)
+    ns3waf.check_modules(conf, ['applications', 'dce-quagga'], mandatory = False)
     conf.check_tool('compiler_cc')
     conf.check(header_name='stdint.h', define_name='HAVE_STDINT_H', mandatory=False)
     conf.check(header_name='inttypes.h', define_name='HAVE_INTTYPES_H', mandatory=False)
@@ -346,6 +346,14 @@ def build_dce_kernel_examples(module):
     module.add_example(needed = ['core', 'network', 'dce', 'point-to-point', 'mobility', 'applications'],
                        target='bin/dce-cradle-mptcp',
                        source=['example/dce-cradle-mptcp.cc'])
+
+    module.add_example(needed = ['core', 'network', 'dce', 'point-to-point', 'mobility', 'wifi', 'dce-quagga'],
+                       target='bin/dce-mptcp-handoff-v6',
+                       source=['example/dce-mptcp-handoff-v6.cc'])
+
+    module.add_example(needed = ['core', 'network', 'dce', 'point-to-point', 'mobility', 'wifi', 'dce-quagga'],
+                       target='bin/dce-mptcp-handoff-v4v6',
+                       source=['example/dce-mptcp-handoff-v4v6.cc'])
 
     module.add_example(needed = ['core', 'network', 'dce', 'point-to-point', 'applications'],
                        target='bin/dce-cradle-simple',
