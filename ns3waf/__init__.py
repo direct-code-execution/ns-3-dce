@@ -114,7 +114,7 @@ def _check_static(conf):
             env['STLIB_MARKER'] = '-Wl,-all_load'
         else:
             env['STLIB_MARKER'] = '-Wl,--whole-archive,-Bstatic'
-            env['SHLIB_MARKER'] = '-Wl,-Bdynamic,--no-whole-archive'    
+            env['SHLIB_MARKER'] = '-Wl,-Bdynamic,--no-whole-archive'
 
 
 def _check_win32(conf):
@@ -145,6 +145,8 @@ def _check_win32(conf):
 def _check_dependencies(conf, required, mandatory):
     found = []
     for module in required:
+        if module in conf.env['NS3_MODULES_FOUND']:
+            continue
         # XXX need better way to find .pc files
         for ver in ['3-dev', '3.17']:
             try:
@@ -154,6 +156,13 @@ def _check_dependencies(conf, required, mandatory):
                                         msg="Checking for ns3-%s" % module.lower(),
                                         uselib_store='NS3_%s' % module.upper())
                 if not retval is None:
+                    # XXX pkg-config doesn't give the proper order of whole-archive option..
+                    if conf.env['NS3_ENABLE_STATIC']:
+                        libname = 'STLIB_ST_NS3_%s' % module.upper()
+                        conf.env[libname] = '-lns%s-%s-%s' % (ver, module.lower(), conf.env['LIB_SUFFIX'])
+                        for lib in conf.env['LIB_NS3_%s' % module.upper()]:
+                            if 'ns%s-' % ver in lib:
+                                conf.env.append_value(libname, '-l%s' % lib)
                     break
             except conf.errors.ConfigurationError:
                 retval = None
@@ -442,6 +451,20 @@ class Module:
         if not modules_found(self._bld, external):
             return
         kw['use'] = kw.get('use', []) + modules_uselib(self._bld, needed)
+        if self._bld.env['NS3_ENABLE_STATIC']:
+            for module in kw['use']:
+                kw['linkflags'] = kw.get('linkflags', [])
+                # XXX pkg-config doesn't give the proper order of whole-archive option..
+                if 'dce' in module.lower():
+                    continue
+                if 'netlink' in module.lower():
+                    continue
+                if 'header' in module.lower():
+                    continue
+                if 'library' in module.lower():
+                    continue
+                kw['linkflags'] += ['-Wl,--whole-archive,-Bstatic']
+                kw['linkflags'] += self._bld.env['STLIB_ST_%s' % module.upper()]
         if 'features' not in kw:
             kw['features'] = 'cxx cxxprogram'
         program = self._bld(**kw)

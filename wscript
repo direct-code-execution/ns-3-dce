@@ -567,17 +567,19 @@ def build(bld):
 
     add_myscripts(bld)
     # build test-runner
-    module.add_test(**dce_kw(target='bin/test-runner', 
-                             source = ['utils/test-runner.cc'],
-                             use = bld.env['NS3_ENABLED_MODULE_TEST_LIBRARIES'],
-                             needed = ['core']))
+    module.add_example(target='bin/test-runner',
+                       source = ['utils/test-runner.cc'],
+                       use = bld.env['NS3_ENABLED_MODULE_TEST_LIBRARIES'],
+                       linkflags = [],
+                       needed = bld.env['NS3_MODULES_FOUND'] + ['dce'])
     bld.env.append_value('NS3_RUNNABLE_PROGRAMS', 'bin/test-runner')
     if bld.env['ELF_LOADER_PATH']:
-        module.add_test(**dce_kw(target='bin/test-runner-vdl', 
-                                 source = ['utils/test-runner.cc'],
-                                 use = bld.env['NS3_ENABLED_MODULE_TEST_LIBRARIES'],
-                                 linkflags = ['-Wl,--dynamic-linker=' + os.path.abspath (bld.env['ELF_LOADER_PATH'] + '/ldso')], 
-                                 needed = ['core']))
+        module.add_example(target='bin/test-runner-vdl',
+                           source = ['utils/test-runner.cc'],
+                           use = bld.env['NS3_ENABLED_MODULE_TEST_LIBRARIES'],
+                           linkflags = ['-Wl,--dynamic-linker=' + os.path.abspath (bld.env['ELF_LOADER_PATH'] + '/ldso')],
+                           needed = bld.env['NS3_MODULES_FOUND'] + ['dce'])
+
 
     bld.add_group('dce_version_files')
     
