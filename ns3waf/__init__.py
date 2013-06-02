@@ -421,7 +421,7 @@ def _build_pkgconfig(bld, name, use):
     def run(task):
         _generate_pcfile(bld, name, use, bld.env['PREFIX'], task.outputs[0].abspath())
         return 0
-    target = os.path.join('lib', 'pkgconfig', 'libns3-dev-%s-%s.pc' % (name, bld.env['LIB_SUFFIX'] )   )
+    target = os.path.join('lib', 'pkgconfig', 'libns3-dev-%s-%s.pc' % (name, bld.env['LIB_SUFFIX']))
     bld(rule=run, target=target, always=True)
     bld.install_files(os.path.join('${PREFIX}', 'lib', 'pkgconfig'), [target])
 

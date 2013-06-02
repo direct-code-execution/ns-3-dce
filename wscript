@@ -79,7 +79,7 @@ def configure(conf):
     ns3waf.check_modules(conf, ['point-to-point-layout'], mandatory = False)
     ns3waf.check_modules(conf, ['mpi', 'lte'], mandatory = False)
     ns3waf.check_modules(conf, ['visualizer'], mandatory = False)
-    ns3waf.check_modules(conf, ['applications', 'dce-quagga'], mandatory = False)
+    ns3waf.check_modules(conf, ['applications'], mandatory = False)
     conf.check_tool('compiler_cc')
     conf.check(header_name='stdint.h', define_name='HAVE_STDINT_H', mandatory=False)
     conf.check(header_name='inttypes.h', define_name='HAVE_INTTYPES_H', mandatory=False)
@@ -550,6 +550,11 @@ def build(bld):
                                   includes=kernel_includes,
                                   lib=['dl'])
 #                                  lib=['dl','efence'])
+
+    # make sure submodules built before building examples (that depend submodules)
+    bld.build_a_script = types.MethodType(build_a_script, bld)
+    add_myscripts(bld)
+
     build_dce_tests(module, bld)
     build_dce_examples(module, bld)
 
@@ -563,9 +568,6 @@ def build(bld):
     if bld.env['KERNEL_STACK']:
         build_dce_kernel_examples(module)
     
-    bld.build_a_script = types.MethodType(build_a_script, bld)
-
-    add_myscripts(bld)
     # build test-runner
     module.add_example(target='bin/test-runner',
                        source = ['utils/test-runner.cc'],
