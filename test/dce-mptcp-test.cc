@@ -73,6 +73,19 @@ ReceivedBytes (std::string context, Ptr<const Packet> originalPacket)
       std::cout << std::endl;
     }
 }
+
+bool isMptcpEnabled = false;
+static void
+SetMptcpEnabled (std::string key, std::string value)
+{
+  std::cout << key << "=" << value << std::endl;
+  if (key == ".net.mptcp.mptcp_debug" &&
+      value.find ("1") != std::string::npos)
+    {
+      isMptcpEnabled = true;
+    }
+}
+
 void
 DceMptcpTestCase::DoRun (void)
 {
@@ -98,6 +111,9 @@ DceMptcpTestCase::DoRun (void)
 
   dceManager.Install (nodes);
   dceManager.Install (routers);
+
+  LinuxStackHelper::SysctlGet (nodes.Get (0), Seconds (1.0),
+                               ".net.mptcp.mptcp_debug", &SetMptcpEnabled);
 
   PointToPointHelper pointToPoint;
   NetDeviceContainer devices1, devices2;
@@ -192,6 +208,12 @@ DceMptcpTestCase::DoRun (void)
   std::cout << std::endl;
   Simulator::Destroy ();
 
+  if (!isMptcpEnabled)
+    {
+      std::cout << "Probably failed? Because mptcp disabled kernel. SKIP." << std::endl;
+      return;
+    }
+
   int status = (g_rcv0 == true && g_rcv1 == true);
   NS_TEST_ASSERT_MSG_EQ (status, 1, "Process did not return successfully: " << g_testError);
 }
@@ -215,22 +237,8 @@ DceMptcpTestSuite::DceMptcpTestSuite ()
     bool isSkip;
   } testPair;
 
-  // XXX
-  char *envVar = getenv ("NS_DCE_MPTCP_ENABLE");
-  bool isMptcpSkip = true;
-  if (envVar != 0)
-    {
-      std::string env = std::string (envVar);
-      std::string::size_type val = 0;
-      val = env.find ("1", 0);
-      if (val != std::string::npos)
-        {
-          isMptcpSkip = false;
-        }
-    }
-
   const testPair tests[] = {
-    {"tcp", "ns3::LinuxTcpSocketFactory", 30, isMptcpSkip},
+    {"tcp", "ns3::LinuxTcpSocketFactory", 30, false},
   };
 
   Packet::EnablePrinting ();
