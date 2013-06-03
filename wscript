@@ -375,6 +375,8 @@ def build_a_script(bld, name, needed = [], **kw):
     kw['use'] = kw.get('use', []) + ns3waf.modules_uselib(bld, needed)
     if 'features' not in kw:
         kw['features'] = 'cxx cxxprogram'
+    if bld.env['NS3_ENABLE_STATIC']:
+        kw['linkflags'] = kw.get('linkflags', []) + ['-ldl']
     program = bld(**kw)
     program.is_ns3_program = True
     bld.env.append_value('NS3_RUNNABLE_PROGRAMS', name)

@@ -463,6 +463,7 @@ class Module:
                     continue
                 if 'library' in module.lower():
                     continue
+                kw['linkflags'] += ['-ldl']
                 kw['linkflags'] += ['-Wl,--whole-archive,-Bstatic']
                 kw['linkflags'] += self._bld.env['STLIB_ST_%s' % module.upper()]
         if 'features' not in kw:
