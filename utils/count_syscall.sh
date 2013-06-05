@@ -1,7 +1,7 @@
 #!/bin/sh
 
 
-OUTFILE=/tmp/dce-syscall.dat
+OUTFILE=./dce-syscall.dat
 echo > ${OUTFILE}
 
 # for older dce (simu)
