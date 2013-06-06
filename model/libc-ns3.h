@@ -579,6 +579,9 @@ DCE    (__fxstat64)
 DCE    (__fxstatat)
 NATIVE (__cmsg_nxthdr)
 
+// math.h
+NATIVE (lrintl)
+NATIVE (llrintl)
 
 #undef DCE
 #undef DCET

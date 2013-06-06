@@ -29,6 +29,9 @@ ElfCache::ElfCache (std::string directory, uint32_t uid)
   overriden.from = "librt.so.1";
   overriden.to = "librt-ns3.so";
   m_overriden.push_back (overriden);
+  overriden.from = "libm.so.6";
+  overriden.to = "libm-ns3.so";
+  m_overriden.push_back (overriden);
 }
 
 std::string

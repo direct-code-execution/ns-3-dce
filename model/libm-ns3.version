@@ -1,0 +1,4 @@
+NS3 {
+global:
+	libm_setup;
+};
