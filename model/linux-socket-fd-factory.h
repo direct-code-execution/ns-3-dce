@@ -152,6 +152,7 @@ private:
   double m_rate;
   RandomVariable m_ranvar;
   uint16_t m_pid;
+  TypeId m_lteUeTid;
 };
 
 } // namespace ns3
