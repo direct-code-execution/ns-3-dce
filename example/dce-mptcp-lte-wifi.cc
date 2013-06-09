@@ -36,6 +36,7 @@
 #include "ns3/applications-module.h"
 #include "ns3/netanim-module.h"
 #include "ns3/constant-position-mobility-model.h"
+#include "ns3/config-store-module.h"
 
 using namespace ns3;
 NS_LOG_COMPONENT_DEFINE ("DceMptcpLteWifi");
@@ -60,7 +61,7 @@ int main (int argc, char *argv[])
   std::string bufSize = "";
   bool disWifi = false;
   bool disLte = false;
-  double stopTime = 15.0;
+  double stopTime = 45.0;
 
   CommandLine cmd;
   cmd.AddValue ("bufsize", "Snd/Rcv buffer size.", bufSize);
@@ -105,7 +106,7 @@ int main (int argc, char *argv[])
   pointToPoint.SetChannelAttribute ("Delay", StringValue ("10ms"));
   Ptr<RateErrorModel> em1 =
     CreateObjectWithAttributes<RateErrorModel> ("RanVar", StringValue ("ns3::UniformRandomVariable[Min=0.0,Max=1.0]"),
-                                                "ErrorRate", DoubleValue (0.05),
+                                                "ErrorRate", DoubleValue (0.01),
                                                 "ErrorUnit", EnumValue (RateErrorModel::ERROR_UNIT_PACKET)
                                                 );
 
@@ -237,23 +238,42 @@ int main (int argc, char *argv[])
   // debug
   stack.SysctlSet (nodes, ".net.mptcp.mptcp_debug", "1");
 
-#if 0
-  LinuxStackHelper::SysctlGet (nodes.Get (0), Seconds (1.0),
+#if 1
+  LinuxStackHelper::SysctlGet (nodes.Get (0), NanoSeconds (0),
                                ".net.ipv4.tcp_available_congestion_control", &PrintTcpFlags);
-  LinuxStackHelper::SysctlGet (nodes.Get (0), Seconds (1.0),
+  LinuxStackHelper::SysctlGet (nodes.Get (0), NanoSeconds (0),
                                ".net.ipv4.tcp_rmem", &PrintTcpFlags);
-  LinuxStackHelper::SysctlGet (nodes.Get (0), Seconds (1.0),
+  LinuxStackHelper::SysctlGet (nodes.Get (0), NanoSeconds (0),
+                               ".net.ipv4.tcp_wmem", &PrintTcpFlags);
+  LinuxStackHelper::SysctlGet (nodes.Get (0), NanoSeconds (0),
                                ".net.core.rmem_max", &PrintTcpFlags);
+  LinuxStackHelper::SysctlGet (nodes.Get (0), NanoSeconds (0),
+                               ".net.core.wmem_max", &PrintTcpFlags);
+  LinuxStackHelper::SysctlGet (nodes.Get (0), Seconds (1),
+                               ".net.ipv4.tcp_available_congestion_control", &PrintTcpFlags);
+  LinuxStackHelper::SysctlGet (nodes.Get (0), Seconds (1),
+                               ".net.ipv4.tcp_rmem", &PrintTcpFlags);
+  LinuxStackHelper::SysctlGet (nodes.Get (0), Seconds (1),
+                               ".net.ipv4.tcp_wmem", &PrintTcpFlags);
+  LinuxStackHelper::SysctlGet (nodes.Get (0), Seconds (1),
+                               ".net.core.rmem_max", &PrintTcpFlags);
+  LinuxStackHelper::SysctlGet (nodes.Get (0), Seconds (1),
+                               ".net.core.wmem_max", &PrintTcpFlags);
 #endif
+#if 1
   if (bufSize.length () != 0)
     {
       stack.SysctlSet (nodes, ".net.ipv4.tcp_rmem",
-                       bufSize + " " + bufSize + " " +bufSize);
+                       bufSize + " " + bufSize + " " + bufSize);
+      //                       "4096 87380 " +bufSize);
+      stack.SysctlSet (nodes, ".net.ipv4.tcp_wmem",
+                       bufSize + " " + bufSize + " " + bufSize);
       stack.SysctlSet (nodes, ".net.core.rmem_max",
                        bufSize);
       stack.SysctlSet (nodes, ".net.core.wmem_max",
                        bufSize);
     }
+#endif
 
 
   DceApplicationHelper dce;
@@ -271,7 +291,14 @@ int main (int argc, char *argv[])
   dce.AddArgument ("-i");
   dce.AddArgument ("1");
   dce.AddArgument ("--time");
-  dce.AddArgument ("10");
+  dce.AddArgument ("40");
+#if 0
+  if (bufSize.length () != 0)
+    {
+      dce.AddArgument ("-w");
+      dce.AddArgument (bufSize);
+    }
+#endif
 
   apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds (5.0));
@@ -294,10 +321,17 @@ int main (int argc, char *argv[])
   apps = dce.Install (nodes.Get (1));
   apps.Start (Seconds (4));
 
-  pointToPoint.EnablePcapAll ("mptcp-nsdi12", false);
-  phy.EnablePcapAll ("mptcp-nsdi12", false);
+  pointToPoint.EnablePcapAll ("mptcp-lte-wifi", false);
+  phy.EnablePcapAll ("mptcp-lte-wifi", false);
   //  lteHelper->EnableTraces ();
 
+  // Output config store to txt format
+  Config::SetDefault ("ns3::ConfigStore::Filename", StringValue ("output-attributes.txt"));
+  Config::SetDefault ("ns3::ConfigStore::FileFormat", StringValue ("RawText"));
+  Config::SetDefault ("ns3::ConfigStore::Mode", StringValue ("Save"));
+  ConfigStore outputConfig2;
+  outputConfig2.ConfigureDefaults ();
+  outputConfig2.ConfigureAttributes ();
 
   Simulator::Stop (Seconds (stopTime));
   Simulator::Run ();
