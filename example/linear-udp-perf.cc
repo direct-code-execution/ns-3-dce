@@ -1,4 +1,4 @@
-#include "memory-usage.h"
+//#include "memory-usage.h"
 #include "ns3/network-module.h"
 #include "ns3/dce-module.h"
 #include "ns3/core-module.h"
@@ -32,18 +32,18 @@ void IpRcvFinish (void)
 }
 
 long g_memory;
-
+#if 0
 static void PrintMemory (long start)
 {
   long now = GetCurrentMemoryUsage ();
   g_memory = now - start;
 }
-
+#endif
 static Time RunIp (Ptr<Node> node, Time at, std::string str)
 {
   DceApplicationHelper process;
   ApplicationContainer apps;
-  process.SetBinary ("./ip");
+  process.SetBinary ("ip");
   process.SetStackSize (1 << 16);
   process.ResetArguments ();
   process.ParseArguments (str.c_str ());
@@ -228,7 +228,7 @@ int main (int argc, char *argv[])
   // ip_rcv
   // arp_process
 
-  long memoryAtStart = GetCurrentMemoryUsage ();
+//  long memoryAtStart = GetCurrentMemoryUsage ();
   SystemWallClockMs clock;
 
   clock.Start ();
@@ -333,7 +333,7 @@ int main (int argc, char *argv[])
       csma.EnablePcapAll ("ring-udp-perf");
     }
 
-  Simulator::Schedule (Seconds (4.00000), &PrintMemory, memoryAtStart);
+//  Simulator::Schedule (Seconds (4.00000), &PrintMemory, memoryAtStart);
 
   Simulator::Stop (duration);
   Simulator::Run ();

@@ -294,6 +294,10 @@ def build_dce_examples(module, bld):
                        target='bin/dce-iperf',
                        source=['example/dce-iperf.cc', 'example/ccnx/misc-tools.cc'])
                        
+    module.add_example(needed = ['core', 'network', 'internet', 'dce', 'point-to-point', 'csma', 'applications'],
+                       target='bin/linear-udp-perf',
+                       source=['example/linear-udp-perf.cc'])
+
 #    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
 #                       target='bin/dce-xorp-simple',
 #                       source=['example/xorp/dce-xorp-simple.cc', 'example/ccnx/misc-tools.cc'])
