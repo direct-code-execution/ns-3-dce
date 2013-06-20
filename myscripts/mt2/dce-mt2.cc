@@ -19,7 +19,6 @@
 #include "ns3/internet-module.h"
 #include "ns3/point-to-point-module.h"
 #include "ns3/applications-module.h"
-#include "ns3/tools-module.h"
 #include "ns3/dce-module.h"
 #include "ns3/on-off-helper.h"
 #include "ns3/packet-sink-helper.h"
