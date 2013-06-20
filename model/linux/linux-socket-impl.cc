@@ -138,11 +138,11 @@ LinuxSocketImpl::GetTypeId (void)
   return tid;
 }
 
-bool m_conn_inprogress = false;
 LinuxSocketImpl::LinuxSocketImpl ()
 {
   NS_LOG_FUNCTION_NOARGS ();
   m_listening = false;
+  m_conn_inprogress = false;
   m_pid = -1;
   SetNs3ToPosixConverter (MakeCallback (&LinuxSocketImpl::Ns3AddressToPosixAddress, this));
   SetPosixToNs3Converter (MakeCallback (&LinuxSocketImpl::PosixAddressToNs3Address, this));
@@ -197,7 +197,27 @@ LinuxSocketImpl::GetErrno (void) const
 enum Socket::SocketType
 LinuxSocketImpl::GetSocketType (void) const
 {
-  return NS3_SOCK_DGRAM;
+  switch (m_socktype)
+    {
+    case SOCK_STREAM:
+    case SOCK_DCCP:
+      {
+        return NS3_SOCK_STREAM;
+        break;
+      }
+    case SOCK_DGRAM:
+      {
+        return NS3_SOCK_DGRAM;
+        break;
+      }
+    case SOCK_RAW:
+      {
+        return NS3_SOCK_RAW;
+        break;
+      }
+    default:
+        break;
+    }
 }
 
 uint16_t
@@ -514,7 +534,7 @@ LinuxSocketImpl::Poll ()
       LeaveFakeTask (pid);
 
       // Notify the data
-      mask &= (POLLIN | POLLERR | POLLHUP | POLLRDHUP);
+      mask &= (POLLIN | POLLOUT | POLLERR | POLLHUP | POLLRDHUP);
       if (mask)
         {
           Ptr<LinuxSocketFdFactory> factory = 0;
@@ -577,14 +597,27 @@ LinuxSocketImpl::Poll ()
                   Current ()->process->manager->Wait ();
                 }
 
-              NS_LOG_INFO ("notify recv");
-              NotifyDataRecv ();
+              else if (mask & POLLIN || mask & POLLERR)
+                {
+                  NS_LOG_INFO ("notify recv");
+                  NotifyDataRecv ();
+                }
+              else if (mask & POLLOUT)
+                {
+                  Simulator::ScheduleWithContext (m_node->GetId (), Seconds (0.0),
+                                                  MakeEvent (&LinuxSocketImpl::NotifySend, this, 0));
+                  NS_LOG_INFO ("wait send for next poll event");
+                  table->Wait (Seconds (0));
+                  NS_LOG_INFO ("awaken");
+                }
             }
         }
       // if not masked
       else
         {
+          NS_LOG_INFO ("wait for next poll event");
           table->Wait (Seconds (0));
+          NS_LOG_INFO ("awaken");
         }
 
       // next loop

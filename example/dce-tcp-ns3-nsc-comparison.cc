@@ -40,6 +40,7 @@ int m_nNodes = 2;
 bool enablePcap = false;
 std::string m_pktSize = "1024";
 bool m_frag = false;
+bool m_bulk = false;
 
 int
 main (int argc, char *argv[])
@@ -55,6 +56,7 @@ main (int argc, char *argv[])
   cmd.AddValue ("enablePcap", "pcap", enablePcap);
   cmd.AddValue ("pktSize", "packet size", m_pktSize);
   cmd.AddValue ("frag", "fragment", m_frag);
+  cmd.AddValue ("bulk", "use BulkSendApp instead of OnOffApp", m_bulk);
   cmd.Parse (argc, argv);
 
   SeedManager::SetSeed (m_seed);
@@ -91,10 +93,10 @@ main (int argc, char *argv[])
     }
   else if (m_stack == "dce-dccp")
     {
-      internetStack.Install (routers);
       dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory",
                                   "Library", StringValue ("liblinux.so"));
       sock_factory = "ns3::LinuxDccpSocketFactory";
+      stack.Install (routers);
       stack.Install (lefts);
       stack.Install (rights);
     }
@@ -215,17 +217,34 @@ main (int argc, char *argv[])
                                    InetSocketAddress (Ipv4Address ("10.2.0.2"), 2000));
   onoff.SetAttribute ("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=1]"));
   onoff.SetAttribute ("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=0]"));
+  onoff.SetAttribute ("PacketSize", StringValue (m_pktSize));
+  onoff.SetAttribute ("DataRate", StringValue ("1Mbps"));
+
+  BulkSendHelper bulk = BulkSendHelper (sock_factory,
+                                        InetSocketAddress ("10.2.0.2", 2000));
+  // Set the amount of data to send in bytes.  Zero is unlimited.
+  bulk.SetAttribute ("MaxBytes", UintegerValue (0));
+  bulk.SetAttribute ("SendSize", UintegerValue (atoi (m_pktSize.c_str ())));
 
   // Flow 1 - n
   for (uint32_t i = 0; i < m_nNodes; i++)
     {
       std::ostringstream oss;
       oss << "10.2." << i << ".2";
-      onoff.SetAttribute ("Remote", AddressValue (InetSocketAddress (Ipv4Address (oss.str ().c_str ()), 2000)));
-      onoff.SetAttribute ("PacketSize", StringValue (m_pktSize));
-      onoff.SetAttribute ("DataRate", StringValue ("1Mbps"));
-      onoff.SetAttribute ("StartTime", TimeValue (Seconds (startTime)));
-      apps = onoff.Install (lefts.Get (i));
+      if (!m_bulk)
+        {
+          onoff.SetAttribute ("Remote", 
+                              AddressValue (InetSocketAddress (Ipv4Address (oss.str ().c_str ()), 2000)));
+          onoff.SetAttribute ("StartTime", TimeValue (Seconds (startTime)));
+          apps = onoff.Install (lefts.Get (i));
+        }
+      else
+        {
+          bulk.SetAttribute ("Remote", 
+                             AddressValue (InetSocketAddress (Ipv4Address (oss.str ().c_str ()), 2000)));
+          apps = bulk.Install (lefts.Get (i));
+          apps.Start (Seconds (startTime));
+        }
     }
 
   PacketSinkHelper sink = PacketSinkHelper (sock_factory,

@@ -34,6 +34,8 @@ std::string m_proto = "udp";
 std::string m_rate = "100Bps";
 bool m_dual = false;
 std::string m_ccid = "2";
+bool m_bulk = false;
+
 int
 main (int argc, char *argv[])
 {
@@ -57,6 +59,7 @@ main (int argc, char *argv[])
   cmd.AddValue ("rate", "tx rate", m_rate);
   cmd.AddValue ("dual", "dual flow or not (default: uni-directional)", m_dual);
   cmd.AddValue ("ccid", "CCID if dccp (default: 2)", m_ccid);
+  cmd.AddValue ("bulk", "use BulkSendApp instead of OnOffApp", m_bulk);
   cmd.Parse (argc, argv);
 
   NodeContainer nodes;
@@ -89,17 +92,35 @@ main (int argc, char *argv[])
   ApplicationContainer apps;
   OnOffHelper onoff = OnOffHelper (proto_sw[m_proto],
                                    InetSocketAddress (interfaces.GetAddress (1), 9));
-  onoff.SetAttribute ("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=1]"));
-  onoff.SetAttribute ("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=0]"));
-  onoff.SetAttribute ("PacketSize", StringValue ("1024"));
-  onoff.SetAttribute ("DataRate", StringValue (m_rate));
-  apps = onoff.Install (nodes.Get (0));
-  apps.Start (Seconds (4.0));
-  if (m_dual)
+  if (!m_bulk)
     {
-      onoff.SetAttribute ("Remote", AddressValue (InetSocketAddress (interfaces.GetAddress (0), 9)));
-      apps = onoff.Install (nodes.Get (1));
-      apps.Start (Seconds (4.1));
+      onoff.SetAttribute ("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=1]"));
+      onoff.SetAttribute ("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=0]"));
+      onoff.SetAttribute ("PacketSize", StringValue ("1024"));
+      onoff.SetAttribute ("DataRate", StringValue (m_rate));
+      apps = onoff.Install (nodes.Get (0));
+      apps.Start (Seconds (4.0));
+      if (m_dual)
+        {
+          onoff.SetAttribute ("Remote", AddressValue (InetSocketAddress (interfaces.GetAddress (0), 9)));
+          apps = onoff.Install (nodes.Get (1));
+          apps.Start (Seconds (4.1));
+        }
+    }
+  else
+    {
+      BulkSendHelper bulk (proto_sw[m_proto],
+                           InetSocketAddress (interfaces.GetAddress (1), 9));
+      // Set the amount of data to send in bytes.  Zero is unlimited.
+      bulk.SetAttribute ("MaxBytes", UintegerValue (1024));
+      apps = bulk.Install (nodes.Get (0));
+      apps.Start (Seconds (4.0));
+      if (m_dual)
+        {
+          bulk.SetAttribute ("Remote", AddressValue (InetSocketAddress (interfaces.GetAddress (0), 9)));
+          apps = bulk.Install (nodes.Get (1));
+          apps.Start (Seconds (4.1));
+        }
     }
 
   PacketSinkHelper sink = PacketSinkHelper (proto_sw[m_proto],

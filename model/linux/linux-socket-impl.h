@@ -109,6 +109,7 @@ private:
   uint16_t m_socktype;
   uint16_t m_protocol;
   bool m_listening;
+  bool m_conn_inprogress;
   uint16_t m_pid;
   EventId m_poll;
 
