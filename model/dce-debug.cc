@@ -27,7 +27,6 @@ void * dce_debug_lookup (char *str)
 uint32_t dce_debug_nodeid (void)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
-  NS_ASSERT (Current () != 0);
   return UtilsGetNodeId ();
 }
 const char * dce_debug_processname (void)
