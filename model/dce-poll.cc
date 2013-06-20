@@ -211,21 +211,22 @@ int dce_select (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
 
   int pollRet = dce_poll (pollFd, nfds, pollTo);
 
+  if (readfds)
+    {
+      FD_ZERO (readfds);
+    }
+  if (writefds)
+    {
+      FD_ZERO (writefds);
+    }
+  if (exceptfds)
+    {
+      FD_ZERO (exceptfds);
+    }
+    
   if (pollRet > 0)
     {
       pollRet = 0;
-      if (readfds)
-        {
-          FD_ZERO (readfds);
-        }
-      if (writefds)
-        {
-          FD_ZERO (writefds);
-        }
-      if (exceptfds)
-        {
-          FD_ZERO (exceptfds);
-        }
       for (j = 0; j < nfds; j++)
         {
           if (readfds && ((POLLIN & pollFd[j].revents) || (POLLHUP & pollFd[j].revents)
