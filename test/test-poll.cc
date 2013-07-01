@@ -357,6 +357,7 @@ test_poll_stdout_stdin (void)
   int ret = -1;
   time_t before, after;
 
+  memset (duo, 0, sizeof (duo));
   // check only if we use tty
   if (isatty (0))
     {
