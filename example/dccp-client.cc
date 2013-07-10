@@ -80,7 +80,7 @@ int main (int argc, char *argv[])
         }
 
       //    std::cout << "write: " << n << std::endl;
-      // sleep (1);
+      usleep (100);
     }
 
   std::cout << "did write all buffers total:" << tot << std::endl;
