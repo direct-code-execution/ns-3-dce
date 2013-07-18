@@ -34,7 +34,11 @@ def options(opt):
     opt.add_option('--with-elf-loader',
                    help=('Specify the installed directory of elf-loader'),
                    dest='with_elf_loader', type='string',
-                   default=None)    
+                   default=None)
+    opt.add_option('--with-libaspect',
+                   help=('Specify the installed directory of libaspect.so'),
+                   dest='with_libaspect', type='string',
+                   default=None)
     opt.add_option('--cwd',
                    help=('Set the working directory for a program.'),
                    action="store", type="string", default=None,
@@ -120,6 +124,29 @@ def configure(conf):
              conf.env['ELF_LOADER_PATH'] = Options.options.with_elf_loader
          else:
              Logs.warn("elf-loader does not exist")
+
+    ns3waf._report_optional_feature(conf, "elf-loader", "ELF magic loader",
+                                    conf.env['ELF_LOADER_PATH'],
+                                    "elf-loader not found")
+
+    conf.env['LIB_ASPECT_PATH'] = conf.env['PREFIX']
+    if Options.options.with_libaspect is not None and os.path.isdir(Options.options.with_libaspect):
+         if os.path.exists(Options.options.with_libaspect):
+             conf.env['LIB_ASPECT_PATH'] = os.path.abspath(Options.options.with_libaspect)
+         else:
+             Logs.warn("libaspect does not exist")
+
+    have_aspect = conf.check(header_name='hook-manager.h', lib=['aspect', 'dl'],
+                             includes=os.path.join(conf.env['LIB_ASPECT_PATH'], 'include'),
+                             libpath=os.path.join(conf.env['LIB_ASPECT_PATH'], 'lib'),
+                             uselib_store='ASPECT', mandatory=False)
+
+    if have_aspect is None:
+        conf.env['LIB_ASPECT_PATH'] = None
+
+    ns3waf._report_optional_feature(conf, "libaspect", "Aspect-based tracing",
+                                    have_aspect,
+                                    "libaspect not found")
 
     try:
         conf.find_program('doxygen', var='DOXYGEN')
@@ -297,6 +324,12 @@ def build_dce_examples(module, bld):
     module.add_example(needed = ['core', 'network', 'internet', 'dce', 'point-to-point', 'csma', 'applications'],
                        target='bin/linear-udp-perf',
                        source=['example/linear-udp-perf.cc'])
+
+    if bld.env['LIB_ASPECT_PATH']:
+        module.add_example(needed = ['core', 'network', 'internet', 'dce', 'point-to-point', 'csma', 'applications'],
+                           target='bin/dce-debug-aspect',
+                           use=['ASPECT'],
+                           source=['example/dce-debug-aspect.cc'])
 
 #    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
 #                       target='bin/dce-xorp-simple',
