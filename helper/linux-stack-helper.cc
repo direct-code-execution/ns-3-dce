@@ -97,6 +97,8 @@ LinuxStackHelper::SysctlGetCallback (Ptr<Node> node, std::string path,
   if (!sock)
     {
       callback ("error", "no socket factory");
+      NS_ASSERT_MSG (0, "No LinuxSocketFdFactory is installed. "
+                     "You may need to do it via DceManagerHelper::Install ()");
       return;
     }
 
@@ -115,6 +117,8 @@ LinuxStackHelper::SysctlGet (Ptr<Node> node, Time at, std::string path,
   if (!sock)
     {
       callback ("error", "no socket factory");
+      NS_ASSERT_MSG (0, "No LinuxSocketFdFactory is installed. "
+                     "You may need to do it via DceManagerHelper::Install ()");
       return;
     }
   Simulator::ScheduleWithContext (node->GetId (), at,
@@ -134,7 +138,8 @@ LinuxStackHelper::SysctlSet (NodeContainer c, std::string path, std::string valu
       Ptr<LinuxSocketFdFactory> sock = node->GetObject<LinuxSocketFdFactory> ();
       if (!sock)
         {
-          continue;
+          NS_ASSERT_MSG (0, "No LinuxSocketFdFactory is installed. "
+                         "You may need to do it via DceManagerHelper::Install ()");
         }
       Simulator::ScheduleWithContext (node->GetId (), Seconds (0.1),
                                       MakeEvent (&LinuxSocketFdFactory::Set, sock,

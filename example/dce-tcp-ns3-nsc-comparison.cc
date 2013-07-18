@@ -196,8 +196,8 @@ main (int argc, char *argv[])
   if (m_stack.find ("dce") != std::string::npos)
     {
       LinuxStackHelper::PopulateRoutingTables ();
-      stack.SysctlSet (nodes, ".net.ipv4.conf.default.forwarding", "1");
       dceManager.Install (nodes);
+      stack.SysctlSet (nodes, ".net.ipv4.conf.default.forwarding", "1");
     }
 
   // dceManager.RunIp (lefts.Get (0), Seconds (0.2), "route add default via 10.0.0.2");
