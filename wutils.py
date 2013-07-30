@@ -49,7 +49,7 @@ else:
 
 from waflib import Context
 def find_program(program_name, env):
-    launch_dir = os.path.abspath(Context.launch_dir)
+    launch_dir = os.path.abspath(Options.cwd_launch)
     #top_dir = os.path.abspath(Options.cwd_launch)
     found_programs = []
     for obj in bld.all_task_gen:
