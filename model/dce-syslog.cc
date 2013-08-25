@@ -66,4 +66,5 @@ dce_vsyslog (int priority, const char *message, va_list args)
   Process *process = Current ()->process;
 
   vfprintf (process->syslog, message, args);
+  fprintf (process->syslog, "\n");
 }
