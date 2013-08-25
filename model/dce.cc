@@ -142,7 +142,7 @@ int dce_setresgid (gid_t rgid, gid_t egid, gid_t sgid)
       return -1;
     }
   if (sgid != (gid_t)-1
-      || !is_set_ucapable (sgid))
+      && !is_set_ucapable (sgid))
     {
       current->err = EPERM;
       return -1;
