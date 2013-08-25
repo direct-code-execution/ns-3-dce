@@ -187,11 +187,8 @@ int dce_select (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
   // Some  code  calls  select() with all three sets empty, nfds zero, and a
   // non-NULL timeout as a fairly portable way to sleep with subsecond
   // precision.
-  if (nfds == 0 && !timeout)
-    {
-      current->err = EINVAL;
-      return -1;
-    }
+  // 130825: this condition will be passed by dce_poll ()
+
   struct pollfd pollFd[nfds];
   int j = 0;
 
