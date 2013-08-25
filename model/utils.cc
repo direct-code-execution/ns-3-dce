@@ -15,10 +15,20 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "file-usage.h"
+#include "ns3/global-value.h"
+#include "ns3/uinteger.h"
 
 NS_LOG_COMPONENT_DEFINE ("ProcessUtils");
 
 namespace ns3 {
+
+GlobalValue g_timeBase = GlobalValue ("SimulationTimeBase",
+                                      "The timebase for this simulation",
+                                      // January 1st, 2010, 00:00:00
+                                      UintegerValue (1262304000),
+                                      MakeUintegerChecker<uint32_t> ());
+  //   unsigned long secondsSinceEpochOnFridayApril042008 = 1207284276;
+  //   return secondsSinceEpochOnFridayApril042008;
 
 uint32_t UtilsGetNodeId (void)
 {
@@ -143,19 +153,17 @@ struct timespec UtilsTimeToTimespec (Time time)
   tv.tv_nsec = n % 1000000000;
   return tv;
 }
-static unsigned long TimeBase (void)
-{
-//   unsigned long secondsSinceEpochOnFridayApril042008 = 1207284276;
-//   return secondsSinceEpochOnFridayApril042008;
-  return 1262304000; // January 1st, 2010, 00:00:00
-}
 Time UtilsSimulationTimeToTime (Time time)
 {
-  return time + Seconds (TimeBase ());
+  UintegerValue uintegerValue;
+  GlobalValue::GetValueByName ("SimulationTimeBase", uintegerValue);
+  return time + Seconds (uintegerValue.Get ());
 }
 Time UtilsTimeToSimulationTime (Time time)
 {
-  return time - Seconds (TimeBase ());
+  UintegerValue uintegerValue;
+  GlobalValue::GetValueByName ("SimulationTimeBase", uintegerValue);
+  return time - Seconds (uintegerValue.Get ());
 }
 Time UtilsTimevalToTime (struct timeval tv)
 {
