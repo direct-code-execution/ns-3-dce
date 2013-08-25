@@ -53,3 +53,15 @@ int dce_eaccess (const char *pathname, int mode)
   int ret = eaccess (rPath.c_str (), mode);
   return ret;
 }
+int dce_chown(const char *path, uid_t owner, gid_t group)
+{
+  // XXX
+  return 0;
+}
+
+int dce_initgroups(const char *user, gid_t group)
+{
+  // XXX
+  return 0;
+}
+

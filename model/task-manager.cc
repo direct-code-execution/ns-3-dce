@@ -445,6 +445,7 @@ again:
             }
           if (m_reSchedule)
             {
+              NS_LOG_DEBUG ("Delayed schedule " << m_reScheduleTime);
               m_reSchedule = false;
               if (m_reScheduleTime > Time (0))
                 {
@@ -473,8 +474,8 @@ again:
       // we have something to schedule from.
       // but, we have nothing to schedule to so, we go back to the main task.
       Time delay = m_delayModel->RecordEnd ();
-      NS_LOG_DEBUG ("Leaving " << m_current << ", delay " << delay << " entering main");
       struct Task *next = m_scheduler->PeekNext ();
+      NS_LOG_DEBUG ("Leaving " << m_current << ", delay " << delay << " next = " << next << " entering main");
       if (next != 0)
         {
           // but before leaving, we check if we have further processes active, and,

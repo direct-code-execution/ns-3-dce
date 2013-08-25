@@ -77,6 +77,8 @@ int dce_pipe (int pipefd[2]);
 
 ssize_t dce_pread (int fd, void *buf, size_t count, off_t offset);
 ssize_t dce_pwrite (int fd, const void *buf, size_t count, off_t offset);
+int dce_chown(const char *path, uid_t owner, gid_t group);
+int dce_initgroups(const char *user, gid_t group);
 
 int dce_daemon (int nochdir, int noclose);
 

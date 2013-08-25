@@ -759,6 +759,16 @@ int dce___snprintf_chk (char *__restrict __s, size_t __n, int __flag,
   va_end (ap);
   return retval;
 }
+int dce___vsnprintf_chk (char *__restrict __s, size_t __n, int __flag,
+						size_t __slen,
+						__const char *__restrict __format, _G_va_list __ap)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
+  NS_ASSERT (Current () != 0);
+
+  int retval = vsnprintf (__s, __n, __format, __ap);
+  return retval;
+}
 void dce___fpurge (FILE *stream)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream);

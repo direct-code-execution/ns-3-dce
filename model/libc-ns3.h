@@ -252,6 +252,8 @@ DCE (pwrite)
 DCE (daemon)
 DCE (alarm)
 DCE (readlink)
+DCE (chown)
+DCE (initgroups)
 
 // SYS/UIO.H
 DCE (readv)
@@ -307,6 +309,8 @@ DCE (perror)
 DCE (remove)
 //NATIVE (sscanf)
 NATIVE_WITH_ALIAS2 (sscanf, __isoc99_sscanf)
+NATIVE (flockfile)
+NATIVE (funlockfile)
 
 // STDARG.H
 DCE (vprintf)
@@ -375,6 +379,7 @@ NATIVE (sigdelset)
 NATIVE (sigismember)
 DCE (sigprocmask)
 DCE    (sigwait)
+DCE    (kill)
 
 // PTHREAD.H
 DCE (pthread_create)
@@ -413,6 +418,11 @@ NATIVE (pthread_rwlock_destroy)
 NATIVE (pthread_setcancelstate)
 NATIVE (pthread_sigmask)
 NATIVE (pthread_equal)
+NATIVE (pthread_spin_init)
+NATIVE (pthread_spin_lock)
+NATIVE (pthread_spin_unlock)
+NATIVE (pthread_spin_destroy)
+
 
 // SEMAPHORE.H
 DCE (sem_init)
@@ -508,6 +518,8 @@ NATIVE (siglongjmp)
 NATIVE (bindtextdomain)
 NATIVE (textdomain)
 NATIVE (gettext)
+NATIVE (catopen)
+NATIVE (catgets)
 
 // PWD.H
 NATIVE (getpwnam)
@@ -569,6 +581,7 @@ DCE    (__vfprintf_chk)
 DCE    (__fprintf_chk)
 DCE    (__snprintf_chk)
 DCE    (__errno_location)
+DCE    (__vsnprintf_chk)
 
 DCE    (__xstat)
 DCE    (__lxstat)

@@ -18,12 +18,14 @@
  * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  */
 #include "process-delay-model.h"
+#include "ns3/log.h"
 #include <sys/time.h>
 #include <time.h>
 
 namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (ProcessDelayModel);
+NS_LOG_COMPONENT_DEFINE ("ProcessDelayModel");
 
 TypeId
 ProcessDelayModel::GetTypeId (void)
@@ -99,11 +101,13 @@ TimeOfDayProcessDelayModel::GetTimeOfDay (void) const
 void
 TimeOfDayProcessDelayModel::RecordStart (void)
 {
+  NS_LOG_FUNCTION (this);
   m_start = GetTimeOfDay ();
 }
 Time
 TimeOfDayProcessDelayModel::RecordEnd (void)
 {
+  NS_LOG_FUNCTION (this);
   Time delay = GetTimeOfDay () - m_start;
   if (delay.IsZero ())
     {
