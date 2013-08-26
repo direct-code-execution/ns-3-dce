@@ -58,6 +58,7 @@ interesting_config_items = [
     "BUILD_PROFILE",
     "VERSION",
     "PYTHON",
+    "VALGRIND_FOUND",
 ]
 
 NSC_ENABLED = False
@@ -72,6 +73,7 @@ APPNAME = ""
 BUILD_PROFILE = "" # not used
 VERSION = ""
 PYTHON = ""
+VALGRIND_FOUND = True
 
 #
 # This will be given a prefix and a suffix when the waf config file is

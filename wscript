@@ -148,6 +148,13 @@ def configure(conf):
                                     have_aspect,
                                     "libaspect not found")
 
+    conf.env['VALGRIND_FOUND'] = False
+    try:
+        conf.find_program('valgrind', var='VALGRIND')
+        conf.env['VALGRIND_FOUND'] = True
+    except WafError:
+        pass
+
     try:
         conf.find_program('doxygen', var='DOXYGEN')
     except WafError:
