@@ -42,11 +42,11 @@ then you must to create a directory for DCE and install it using bake:
 
    mkdir dce
    cd dce
-   bake.py configure -e dce-ns3-1.0
+   bake.py configure -e dce-ns3-|ns-3-dev-version|
    bake.py download
    bake.py build
  
-note that **dce-ns3-1.0** is the DCE version 1.0 module. If you would like to use the development version of DCE module, you can specify **dce-ns3-dev** as a module name for bake.
+note that dce-ns3-|ns-3-dev-version| is the DCE version |ns-3-dev-version| module. If you would like to use the development version of DCE module, you can specify **dce-ns3-dev** as a module name for bake.
 
 the output should look likes this:
 
@@ -80,11 +80,11 @@ The difference to build the advanced mode is the different module name *dce-linu
 
    mkdir dce
    cd dce
-   bake.py configure -e dce-linux-1.0
+   bake.py configure -e dce-linux-|ns-3-dev-version|
    bake.py download
    bake.py build
 
-note that **dce-linux-1.0** is the DCE version 1.0 module. If you would like to use the development version of DCE module, you can specify **dce-linux-dev** as a module name for bake.
+note that dce-linux-|ns-3-dev-version| is the DCE version |ns-3-dev-version| module. If you would like to use the development version of DCE module, you can specify **dce-linux-dev** as a module name for bake.
 
 Examples
 ========
