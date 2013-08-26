@@ -796,8 +796,12 @@ class Ns3SphinxContext(Context.Context):
     def sphinx_build(self, path):
         print
         print "[waf] Building sphinx docs for " + path
+        if path == './doc':
+            dir_opt = "BUILDDIR=" + os.getcwd () + "/doc/build/"
+        else:
+            dir_opt = "BUILDDIR=" + os.getcwd () + "/doc/build-" + (os.path.basename(path.replace("/doc" ,""))).replace("ns-3-dce-","")
         if subprocess.Popen(["make", "SPHINXOPTS=-N", "-k",
-                             "BUILDDIR=" + os.getcwd () + "/doc/build/" + os.path.basename(path.replace("/doc" ,"")),
+                             dir_opt,
                              "html", "singlehtml", "latexpdf" ],
                             cwd=path).wait() :
             Logs.error("Sphinx build of " + path + " returned an error.")

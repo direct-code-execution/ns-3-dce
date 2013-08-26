@@ -1,11 +1,13 @@
 .. include:: replace.txt
 
-Running Your Simulation
-***********************
+Advanced Use Cases
+******************
 
 
 .. toctree::
    :maxdepth: 1
 
    dce-user-elfloader
+   dce-user-debug
+   dce-user-test
 

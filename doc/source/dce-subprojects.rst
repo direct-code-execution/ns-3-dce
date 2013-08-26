@@ -1,6 +1,7 @@
 .. include:: replace.txt
-Supported Applications
-**********************
+
+Subprojects of DCE
+******************
 
 Below are the list of the tested applications with DCE.
 
@@ -45,17 +46,12 @@ For more information, see the latest support `document <../ns-3-dce-umip/html/in
 
 Linux kernel (from 2.6.36 to 3.7 version)
 =========================================
+(TBA)
 
 thttpd
 ======
+(TBA)
 
 torrent
 =======
-
-.. toctree::
-   :maxdepth: 1
-
-   dce-ccnx
-..   dce-quagga
-..   dce-umip
-..   dce-linux
+(TBA)

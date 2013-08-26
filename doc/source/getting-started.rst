@@ -1,10 +1,11 @@
 .. include:: replace.txt
 
+
 Quick Start Guide
-*****************
+-----------------
 
 Introduction
-============
+************
 
 The DCE ns-3 module provides facilities to execute within ns-3 existing
 implementations of userspace and kernelspace network protocols. 
@@ -18,14 +19,14 @@ real-world deployments and simulations.
 .. _build-dce:
 
 Build DCE
-=========
+*********
 
 DCE offers two major modes of operation:
  1. The basic mode, where DCE use the |ns3| TCP stacks,
  2. The advanced mode, where DCE uses a Linux network stack instead.
 
 Building DCE basic mode
------------------------
++++++++++++++++++++++++
 
 First you need to download Bake using Mercurial and set some variables:
 
@@ -42,11 +43,11 @@ then you must to create a directory for DCE and install it using bake:
 
    mkdir dce
    cd dce
-   bake.py configure -e dce-ns3-1.0
+   bake.py configure -e dce-ns3-|version|
    bake.py download
    bake.py build
  
-note that **dce-ns3-1.0** is the DCE version 1.0 module. If you would like to use the development version of DCE module, you can specify **dce-ns3-dev** as a module name for bake.
+note that dce-ns3-|version| is the DCE version |version| module. If you would like to use the development version of DCE module, you can specify **dce-ns3-dev** as a module name for bake.
 
 the output should look likes this:
 
@@ -72,7 +73,7 @@ the output should look likes this:
   >> Built dce-ns3 - OK
 
 Building DCE advanced mode (with Linux kernel)
-----------------------------------------------
+++++++++++++++++++++++++++++++++++++++++++++++
 If you would like to try Linux network stack instead of |ns3| network stack, you can try the advanced mode.
 The difference to build the advanced mode is the different module name *dce-linux* instead of *dce-ns3* (basic mode).
 
@@ -80,18 +81,18 @@ The difference to build the advanced mode is the different module name *dce-linu
 
    mkdir dce
    cd dce
-   bake.py configure -e dce-linux-1.0
+   bake.py configure -e dce-linux-|version|
    bake.py download
    bake.py build
 
-note that **dce-linux-1.0** is the DCE version 1.0 module. If you would like to use the development version of DCE module, you can specify **dce-linux-dev** as a module name for bake.
+note that dce-linux-|version| is the DCE version |version| module. If you would like to use the development version of DCE module, you can specify **dce-linux-dev** as a module name for bake.
 
 Examples
-========
+********
 If you got succeed to build DCE, you can try an example script which is already included in DCE package.
   
 Example: Simple UDP socket application
---------------------------------------
+++++++++++++++++++++++++++++++++++++++
 
 This example execute the binaries named udp-client and udp-server under |ns3| using DCE.
 These 2 binaries are written using POSIX socket API in order to send and receive UDP packets.
@@ -144,7 +145,7 @@ files-0 contains first node's file system, it also contains the output files of 
 Before launching a simulation, you may also create files-xx directories and provide files required by the applications to be executed correctly.
 
 Example: iperf
---------------
+++++++++++++++
 
 This example shows the usage of iperf with DCE. You are able to generate traffic by well-know traffic generator `iperf` in your simulation.
 For more detail of the scenario description, please refer to the :ref:`user's guide<dce-iperf-example>`.

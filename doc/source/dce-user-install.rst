@@ -1,12 +1,12 @@
 .. include:: replace.txt
-Installation
-************
+
+Setup Guide
+***********
 
 In order to install DCE you must follow the tutorial :ref:`build-dce`.
 
 
-Installation result
--------------------
+**Installation result**
 
 The result of the installation process is the creation of libraries from source of DCE and that of |ns3| and also some tools and sources of an optional Linux kernel if you have also chosen to use the stack of a Linux kernel. 
 Below you will find the main directories:

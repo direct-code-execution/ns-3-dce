@@ -1,3 +1,2 @@
 .. |ns3| replace:: *ns-3*
 .. |dce_cradle| replace:: DCE Cradle
-
