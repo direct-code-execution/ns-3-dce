@@ -148,7 +148,7 @@ def _check_dependencies(conf, required, mandatory):
         if module in conf.env['NS3_MODULES_FOUND']:
             continue
         # XXX need better way to find .pc files
-        for ver in ['3-dev', '3.17']:
+        for ver in ['3-dev', '3.18', '3.17']:
             try:
                 retval = conf.check_cfg(package = 'libns%s-%s-%s' 
                                         % (ver, module.lower(), conf.env['LIB_SUFFIX']),
