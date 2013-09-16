@@ -21,3 +21,7 @@ testpy-output
 doxygen.log
 doc/html
 lcov-report
+^GPATH
+^GRTAGS
+^GSYMS
+^GTAGS
