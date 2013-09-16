@@ -8,6 +8,7 @@ Basic Use Cases
 
    dce-user-newapps
    dce-user-kernel
+   dce-user-syscalls
    dce-user-submodule
    dce-user-config
    dce-cradle 
