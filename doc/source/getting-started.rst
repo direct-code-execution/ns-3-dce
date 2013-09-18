@@ -87,6 +87,56 @@ The difference to build the advanced mode is the different module name *dce-linu
 
 note that dce-linux-|version| is the DCE version |version| module. If you would like to use the development version of DCE module, you can specify **dce-linux-dev** as a module name for bake.
 
+
+Building DCE using WAF
+++++++++++++++++++++++
+
+While Bake is the best option, another one is the configuration and build using WAF.
+WAF is a Python-based framework for configuring, compiling and installing applications.
+The configuration scripts are coded in Python files named *wscript*, calling the WAF 
+framework, and called by the *waf* executable.
+ 
+In this case you need to install the single packages one by one. You may want to start with *ns-3*:
+ 
+::
+ 
+   # Download ns-3
+   hg clone http://code.nsnam.org/ns-3.17
+   # Configure
+   ./waf configure --enable-examples \
+         -d optimized --prefix=$HOME/dce/build \
+         --includedir=$HOME/dce/build/include 
+         
+   # Build and install in the directory specified by
+   # --prefix parameter
+   ./waf build
+   ./waf install
+ 
+ 
+Then you can download and install *net-next-sim* and DCE (*net-next-sim* includes the linux stack module):
+ 
+::
+ 
+   # Clone net-next-sim
+   git clone https://github.com/thehajime/net-next-sim.git
+   cd net-next-sim
+   # Select a kernel version
+   git checkout sim-ns3-3.10.0-branch
+   # Configure and build
+   make menuconfig
+   make library OPT=yes ARCH=sim
+   cd ..
+ 
+   # Download, configure, build and install DCE
+   hg clone http://code.nsnam.org/ns-3-dce
+   ./waf configure --with-ns3=$HOME/dce/build \
+                --enable-kernel-stack=$HOME/dce/net-next-sim/arch \
+                --enable-opt \
+                --prefix=$HOME/dce
+   ./waf build
+   ./waf install
+
+
 Examples
 ********
 If you got succeed to build DCE, you can try an example script which is already included in DCE package.
