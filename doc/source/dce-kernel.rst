@@ -30,10 +30,14 @@ The solution chosen was to use the Linux kernel source, compile the Net part and
 The following schema show the differents parts between a software user space application and the hardware network.
 
   .. image:: images/appli_2_network.png
+     :scale: 50%
+     :align: center
 
 The following schema show the same application running under DCE and |ns3| and using a real kernel network stack:
 
   .. image:: images/appli_2_network_dce.png
+     :scale: 50%
+     :align: center
 
 The green parts are implemented in ns-3-linux source files, the grays parts comes from the Linux kernel sources and are not modified at all or with only few changes.
 Application should not be modified at all.
@@ -67,16 +71,20 @@ Below are the files delivered under the directory *ns-3-linux*:
 ::
 
   $ ls ns-3-linux/
-  generate-autoconf.py  generate-linker-script.py  kernel-dsmip6.patch  kernel.patch  Makefile  Makefile.print  processor.mk  README  sim
+  generate-autoconf.py  generate-linker-script.py  kernel-dsmip6.patch  kernel.patch \
+                        Makefile  Makefile.print  processor.mk  README  sim
   
 The main file is the **Makefile** its role is to recover the kernel source, compile the NET part of the kernel and all that is necessary for the operation, the end result is a shared library that can be loaded by DCE.
 
 ::
 
   $ ls ns-3-linux/sim
-  cred.c     glue.c     Kconfig    pid.c    random.c    seq.c         sim-socket.c  softirq.c  tasklet.c          timer.c
-  defconfig  hrtimer.c  Makefile   print.c  sched.c     sim.c         slab.c        sysctl.c   tasklet-hrtimer.c  workqueue.c
-  fs.c       include    modules.c  proc.c   security.c  sim-device.c  socket.c      sysfs.c    time.c
+  cred.c       glue.c        Kconfig    pid.c              random.c    
+  seq.c        sim-socket.c  softirq.c  tasklet.c          timer.c
+  defconfig    hrtimer.c     Makefile   print.c            sched.c     
+  sim.c        slab.c        sysctl.c   tasklet-hrtimer.c  workqueue.c
+  fs.c         include       modules.c  proc.c             security.c  
+  sim-device.c socket.c      sysfs.c    time.c
 
   $ ls ns-3-linux/sim/include
   asm  generated  sim-assert.h  sim.h  sim-init.h  sim-printf.h  sim-types.h
@@ -171,8 +179,8 @@ First you should call **make setup** in order to download the source of the kern
 ::
 
   $ make setup
-  git clone git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git net-next-2.6; cd net-next-2.6 && git reset --hard \
-  fed66381d65a35198639f564365e61a7f256bf79
+  git clone git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git net-next-2.6;\
+              cd net-next-2.6 && git reset --hard fed66381d65a35198639f564365e61a7f256bf79
   Cloning into net-next-2.6...
   remote: Counting objects: 2441000, done.
   remote: Compressing objects: 100% (377669/377669), done.
@@ -213,7 +221,8 @@ For this you should give to the waf configure the path to the **ns-3-linux** dir
 
 ::
 
-   dceManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("libnet-next-2.6.so"));
+   dceManager.SetNetworkStack("ns3::LinuxSocketFdFactory", \
+             "Library", StringValue ("libnet-next-2.6.so"));
 
 Test
 ----
@@ -290,7 +299,14 @@ Now we can try to build:
   $ make menuconfig
   $ make
   mkdir -p sim/
-  cc -O0 -g3 -D__KERNEL__ -Wall -Wstrict-prototypes -Wno-trigraphs -fno-inline -iwithprefix ./linux-stable/include -DKBUILD_BASENAME=\"clnt\" -fno-strict-aliasing -fno-common -fno-delete-null-pointer-checks -fno-stack-protector -DKBUILD_MODNAME=\"nsc\" -DMODVERSIONS -DEXPORT_SYMTAB -include autoconf.h -U__FreeBSD__ -D__linux__=1 -Dlinux=1 -D__linux=1 -I./sim/include -I./linux-stable/include -fpic -DPIC -D_DEBUG -I/home/furbani/dev/dce/dev/etude_kernel/V3/ns-3-linux -DCONFIG_64BIT -c sim/fs.c -o sim/fs.o
+  cc -O0 -g3 -D__KERNEL__ -Wall -Wstrict-prototypes -Wno-trigraphs -fno-inline   \
+               -iwithprefix ./linux-stable/include -DKBUILD_BASENAME=\"clnt\"    \
+               -fno-strict-aliasing -fno-common -fno-delete-null-pointer-checks  \
+               -fno-stack-protector -DKBUILD_MODNAME=\"nsc\" -DMODVERSIONS       \
+               -DEXPORT_SYMTAB -include autoconf.h -U__FreeBSD__ -D__linux__=1   \
+               -Dlinux=1 -D__linux=1 -I./sim/include -I./linux-stable/include    \
+               -fpic -DPIC -D_DEBUG -I$HOME/dev/dce/dev/etude_kernel/V3/ns-3-linux \
+               -DCONFIG_64BIT -c sim/fs.c -o sim/fs.o
   In file included from ./linux-stable/include/asm-generic/bitops.h:12:0,
                    from ./sim/include/asm/bitops.h:4,
                    from ./linux-stable/include/linux/bitops.h:22,
