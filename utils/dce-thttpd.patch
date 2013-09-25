@@ -10,7 +10,7 @@ diff -r 26e35047fda8 Makefile
  INCLS =		-I.
 -CFLAGS =	$(CCOPT) $(DEFS) $(INCLS)
 -LDFLAGS =	
-+CFLAGS +=	$(CCOPT) $(DEFS) $(INCLS) -fPIC -g
++CFLAGS +=	$(CCOPT) $(DEFS) $(INCLS) -fPIC -g -U_FORTIFY_SOURCE
 +LDFLAGS +=	-pie -rdynamic
  LIBS =		-lcrypt 
  NETLIBS =	
