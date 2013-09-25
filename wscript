@@ -411,6 +411,10 @@ def build_dce_kernel_examples(module):
                        target='bin/dce-tcp-ns3-nsc-comparison',
                        source=['example/dce-tcp-ns3-nsc-comparison.cc'])
 
+    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point'],
+                       target='bin/dce-httpd',
+                       source=['example/dce-httpd.cc'])
+
 # Add a script to build system 
 def build_a_script(bld, name, needed = [], **kw):
     external = [i for i in needed if not i == name]

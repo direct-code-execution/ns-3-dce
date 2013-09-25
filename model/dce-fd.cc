@@ -319,11 +319,11 @@ ssize_t dce_writev (int fd, const struct iovec *iov, int iovcnt)
       return -1;
     }
 
-  char buf[count], *bufp = buf;
+  void *buf = malloc (count);
   for (int i = 0; i < iovcnt; ++i)
     {
-      memcpy (bufp, iov[i].iov_base, iov[i].iov_len);
-      bufp += iov[i].iov_len;
+      memcpy (buf, iov[i].iov_base, iov[i].iov_len);
+      buf += iov[i].iov_len;
     }
 
   UnixFd *unixFd = current->process->openFiles[fd]->GetFileInc ();

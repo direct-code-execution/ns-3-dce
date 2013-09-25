@@ -10,8 +10,8 @@ diff -r 26e35047fda8 Makefile
  INCLS =		-I.
 -CFLAGS =	$(CCOPT) $(DEFS) $(INCLS)
 -LDFLAGS =	
-+CFLAGS +=	$(CCOPT) $(DEFS) $(INCLS)
-+LDFLAGS +=	
++CFLAGS +=	$(CCOPT) $(DEFS) $(INCLS) -fPIC -g
++LDFLAGS +=	-pie -rdynamic
  LIBS =		-lcrypt 
  NETLIBS =	
  INSTALL =	/usr/bin/install -c

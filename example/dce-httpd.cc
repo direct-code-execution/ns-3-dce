@@ -32,10 +32,13 @@ using namespace ns3;
 void
 CreateFiles ()
 {
-  std::ofstream osf ("files-0/index.html", std::fstream::trunc);
-  osf << "<HTML><HEAD><TITLE>Hello</TITLE></HEAD><BODY><H3>HELLO</H3>"
-      << "<P>is all right ?</BODY></HTML>" << std::endl;
-  osf.close ();
+  FILE *fp = fopen ("files-0/index.html", "wb"); 
+  int i;
+  for (i = 0; i < 500000;i++)
+    {
+      fprintf (fp, "%d\n", i);
+    }
+  fclose (fp);
 }
 int
 main (int argc, char *argv[])
@@ -47,7 +50,7 @@ main (int argc, char *argv[])
   cmd.Parse (argc, argv);
 
   mkdir ("files-0",0744);
-//  CreateFiles ();
+  CreateFiles ();
 
   NodeContainer nodes;
   nodes.Create (2);
