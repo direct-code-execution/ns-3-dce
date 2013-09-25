@@ -2,8 +2,8 @@
 
 .. _dce-user-doc:
 
-User's Guide
-************
+Run applications in DCE
+***********************
 This document is for the people who want to use your application in |ns3| using DCE.
 
 Direct Code Execution (DCE) allows us to use POSIX socket-based applications as well as Linux kernel network stack.

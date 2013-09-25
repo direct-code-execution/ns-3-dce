@@ -10,8 +10,8 @@ Direct Code Execution (DCE) Manual
    intro
    getting-started
    dce-user-doc
-   dce-dev-doc
    how-it-works
+   dce-dev-doc
    dce-subprojects
 
    dce-about
