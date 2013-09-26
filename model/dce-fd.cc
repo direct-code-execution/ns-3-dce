@@ -329,6 +329,7 @@ ssize_t dce_writev (int fd, const struct iovec *iov, int iovcnt)
   UnixFd *unixFd = current->process->openFiles[fd]->GetFileInc ();
   int retval = unixFd->Write (buf, count);
   FdDecUsage (fd);
+  free (buf - count);
 
   return retval;
 }
