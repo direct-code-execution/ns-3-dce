@@ -1,8 +1,8 @@
 .. include:: replace.txt
 
 
-Quick Start
------------
+Quick Start Guide
+-----------------
 
 Introduction
 ************
