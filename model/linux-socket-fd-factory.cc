@@ -882,13 +882,13 @@ LinuxSocketFdFactory::Shutdown (struct SimSocket *socket, int how)
   return retval;
 }
 int
-LinuxSocketFdFactory::Accept (struct SimSocket *socket, struct sockaddr *my_addr, socklen_t *addrlen)
+LinuxSocketFdFactory::Accept (struct SimSocket *socket, struct sockaddr *my_addr, socklen_t *addrlen, int flags)
 {
-  GET_CURRENT (socket << my_addr << addrlen);
+  GET_CURRENT (socket << my_addr << addrlen << flags);
   struct SimSocket *newSocket;
   // XXX: handle O_NONBLOCK
   m_loader->NotifyStartExecute ();
-  int retval = m_exported->sock_accept (socket, &newSocket, 0);
+  int retval = m_exported->sock_accept (socket, &newSocket, flags);
   m_loader->NotifyEndExecute ();
   if (retval < 0)
     {

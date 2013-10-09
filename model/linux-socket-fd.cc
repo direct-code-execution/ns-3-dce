@@ -132,7 +132,7 @@ LinuxSocketFd::Shutdown (int how)
 int
 LinuxSocketFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
 {
-  return m_factory->Accept (m_socket, my_addr, addrlen);
+  return m_factory->Accept (m_socket, my_addr, addrlen, m_statusFlags);
 }
 void *
 LinuxSocketFd::Mmap (void *start, size_t length, int prot, int flags, off64_t offset)
