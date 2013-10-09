@@ -179,9 +179,7 @@ LinuxSocketFd::Fcntl (int cmd, unsigned long arg)
       return 0;
       break;
     default:
-      //XXX commands missing
-      NS_FATAL_ERROR ("fcntl not implemented on socket");
-      return -1;
+      return UnixFd::Fcntl(cmd, arg );
     }
 }
 int
