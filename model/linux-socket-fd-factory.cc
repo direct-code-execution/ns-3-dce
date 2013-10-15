@@ -886,7 +886,6 @@ LinuxSocketFdFactory::Accept (struct SimSocket *socket, struct sockaddr *my_addr
 {
   GET_CURRENT (socket << my_addr << addrlen << flags);
   struct SimSocket *newSocket;
-  // XXX: handle O_NONBLOCK
   m_loader->NotifyStartExecute ();
   int retval = m_exported->sock_accept (socket, &newSocket, flags);
   m_loader->NotifyEndExecute ();
