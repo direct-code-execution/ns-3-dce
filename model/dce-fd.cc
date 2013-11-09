@@ -320,16 +320,17 @@ ssize_t dce_writev (int fd, const struct iovec *iov, int iovcnt)
     }
 
   void *buf = malloc (count);
+  void *bufp = buf;
   for (int i = 0; i < iovcnt; ++i)
     {
-      memcpy (buf, iov[i].iov_base, iov[i].iov_len);
-      buf += iov[i].iov_len;
+      memcpy (bufp, iov[i].iov_base, iov[i].iov_len);
+      bufp += iov[i].iov_len;
     }
 
   UnixFd *unixFd = current->process->openFiles[fd]->GetFileInc ();
   int retval = unixFd->Write (buf, count);
   FdDecUsage (fd);
-  free (buf - count);
+  free (buf);
 
   return retval;
 }
