@@ -77,6 +77,8 @@ def configure(conf):
         else:
             os.environ['PKG_CONFIG_PATH']+= ":" + os.path.join(Options.options.with_ns3, 'lib', 'pkgconfig')
 
+        conf.env.append_value('NS3_EXECUTABLE_PATH', os.path.join(conf.env['NS3_DIR'], 'bin'))
+
     ns3waf.check_modules(conf, ['core', 'network', 'internet'], mandatory = True)
     ns3waf.check_modules(conf, ['point-to-point', 'tap-bridge', 'netanim'], mandatory = False)
     ns3waf.check_modules(conf, ['wifi', 'point-to-point', 'csma', 'mobility'], mandatory = False)
