@@ -37,7 +37,7 @@ In order to add function calls or system calls that DCE can handle, you need to 
 
  NATIVE (strfry)
 
- This is the case of the symbol ``strfry()``, which we don't have to reimplement.
+ This is the case of the symbol ``strfry()``, which we don't have to reimplement. But you may need to add include file that defines the symbol (strfry()) at model/libc-dce.cc.
 
  If the symbol needs to reimplemented for DCE, you may add as follows.
 
