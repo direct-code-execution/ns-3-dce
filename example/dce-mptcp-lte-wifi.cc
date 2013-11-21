@@ -94,7 +94,7 @@ int main (int argc, char *argv[])
   PointToPointHelper pointToPoint;
   NetDeviceContainer devices1, devices2;
   Ptr<LteHelper> lteHelper = CreateObject<LteHelper> ();
-  Ptr<EpcHelper> epcHelper = CreateObject<EpcHelper> ();
+  Ptr<PointToPointEpcHelper> epcHelper = CreateObject<PointToPointEpcHelper> ();
   YansWifiPhyHelper phy;
 
   Ipv4AddressHelper address1, address2;
