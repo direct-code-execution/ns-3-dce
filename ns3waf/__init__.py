@@ -1,6 +1,9 @@
 ## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
 
 import waflib
+import glob
+import os
+import re
 
 def options(opt):
     opt.tool_options('compiler_cc')
@@ -142,32 +145,41 @@ def _check_win32(conf):
                 env['WL_SONAME_SUPPORTED'] = True
 
 
+ns3_versions = ['3-dev', '3.18', '3.17']
 def _check_dependencies(conf, required, mandatory):
     found = []
+    match_pkg = None
     for module in required:
         if module in conf.env['NS3_MODULES_FOUND']:
             continue
         # XXX need better way to find .pc files
-        for ver in ['3-dev', '3.18', '3.17']:
-            try:
-                retval = conf.check_cfg(package = 'libns%s-%s-%s' 
-                                        % (ver, module.lower(), conf.env['LIB_SUFFIX']),
-                                        args='--cflags --libs', mandatory=mandatory,
-                                        msg="Checking for ns3-%s" % module.lower(),
-                                        uselib_store='NS3_%s' % module.upper())
-                if not retval is None:
-                    # XXX pkg-config doesn't give the proper order of whole-archive option..
-                    if conf.env['NS3_ENABLE_STATIC']:
-                        libname = 'STLIB_ST_NS3_%s' % module.upper()
-                        conf.env[libname] = '-lns%s-%s-%s' % (ver, module.lower(), conf.env['LIB_SUFFIX'])
-                        for lib in conf.env['LIB_NS3_%s' % module.upper()]:
-                            if 'ns%s-' % ver in lib:
-                                conf.env.append_value(libname, '-l%s' % lib)
-                    break
-            except conf.errors.ConfigurationError:
-                retval = None
+        for ver in ns3_versions:
+            pcfiles = glob.glob(conf.env['NS3_DIR'] + '/lib/pkgconfig/' + 'libns%s*-%s-%s*'
+                                % (ver, module.lower(), conf.env['LIB_SUFFIX']))
+            if not len(pcfiles) is 0:
+                match_pkg = os.path.basename(pcfiles[0])
+                if match_pkg:
+                    match_pkg = os.path.splitext(match_pkg)[0]
+                break
+
+        retval = conf.check_cfg(package = match_pkg,
+                                args='--cflags --libs', mandatory=mandatory,
+                                msg="Checking for ns3-%s (%s)" % (module.lower(),
+                                                                  re.search("(ns[0-9][\.\-][dev0-9\.]+)",
+                                                                            match_pkg).group(0) if match_pkg else 'None'),
+                                uselib_store='NS3_%s' % module.upper())
+        if not retval is None:
+            # XXX pkg-config doesn't give the proper order of whole-archive option..
+            if conf.env['NS3_ENABLE_STATIC']:
+                libname = 'STLIB_ST_NS3_%s' % module.upper()
+                conf.env[libname] = '-l%s' % (match_pkg.replace('libns3', 'ns3'))
+                for lib in conf.env['LIB_NS3_%s' % module.upper()]:
+                    if 'ns3' in lib:
+                        conf.env.append_value(libname, '-l%s' % lib)
+
         if not retval is None:
             found.append(module)
+
     import copy
     if not 'NS3_MODULES_FOUND' in conf.env:
         conf.env['NS3_MODULES_FOUND'] = []
