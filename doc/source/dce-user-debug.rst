@@ -46,6 +46,26 @@ inside:::
 
   handle SIGUSR1 nostop
 
+Setup Eclipse Remote Debugging Environment
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To remotely debug a DCE script you can use gdbserver as in the following example,
+changing the host name and port (localhost:1234):
+
+::
+
+  ./waf --run dce-httpd --command-template="gdbserver localhost:1234 %s <args>"
+
+Then you can point a gdb client to your server.
+For example, in the following figure is reported an Eclipse debug configuration:
+
+
+.. image:: images/eclipsedebugconf.png
+  :scale: 50%
+  :align: center
+
+Once you start the debug session, you can use the usual Eclipse/gdb commands.
+
 Helpful debugging hints
 ^^^^^^^^^^^^^^^^^^^^^^^
 
