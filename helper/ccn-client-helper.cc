@@ -176,4 +176,15 @@ CcnClientHelper::CopyRealFileToVirtual (int nodeId, std::string from, std::strin
     }
   CopyFile (from, vto);
 }
+
+/**
+ * Reset environmental variables for the main binary for this application.
+ */
+void 
+CcnClientHelper::ResetEnvironment (void)
+{
+  m_files.clear();
+  DceApplicationHelper::ResetEnvironment();
+}
+
 }

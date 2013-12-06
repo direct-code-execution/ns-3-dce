@@ -14,6 +14,11 @@ public:
   virtual ApplicationContainer Install (NodeContainer c);
   void AddFile (std::string from, std::string to);
 
+  /**
+   * Reset environmental variables for the main binary for this application.
+   */
+  void ResetEnvironment (void);
+
 private:
   std::string GetKeystoreDir (void);
   void CreateKeystore ();
@@ -23,6 +28,8 @@ private:
 
   void CopyRealFileToVirtual (int nodeId, std::string from, std::string to);
 
+
 };
+
 }
 #endif // CCN_HELPER_H
