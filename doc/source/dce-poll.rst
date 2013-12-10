@@ -77,22 +77,22 @@ So we add 2 sources files named wait-queue.h and wait-queue.cc in order to imple
 It is also on this occasion that I deleted all the objects used to wait which was allocated on the stack, and I replaced by objects 
 allocated in the heap. 
 Concerning the dce-poll function it looks like the kernel one with some differences.
-The more important difference is that the PollTable can not be allocated on the stack so it cannot be a local variable, so the PollTable
-object is allocated with a C++ new. I guess you're wondering why the poll table can not be allocated on the stack, it is because of the fork implementation of DCE.
-Indeed, if a process makes a fork, this creates another stack which use the same memory addresses, thus another thread of the same process can not use an object allocated on this stack, and when a event of a file want to wake up the poll thread it will use especially this poll table. So allocating the Poll Table in the heap generates a side effect which is that we need to release this memory if another thread call exit while we are within the dce-poll. So we need to register the Poll Table somewhere in a DCE data, and the DCE place choosen is the thread struct (in file **model/process.h**), because each thread can be in doing a poll. Thus there is a new field in struct thread which is:
+The more important difference is that the PollTable cannot be allocated on the stack so it cannot be a local variable, so the PollTable
+object is allocated with a C++ new. I guess you're wondering why the poll table cannot be allocated on the stack, it is because of the fork implementation of DCE.
+Indeed, if a process makes a fork, this creates another stack which use the same memory addresses, thus another thread of the same process cannot use an object allocated on this stack, and when a event of a file want to wake up the poll thread it will use especially this poll table. So allocating the Poll Table in the heap generates a side effect which is that we need to release this memory if another thread call exit while we are within the dce-poll. So we need to register the Poll Table somewhere in a DCE data, and the DCE place choosen is the thread struct (in file **model/process.h**), because each thread can be in doing a poll. Thus there is a new field in struct thread which is:
 
 ::
 
 	PollTable *pollTable; // No 0 if a poll is running on this thread
 	
 There is another reason to have this field, this reason arises from the fact that a file descriptor can be shared by multiple processes 
-(thanks to dup fork ...), thus when a process exit while doing a poll, we need to deregister from the corresponding wait queues refered by the poll table.
+(thanks to dup fork ...), thus when a process exit while doing a poll, we need to deregister from the corresponding wait queues referred by the poll table.
 
 Poll kernel implementation
 --------------------------
 
-Concerning the kernel implementation the dce-poll method is the same but the difference cames from the Poll method specialized 
-implementation of the class herited from UnixFd and which correspond to a File Descriptor open with the help of the Kernel Linux.
+Concerning the kernel implementation the dce-poll method is the same but the difference comes from the Poll method specialized 
+implementation of the class inherited from UnixFd and which correspond to a File Descriptor open with the help of the Kernel Linux.
 For example the class LinuxSocketFd  represents a socket which is opened in the kernel, therefore the method **poll** of LinuxSocketFdFactory will do much work.
 
 Now look at the interface between DCE and the kernel, in the direction DCE to kernel, we use 2 functions which are **sock_poll** and
@@ -120,7 +120,7 @@ In return this function modifies the value of opaque and assign it a pointer to 
 entry in the wait queue of the socket. This value will be used by DCE for unregister it from the wait queue using the function 
 **sock_pollfreewait function (void * ref)**.
 The field **ret** is also affected in return and it contain the mask of poll events which have 
-already occured on the corresponding socket.
+already occurred on the corresponding socket.
 Most of the kernel code is in the file sim-socket.c it consists of two structures, and the following functions:
 
 +-------------------------+--------------------------------------------------------------------------------------------------------+

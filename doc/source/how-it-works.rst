@@ -5,14 +5,14 @@
 How It Works (To Be Available Soon)
 ***********************************
 
-If your are interrested to know why DCE exists and how it can works, you should read this document `Experimentation Tools for Networking Research <http://cutebugs.net/files/thesis.pdf>`_ (and in particular the chapter 4) written by the principal author of DCE Mathieu Lacage. Also you can read the sources too.
+If you are interested to know why DCE exists and how it can work, you should read this document `Experimentation Tools for Networking Research <http://cutebugs.net/files/thesis.pdf>`_ (and in particular the chapter 4) written by the principal author of DCE, Mathieu Lacage. Also you can read the sources too.
 
 
 Introduction
 ============
 
 You know that the goal of DCE is to execute actual binaries within |ns3|.
-More precisely a binary executed by DCE perceives time and space of |ns3|, rather than the real environnenent.
+More precisely a binary executed by DCE perceives time and space of |ns3|, rather than the real environment.
 
 To do this, DCE does a job equivalent to an operating system like:
 
@@ -46,7 +46,7 @@ Process
 **struct process** contains everything you need to describe a process, I invite you to study the source code in the file *process.h*.
 
 This structure contains references to standard objects for example a list of open files via a vector of FILE \*, but it contains
-also the references to objects useful to manage DCE threads, the memory allocated by the process ...
+also the references to objects useful to manage DCE threads, the memory allocated by the process...
 
 Field **openFiles** represents the open file descriptors of the process, the key is the fd and the value a pointer to an object of type DCE **FileUsage**.
 The field **threads** contains all the threads in the process see description below.
@@ -93,14 +93,14 @@ LoaderFactory and Loader
 
 The **Loader** is a very important object of DCE. A DCE **Loader** loads the executable code in memory of a special way,
 load several times the same executable, while isolating each of the other executable.
-The **Loader** must link the executable loaded with the 3 libraries emulated ie lib C, lib pthread and lib rt.
+The **Loader** must link the executable loaded with the 3 emulated libraries, i.e., lib C, lib pthread and lib rt.
 The same way the libraries used by the executable must also be linked with the emulated libraries.
 
 
 DCE offers several actually Loader:
 
-1. **CoojaLoader**: it has the following characteristics: it loads into memory only a copy of the code, by cons it duplicates data (ie global variables and static). For each change of context there are 2 memory copies: backup data of the current context then restoration of context memory that will take control. Comment: it is rather reliable,the size of the copied memory size depends on the total static and global variables, and in general there is little, in a well designed executable. 
-2. **DlmLoader** : Uses a specialized loader to not duplicate the code but only the data but without special operations to do when changing context. Comment: offers the best performance in memory and cpu, but not very reliable especially during the unloading phase.
+1. **CoojaLoader**: it has the following characteristics: it loads into memory only a copy of the code, by cons it duplicates data (i.e., global variables and static). For each change of context there are 2 memory copies: backup data of the current context then restoration of context memory that will take control. Comment: it is rather reliable, the size of the copied memory size depends on the total static and global variables, and in general there is little, in a well-designed executable. 
+2. **DlmLoader**: Uses a specialized loader to not duplicate the code but only the data but without special operations to do when changing context. Comment: offers the best performance in memory and cpu, but not very reliable especially during the unloading phase.
 
 .. 2. **CopyLoader**: This is the simplest, it copies each executable and libraries before loading them in order that dlopen loads a new copy of the code and data. Comment: there is no operation during the particular context changes, but the memory consumption is important.
 

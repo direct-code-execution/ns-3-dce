@@ -73,8 +73,8 @@ There are a couple of functions which are useful to put breakpoints into:
 
  * ns3::DceManager::StartProcessDebugHook
 
-Put a breakpoint in a specif node in a simulation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Put a breakpoint in a specific node in a simulation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 If you got a trouble in your protocol during interactions between distributed nodes, you want to investigate a specific state of the protocol in a specific node. In a usual system, this is a typical case of using *distributed debugger* (e.g., ddt, or *mpirun xterm -e gdb --args xxx*), but it is annoying task in general due to the difficulty of controlling distributed nodes and processes.
 
 DCE gives an easy interface to debug distributed applications/protocols by the single-process model of its architecture.

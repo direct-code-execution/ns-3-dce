@@ -19,7 +19,7 @@ You must use mercurial to download the source code.
 Goal
 ====
 
-The goal of this work is to use the real implementation of the Linux Network Stack within the Simulation environnement furnished by |ns3|. 
+The goal of this work is to use the real implementation of the Linux Network Stack within the Simulation environment furnished by |ns3|. 
 
 
 Solution
@@ -27,13 +27,17 @@ Solution
 
 The solution chosen was to use the Linux kernel source, compile the Net part and make a dynamic library and interface the result with DCE.
 
-The following schema show the differents parts between a software user space application and the hardware network.
+The following schema shows the different parts between a software user space application and the hardware network.
 
-  .. image:: images/appli_2_network.png
+.. image:: images/appli_2_network.png
+   :scale: 50%
+   :align: center
 
 The following schema show the same application running under DCE and |ns3| and using a real kernel network stack:
 
-  .. image:: images/appli_2_network_dce.png
+.. image:: images/appli_2_network_dce.png
+   :scale: 50%
+   :align: center
 
 The green parts are implemented in ns-3-linux source files, the grays parts comes from the Linux kernel sources and are not modified at all or with only few changes.
 Application should not be modified at all.
@@ -42,7 +46,7 @@ Application should not be modified at all.
 Concepts
 ========
 
-If you need a more theorical documentation you can read the chapter 4.5 of this Ph.D thesis `Experimentation Tools for Networking Research <http://cutebugs.net/files/thesis.pdf>`_.
+If you need a more theoretical documentation you can read the chapter 4.5 of this Ph.D. thesis `Experimentation Tools for Networking Research <http://cutebugs.net/files/thesis.pdf>`_.
 
 
 List of files and usage
@@ -202,7 +206,7 @@ Usage
 To use this kernel you should:
 
 1. configure DCE in order to compile using the includes under **sim** directories to have the good interfaces between DCE and the kernel.
-For this you should give to the waf configure the path to the **ns-3-linux** directory ie:
+For this you should give to the waf configure the path to the **ns-3-linux** directory i.e.:
 
 ::
 

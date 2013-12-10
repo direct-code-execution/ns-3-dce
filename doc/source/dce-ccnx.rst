@@ -123,7 +123,7 @@ In this example we use other exe than *ccnd*:
 
 The first exe is not usable under DCE: *vlc* use a graphical interface and DCE do not supports this kind of application.
 
-So *vlc* will be launched normally outside of DCE environnement.
+So *vlc* will be launched normally outside of DCE environment.
 We will also use 2 *ccnd*:
 
 1. the first *ccnd* will be launched normally outside DCE, it will be the server for *vlc* player ,it will use the standard CCNx port ie 9596.

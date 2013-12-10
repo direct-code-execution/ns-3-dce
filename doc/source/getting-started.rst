@@ -197,7 +197,7 @@ Before launching a simulation, you may also create files-xx directories and prov
 Example: iperf
 ++++++++++++++
 
-This example shows the usage of iperf with DCE. You are able to generate traffic by well-know traffic generator `iperf` in your simulation.
+This example shows the usage of iperf with DCE. You are able to generate traffic by well-known traffic generator `iperf` in your simulation.
 For more detail of the scenario description, please refer to the :ref:`user's guide<dce-iperf-example>`.
 
 Once you successfully installed DCE with bake, you can execute the example using iperf.

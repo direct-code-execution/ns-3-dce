@@ -7,12 +7,12 @@ As explained in :ref:`how-it-works`, DCE needs to relocate the executable binary
 
 In order to this you should follow the two following rules:
 
-1. Compile your objects using this gcc flag: **-fPIC** for exemple :   ``gcc -fPIC -c foo.c``
+1. Compile your objects using this gcc flag: **-fPIC** for exemple:   ``gcc -fPIC -c foo.c``
 
  1. (option) Some application needs to be compile with **-U_FORTIFY_SOURCE** so that the application doesn't use alternative symbols including **__chk** (like memcpy_chk).
 
-2. Link your executable using this gcc flag: **-pie**  for exemple :   ``gcc -o foo -pie foo.o``
-3. Verify the produced executable using readelf utility in order to display the ELF file header and to verify that your exe is of type **DYN** indicating that DCE should be able to relocate and virtualize it under |ns3| virtual world and network. For exemple : ``readelf -h foo|grep Type:`` ==> ``Type: DYN (Shared object file)``
+2. Link your executable using this gcc flag: **-pie**  for exemple:   ``gcc -o foo -pie foo.o``
+3. Verify the produced executable using readelf utility in order to display the ELF file header and to verify that your exe is of type **DYN** indicating that DCE should be able to relocate and virtualize it under |ns3| virtual world and network. For exemple: ``readelf -h foo|grep Type:`` ==> ``Type: DYN (Shared object file)``
 4. Check also that your executable runs as expected outside of |ns3| and DCE.
 
 
@@ -37,8 +37,8 @@ Now that you have compiled your executable you can use it within |ns3| script wi
 |                      |                                |                                                                             |
 +----------------------+--------------------------------+-----------------------------------------------------------------------------+
 | DceApplicationHelper | ns3/dce-application-helper.h   | You will use this helper in order to define which application you want to   |
-|                      |                                | run within |ns3| by setting the name of the binary its optionals arguments  |
-|                      |                                | , its environment variables, and also optionaly if it take its input from   |
+|                      |                                | run within |ns3| by setting the name of the binary its optionals arguments, |
+|                      |                                | its environment variables, and also optionally if it take its input from    |
 |                      |                                | a file instead of stdin.                                                    |
 |                      |                                |                                                                             |
 |                      |                                | This class can be derived if you need to do more preparation before running |
@@ -136,7 +136,7 @@ You can notice that we create a |ns3| Node with an Internet Stack (please refer 
 and we can also see 2 new Helpers:
 
  1. DceManagerHelper which is used to Manage DCE loading system in each node where DCE will be used.
- 2. DceApplicationHelper which is used to describe real application to be lauched by DCE within |ns3| simulation environnement.
+ 2. DceApplicationHelper which is used to describe real application to be launched by DCE within |ns3| simulation environment.
  
 
 .. _dce-iperf-example:
@@ -281,7 +281,7 @@ The scenario is here:
   }
     
 This scenario is simple there is 2 nodes linked by a point 2 point link, the node 0 launch iperf as a client via the command **iperf -c 10.1.1.2 -i 1 --time 10** and the node 1 launch iperf as a server via the command **iperf -s -P 1**.
-You can follow this to launch the experiement:
+You can follow this to launch the experiment:
 
 
 
