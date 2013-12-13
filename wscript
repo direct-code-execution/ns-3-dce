@@ -417,6 +417,11 @@ def build_dce_kernel_examples(module):
                        target='bin/dce-httpd',
                        source=['example/dce-httpd.cc'])
 
+    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim', 'mobility', 'wifi', 'network'],
+                       target='bin/dce-wifi-ccnx',
+                       source=['example/ccnx/dce-wifi-ccnx.cc'])
+
+
 # Add a script to build system 
 def build_a_script(bld, name, needed = [], **kw):
     external = [i for i in needed if not i == name]

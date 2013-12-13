@@ -72,6 +72,7 @@ cpp_examples = [
     ("dce-mptcp-handoff-v4v6 --v6Primary=1 --errRate=0.8", "True", "True"),
 #    ("dce-mptcp-lte-wifi", "True", "True"),
     ("dce-httpd", "True", "True"),
+    ("dce-wifi-ccnx", "True", "True"),
 ]
 
 # A list of Python examples to run in order to ensure that they remain
