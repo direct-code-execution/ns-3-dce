@@ -666,7 +666,7 @@ def build(bld):
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc'],
               target='lib/pthread-ns3', cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage'],
               defines=['LIBSETUP=libpthread_setup'],
-              linkflags=['-nostdlib', '-lc', '-fno-profile-arcs',
+              linkflags=['-nostdlib', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'libpthread.version'),
                          '-Wl,-soname=libpthread.so.0'])
 
@@ -675,7 +675,7 @@ def build(bld):
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc'],
               target='lib/rt-ns3', cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage'],
               defines=['LIBSETUP=librt_setup'],
-              linkflags=['-nostdlib', '-lc', '-fno-profile-arcs',
+              linkflags=['-nostdlib', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'librt.version'),
                          '-Wl,-soname=librt.so.1'])
 
@@ -684,7 +684,7 @@ def build(bld):
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc'],
               target='lib/m-ns3', cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage'],
               defines=['LIBSETUP=libm_setup'],
-              linkflags=['-nostdlib', '-lc', '-fno-profile-arcs',
+              linkflags=['-nostdlib', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'libm.version'),
                          '-Wl,-soname=libm.so.6'])
 
