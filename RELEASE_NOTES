@@ -5,6 +5,52 @@ This file contains Direct Code Execution release notes (most recent releases fir
 
 Please refer the page http://www.nsnam.org/projects/direct-code-execution/ for detailed instructions
 
+Release dce-1.2
+=============
+
+Availability
+------------
+In order to use DCE, please use bake tool to install DCE.
+The followings are the basic steps to use DCE.
+
+ % bake.py configure -e dce-ns3-1.2
+   or
+ % bake.py configure -e dce-linux-1.2
+ % bake.py download
+ % bake.py build
+
+For more information, please refer the document.
+
+Tested platforms
+-------------------
+- Ubuntu 10.04 64bit
+- Ubuntu 12.04 32bit/64bit
+- Ubuntu 12.10 64bit
+- Ubuntu 13.04 64bit
+- Fedora 18 32bit
+- CentOS 6.2 64bit
+- CentOS 6.4 64bit
+
+New user-visible features
+-------------------------
+(none)
+
+Bugs fixed
+----------
+- Bug 1759 - dce httpd example stops working with big files (~1MB)
+- Bug 1765 - DCE can't use TapBridge if built via bake
+- Bug 1804 - dce-ns3-1.1/dce-linux-1.1 can't built with ns3-3.18.1
+- Bug 1806 - CcnClientHelper m_files is never cleared
+
+Known issues
+------------
+In general, known issues are tracked on the project tracker available
+at http://www.nsnam.org/bugzilla/
+
+In particular, the following bugs are not fixed in this release.
+- Bug 1773 - DCE doesn't run on Fedora 19 (64bits)
+
+
 Release dce-1.1.1 (hotfix)
 =========================
 This release includes a hotfix for the combination with ns3-18.1.
