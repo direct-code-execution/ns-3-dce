@@ -76,6 +76,7 @@ Launch the script
 
 Simply launch your script like any other program. 
 
+.. highlight:: sh
 ::
 
   $ ./waf --run bar
@@ -93,6 +94,7 @@ Example: DCE Simple UDP (dce-udp-simple)
 The example uses two POSIX socket-based application in a simulation.
 Please take time to look at the source dce-udp-simple.cc:
 
+.. highlight:: c++
 ::
 
   int main (int argc, char *argv[])
@@ -146,9 +148,9 @@ Example: DCE with iperf(dce-iperf)
 The example uses iperf traffic generator in a simulation.
 The scenario is here:
 
+.. highlight:: c++
 ::
 
-  $ cat source/dce/example/dce-iperf.cc
   #include "ns3/network-module.h"
   #include "ns3/core-module.h"
   #include "ns3/internet-module.h"

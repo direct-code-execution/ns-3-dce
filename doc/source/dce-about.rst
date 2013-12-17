@@ -9,8 +9,6 @@ Contacts
 ========
 
 +--------------------------------+
-| frederic.urbani AT inria.fr    |
-+--------------------------------+
 | tazaki AT sfc.wide.ad.jp       |
 +--------------------------------+
 | mathieu.lacage AT cutebugs.net |

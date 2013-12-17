@@ -12,6 +12,7 @@ Kernel implementation
 ---------------------
 Firstly in the kernel every type of file descriptor (file, socket, pipe ...) must provide a function named poll and conform to this prototype:
 
+.. highlight:: c++
 ::
 
   int poll(struct file *file, poll_table *pwait);
@@ -26,6 +27,7 @@ Thus an event on the file will ascend to the poll, and in the opposite direction
    
 Now that we know the function **poll** of **file**, we can study the **poll** system call, here the following pseudo code commented:
 
+.. highlight:: c++
 ::
 
   POLL( .... )
@@ -81,6 +83,7 @@ The more important difference is that the PollTable cannot be allocated on the s
 object is allocated with a C++ new. I guess you're wondering why the poll table cannot be allocated on the stack, it is because of the fork implementation of DCE.
 Indeed, if a process makes a fork, this creates another stack which use the same memory addresses, thus another thread of the same process cannot use an object allocated on this stack, and when a event of a file want to wake up the poll thread it will use especially this poll table. So allocating the Poll Table in the heap generates a side effect which is that we need to release this memory if another thread call exit while we are within the dce-poll. So we need to register the Poll Table somewhere in a DCE data, and the DCE place choosen is the thread struct (in file **model/process.h**), because each thread can be in doing a poll. Thus there is a new field in struct thread which is:
 
+.. highlight:: c++
 ::
 
 	PollTable *pollTable; // No 0 if a poll is running on this thread
@@ -100,12 +103,14 @@ Now look at the interface between DCE and the kernel, in the direction DCE to ke
 **sock_poll** obviously has the same semantics as the kernel poll.
 **sock_poll** has the following signature:
  
+.. highlight:: c++
 ::
  
     void sock_poll (struct SimSocket *s, void *ret);
     
 where **s** represents the socket int the kernel and **ret** is a pointer to a data structure of type **struct poll_table_ref**:
 
+.. highlight:: c++
 ::
  
   struct poll_table_ref

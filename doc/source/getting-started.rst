@@ -1,8 +1,8 @@
 .. include:: replace.txt
 
 
-Quick Start Guide
------------------
+Quick Start
+-----------
 
 Introduction
 ************
@@ -30,6 +30,7 @@ Building DCE basic mode
 
 First you need to download Bake using Mercurial and set some variables:
 
+.. highlight:: sh
 ::
 
   hg clone http://code.nsnam.org/bake bake
@@ -39,6 +40,7 @@ First you need to download Bake using Mercurial and set some variables:
 
 then you must to create a directory for DCE and install it using bake:
 
+.. highlight:: sh
 ::
 
    mkdir dce
@@ -51,6 +53,7 @@ note that dce-ns3-|version| is the DCE version |version| module. If you would li
 
 the output should look likes this:
 
+.. highlight:: none
 ::
 
   Installing selected module and dependencies.
@@ -77,6 +80,7 @@ Building DCE advanced mode (with Linux kernel)
 If you would like to try Linux network stack instead of |ns3| network stack, you can try the advanced mode.
 The difference to build the advanced mode is the different module name *dce-linux* instead of *dce-ns3* (basic mode).
 
+.. highlight:: sh
 ::
 
    mkdir dce
@@ -98,15 +102,16 @@ framework, and called by the *waf* executable.
  
 In this case you need to install the single packages one by one. You may want to start with *ns-3*:
  
+.. highlight:: sh
 ::
  
    # Download ns-3
-   hg clone http://code.nsnam.org/ns-3.17
+   hg clone http://code.nsnam.org/ns-3.19
+   
    # Configure
-   ./waf configure --enable-examples \
-         -d optimized --prefix=$HOME/dce/build \
-         --includedir=$HOME/dce/build/include 
-         
+   ./waf configure --enable-examples -d optimized --prefix=$HOME/dce/build \
+                   --includedir=$HOME/ns-3.19/include 
+
    # Build and install in the directory specified by
    # --prefix parameter
    ./waf build
@@ -115,6 +120,7 @@ In this case you need to install the single packages one by one. You may want to
  
 Then you can download and install *net-next-sim* and DCE (*net-next-sim* includes the linux stack module):
  
+.. highlight:: sh
 ::
  
    # Clone net-next-sim
@@ -123,16 +129,15 @@ Then you can download and install *net-next-sim* and DCE (*net-next-sim* include
    # Select a kernel version
    git checkout sim-ns3-3.10.0-branch
    # Configure and build
-   make menuconfig
+   make defconfig OPT=yes ARCH=sim
    make library OPT=yes ARCH=sim
    cd ..
  
    # Download, configure, build and install DCE
    hg clone http://code.nsnam.org/ns-3-dce
-   ./waf configure --with-ns3=$HOME/dce/build \
-                --enable-kernel-stack=$HOME/dce/net-next-sim/arch \
-                --enable-opt \
-                --prefix=$HOME/dce
+   ./waf configure --with-ns3=$HOME/dce/build --enable-opt \
+                   --enable-kernel-stack=$HOME/dce/net-next-sim/arch \
+                   --prefix=$HOME/dce/build
    ./waf build
    ./waf install
 
@@ -150,6 +155,7 @@ These 2 binaries are written using POSIX socket API in order to send and receive
 If you would like to see what is going on this script, please refer to the :ref:`user's guide<dce-udp-simple-example>`.
 
 
+.. highlight:: none
 ::
 
   $ cd source/ns-3-dce
@@ -202,6 +208,7 @@ For more detail of the scenario description, please refer to the :ref:`user's gu
 
 Once you successfully installed DCE with bake, you can execute the example using iperf.
 
+.. highlight:: sh
 ::
 
   cd source/ns-3-dce
@@ -210,6 +217,7 @@ Once you successfully installed DCE with bake, you can execute the example using
 As we saw in the previous example the experience creates directories containing the outputs of different executables,
 take a look at the server (node 1) output:
 
+.. highlight:: none
 ::
 
   $ cat files-1/var/log/*/stdout
@@ -224,6 +232,7 @@ take a look at the server (node 1) output:
  
 the client (node-0) output bellow:
 
+.. highlight:: none
 ::
 
   $ cat files-0/var/log/*/stdout
@@ -248,6 +257,7 @@ the client (node-0) output bellow:
 
 if you have already built the advanced mode, you can use Linux network stack over iperf.
 
+.. highlight:: sh
 ::
 
   cd source/ns-3-dce
@@ -255,6 +265,7 @@ if you have already built the advanced mode, you can use Linux network stack ove
 
 the command line option **--kernel=1** makes the simulation use the Linux kernel stack instead of |ns3| network stack.
 
+.. highlight:: none
 ::
 
   $ cat files-1/var/log/*/stdout
@@ -266,6 +277,7 @@ the command line option **--kernel=1** makes the simulation use the Linux kernel
   [ ID] Interval       Transfer     Bandwidth
   [  4]  0.0-11.2 sec  5.88 MBytes  4.41 Mbits/sec
   
+.. highlight:: none
 ::
 
   $ cat files-0/var/log/*/stdout

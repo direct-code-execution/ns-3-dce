@@ -1,7 +1,7 @@
 .. include:: replace.txt
 
-Developer's Guide (To Be Available Soon)
-****************************************
+Developer's Guide
+*****************
 This document is for the people who want to develop DCE itself.
 
 .. todo

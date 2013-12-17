@@ -10,7 +10,7 @@ Install
 ^^^^^^^
 
 Although it is not strictly necessary, it is recommended that you recompile a CVS Gdb 
-for use with ns-3-dce. First, download:::
+for use with ns-3-dce. First, download:
 
   cvs -d :pserver:anoncvs@sourceware.org:/cvs/src login
   {enter "anoncvs" as the password}
@@ -19,7 +19,10 @@ for use with ns-3-dce. First, download:::
 Note that you might consider looking at http://sourceware.org/gdb/current/ to obtain
 more efficient (cpu/bandwidth-wise) download instructions.
 
-Anyway, now, you can build:::
+Anyway, now, you can build:
+
+.. highlight:: sh
+::
 
   cd gdb
   ./configure
@@ -33,7 +36,9 @@ Using
 
 
 If you use gdb (a CVS or stable version), do not forget to execute the following command prior
-to running any DCE-based program:::
+to running any DCE-based program:
+
+::
 
   (gdb) handle SIGUSR1 nostop
   Signal        StopPrintPass to programDescription
@@ -42,7 +47,9 @@ to running any DCE-based program:::
 
 An alternate way to do this and avoid having to repeat this command ad-nauseam
 involves creating a .gdbinit file in your ns-3-dce directory and putting this
-inside:::
+inside:
+
+::
 
   handle SIGUSR1 nostop
 
@@ -81,6 +88,7 @@ DCE gives an easy interface to debug distributed applications/protocols by the s
 
 The following is an example of debugging Mobile IPv6 stack (of Linux) in a specific node (i.e., home agent). A special function *dce_debug_nodeid()* is useful if you put a break condition in a gdb session.
 
+.. highlight:: none
 ::
 
   (gdb) b mip6_mh_filter if dce_debug_nodeid()==0

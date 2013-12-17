@@ -2,8 +2,8 @@
 
 .. _how-it-works:
 
-How It Works (To Be Available Soon)
-***********************************
+How It Works
+************
 
 If you are interested to know why DCE exists and how it can work, you should read this document `Experimentation Tools for Networking Research <http://cutebugs.net/files/thesis.pdf>`_ (and in particular the chapter 4) written by the principal author of DCE, Mathieu Lacage. Also you can read the sources too.
 
@@ -114,6 +114,7 @@ Follow the execution of very simple example.
 You can find the used sample under the directory named **myscripts/sleep**.
 This executable used by the scenario do only a sleep of ten seconds:
 
+.. highlight:: c++
 ::
 
   #include <unistd.h>
@@ -127,6 +128,7 @@ This executable used by the scenario do only a sleep of ten seconds:
 
 The |ns3|/DCE scenario execute **tenseconds** one time starting at time zero:
 
+.. highlight:: c++
 :: 
 
   #include "ns3/core-module.h"
@@ -159,6 +161,7 @@ The |ns3|/DCE scenario execute **tenseconds** one time starting at time zero:
 
 First we can launch **tenseconds** binary:
 
+.. highlight:: c++
 ::
 
   $ ./build/bin_dce/tenseconds
@@ -167,13 +170,16 @@ after 10 seconds you retrieve the prompt.
 
 Then we can try the DCE scenario:
 
+.. highlight:: sh
 ::
+
   $ ./build/myscripts/sleep/bin/dce-sleep
 
 This time the test is almost instantaneous, because the scenario is very simple and it uses the simulated time. 
 
 Same test by activating logs:
 
+.. highlight:: none
 ::
 
   $ NS_LOG=DefaultSimulatorImpl ./build/myscripts/sleep/bin/dce-sleep 
@@ -209,6 +215,7 @@ We can also see that at 10s an event occurs, this is the end of our **sleep(10)*
 
 Now we do the same experiment using the debugger:
 
+.. highlight:: none
 :: 
   
   $ gdb ./build/myscripts/sleep/bin/dce-sleep
@@ -239,6 +246,7 @@ You can notice that:
 
 Now we continue our execution:
 
+.. highlight:: none
 ::
 
   (gdb) continue
@@ -267,6 +275,7 @@ You can notice that:
 This second thread is the thread corresponding to the main thread of our hosted executable **tenseconds**, 
 if you look at **ns3::DceManager::DoStartProcess** you can notice that we are on the point of calling the main of **tenseconds**:
 
+.. highlight:: c++
 ::
 
   void
@@ -287,6 +296,7 @@ if you look at **ns3::DceManager::DoStartProcess** you can notice that we are on
 You can also see that the pointer to the **main** is the result of the method **ns3::DceManager::PrepareDoStartProcess**.
 Now we can put a breakpoint before the sleep of **tenseconds** and follow the code of sleep:
 
+.. highlight:: none
 ::
 
   (gdb) break tenseconds.c:5
@@ -329,6 +339,7 @@ We can notice that **sleep** call **dce_sleep** which call **Wait**, this **Wait
 Basically **Wait** schedules and event in |ns3| event queue (in order to be woken up after sleep time) and give the control to another **Task**.   
 Now we can put a breakpoint in **ns3::DefaultSimulatorImpl::ProcessOneEvent** and see the time advance up to 10s:
 
+.. highlight:: none
 ::
 
   gdb) b ns3::DefaultSimulatorImpl::ProcessOneEvent

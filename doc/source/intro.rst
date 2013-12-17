@@ -45,11 +45,11 @@ Supported Features
 - Variance of network stacks
 
  - ns-3 native stack (IPv4/IPv6, partially)
- - network simulation cradle network stack (IPv4 TCP only)
+ - Network simulation cradle network stack (IPv4 TCP only)
  - Linux network stack (IPv4/IPv6/others)
 
-- per-node configuration/stdin input
-- per-node syslog/stdout/stderr files output
+- Per-node configuration/stdin input
+- Per-node syslog/stdout/stderr files output
 
 Tested Applications
 *******************

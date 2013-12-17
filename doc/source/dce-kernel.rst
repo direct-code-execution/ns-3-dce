@@ -175,8 +175,8 @@ First you should call **make setup** in order to download the source of the kern
 ::
 
   $ make setup
-  git clone git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git net-next-2.6; cd net-next-2.6 && git reset --hard \
-  fed66381d65a35198639f564365e61a7f256bf79
+  git clone git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git net-next-2.6; \
+            cd net-next-2.6 && git reset --hard fed66381d65a35198639f564365e61a7f256bf79
   Cloning into net-next-2.6...
   remote: Counting objects: 2441000, done.
   remote: Compressing objects: 100% (377669/377669), done.
@@ -217,7 +217,8 @@ For this you should give to the waf configure the path to the **ns-3-linux** dir
 
 ::
 
-   dceManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", StringValue ("libnet-next-2.6.so"));
+   dceManager.SetNetworkStack("ns3::LinuxSocketFdFactory", "Library", 
+                              StringValue ("libnet-next-2.6.so"));
 
 Test
 ----
@@ -293,8 +294,16 @@ Now we can try to build:
   $ make defconfig
   $ make menuconfig
   $ make
-  mkdir -p sim/
-  cc -O0 -g3 -D__KERNEL__ -Wall -Wstrict-prototypes -Wno-trigraphs -fno-inline -iwithprefix ./linux-stable/include -DKBUILD_BASENAME=\"clnt\" -fno-strict-aliasing -fno-common -fno-delete-null-pointer-checks -fno-stack-protector -DKBUILD_MODNAME=\"nsc\" -DMODVERSIONS -DEXPORT_SYMTAB -include autoconf.h -U__FreeBSD__ -D__linux__=1 -Dlinux=1 -D__linux=1 -I./sim/include -I./linux-stable/include -fpic -DPIC -D_DEBUG -I/home/furbani/dev/dce/dev/etude_kernel/V3/ns-3-linux -DCONFIG_64BIT -c sim/fs.c -o sim/fs.o
+  mkdir -p sim
+  cc -O0 -g3 -D__KERNEL__ -Wall -Wstrict-prototypes -Wno-trigraphs -fno-inline \
+             -iwithprefix ./linux-stable/include -DKBUILD_BASENAME=\"clnt\"    \
+             -fno-strict-aliasing -fno-common -fno-delete-null-pointer-checks  \
+             -fno-stack-protector -DKBUILD_MODNAME=\"nsc\" -DMODVERSIONS       \
+             -DEXPORT_SYMTAB -include autoconf.h -U__FreeBSD__ -D__linux__=1   \
+             -Dlinux=1 -D__linux=1 -I./sim/include -I./linux-stable/include    \
+             -fpic -DPIC -D_DEBUG \
+             -I/home/furbani/dev/dce/dev/etude_kernel/V3/ns-3-linux            \
+             -DCONFIG_64BIT -c sim/fs.c -o sim/fs.o
   In file included from ./linux-stable/include/asm-generic/bitops.h:12:0,
                    from ./sim/include/asm/bitops.h:4,
                    from ./linux-stable/include/linux/bitops.h:22,
@@ -452,6 +461,7 @@ Later we meet again the function **kern_mount_data**, thanks to the presence of 
   
 So this function is called by the initialisation, we must provide an implementation for it:
 
+.. highlight:: c++
 ::
 
   // Implementation taken from vfs_kern_mount from linux/namespace.c
