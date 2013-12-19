@@ -41,6 +41,7 @@ Bugs fixed
 - Bug 1765 - DCE can't use TapBridge if built via bake
 - Bug 1804 - dce-ns3-1.1/dce-linux-1.1 can't built with ns3-3.18.1
 - Bug 1806 - CcnClientHelper m_files is never cleared
+- Bug 1800 - ns-3-dce can't build on debian testing
 
 Known issues
 ------------

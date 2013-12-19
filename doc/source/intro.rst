@@ -69,16 +69,13 @@ Tested Environment
 Currently, DCE only supports Linux-based operating system.
 DCE has been tested on the following distributions:
 
-- Ubuntu 10.04 32bit/64bit
-- Ubuntu 10.10 32bit/64bit
-- Ubuntu 11.04 32bit/64bit
-- Ubuntu 11.10 32bit/64bit
+- Ubuntu 10.04 64bit
 - Ubuntu 12.04 32bit/64bit
 - Ubuntu 12.10 64bit
-- Fedora 14 32bit/64bit
-- Fedora 15 32bit/64bit
-- Fedora 16 32bit/64bit
+- Ubuntu 13.04 64bit
 - Fedora 18 32bit
+- CentOS 6.2 64bit
+- CentOS 6.4 64bit
 
 but you can try on the others (e.g., CentOS, RHEL).
 If you got run on another distribution, please let us know.
