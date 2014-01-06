@@ -5,6 +5,31 @@ This file contains Direct Code Execution release notes (most recent releases fir
 
 Please refer the page http://www.nsnam.org/projects/direct-code-execution/ for detailed instructions
 
+Release dce-dev
+=============
+
+Availability
+------------
+This release is not yet available.
+
+Tested platforms
+-------------------
+- Ubuntu 10.04 64bit
+- Ubuntu 12.04 32bit/64bit
+- Ubuntu 12.10 64bit
+- Ubuntu 13.04 64bit
+- Fedora 18 32bit
+- CentOS 6.2 64bit
+- CentOS 6.4 64bit
+
+New user-visible features
+-------------------------
+- DCE Cradle now support IPv6 sockets (TCP6, UDP6, RAW6, DCCP6)
+
+Bugs fixed
+----------
+- Bug 1713 - Ipv6 address configuration support for LinuxStackHelper
+
 Release dce-1.2
 =============
 
