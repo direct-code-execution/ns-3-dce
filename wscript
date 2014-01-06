@@ -86,6 +86,7 @@ def configure(conf):
     ns3waf.check_modules(conf, ['mpi', 'lte'], mandatory = False)
     ns3waf.check_modules(conf, ['visualizer'], mandatory = False)
     ns3waf.check_modules(conf, ['applications'], mandatory = False)
+    ns3waf.check_modules(conf, ['olsr'], mandatory = False)
     conf.check_tool('compiler_cc')
     conf.check(header_name='stdint.h', define_name='HAVE_STDINT_H', mandatory=False)
     conf.check(header_name='inttypes.h', define_name='HAVE_INTTYPES_H', mandatory=False)
@@ -422,6 +423,10 @@ def build_dce_kernel_examples(module):
                        source=['example/ccnx/dce-wifi-ccnx.cc'])
 
 
+    module.add_example(needed = ['point-to-point', 'internet', 'olsr', 'applications', 'wifi', 'dce'],
+                       target='bin/simple-point-to-point-olsr',
+                       source=['example/simple-point-to-point-olsr.cc'])
+
 # Add a script to build system 
 def build_a_script(bld, name, needed = [], **kw):
     external = [i for i in needed if not i == name]
@@ -558,18 +563,27 @@ def build(bld):
         'model/dce-at.cc',
         'model/exec-utils.cc',
         'model/linux/ipv4-linux.cc',
+        'model/linux/ipv6-linux.cc',
         'model/dce-vfs.cc',
         'model/elf-ldd.cc',
         'model/dce-termio.cc',
         'model/process-delay-model.cc',
         'model/linux/linux-ipv4-raw-socket-factory.cc',
         'model/linux/linux-ipv4-raw-socket-factory-impl.cc',
+        'model/linux/linux-ipv6-raw-socket-factory.cc',
+        'model/linux/linux-ipv6-raw-socket-factory-impl.cc',
         'model/linux/linux-udp-socket-factory.cc',
         'model/linux/linux-udp-socket-factory-impl.cc',
+        'model/linux/linux-udp6-socket-factory.cc',
+        'model/linux/linux-udp6-socket-factory-impl.cc',
         'model/linux/linux-tcp-socket-factory.cc',
         'model/linux/linux-tcp-socket-factory-impl.cc',
+        'model/linux/linux-tcp6-socket-factory.cc',
+        'model/linux/linux-tcp6-socket-factory-impl.cc',
         'model/linux/linux-dccp-socket-factory.cc',
         'model/linux/linux-dccp-socket-factory-impl.cc',
+        'model/linux/linux-dccp6-socket-factory.cc',
+        'model/linux/linux-dccp6-socket-factory-impl.cc',
         # helper.
         'helper/ipv4-dce-routing-helper.cc',
         'helper/dce-manager-helper.cc',
@@ -586,11 +600,16 @@ def build(bld):
         'model/dce-application.h',
         'model/ipv4-dce-routing.h',
         'model/linux/ipv4-linux.h',
+        'model/linux/ipv6-linux.h',
         'model/process-delay-model.h',        
         'model/linux/linux-ipv4-raw-socket-factory.h',
+        'model/linux/linux-ipv6-raw-socket-factory.h',
         'model/linux/linux-udp-socket-factory.h',
+        'model/linux/linux-udp6-socket-factory.h',
         'model/linux/linux-tcp-socket-factory.h',
+        'model/linux/linux-tcp6-socket-factory.h',
         'model/linux/linux-dccp-socket-factory.h',
+        'model/linux/linux-dccp6-socket-factory.h',
         'helper/dce-manager-helper.h',
         'helper/dce-application-helper.h',
         'helper/ccn-client-helper.h',

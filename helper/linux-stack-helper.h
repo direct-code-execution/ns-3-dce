@@ -27,6 +27,7 @@ namespace ns3 {
 class Node;
 class NodeContainer;
 class Time;
+class Ipv4RoutingHelper;
 
 /**
  * \brief aggregate Ipv4Linux to nodes
@@ -40,6 +41,10 @@ class Time;
 class LinuxStackHelper
 {
 public:
+
+  LinuxStackHelper ();
+  ~LinuxStackHelper ();
+
   /**
    * Aggregate ns3::Ipv4Linux classe onto the provided node.
    * This method will assert if called on a node that
@@ -47,7 +52,7 @@ public:
    *
    * \param nodeName The name of the node on which to install the stack.
    */
-  static void Install (std::string nodeName);
+  void Install (std::string nodeName);
 
   /**
    * Aggregate ns3::Ipv4Linux classe onto the provided node.
@@ -56,7 +61,7 @@ public:
    *
    * \param node The node on which to install the stack.
    */
-  static void Install (Ptr<Node> node);
+  void Install (Ptr<Node> node);
 
   /**
    * Aggregate ns3::Ipv4Linux class onto the provided node.
@@ -66,12 +71,23 @@ public:
    * \param c NodeContainer that holds the set of nodes on which to install the
    * new stacks.
    */
-  static void Install (NodeContainer c);
+  void Install (NodeContainer c);
 
   /**
    * Aggregate ns3::Ipv4Linux to all nodes in the simulation
    */
-  static void InstallAll (void);
+  void InstallAll (void);
+
+  /**
+   * \param routing a new routing helper
+   *
+   * Set the routing helper to use during Install. The routing
+   * helper is really an object factory which is used to create 
+   * an object of type ns3::Ipv4RoutingProtocol per node. This routing
+   * object is then associated to a single ns3::Ipv4 object through its 
+   * ns3::Ipv4::SetRoutingProtocol.
+   */
+  void SetRoutingHelper (const Ipv4RoutingHelper &routing);
 
   /**
    * Configure Linux kernel parameters with traditional 'sysctl' interface.
@@ -116,6 +132,8 @@ public:
   static void RunIp (Ptr<Node> node, Time at, std::string str);
 
 private:
+  void Initialize ();
+  const Ipv4RoutingHelper *m_routing;
   static void SysctlGetCallback (Ptr<Node> node, std::string path,
                                  void (*callback)(std::string, std::string));
 

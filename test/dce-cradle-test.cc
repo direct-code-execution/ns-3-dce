@@ -64,6 +64,7 @@ DceCradleTestCase::DoRun (void)
   DceManagerHelper dceManager;
   dceManager.SetNetworkStack("ns3::LinuxSocketFdFactory",
                              "Library", StringValue ("liblinux.so"));
+  dceManager.Install (nodes);
 
   LinuxStackHelper stack;
   stack.Install (nodes);
@@ -72,11 +73,32 @@ DceCradleTestCase::DoRun (void)
   address.SetBase ("10.1.1.0", "255.255.255.0");
   Ipv4InterfaceContainer interfaces = address.Assign (devices);
 
-  dceManager.Install (nodes);
+  Ipv6AddressHelper address6;
+  address6.SetBase (Ipv6Address ("2001:1::"), Ipv6Prefix (64));
+  Ipv6InterfaceContainer interfaces6 = address6.Assign (devices);
+
 
   ApplicationContainer apps;
+  PacketSinkHelper sink = PacketSinkHelper (m_sockf,
+                                            InetSocketAddress (Ipv4Address::GetAny (), 9));
   OnOffHelper onoff = OnOffHelper (m_sockf,
                                    InetSocketAddress (interfaces.GetAddress (1), 9));
+
+  if (m_testname.find ("6", 0) == std::string::npos)
+    {
+      onoff = OnOffHelper (m_sockf,
+                           InetSocketAddress (interfaces.GetAddress (1), 9));
+      sink = PacketSinkHelper (m_sockf,
+                               InetSocketAddress (Ipv4Address::GetAny (), 9));
+    }
+  else
+    {
+      onoff = OnOffHelper (m_sockf,
+                           Inet6SocketAddress (interfaces6.GetAddress (1, 1), 9));
+      sink = PacketSinkHelper (m_sockf,
+                               Inet6SocketAddress (Ipv6Address::GetAny (), 9));
+    }
+
   onoff.SetAttribute ("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=1]"));
   onoff.SetAttribute ("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=0]"));
   onoff.SetAttribute ("PacketSize", StringValue ("1024"));
@@ -84,8 +106,6 @@ DceCradleTestCase::DoRun (void)
   apps = onoff.Install (nodes.Get (0));
   apps.Start (Seconds (4.0));
 
-  PacketSinkHelper sink = PacketSinkHelper (m_sockf,
-                                            InetSocketAddress (Ipv4Address::GetAny (), 9));
   apps = sink.Install (nodes.Get (1));
   apps.Start (Seconds (3.9999));
 
@@ -96,9 +116,13 @@ DceCradleTestCase::DoRun (void)
 
   Ptr<PacketSink> pktsink;
   pktsink = apps.Get (0)->GetObject<PacketSink> ();;
-  // std::cout << "Total Rx(0) = " << pktsink->GetTotalRx () << 
-  //   " bytes";
-  // std::cout << std::endl;
+
+#if 0
+  std::cout << "Total Rx(0) = " << pktsink->GetTotalRx () << 
+    " bytes";
+  std::cout << std::endl;
+  pointToPoint.EnablePcapAll ("dce-cradle-test");
+#endif
   Simulator::Destroy ();
 
   int status = (pktsink->GetTotalRx () > 0);
@@ -129,12 +153,12 @@ DceCradleTestSuite::DceCradleTestSuite ()
     {"udp", "ns3::LinuxUdpSocketFactory", 30, false},
     {"tcp", "ns3::LinuxTcpSocketFactory", 30, false},
     {"dccp", "ns3::LinuxDccpSocketFactory", 30, false},
+    {"raw6", "ns3::LinuxIpv6RawSocketFactory", 20, false},
+    {"udp6", "ns3::LinuxUdp6SocketFactory", 20, false},
+    {"tcp6", "ns3::LinuxTcp6SocketFactory", 20, false},
+    {"dccp6", "ns3::LinuxDccp6SocketFactory", 20, false},
     // below are not supported yet (Nov. 9, 2012)
     {"sctp", "ns3::LinuxSctpSocketFactory", 20, true},
-    {"raw6", "ns3::LinuxIpv6RawSocketFactory", 20, true},
-    {"udp6", "ns3::LinuxUdp6SocketFactory", 20, true},
-    {"tcp6", "ns3::LinuxTcp6SocketFactory", 20, true},
-    {"dccp6", "ns3::LinuxDccp6SocketFactory", 20, true},
     {"sctp6", "ns3::LinuxSctp6SocketFactory", 20, true},
   };
 

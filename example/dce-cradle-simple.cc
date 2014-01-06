@@ -46,12 +46,12 @@ main (int argc, char *argv[])
   proto_sw.insert (std::make_pair ("udp", "ns3::LinuxUdpSocketFactory"));
   proto_sw.insert (std::make_pair ("tcp", "ns3::LinuxTcpSocketFactory"));
   proto_sw.insert (std::make_pair ("dccp", "ns3::LinuxDccpSocketFactory"));
-  // below are not supported yet (Nov. 9, 2012)
-  proto_sw.insert (std::make_pair ("sctp", "ns3::LinuxSctpSocketFactory"));
   proto_sw.insert (std::make_pair ("icmp6", "ns3::LinuxIpv6RawSocketFactory"));
   proto_sw.insert (std::make_pair ("udp6", "ns3::LinuxUdp6SocketFactory"));
   proto_sw.insert (std::make_pair ("tcp6", "ns3::LinuxTcp6SocketFactory"));
   proto_sw.insert (std::make_pair ("dccp6", "ns3::LinuxDccp6SocketFactory"));
+  // below are not supported yet (Jan. 6, 2014)
+  proto_sw.insert (std::make_pair ("sctp", "ns3::LinuxSctpSocketFactory"));
   proto_sw.insert (std::make_pair ("sctp6", "ns3::LinuxSctp6SocketFactory"));
 
   CommandLine cmd;
@@ -75,23 +75,38 @@ main (int argc, char *argv[])
   DceManagerHelper dceManager;
   dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory",
                               "Library", StringValue ("liblinux.so"));
+  dceManager.Install (nodes);
 
   LinuxStackHelper stack;
   stack.Install (nodes);
 
   Ipv4AddressHelper address;
   address.SetBase ("10.1.1.0", "255.255.255.0");
-
   Ipv4InterfaceContainer interfaces = address.Assign (devices);
 
-  dceManager.Install (nodes);
+  Ipv6AddressHelper address6;
+  address6.SetBase (Ipv6Address ("2001:1::"), Ipv6Prefix (64));
+  Ipv6InterfaceContainer interfaces6 = address6.Assign (devices);
 
+  LinuxStackHelper::RunIp (nodes.Get (0), Seconds (0.2), "link show");
+  LinuxStackHelper::RunIp (nodes.Get (0), Seconds (0.3), "route show table all");
+  LinuxStackHelper::RunIp (nodes.Get (0), Seconds (0.4), "addr list");
+  
   stack.SysctlSet (nodes, ".net.dccp.default.rx_ccid", m_ccid);
   stack.SysctlSet (nodes, ".net.dccp.default.tx_ccid", m_ccid);
 
   ApplicationContainer apps;
   OnOffHelper onoff = OnOffHelper (proto_sw[m_proto],
                                    InetSocketAddress (interfaces.GetAddress (1), 9));
+  PacketSinkHelper sink = PacketSinkHelper (proto_sw[m_proto],
+                                            InetSocketAddress (Ipv4Address::GetAny (), 9));
+
+  if (m_proto.find ("6", 0) != std::string::npos)
+    {
+      onoff.SetAttribute ("Remote", AddressValue (Inet6SocketAddress (interfaces6.GetAddress (1, 1), 9)));
+      sink.SetAttribute ("Local", AddressValue (Inet6SocketAddress (Ipv6Address::GetAny (), 9)));
+    }
+
   if (!m_bulk)
     {
       onoff.SetAttribute ("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=1]"));
@@ -102,7 +117,14 @@ main (int argc, char *argv[])
       apps.Start (Seconds (4.0));
       if (m_dual)
         {
-          onoff.SetAttribute ("Remote", AddressValue (InetSocketAddress (interfaces.GetAddress (0), 9)));
+          if (m_proto.find ("6", 0) != std::string::npos)
+            {
+              onoff.SetAttribute ("Remote", AddressValue (Inet6SocketAddress (interfaces6.GetAddress (0, 1), 9)));
+            }
+          else
+            {
+              onoff.SetAttribute ("Remote", AddressValue (InetSocketAddress (interfaces.GetAddress (0), 9)));
+            }
           apps = onoff.Install (nodes.Get (1));
           apps.Start (Seconds (4.1));
         }
@@ -117,14 +139,19 @@ main (int argc, char *argv[])
       apps.Start (Seconds (4.0));
       if (m_dual)
         {
-          bulk.SetAttribute ("Remote", AddressValue (InetSocketAddress (interfaces.GetAddress (0), 9)));
+          if (m_proto.find ("6", 0) != std::string::npos)
+            {
+              bulk.SetAttribute ("Remote", AddressValue (Inet6SocketAddress (interfaces6.GetAddress (0, 1), 9)));
+            }
+          else
+            {
+              bulk.SetAttribute ("Remote", AddressValue (InetSocketAddress (interfaces.GetAddress (0), 9)));
+            }
           apps = bulk.Install (nodes.Get (1));
           apps.Start (Seconds (4.1));
         }
     }
 
-  PacketSinkHelper sink = PacketSinkHelper (proto_sw[m_proto],
-                                            InetSocketAddress (Ipv4Address::GetAny (), 9));
   apps = sink.Install (nodes.Get (1));
   apps.Start (Seconds (3.9999));
   if (m_dual)

@@ -103,7 +103,7 @@ LinuxSocketImpl::Ns3AddressToPosixAddress (const Address& nsaddr,
           return -1;
         }
       struct sockaddr_in6 *inet_addr = (struct sockaddr_in6 *)addr;
-      inet_addr->sin6_family = AF_INET;
+      inet_addr->sin6_family = AF_INET6;
       inet_addr->sin6_port = htons (ns_inetaddr.GetPort ());
       ns_inetaddr.GetIpv6 ().GetBytes (inet_addr->sin6_addr.s6_addr);
       *addrlen = sizeof(struct sockaddr_in6);

@@ -28,7 +28,7 @@
 #include "ns3/ipv4-interface.h"
 #include "ns3/ipv4-global-routing.h"
 #include "ns3/ipv4-routing-table-entry.h"
-#include "../../helper/dce-application-helper.h"
+#include "linux-stack-helper.h"
 #include "linux-ipv4-raw-socket-factory-impl.h"
 #include "linux-udp-socket-factory-impl.h"
 #include "linux-tcp-socket-factory-impl.h"
@@ -39,19 +39,6 @@ NS_LOG_COMPONENT_DEFINE ("Ipv4Linux");
 namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (Ipv4Linux);
-
-static void
-RunIp (Ptr<Node> node, Time at, std::string str)
-{
-  DceApplicationHelper process;
-  ApplicationContainer apps;
-  process.SetBinary ("ip");
-  process.SetStackSize (1 << 16);
-  process.ResetArguments ();
-  process.ParseArguments (str.c_str ());
-  apps = process.Install (node);
-  apps.Start (at);
-}
 
 TypeId
 Ipv4Linux::GetTypeId (void)
@@ -283,11 +270,11 @@ Ipv4Linux::AddAddress (uint32_t i, Ipv4InterfaceAddress address)
   oss << "-f inet addr add ";
   address.GetLocal ().Print (oss);
   oss << '/' << address.GetMask ().GetPrefixLength () << " dev sim" << i;
-  RunIp (node, NanoSeconds (++m_nanoSec), oss.str ());
+  LinuxStackHelper::RunIp (node, NanoSeconds (++m_nanoSec), oss.str ());
   oss.str ("");
   oss << "link set sim" << i << " up arp "
       << ((interface->GetDevice ()->NeedsArp ()) ? "on" : "off");
-  RunIp (node, NanoSeconds (++m_nanoSec), oss.str ());
+  LinuxStackHelper::RunIp (node, NanoSeconds (++m_nanoSec), oss.str ());
 
   return retVal;
 }
@@ -576,7 +563,7 @@ Ipv4Linux::PopulateRoutingTable ()
       Ipv4RoutingTableEntry route = globalRouting->GetRoute (i);
       std::ostringstream oss;
       oss << "route add to " << route.GetDest () << '/' << route.GetDestNetworkMask () << " via " << route.GetGateway ();
-      RunIp (node, NanoSeconds (++m_nanoSec), oss.str ());
+      LinuxStackHelper::RunIp (node, NanoSeconds (++m_nanoSec), oss.str ());
     }
 }
 
