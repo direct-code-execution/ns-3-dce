@@ -24,11 +24,15 @@ Tested platforms
 
 New user-visible features
 -------------------------
+- LinuxStackHelper now can configure IPv6 addresses with the support of Ipv6AddressHelper
 - DCE Cradle now support IPv6 sockets (TCP6, UDP6, RAW6, DCCP6)
+- Stream Control Transmission Protocol (SCTP) support
+  you need to install lksctp-dev/lksctp-tools-devel to run example.
 
 Bugs fixed
 ----------
 - Bug 1713 - Ipv6 address configuration support for LinuxStackHelper
+- Bug 1827 - Linux SCTP support over DCE
 
 Release dce-1.2
 =============

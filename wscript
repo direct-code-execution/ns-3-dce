@@ -163,6 +163,16 @@ def configure(conf):
     except WafError:
         pass
 
+    # sctp-tools check
+    have_sctp_tools = conf.check(header_name='netinet/sctp.h', 
+                                define_name='HAVE_SCTP_H', mandatory=False)
+    conf.env['SCTP_TOOLS_FOUND'] = True
+    if have_sctp_tools is None:
+        conf.env['SCTP_TOOLS_FOUND'] = False
+    ns3waf._report_optional_feature(conf, "sctp", "sctp-tools-dev",
+                                    have_sctp_tools,
+                                    "sctp-tools (netinet/sctp.h) not found")
+
     conf.recurse(os.path.join('utils'))
     ns3waf.print_feature_summary(conf)
     
@@ -281,6 +291,13 @@ def build_dce_examples(module, bld):
                     ['dccp-client', []],
 #                    ['little-cout', []],
                     ]
+
+    if bld.env['SCTP_TOOLS_FOUND']:
+        dce_examples += [
+                    ['sctp-server', ['sctp']],
+                    ['sctp-client', ['sctp']],
+        ]
+
     for name,lib in dce_examples:
         module.add_example(**dce_kw(target = 'bin_dce/' + name, 
                                     source = ['example/' + name + '.cc'],
@@ -352,7 +369,7 @@ def build_dce_examples(module, bld):
 #                       target='bin/dce-cout-bug',
 #                       source=['example/dce-cout-bug.cc'])
                                                                 
-def build_dce_kernel_examples(module):
+def build_dce_kernel_examples(module, bld):
     module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point'], 
                        target='bin/dce-udp-perf',
                        source=['example/dce-udp-perf.cc'])
@@ -426,6 +443,11 @@ def build_dce_kernel_examples(module):
     module.add_example(needed = ['point-to-point', 'internet', 'olsr', 'applications', 'wifi', 'dce'],
                        target='bin/simple-point-to-point-olsr',
                        source=['example/simple-point-to-point-olsr.cc'])
+
+    if bld.env['SCTP_TOOLS_FOUND']:
+        module.add_example(needed = ['core', 'network', 'dce', 'point-to-point' ],
+                           target='bin/dce-sctp-simple',
+                           source=['example/dce-sctp-simple.cc'])
 
 # Add a script to build system 
 def build_a_script(bld, name, needed = [], **kw):
@@ -642,7 +664,7 @@ def build(bld):
                            name='netlink')
 
     if bld.env['KERNEL_STACK']:
-        build_dce_kernel_examples(module)
+        build_dce_kernel_examples(module, bld)
     
     # build test-runner
     module.add_example(target='bin/test-runner',

@@ -81,6 +81,7 @@ cpp_examples = [
 #    ("dce-mptcp-lte-wifi", "True", "True"),
     ("dce-httpd", "True", "True"),
     ("dce-wifi-ccnx", "True", "True"),
+    ("dce-sctp-simple", "True", "True"),
 ]
 
 # A list of Python examples to run in order to ensure that they remain
