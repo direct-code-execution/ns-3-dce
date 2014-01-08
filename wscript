@@ -86,7 +86,6 @@ def configure(conf):
     ns3waf.check_modules(conf, ['mpi', 'lte'], mandatory = False)
     ns3waf.check_modules(conf, ['visualizer'], mandatory = False)
     ns3waf.check_modules(conf, ['applications'], mandatory = False)
-    ns3waf.check_modules(conf, ['olsr'], mandatory = False)
     conf.check_tool('compiler_cc')
     conf.check(header_name='stdint.h', define_name='HAVE_STDINT_H', mandatory=False)
     conf.check(header_name='inttypes.h', define_name='HAVE_INTTYPES_H', mandatory=False)
@@ -438,11 +437,6 @@ def build_dce_kernel_examples(module, bld):
     module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim', 'mobility', 'wifi', 'network'],
                        target='bin/dce-wifi-ccnx',
                        source=['example/ccnx/dce-wifi-ccnx.cc'])
-
-
-    module.add_example(needed = ['point-to-point', 'internet', 'olsr', 'applications', 'wifi', 'dce'],
-                       target='bin/simple-point-to-point-olsr',
-                       source=['example/simple-point-to-point-olsr.cc'])
 
     if bld.env['SCTP_TOOLS_FOUND']:
         module.add_example(needed = ['core', 'network', 'dce', 'point-to-point' ],
