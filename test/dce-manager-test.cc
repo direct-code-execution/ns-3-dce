@@ -236,7 +236,8 @@ DceManagerTestSuite::DceManagerTestSuite ()
                                            tests[i].useNet,
                                            false,
                                            isUctxFiber ? tests[i].skipUctx : false
-                                           ));
+                                           ),
+                   TestCase::QUICK);
     }
   TypeId tid;
   bool kern = TypeId::LookupByNameFailSafe ("ns3::LinuxSocketFdFactory", &tid);
@@ -249,7 +250,8 @@ DceManagerTestSuite::DceManagerTestSuite ()
                                                tests[i].useNet,
                                                true,
                                                isUctxFiber ? tests[i].skipUctx : false
-                                               ));
+                                               ),
+                       TestCase::QUICK);
         }
     }
 }

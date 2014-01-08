@@ -246,10 +246,11 @@ DceMptcpTestSuite::DceMptcpTestSuite ()
     {
 
       AddTestCase (new DceMptcpTestCase (tests[i].name,
-                                          Seconds (tests[i].duration),
-                                          tests[i].sockf,
-                                          tests[i].isSkip
-                                          ));
+                                         Seconds (tests[i].duration),
+                                         tests[i].sockf,
+                                         tests[i].isSkip
+                                         ),
+                   TestCase::QUICK);
     }
 }
 

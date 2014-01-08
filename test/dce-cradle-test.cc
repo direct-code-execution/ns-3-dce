@@ -169,7 +169,8 @@ DceCradleTestSuite::DceCradleTestSuite ()
                                           Seconds (tests[i].duration),
                                           tests[i].sockf,
                                           tests[i].isSkip
-                                          ));
+                                          ), 
+                   TestCase::QUICK);
     }
 }
 

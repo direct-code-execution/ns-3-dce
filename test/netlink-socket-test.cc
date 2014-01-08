@@ -579,7 +579,7 @@ private:
 NetlinkSocketTestSuite::NetlinkSocketTestSuite ()
   : TestSuite ("netlink-socket", UNIT)
 {
-  AddTestCase (new NetlinkSocketTestCase ());
+  AddTestCase (new NetlinkSocketTestCase (), TestCase::QUICK);
 }
 
 } // namespace ns3
