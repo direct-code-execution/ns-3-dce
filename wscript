@@ -632,6 +632,19 @@ def build(bld):
         'helper/ipv4-dce-routing-helper.h',
         'helper/linux-stack-helper.h',
         ]
+
+    if bld.env['SCTP_TOOLS_FOUND']:
+        module_source += [
+            'model/linux/linux-sctp-socket-factory.cc',
+            'model/linux/linux-sctp-socket-factory-impl.cc',
+            'model/linux/linux-sctp6-socket-factory.cc',
+            'model/linux/linux-sctp6-socket-factory-impl.cc',
+            ]
+        module_headers += [
+            'model/linux/linux-sctp-socket-factory.h',
+            'model/linux/linux-sctp6-socket-factory.h',
+            ]
+
     module_source = module_source + kernel_source
     module_headers = module_headers + kernel_headers
     uselib = ns3waf.modules_uselib(bld, ['core', 'network', 'internet', 'netlink'])

@@ -46,12 +46,11 @@ main (int argc, char *argv[])
   proto_sw.insert (std::make_pair ("udp", "ns3::LinuxUdpSocketFactory"));
   proto_sw.insert (std::make_pair ("tcp", "ns3::LinuxTcpSocketFactory"));
   proto_sw.insert (std::make_pair ("dccp", "ns3::LinuxDccpSocketFactory"));
+  proto_sw.insert (std::make_pair ("sctp", "ns3::LinuxSctpSocketFactory"));
   proto_sw.insert (std::make_pair ("icmp6", "ns3::LinuxIpv6RawSocketFactory"));
   proto_sw.insert (std::make_pair ("udp6", "ns3::LinuxUdp6SocketFactory"));
   proto_sw.insert (std::make_pair ("tcp6", "ns3::LinuxTcp6SocketFactory"));
   proto_sw.insert (std::make_pair ("dccp6", "ns3::LinuxDccp6SocketFactory"));
-  // below are not supported yet (Jan. 6, 2014)
-  proto_sw.insert (std::make_pair ("sctp", "ns3::LinuxSctpSocketFactory"));
   proto_sw.insert (std::make_pair ("sctp6", "ns3::LinuxSctp6SocketFactory"));
 
   CommandLine cmd;

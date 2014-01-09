@@ -153,13 +153,12 @@ DceCradleTestSuite::DceCradleTestSuite ()
     {"udp", "ns3::LinuxUdpSocketFactory", 30, false},
     {"tcp", "ns3::LinuxTcpSocketFactory", 30, false},
     {"dccp", "ns3::LinuxDccpSocketFactory", 30, false},
+    {"sctp", "ns3::LinuxSctpSocketFactory", 20, false},
     {"raw6", "ns3::LinuxIpv6RawSocketFactory", 20, false},
     {"udp6", "ns3::LinuxUdp6SocketFactory", 20, false},
     {"tcp6", "ns3::LinuxTcp6SocketFactory", 20, false},
     {"dccp6", "ns3::LinuxDccp6SocketFactory", 20, false},
-    // below are not supported yet (Nov. 9, 2012)
-    {"sctp", "ns3::LinuxSctpSocketFactory", 20, true},
-    {"sctp6", "ns3::LinuxSctp6SocketFactory", 20, true},
+    {"sctp6", "ns3::LinuxSctp6SocketFactory", 20, false},
   };
 
   for (unsigned int i = 0; i < sizeof(tests)/sizeof(testPair); i++)

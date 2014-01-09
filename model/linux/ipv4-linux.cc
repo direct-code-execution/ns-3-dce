@@ -33,6 +33,7 @@
 #include "linux-udp-socket-factory-impl.h"
 #include "linux-tcp-socket-factory-impl.h"
 #include "linux-dccp-socket-factory-impl.h"
+#include "linux-sctp-socket-factory-impl.h"
 
 NS_LOG_COMPONENT_DEFINE ("Ipv4Linux");
 
@@ -518,6 +519,8 @@ Ipv4Linux::InstallNode (Ptr<Node> node)
   node->AggregateObject (tcpFactory);
   Ptr<LinuxDccpSocketFactoryImpl> dccpFactory = CreateObject<LinuxDccpSocketFactoryImpl> ();
   node->AggregateObject (dccpFactory);
+  Ptr<LinuxSctpSocketFactoryImpl> sctpFactory = CreateObject<LinuxSctpSocketFactoryImpl> ();
+  node->AggregateObject (sctpFactory);
 }
 Ptr<Ipv4Interface>
 Ipv4Linux::GetInterface (uint32_t index) const

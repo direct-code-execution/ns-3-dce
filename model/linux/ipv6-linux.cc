@@ -30,6 +30,7 @@
 #include "linux-udp6-socket-factory-impl.h"
 #include "linux-tcp6-socket-factory-impl.h"
 #include "linux-dccp6-socket-factory-impl.h"
+#include "linux-sctp6-socket-factory-impl.h"
 
 NS_LOG_COMPONENT_DEFINE ("Ipv6Linux");
 
@@ -416,6 +417,8 @@ Ipv6Linux::InstallNode (Ptr<Node> node)
   node->AggregateObject (tcp6Factory);
   Ptr<LinuxDccp6SocketFactoryImpl> dccp6Factory = CreateObject<LinuxDccp6SocketFactoryImpl> ();
   node->AggregateObject (dccp6Factory);
+  Ptr<LinuxSctp6SocketFactoryImpl> sctp6Factory = CreateObject<LinuxSctp6SocketFactoryImpl> ();
+  node->AggregateObject (sctp6Factory);
 }
 Ptr<Ipv6Interface>
 Ipv6Linux::GetInterface (uint32_t index) const
