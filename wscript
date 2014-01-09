@@ -600,6 +600,10 @@ def build(bld):
         'model/linux/linux-dccp-socket-factory-impl.cc',
         'model/linux/linux-dccp6-socket-factory.cc',
         'model/linux/linux-dccp6-socket-factory-impl.cc',
+        'model/linux/linux-sctp-socket-factory.cc',
+        'model/linux/linux-sctp-socket-factory-impl.cc',
+        'model/linux/linux-sctp6-socket-factory.cc',
+        'model/linux/linux-sctp6-socket-factory-impl.cc',
         # helper.
         'helper/ipv4-dce-routing-helper.cc',
         'helper/dce-manager-helper.cc',
@@ -626,24 +630,14 @@ def build(bld):
         'model/linux/linux-tcp6-socket-factory.h',
         'model/linux/linux-dccp-socket-factory.h',
         'model/linux/linux-dccp6-socket-factory.h',
+        'model/linux/linux-sctp-socket-factory.h',
+        'model/linux/linux-sctp6-socket-factory.h',
         'helper/dce-manager-helper.h',
         'helper/dce-application-helper.h',
         'helper/ccn-client-helper.h',
         'helper/ipv4-dce-routing-helper.h',
         'helper/linux-stack-helper.h',
         ]
-
-    if bld.env['SCTP_TOOLS_FOUND']:
-        module_source += [
-            'model/linux/linux-sctp-socket-factory.cc',
-            'model/linux/linux-sctp-socket-factory-impl.cc',
-            'model/linux/linux-sctp6-socket-factory.cc',
-            'model/linux/linux-sctp6-socket-factory-impl.cc',
-            ]
-        module_headers += [
-            'model/linux/linux-sctp-socket-factory.h',
-            'model/linux/linux-sctp6-socket-factory.h',
-            ]
 
     module_source = module_source + kernel_source
     module_headers = module_headers + kernel_headers

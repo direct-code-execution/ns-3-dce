@@ -33,6 +33,7 @@ Bugs fixed
 ----------
 - Bug 1713 - Ipv6 address configuration support for LinuxStackHelper
 - Bug 1827 - Linux SCTP support over DCE
+- Bug 1828 - Tests and examples do not compile when sctp-tools is not enabled 
 
 Release dce-1.2
 =============
