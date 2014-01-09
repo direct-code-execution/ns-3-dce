@@ -105,12 +105,19 @@ In this case you need to install the single packages one by one. You may want to
 .. highlight:: sh
 ::
  
+   # Download pybindgen (optional)
+   bzr clone  https://launchpad.net/pybindgen
+   cd pybindgen
+   ./waf configure --prefix=$HOME/dce/build
+   ./waf
+   ./waf install
+
    # Download ns-3
    hg clone http://code.nsnam.org/ns-3.19
    
    # Configure
    ./waf configure --enable-examples -d optimized --prefix=$HOME/dce/build \
-                   --includedir=$HOME/ns-3.19/include 
+                   --includedir=$HOME/dce/include/ns-3.19 
 
    # Build and install in the directory specified by
    # --prefix parameter
@@ -134,7 +141,7 @@ Then you can download and install *net-next-sim* and DCE (*net-next-sim* include
    cd ..
  
    # Download, configure, build and install DCE
-   hg clone http://code.nsnam.org/ns-3-dce
+   hg clone http://code.nsnam.org/ns-3-dce  -r dce-1.2
    ./waf configure --with-ns3=$HOME/dce/build --enable-opt \
                    --enable-kernel-stack=$HOME/dce/net-next-sim/arch \
                    --prefix=$HOME/dce/build
