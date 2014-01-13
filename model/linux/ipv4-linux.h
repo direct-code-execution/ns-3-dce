@@ -23,6 +23,7 @@
 
 #include "ns3/ipv4.h"
 #include "ns3/ipv4-routing-protocol.h"
+#include "ns3/ip-l4-protocol.h"
 
 namespace ns3 {
 class Ipv4Interface;
