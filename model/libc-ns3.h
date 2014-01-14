@@ -460,6 +460,9 @@ NATIVE (endservent)
 // CTYPE.H
 NATIVE (toupper)
 NATIVE (tolower)
+NATIVE (isdigit)
+NATIVE (isxdigit)
+NATIVE (isalnum)
 
 // SYS/TIMERFD.H
 DCE (timerfd_create)
