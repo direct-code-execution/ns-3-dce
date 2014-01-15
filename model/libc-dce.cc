@@ -138,6 +138,7 @@ extern int __obstack_printf_chk (struct obstack *, int, const char *, ...)
 __THROW;
 extern int __obstack_vprintf_chk (struct obstack *, int, const char *,
                                   _G_va_list) __THROW;
+extern void __stack_chk_fail (void);
 
 typedef void (*func_t)(...);
 

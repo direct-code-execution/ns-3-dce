@@ -265,6 +265,18 @@ void dce_abort ()
   dce_exit (-2);
 }
 
+void dce___assert_fail (const char *__assertion, const char *__file,
+                        unsigned int __line, const char *__function)
+{
+  dce_abort ();
+}
+
+void
+dce___stack_chk_fail (void)
+{
+  dce_abort ();
+}
+
 int dce_pause (void)
 {
   //Thread *current = Current ();

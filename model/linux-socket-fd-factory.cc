@@ -382,6 +382,7 @@ LinuxSocketFdFactory::SendMain (bool *r, NetDevice *dev, Ptr<Packet> p, const Ad
 void
 LinuxSocketFdFactory::DevXmit (struct SimKernel *kernel, struct SimDevice *dev, unsigned char *data, int len)
 {
+  NS_LOG_FUNCTION (dev);
   LinuxSocketFdFactory *self = (LinuxSocketFdFactory *)kernel;
   NetDevice *nsDev = (NetDevice *)self->m_exported->dev_get_private (dev);
   NS_ASSERT (len >= 14);

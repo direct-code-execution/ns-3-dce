@@ -105,6 +105,8 @@ DCE (unsetenv)
 DCE (clearenv)
 NATIVE (qsort)
 DCE (abort)
+DCE (__assert_fail)
+DCE (__stack_chk_fail)
 DCE (mkstemp)
 DCE (rename)
 
