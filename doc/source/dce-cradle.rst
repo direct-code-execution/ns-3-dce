@@ -15,6 +15,7 @@ What is |dce_cradle|?
  * IPv4/IPv6 TCP
  * IPv4/IPv6 RAW socket
  * IPv4/IPv6 DCCP
+ * IPv4/IPv6 SCTP
 
 
 Installing |dce_cradle|
