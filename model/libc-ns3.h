@@ -341,6 +341,10 @@ NATIVE (timelocal)
 DCE_EXPLICIT (clock_gettime, int, clockid_t, struct timespec *)
 DCE_EXPLICIT (clock_getres, int, clockid_t, struct timespec *)
 
+DCE (timer_create)
+DCE (timer_settime)
+DCE (timer_gettime)
+
 // UTIME.H
 DCE (utime)
 DCE (tzset)

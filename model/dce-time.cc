@@ -6,6 +6,9 @@
 #include <ns3/node.h>
 #include <ns3/simulator.h>
 #include <errno.h>
+#include "sys/dce-timerfd.h"
+#include "unix-timer-fd.h"
+#include "file-usage.h"
 
 NS_LOG_COMPONENT_DEFINE ("DceTime");
 
@@ -111,3 +114,47 @@ int dce_utime (const char *filename, const struct utimbuf *times)
 
   return utime (fullpath.c_str (), times);
 }
+
+
+int dce_timer_create(clockid_t clockid, struct sigevent *sevp, timer_t *timerid)
+{
+  int flags = 0;   // just required to set the parameter of class UnixTimerFd::UnixTimerFd(int clockid, int flags)
+
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << clockid << flags);
+  NS_ASSERT (current != 0);
+
+  int fd = UtilsAllocateFd ();
+  *timerid = (timer_t)fd;
+  if (fd == -1)
+  {
+     current->err = EMFILE;
+     return -1;
+  }
+
+  UnixTimerFd *unixFd = new UnixTimerFd (clockid, flags);
+  unixFd->IncFdCount ();
+  current->process->openFiles[fd] = new FileUsage (fd, unixFd);
+  return 0;
+}
+
+int dce_timer_settime (int fd, int flags,
+                       const struct itimerspec *new_value,
+                       struct itimerspec *old_value)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << fd << flags << new_value << old_value);
+  NS_ASSERT (Current () != 0);
+  Thread *current = Current ();
+  OPENED_FD_METHOD (int, Settime (flags, new_value, old_value))
+}
+
+int dce_timer_gettime (int fd, struct itimerspec *cur_value)
+{
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << fd << cur_value);
+  NS_ASSERT (Current () != 0);
+  Thread *current = Current ();
+
+  OPENED_FD_METHOD (int, Gettime (cur_value))
+}
+
+
