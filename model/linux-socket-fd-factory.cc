@@ -653,6 +653,7 @@ LinuxSocketFdFactory::InitializeStack (void)
       NS_ASSERT_MSG (filePath.length () > 0, line.c_str ());
       return ;
     }
+  NS_LOG_INFO ("loading " + filePath);
   void *handle = m_loader->Load (filePath, RTLD_LOCAL);
   void *symbol = m_loader->Lookup (handle, "sim_init");
   SimInit init = (SimInit) symbol;

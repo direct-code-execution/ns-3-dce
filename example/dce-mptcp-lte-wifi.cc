@@ -62,12 +62,14 @@ int main (int argc, char *argv[])
   bool disWifi = false;
   bool disLte = false;
   double stopTime = 45.0;
+  std::string p2pdelay = "10ms";
 
   CommandLine cmd;
   cmd.AddValue ("bufsize", "Snd/Rcv buffer size.", bufSize);
   cmd.AddValue ("disWifi", "Disable WiFi.", disWifi);
   cmd.AddValue ("disLte", "Disable LTE.", disLte);
   cmd.AddValue ("stopTime", "StopTime of simulatino.", stopTime);
+  cmd.AddValue ("p2pDelay", "Delay of p2p links. default is 10ms.", p2pdelay);
   cmd.Parse (argc, argv);
 
   if (disWifi && disLte)
@@ -103,7 +105,7 @@ int main (int argc, char *argv[])
   address2.SetBase ("10.2.0.0", "255.255.255.0");
   Ipv4InterfaceContainer if1, if2;
   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("2Mbps"));
-  pointToPoint.SetChannelAttribute ("Delay", StringValue ("10ms"));
+  pointToPoint.SetChannelAttribute ("Delay", StringValue (p2pdelay));
   Ptr<RateErrorModel> em1 =
     CreateObjectWithAttributes<RateErrorModel> ("RanVar", StringValue ("ns3::UniformRandomVariable[Min=0.0,Max=1.0]"),
                                                 "ErrorRate", DoubleValue (0.01),
