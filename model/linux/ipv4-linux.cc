@@ -568,6 +568,11 @@ Ipv4Linux::PopulateRoutingTable ()
       oss << "route add to " << route.GetDest () << '/' << route.GetDestNetworkMask () << " via " << route.GetGateway ();
       LinuxStackHelper::RunIp (node, NanoSeconds (++m_nanoSec), oss.str ());
     }
+
+  std::ostringstream oss;
+  oss.str ("");
+  oss << "link set lo up";
+  LinuxStackHelper::RunIp (node, NanoSeconds (++m_nanoSec), oss.str ());
 }
 
 }

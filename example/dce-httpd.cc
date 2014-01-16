@@ -83,8 +83,13 @@ main (int argc, char *argv[])
 
   // setup ip routes
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+  if (useKernel)
+    {
+      LinuxStackHelper::PopulateRoutingTables ();
+    }
 
   dceManager.Install (nodes);
+  LinuxStackHelper::RunIp (nodes.Get (0), NanoSeconds (100), "addr list");
 
 
   DceApplicationHelper dce;
@@ -96,6 +101,7 @@ main (int argc, char *argv[])
   dce.SetBinary ("thttpd");
   dce.ResetArguments ();
   dce.ResetEnvironment ();
+  //  dce.AddArgument ("-D");
   dce.SetUid (1);
   dce.SetEuid (1);
   server = dce.Install (nodes.Get (0));
@@ -112,7 +118,7 @@ main (int argc, char *argv[])
 
   pointToPoint.EnablePcapAll ("thttpd", false);
 
-  Simulator::Stop (Seconds (60.0));
+  Simulator::Stop (Seconds (600.0));
   Simulator::Run ();
 
   Simulator::Destroy ();
