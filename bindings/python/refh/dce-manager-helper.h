@@ -1,14 +1,16 @@
 #ifndef DCE_MANAGER_HELPER_H
 #define DCE_MANAGER_HELPER_H
 
-#include "ns3/object-factory.h"
-#include "ns3/attribute.h"
-#include "ns3/object-base.h"
-#include "ns3/node-container.h"
-#include "ns3/nstime.h"
 #include <string>
+#include <vector>
+#include <stdint.h>
+
+//#include "ns3/object.h"
 
 namespace ns3 {
+class Node;
+template <class T>
+class Ptr;
 
 /**
  * \brief Container of information of a DCE finished process
@@ -62,18 +64,18 @@ public:
    */
   std::string GetCmdLine (void) const;
 
-private:
-  int m_node;
-  int m_exitCode;
-  int m_pid;
-  int64_t m_ns3StartTime;
-  int64_t m_ns3EndTime;
-  long m_realStartTime;
-  long m_realEndTime;
-  double m_ns3Duration;
-  long m_realDuration;
-  std::string m_cmdLine;
 };
+
+class Object{};
+class AttributeValue{};
+class NodeContainer;
+
+
+class EmptyAttributeValue: AttributeValue{
+public:
+	EmptyAttributeValue(){};
+};
+
 
 /**
  * \brief configure required instances for DCE-capable nodes
@@ -82,8 +84,6 @@ private:
 class DceManagerHelper : public Object
 {
 public:
-  static TypeId GetTypeId (void);
-  virtual TypeId GetInstanceTypeId (void) const;
 
   /**
    * Construct a DceManagerHelper
@@ -179,16 +179,6 @@ public:
    * that are already finished.
    */
   static std::vector<ProcStatus> GetProcStatus (void);
-
-private:
-  ObjectFactory m_loaderFactory;
-  ObjectFactory m_schedulerFactory;
-  ObjectFactory m_taskManagerFactory;
-  ObjectFactory m_managerFactory;
-  ObjectFactory m_networkStackFactory;
-  ObjectFactory m_delayFactory;
-  std::string m_virtualPath;
-  static unsigned long nanoCpt;
 };
 
 } // namespace ns3

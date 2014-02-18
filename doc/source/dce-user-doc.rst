@@ -20,4 +20,5 @@ Direct Code Execution (DCE) allows us to use POSIX socket-based applications as 
    dce-user-basic
    dce-user-advanced
    dce-user-tech
+   dce-user-python
 

@@ -62,6 +62,7 @@ def options(opt):
                    help=('Change the default command template to run programs and unit tests with valgrind'),
                    action="store_true", default=False,
                    dest='valgrind')
+    opt.recurse('bindings/python')
                                   
 def search_file(files):
     for f in files:
@@ -116,7 +117,7 @@ def configure(conf):
         conf.env['KERNEL_STACK'] = Options.options.kernel_stack
         conf.env.append_value ('DEFINES', 'KERNEL_STACK=Y')
 
-    conf.env['ENABLE_PYTHON_BINDINGS'] = True
+    conf.env['ENABLE_PYTHON_BINDINGS'] = False
     conf.env['EXAMPLE_DIRECTORIES'] = '.'
     conf.env['NS3_ENABLED_MODULES'] = []
     conf_myscripts(conf)
@@ -173,6 +174,7 @@ def configure(conf):
                                     "sctp-tools (netinet/sctp.h) not found")
 
     conf.recurse(os.path.join('utils'))
+    conf.recurse('bindings/python')
     ns3waf.print_feature_summary(conf)
     
 def build_netlink(bld):
@@ -736,6 +738,7 @@ def build(bld):
                          '-Wl,-soname=libm.so.6'])
 
     bld.add_subdirs(['utils'])
+    bld.recurse('bindings/python')
 
     # Write the build status file.
     build_status_file = os.path.join(bld.out_dir, 'build-status.py')

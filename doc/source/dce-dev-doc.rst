@@ -16,4 +16,5 @@ This document is for the people who want to develop DCE itself.
 
    dce-kernel
    dce-poll
+   dce-dev-python
 ..   dce-readme

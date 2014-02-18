@@ -131,6 +131,35 @@ DceApplicationHelper::ResetEnvironment (void)
   m_envs.clear ();
 }
 
+
+/**
+ * Install the configured application into node.
+ *
+ * \param node The node on which to install.
+ */
+ApplicationContainer
+DceApplicationHelper::InstallInNode (Ptr<Node> node)
+{
+  NS_LOG_FUNCTION (this);
+  ApplicationContainer apps;
+      Ptr<DceApplication> dce = CreateObject<DceApplication> ();
+      dce->SetBinary (m_filename);
+      dce->SetStackSize (m_stackSize);
+      dce->SetArguments (m_args);
+      dce->SetEnvironment (m_envs);
+      dce->SetStdinFile (m_stdinFilename);
+      dce->SetUid (m_uid);
+      dce->SetEuid (m_euid);
+      if (!m_finishedCallback.IsNull ())
+        {
+          dce->SetFinishedCallback (m_finishedCallback);
+        }
+      node->AddApplication (dce);
+      apps.Add (dce);
+
+  return apps;
+}
+
 ApplicationContainer
 DceApplicationHelper::Install (NodeContainer c)
 {

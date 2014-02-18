@@ -4,10 +4,16 @@
 #include <string>
 #include <stdint.h>
 #include <vector>
-#include "ns3/node-container.h"
-#include "ns3/application-container.h"
 
 namespace ns3 {
+
+typedef __UID_T_TYPE uid_t;
+
+class ApplicationContainer {};
+class NodeContainer;
+class Node;
+template <class T>
+class Ptr;
 
 /**
  * \brief Configuration helper for the application executed with DCE.
@@ -95,7 +101,7 @@ public:
    *
    * \param cb callback function to be called.
    */
-  void SetFinishedCallback (Callback<void,uint16_t,int> cb);
+  //void SetFinishedCallback (Callback<void,uint16_t,int> cb);
 
   /**
    * Configure 'uid' of the process.
@@ -121,18 +127,6 @@ public:
    */
   void SetEgid (uid_t i);
 
-private:
-  bool m_isBinary;
-  std::string m_filename;
-  uint32_t m_stackSize;
-  std::vector<std::string> m_args;
-  std::vector<std::pair<std::string,std::string> > m_envs;
-  std::string m_stdinFilename;
-  Callback<void,uint16_t,int> m_finishedCallback;
-  uid_t m_uid;
-  uid_t m_euid;
-  uid_t m_gid;
-  uid_t m_egid;
 };
 
 } // namespace ns3
