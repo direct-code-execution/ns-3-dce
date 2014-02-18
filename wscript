@@ -52,6 +52,12 @@ def options(opt):
                    help=('Run a locally built program; argument can be a program name,'
                          ' or a command starting with the program name.'),
                    type="string", default='', dest='run')
+    opt.add_option('--pyrun',
+                   help=('Run a python program using locally built dce and ns3 python modules;'
+                         ' argument is the path to the python program, optionally followed'
+                         ' by command-line options that are passed to the program.'),
+                   type="string", default='', dest='pyrun')
+
     opt.add_option('--dlmloader',
                    help=('Run with DlmLoaderFactory,'),
                    action="store_true", default=False, dest='dlm')
@@ -772,6 +778,8 @@ def build(bld):
                 gen.post()
         bld.env['PRINT_BUILT_MODULES_AT_END'] = False 
 
+
+
 def _doxygen(bld):
     env = wutils.bld.env
     proc_env = wutils.get_proc_env()
@@ -902,5 +910,10 @@ def shutdown(ctx):
     if Options.options.run:
         wutils.run_program(Options.options.run, env, wutils.get_command_template(env),
                            visualize=Options.options.visualize)
+        raise SystemExit(0)
+
+    if Options.options.pyrun:
+        wutils.run_python_program(Options.options.pyrun, env,
+                                  visualize=Options.options.visualize)
         raise SystemExit(0)
 

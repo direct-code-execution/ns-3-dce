@@ -489,7 +489,7 @@ def build(bld):
     if not env['ENABLE_PYTHON_BINDINGS']:
         return
 
-    printInfo(bld)
+    #printInfo(bld)
 
     if Options.options.genbind:
         genbind(bld)
@@ -503,8 +503,6 @@ def genbind(bld):
     print "\n--------------------------------------------------------------------"
     print " Python bindings generation"
     print "--------------------------------------------------------------------"
-    # C++ generation
-    #PYTHONPATH=$(PYTHONPATH):$(HOME)/pybindgen python genbinds.py > dce_bindings.cpp
     sys.path.append( bld.env['WITH_PYBINDGEN'] )
     sys.path.append( bld.path.abspath() )
     from genbinds import dcepy_module_gen
@@ -512,7 +510,6 @@ def genbind(bld):
     dcepy_module_gen(binddir=bld.path.abspath(), ns3path=ns3inc, dcepath=os.getcwd() )
 
     bindpath = os.path.abspath("build/bindings/python")
-    #bindpath = ''
 
 
 def printInfo(bld):
@@ -551,10 +548,6 @@ def compileBindings(bld):
         lnklibs = lnklibs + ns3waf._lib(bld,dep)    
     lnklibs = lnklibs + ['-lns3-dce']
     lnklibs = list(OrderedDict.fromkeys(lnklibs))
-    print "\n--------------------------------------------------------------------"
-    print "------------------------ lnklibs: " + str( lnklibs )
-    #print "------------------------ bld.env:" + str( bld.env )
-    print "\n--------------------------------------------------------------------"
     sys.stdout.flush()
     sys.stderr.flush()
 
@@ -568,27 +561,4 @@ def compileBindings(bld):
                 cxxflags     = ['-O0', '-Wall', '-fPIC'],
                 dflags       = ['-g'],
                  )
-    print "|  ${PYTHONARCHDIR}: " + str( bld.env['PYTHONARCHDIR'] )
     
-#===============================================================================
-#     bld.program(
-#                 source='dce_bindings.cpp', 
-#                 target='dce_bindings.o',
-#                 includes     = ['.', ns3inc, dceinc], 
-#                 #defines      = ['LINUX=1', 'BIDULE'],
-#                 features = 'cxx cxxshlib pyext',
-#                 #lib          = ['m'], 
-#                 #libpath      = ['/usr/lib'],
-#                 #stlib        = ['dl'], 6
-#                 #stlibpath    = ['/usr/local/lib'],
-#                 linkflags    = ["-shared", "-Wl,--no-as-needed", "-o DCE.so"], 
-#                 #rpath        = ['/opt/kde/lib'],
-#                 #vnum         = '1.2.3',
-# 
-#                 install_path = '${PREFIX}/lib', 
-#                 #cflags       = ['-O2', '-Wall'], 
-#                 cxxflags     = ['-O0', '-Wall', '-fPIC'],
-#                 dflags       = ['-g'],
-#                  )
-#===============================================================================
-

@@ -54,7 +54,7 @@ Step 4: Compilation
 -------------------
 
 In the compilation phase, ``wscript`` (the Waf installation module), compiles
-``dce_bindings.cpp`` and generate a shared object called DCE.so. This is
+``dce_bindings.cpp`` and generate a shared object called ``dce.so``. This is
 the Python binding module.  
 
 .. code-block:: sh
