@@ -47,13 +47,7 @@ Step 3: C++ source code generation
 ----------------------------------
 
 ``ns3_module_dce.py`` can directly generate a C++ file for the Python module:
-
-.. code-block:: sh
-
-    export PYTHONPATH=HERE_THE_PATH_TO_PYBINDGEN/pybindgen 
-    python ns3_module_dce.py > dce_bindings.cpp
-    
-The file ``dce_bindings.cpp`` should be added to the code revision system
+``dce_bindings.cpp``. It should be added to the code revision system
 and included in the distribution.
 
 Step 4: Compilation

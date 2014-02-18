@@ -28,29 +28,6 @@ For example a minimal DCE script in Python could be:
     print "It works!"
 
 
-How to run Python examples outside Waf
-######################################
-
-To run the examples outside Waf, you need to tell the system where it needs
-to look for the ns-3 and DCE modules. You may want to set four variables 
-in the shell:
-
-  * DCE_ROOT: the installation directory (not the source one)
-  * DCE_PATH: the directories containing the DCE binaries
-  * LD_LIBRARY_PATH: the shared objects directories
-  * PYTHONPATH: the directory with the python bindings
- 
-For example, to run the script 'tenseconds.py':
- 
-.. code-block:: sh
-
-    export DCE_ROOT=$HOME/dce/build
-    export DCE_PATH=$DCE_ROOT/bin_dce:$DCE_ROOT/build/bin:$DCE_ROOT/sbin:$DCE_ROOT/bin_lib
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DCE_ROOT/lib
-    export PYTHONPATH=$PYTHONPATH:$DCE_ROOT/lib/python2.7/site-packages
-    python tenseconds.py 
-
-
 A first example
 ###############
 
