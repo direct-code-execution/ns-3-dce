@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
-from ns.DCE import *
+from ns.dce import *
 
 print "-----------------------"
 print "| DCE Python Bindings |"

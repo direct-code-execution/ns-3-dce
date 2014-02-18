@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
-import os
-print " **************************************"
-print " ** PYTHONPATH:          " + str(os.environ['PYTHONPATH'])
-print " **************************************"
 
-from ns.DCE import *
+from ns.dce import *
 import ns.applications
 import ns.core
 import ns.internet

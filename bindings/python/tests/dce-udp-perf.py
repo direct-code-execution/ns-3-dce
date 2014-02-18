@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from ns.DCE import *
+from ns.dce import *
 import ns.applications
 import ns.core
 import ns.internet
