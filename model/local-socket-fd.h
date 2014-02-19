@@ -80,6 +80,7 @@ public:
                        struct itimerspec *old_value);
   virtual int Gettime (struct itimerspec *cur_value) const;
   virtual int Ftruncate (off_t length);
+  virtual int Fsync (void);
 
   virtual bool CanRecv (void) const = 0;
   virtual bool CanSend (void) const = 0;

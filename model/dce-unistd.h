@@ -85,7 +85,7 @@ int dce_daemon (int nochdir, int noclose);
 unsigned int dce_alarm (unsigned int seconds);
 
 ssize_t dce_readlink (const char *p, char *b, size_t bufsize);
-
+int dce_fsync(int fd);
 
 #ifdef __cplusplus
 }

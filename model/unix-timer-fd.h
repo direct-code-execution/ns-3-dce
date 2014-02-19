@@ -46,6 +46,7 @@ public:
   virtual bool CanSend (void) const;
   virtual bool HangupReceived (void) const;
   virtual int Poll (PollTable* ptable);
+  virtual int Fsync (void);
 
 private:
   void TimerExpired (void);

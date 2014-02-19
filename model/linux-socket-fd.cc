@@ -229,4 +229,13 @@ LinuxSocketFd::Ftruncate (off_t length)
   current->err = EINVAL;
   return -1;
 }
+int
+LinuxSocketFd::Fsync (void)
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (this << current);
+  NS_ASSERT (current != 0);
+  current->err = EBADF;
+  return -1;
+}
 } // namespace ns3

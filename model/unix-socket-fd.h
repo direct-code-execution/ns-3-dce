@@ -71,6 +71,7 @@ public:
   // so a remote closed socket should return true because read or write will not block but will fail.
   virtual bool CanRecv (void) const = 0;
   virtual bool CanSend (void) const = 0;
+  virtual int Fsync (void);
 
 private:
   virtual ssize_t DoRecvmsg (struct msghdr *msg, int flags) = 0;
