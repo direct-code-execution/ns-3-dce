@@ -256,6 +256,7 @@ DCE (alarm)
 DCE (readlink)
 DCE (chown)
 DCE (initgroups)
+DCE (fsync)
 
 // SYS/UIO.H
 DCE (readv)

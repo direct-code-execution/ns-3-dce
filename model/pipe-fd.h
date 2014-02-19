@@ -76,6 +76,7 @@ public:
   virtual bool HangupReceived (void) const;
 
   virtual int Poll (PollTable* ptable);
+  virtual int Fsync (void);
 
 private:
   ssize_t DoRecvPacket (uint8_t* buf, size_t len);

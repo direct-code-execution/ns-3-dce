@@ -52,6 +52,7 @@ public:
 
   virtual int Poll (PollTable* ptable);
   virtual int Ftruncate (off_t length);
+  virtual int Fsync (void);
 
   void PollEvent (int flag);
 

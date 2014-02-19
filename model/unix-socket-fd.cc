@@ -1032,6 +1032,15 @@ UnixSocketFd::Ftruncate (off_t length)
   current->err = EINVAL;
   return -1;
 }
+int
+UnixSocketFd::Fsync (void)
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (this << current);
+  NS_ASSERT (current != 0);
+  current->err = EBADF;
+  return -1;
+}
 
 void
 UnixSocketFd::AddPeekedData (const uint8_t *buf, uint32_t count, Address from)

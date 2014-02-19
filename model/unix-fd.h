@@ -58,6 +58,8 @@ public:
   void DecFdCount (void);
   int GetFdCount (void) const;
 
+  virtual int Fsync (void) = 0;
+
   friend class PollTableEntry;
   friend class PollTable;
   friend class DceManager;

@@ -839,3 +839,10 @@ ssize_t dce_pwrite (int fd, const void *buf, size_t count, off_t offset)
     }
   return ret;
 }
+int dce_fsync (int fd)
+{
+  Thread *current = Current ();
+  NS_ASSERT (current != 0);
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd);
+  OPENED_FD_METHOD (int, Fsync ())
+}

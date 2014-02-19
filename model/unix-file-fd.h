@@ -45,6 +45,8 @@ public:
   virtual int Poll (PollTable* ptable);
   virtual int GetRealFd (void) const;
 
+  virtual int Fsync (void);
+
 protected:
   int PeekRealFd (void) const;
 private:

@@ -444,6 +444,16 @@ static void test_pread_pwrite (void)
   TEST_ASSERT_EQUAL (status, 0);
 }
 
+void test_fsync ()
+{
+  int fd = open ("FS", O_CREAT | O_TRUNC | O_RDWR, S_IRWXU);
+  TEST_ASSERT_UNEQUAL (fd, -1);
+  int status = fsync (fd);
+  TEST_ASSERT_EQUAL (status, 0);
+  status = close (fd);
+  TEST_ASSERT_EQUAL (status, 0);
+}
+
 int main (int argc, char *argv[])
 {
   test_file_usage ();
@@ -459,6 +469,7 @@ int main (int argc, char *argv[])
   test_chdir ();
   test_unlinkat ();
   test_pread_pwrite ();
+  test_fsync ();
 
   return 0;
 }

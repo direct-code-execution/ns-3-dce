@@ -518,4 +518,17 @@ UnixRandomFd::Fxstat64 (int ver, struct ::stat64 *buf)
   close (tmpFd);
   return retval;
 }
+int
+UnixFileFdBase::Fsync (void)
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (this << current);
+  NS_ASSERT (current != 0);
+  int retval = ::fsync (m_realFd);
+  if (retval == -1)
+    {
+      current->err = errno;
+    }
+  return retval;
+}
 } // namespace ns3
