@@ -556,7 +556,7 @@ def compileBindings(bld):
 
     bld.program(
                 source='dce_bindings.cpp', 
-                target='DCE',
+                target='dce',
                 includes     = ['.', ns3inc, dceinc], 
                 features = 'cxx cxxshlib pyext',
                 linkflags    = lnklibs, 
