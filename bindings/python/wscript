@@ -531,7 +531,10 @@ def printInfo(bld):
     sys.stdout.flush()
     sys.stderr.flush()
     
-
+def removedup(seq):
+    seen = set()
+    seen_add = seen.add
+    return [ x for x in seq if x not in seen and not seen_add(x)]
 
 def compileBindings(bld):
     print "\n--------------------------------------------------------------------"
@@ -547,7 +550,7 @@ def compileBindings(bld):
     for dep in useslibs:
         lnklibs = lnklibs + ns3waf._lib(bld,dep)    
     lnklibs = lnklibs + ['-lns3-dce']
-    lnklibs = list(OrderedDict.fromkeys(lnklibs))
+    lnklibs = removedup(lnklibs)
     sys.stdout.flush()
     sys.stderr.flush()
 
