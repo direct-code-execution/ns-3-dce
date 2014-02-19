@@ -14,7 +14,7 @@ pybindgen.settings.error_handler = ErrorHandler()
 import sys
 
 def module_init():
-    root_module = Module('DCE', cpp_namespace='::ns3')
+    root_module = Module('dce', cpp_namespace='::ns3')
     root_module.add_include('"ns3/dce-module.h"')
     root_module.add_include('"ns3/dce-manager-helper.h"')
     root_module.add_include('"ns3/dce-application.h"')

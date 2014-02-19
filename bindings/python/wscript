@@ -556,11 +556,11 @@ def compileBindings(bld):
 
     bld.program(
                 source='dce_bindings.cpp', 
-                target='dce',
+                target='ns/dce',
                 includes     = ['.', ns3inc, dceinc], 
                 features = 'cxx cxxshlib pyext',
                 linkflags    = lnklibs, 
-                install_path = '${PYTHONDIR}/ns', 
+                install_path = '${PYTHONARCHDIR}/ns', 
                 cxxflags     = ['-O0', '-Wall', '-fPIC'],
                 dflags       = ['-g'],
                  )

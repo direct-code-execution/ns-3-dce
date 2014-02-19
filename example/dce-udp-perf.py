@@ -72,9 +72,9 @@ print "******** Client: "+str(interfaces.GetAddress(1))
 # DCE configuration
 # ---------------------------------------------------------------
 print " - Configure DCE"
-dceManager = ns.DCE.DceManagerHelper()
+dceManager = ns.dce.DceManagerHelper()
 dceManager.Install (nodes);
-dce = ns.DCE.DceApplicationHelper()
+dce = ns.dce.DceApplicationHelper()
 #printInfo(dce)
 
 # Server
