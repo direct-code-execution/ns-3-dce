@@ -47,14 +47,15 @@ Step 3: C++ source code generation
 ----------------------------------
 
 ``ns3_module_dce.py`` can directly generate a C++ file for the Python module:
-``dce_bindings.cpp``. It should be added to the code revision system
-and included in the distribution.
+``ns3_module_dce.cpp``. It should be added to the code revision system
+and included in the distribution. It just requires an installed recent version
+of `Pybindgen <http://packages.python.org/PyBindGen>`_.
 
 Step 4: Compilation
 -------------------
 
 In the compilation phase, ``wscript`` (the Waf installation module), compiles
-``dce_bindings.cpp`` and generate a shared object called ``dce.so``. This is
+``ns3_module_dce.cpp`` and generate a shared object called ``dce.so``. This is
 the Python binding module.  
 
 .. code-block:: sh
