@@ -20,6 +20,7 @@ includes_dce = [
   'dce-application.h',
   'dce-application-helper.h',
   'dce-manager-helper.h',
+  'ipv4-dce-routing-helper.h',
 ]
 
 
@@ -157,6 +158,14 @@ type_annotations = {
         },
     '::ns3::Ipv6AddressHash': {
         'ignore': 'true', # we don't need to write test cases in Python
+        },
+    '::ns3::Ipv4StaticRoutingHelper': {
+        'import_from_module': 'ns.network', # Already defined in ns-3 bindings
+        #'ignore': 'true',
+        },
+    '::ns3::Ipv4RoutingProtocol': {
+        'import_from_module': 'ns.network', # Already defined in ns-3 bindings
+        #'ignore': 'true',
         },
                     
                     
@@ -339,17 +348,17 @@ def dcepy_module_gen( binddir, ns3path, dcepath ):
     #whitelist_paths=[ dcepath+"/model", dcepath + "/helper", ns3path  ]
     whitelist_paths=[ ref_header_dir  ]
 
-    module_parser = ModuleParser('DCE', 'ns3')
+    module_parser = ModuleParser('dce', 'ns3')
     module_parser.enable_anonymous_containers = True
     module_parser.add_pre_scan_hook(pre_scan_hook)
 
     generatepyintermediate = True
     if generatepyintermediate:
         # Test with intermediate file
-        fname = bldpath + '/dce_bindings.py'
+        fname = bldpath + '/temp_dce_bindings.py'
         print "Generating python pygendbind intermediate file: "+str(fname)
         py_file = open( fname, "wt")
-        includes = ['"ns3/dce-module.h"', '"ns3/dce-manager-helper.h"', '"ns3/dce-application.h"']
+        includes = ['"ns3/dce-module.h"', '"ns3/dce-manager-helper.h"', '"ns3/dce-application.h"', '"ns3/ipv4-dce-routing-helper.h"']
         pysink = FileCodeSink(py_file)
         module_parser.parse_init(inclfiles, whitelist_paths=whitelist_paths, pygen_sink=pysink, gccxml_options=gccxml_options, includes=includes)
         module_parser.scan_types()
@@ -359,7 +368,7 @@ def dcepy_module_gen( binddir, ns3path, dcepath ):
 
     else:
         # Test with cpp
-        fname = bldpath + '/dce_bindings.cpp'
+        fname = bldpath + '/temp_dce_bindings.cpp'
         #fname = 'dce_bindings.cpp'
         print "Generating python bindings c++ file: "+str(fname)
         pygen_file = open( fname, "wt")
@@ -372,12 +381,11 @@ def dcepy_module_gen( binddir, ns3path, dcepath ):
         module_parser.module.add_include('<ns3/dce-module.h>')
         module_parser.module.add_include('<ns3/dce-manager-helper.h>')
         module_parser.module.add_include('<ns3/dce-application.h>')
+        module_parser.module.add_include('<ns3/ipv4-dce-routing-helper.h>')
         pybindgen.write_preamble(FileCodeSink(pygen_file))
         module_parser.module.generate(FileCodeSink(pygen_file))
     
 
 
-if __name__ == '__main__':
-    dcepy_module_gen('/local/home/epmancini/dce_py/include/ns-3.19/ns3.19', '/local/home/epmancini/dce_py/source/ns-3-dce-py')
                                                                                                                                                                
 

@@ -43,9 +43,13 @@ def options(opt):
     #                     "The metamodule 'all' expands to all available ns-3 modules."),
     #               default=None, dest='apiscan', metavar="MODULE[,MODULE...]")
     opt.add_option('--apiscan',
-                   help=("Rescan the API for Python bindings. Needs working GCCXML / pygccxml environment. " ),
+                   help=("Reserved flag to rescan the API for Python bindings. Needs working GCCXML / pygccxml environment. " ),
                    action="store_true", default=False,
                    dest='genbind' )
+    opt.add_option('--cpppybind',
+                   help=("Reserved flag to generate the C++ API for Python bindings. " ),
+                   action="store_true", default=False,
+                   dest='cpppybind' )
     opt.add_option('--with-pybindgen',
                    help=('Path to an existing pybindgen source tree to use.'),
                    default=None,
@@ -494,7 +498,11 @@ def build(bld):
     if Options.options.genbind:
         genbind(bld)
         return
-    
+
+    if Options.options.cpppybind:
+        gencpp(bld)
+        return
+        
     compileBindings(bld)
 
 
@@ -535,6 +543,12 @@ def removedup(seq):
     seen = set()
     seen_add = seen.add
     return [ x for x in seq if x not in seen and not seen_add(x)]
+
+def gencpp(bld):
+    sys.path.append( bld.env['WITH_PYBINDGEN'] )
+    sys.path.append( bld.path.abspath() )
+    from ns3_module_dce import main
+    ns3_module_dce.main
 
 def compileBindings(bld):
     print "\n--------------------------------------------------------------------"
