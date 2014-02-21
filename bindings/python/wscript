@@ -555,7 +555,7 @@ def compileBindings(bld):
     sys.stderr.flush()
 
     bld.program(
-                source='dce_bindings.cpp', 
+                source='ns3_module_dce.cpp', 
                 target='ns/dce',
                 includes     = ['.', ns3inc, dceinc], 
                 features = 'cxx cxxshlib pyext',
