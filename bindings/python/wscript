@@ -6,7 +6,6 @@ import subprocess
 import shutil
 import sys
 import ns3waf
-from collections import OrderedDict
 
 from waflib import Task, Options, Configure, TaskGen, Logs, Build, Utils, Errors
 from waflib.Errors import WafError
