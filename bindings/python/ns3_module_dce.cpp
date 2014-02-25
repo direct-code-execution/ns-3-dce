@@ -423,7 +423,7 @@ _wrap_PyNs3DceApplication_SetEgid(PyNs3DceApplication *self, PyObject *args, PyO
 
 
 PyObject *
-_wrap_PyNs3DceApplication_SetGid(PyNs3DceApplication *self, PyObject *args, PyObject *kwargs)
+_wrap_PyNs3DceApplication_SetEuid(PyNs3DceApplication *self, PyObject *args, PyObject *kwargs)
 {
     PyObject *py_retval;
     unsigned int i;
@@ -432,7 +432,7 @@ _wrap_PyNs3DceApplication_SetGid(PyNs3DceApplication *self, PyObject *args, PyOb
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, (char *) "I", (char **) keywords, &i)) {
         return NULL;
     }
-    self->obj->SetGid(i);
+    self->obj->SetEuid(i);
     Py_INCREF(Py_None);
     py_retval = Py_None;
     return py_retval;
@@ -493,7 +493,19 @@ _wrap_PyNs3DceApplication_SetArguments(PyNs3DceApplication *self, PyObject *args
 
 
 PyObject *
-_wrap_PyNs3DceApplication_SetEuid(PyNs3DceApplication *self, PyObject *args, PyObject *kwargs)
+_wrap_PyNs3DceApplication_GetPid(PyNs3DceApplication *self)
+{
+    PyObject *py_retval;
+    uint16_t retval;
+
+    retval = self->obj->GetPid();
+    py_retval = Py_BuildValue((char *) "i", retval);
+    return py_retval;
+}
+
+
+PyObject *
+_wrap_PyNs3DceApplication_SetGid(PyNs3DceApplication *self, PyObject *args, PyObject *kwargs)
 {
     PyObject *py_retval;
     unsigned int i;
@@ -502,7 +514,7 @@ _wrap_PyNs3DceApplication_SetEuid(PyNs3DceApplication *self, PyObject *args, PyO
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, (char *) "I", (char **) keywords, &i)) {
         return NULL;
     }
-    self->obj->SetEuid(i);
+    self->obj->SetGid(i);
     Py_INCREF(Py_None);
     py_retval = Py_None;
     return py_retval;
@@ -540,11 +552,12 @@ _wrap_PyNs3DceApplication__copy__(PyNs3DceApplication *self)
 static PyMethodDef PyNs3DceApplication_methods[] = {
     {(char *) "SetUid", (PyCFunction) _wrap_PyNs3DceApplication_SetUid, METH_KEYWORDS|METH_VARARGS, NULL },
     {(char *) "SetEgid", (PyCFunction) _wrap_PyNs3DceApplication_SetEgid, METH_KEYWORDS|METH_VARARGS, NULL },
-    {(char *) "SetGid", (PyCFunction) _wrap_PyNs3DceApplication_SetGid, METH_KEYWORDS|METH_VARARGS, NULL },
+    {(char *) "SetEuid", (PyCFunction) _wrap_PyNs3DceApplication_SetEuid, METH_KEYWORDS|METH_VARARGS, NULL },
     {(char *) "SetStdinFile", (PyCFunction) _wrap_PyNs3DceApplication_SetStdinFile, METH_KEYWORDS|METH_VARARGS, NULL },
     {(char *) "SetBinary", (PyCFunction) _wrap_PyNs3DceApplication_SetBinary, METH_KEYWORDS|METH_VARARGS, NULL },
     {(char *) "SetArguments", (PyCFunction) _wrap_PyNs3DceApplication_SetArguments, METH_KEYWORDS|METH_VARARGS, NULL },
-    {(char *) "SetEuid", (PyCFunction) _wrap_PyNs3DceApplication_SetEuid, METH_KEYWORDS|METH_VARARGS, NULL },
+    {(char *) "GetPid", (PyCFunction) _wrap_PyNs3DceApplication_GetPid, METH_NOARGS, NULL },
+    {(char *) "SetGid", (PyCFunction) _wrap_PyNs3DceApplication_SetGid, METH_KEYWORDS|METH_VARARGS, NULL },
     {(char *) "SetStackSize", (PyCFunction) _wrap_PyNs3DceApplication_SetStackSize, METH_KEYWORDS|METH_VARARGS, NULL },
     {(char *) "__copy__", (PyCFunction) _wrap_PyNs3DceApplication__copy__, METH_NOARGS, NULL},
     {NULL, NULL, 0, NULL}

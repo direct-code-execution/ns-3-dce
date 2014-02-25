@@ -94,6 +94,9 @@ def register_Ns3DceApplication_methods(root_module, cls):
     cls.add_constructor([param('ns3::DceApplication const &', 'arg0')])
     ## dce-application.h: ns3::DceApplication::DceApplication() [constructor]
     cls.add_constructor([])
+    cls.add_method('GetPid',
+                   'uint16_t',
+                   [])
     ## dce-application.h: void ns3::DceApplication::SetArguments(std::vector<std::basic_string<char, std::char_traits<char>, std::allocator<char> >,std::allocator<std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > args) [member function]
     cls.add_method('SetArguments', 
                    'void', 

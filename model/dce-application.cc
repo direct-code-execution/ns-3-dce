@@ -127,4 +127,9 @@ DceApplication::SetEgid (uid_t i)
 {
   m_egid = i;
 }
+uint16_t 
+DceApplication::GetPid()
+{
+  return m_pid;
+}
 } // namespace ns3

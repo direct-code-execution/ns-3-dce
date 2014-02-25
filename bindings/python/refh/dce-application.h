@@ -45,6 +45,7 @@ public:
   void SetGid (uid_t i);
   void SetEgid (uid_t i);
 
+  uint16_t GetPid();
 };
 
 } // namespace ns3

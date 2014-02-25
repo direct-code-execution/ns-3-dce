@@ -39,6 +39,8 @@ public:
   void SetGid (uid_t i);
   void SetEgid (uid_t i);
 
+  uint16_t GetPid();
+
 private:
   // inherited from Application base class.
   virtual void StartApplication (void);
