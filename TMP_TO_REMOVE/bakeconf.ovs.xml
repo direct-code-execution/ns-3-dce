@@ -1,0 +1,132 @@
+<!--
+ 
+  # Prerequisites Ubuntu Server 12.04
+    sudo apt-get install libpcap-dev libexpat1-dev libdb-dev bison flex libssl-dev libxml2-dev gccxml pygccxml python-dev 
+    sudo apt-get mercurial git bzr autoconf automake cmake
+
+  # Prerequisites Fedora:
+    sudo yum install libpcap-devel expat-devel db4-devel  bison flex openssl-devel libxml2-devel gccxml pygccxml python-devel 
+    sudo yum install mercurial git  bzr autoconf automake cmake
+ 
+  # Bake
+    hg clone http://code.nsnam.org/bake bake
+    export BAKE_HOME=`pwd`/bake
+    export PATH=$PATH:$BAKE_HOME
+    export PYTHONPATH=$PYTHONPATH:$BAKE_HOME
+ 
+  # Configuration:
+     bake.py configure -c bakeconf_py.xml -e dce-py
+     
+  # Compilation:
+     bake.py deploy
+-->
+<configuration>
+  <modules>
+    <module name="libc-debug">
+      <source type="system_dependency">
+        <!-- copy-pasted from elf-loader/extract-system-config.py -->
+        <attribute name="dependency_test" value="/usr/lib64/debug/lib64/ld-2.11.2.so.debug or /usr/lib/debug/lib64/ld-linux-x86-64.so.2.debug or /usr/lib/debug/ld-linux-x86-64.so.2 or /usr/lib/debug/lib/ld-linux.so.2.debug or /usr/lib/debug/ld-linux.so.2 or /usr/lib/debug/lib/i386-linux-gnu/ld-2.13.so or /usr/lib/debug/lib/x86_64-linux-gnu/ld-2.13.so or /usr/lib/debug/lib/ld-2.10.1.so or /usr/lib/debug/lib/ld-2.11.1.so or /usr/lib/debug/lib/ld-2.12.1.so or /usr/lib/debug/lib/x86_64-linux-gnu/ld-2.15.so or /usr/lib/debug/lib/i386-linux-gnu/ld-2.15.so or /usr/lib/debug/lib/x86_64-linux-gnu/ld-2.17.so or /usr/lib/debug/lib/i386-linux-gnu/ld-2.17.so"/>
+        <attribute name="try_to_install" value="False"/> <!-- should be fixed -->
+        <attribute name="name_apt-get" value="libc6-dbg"/>
+        <attribute name="name_yum" value="glibc-debuginfo"/>
+        <attribute name="more_information" value="Didn't find:   libc debug package; please install it."/>
+      </source>
+      <build type="none" objdir="no">
+      </build>
+    </module>
+
+
+    <module name="elf-loader">
+      <source type="mercurial">
+        <attribute name="url" value="http://code.nsnam.org/thehajime/elf-loader"/>
+      </source>
+      <depends_on name="libc-debug" optional="False"/>
+      <build type="make" objdir="no">
+        <attribute name="configure_arguments" value="vdl-config.h"/>
+        <attribute name="install_arguments" value="PREFIX=$INSTALLDIR"/>
+      </build>
+    </module>
+
+    <module name="pybindgen-0.16.0.834">
+      <source type="bazaar">
+	<attribute name="url" value="https://launchpad.net/pybindgen"/>
+	<attribute name="revision" value="revno:834"/>
+      </source>
+      <build type="waf" objdir="yes">
+	<attribute name="configure_arguments" value="configure --prefix=$INSTALLDIR"/>
+	<attribute name="build_arguments" value="--generate-version"/>
+      </build>
+      <!--
+      <depends_on name="pygccxml" optional="True"/>
+      <depends_on name="python-dev" optional="True"/>
+      -->
+    </module>
+
+    <module name="net-next-sim-2.6.36">
+       <source type="git">
+         <attribute name="url" value="https://github.com/thehajime/net-next-sim.git"/>
+         <attribute name="module_directory" value="net-next-sim-2.6.36"/>
+         <attribute name="revision" value="sim-ns3-2.6.36-branch"/>
+         <attribute name="fetch_option" value="--depth=1"/>
+       </source>
+       <build type="make" objdir="no">
+         <attribute name="supported_os" value="linux;linux2"/>
+         <attribute name="configure_arguments" value="defconfig ARCH=sim"/>
+         <attribute name="build_arguments" value="library ARCH=sim"/>
+         <attribute name="no_installation" value="True"/>
+         <attribute name="post_installation" value="mkdir -p $INSTALLDIR/bin_dce; cd $INSTALLDIR/bin_dce; cp $SRCDIR/libsim-linux2.6.36.so ./; ln -s -f libsim-linux2.6.36.so liblinux.so"/>
+       </build>
+     </module>
+
+    <module name="ns-3.19">
+      <source type="mercurial">
+	<attribute name="url" value="http://code.nsnam.org/ns-3.19"/>
+      </source>
+      <depends_on name="pybindgen-0.16.0.834" optional="False"/>
+      <build type="waf" objdir="yes">
+	<attribute name="configure_arguments" value="configure --prefix=$INSTALLDIR --enable-examples --enable-tests"/>
+      </build>
+    </module>
+
+    <module name="openvswitch">
+      <source type="archive">
+        <attribute name="url" value="http://openvswitch.org/releases/openvswitch-2.0.0.tar.gz"/>
+        <attribute name="extract_directory" value="openvswitch-2.0.0"/>
+      </source>
+      <build type="make" objdir="yes">/"
+         <attribute name="pre_installation" value="cd $SRCDIR; CFLAGS=-fPIC LDFLAGS=-pie ./configure --prefix=$INSTALLDIR"/> -->
+        <!-- <attribute name="patch" value="$SRCDIR/../ns-3-dce/myscripts/httpd/dce-thttpd.patch"/> -->
+         <!-- <attribute name="install_arguments" value="-n" /> -->
+         <!-- <attribute name="build_arguments" value="openvswitch"/> -->
+         <attribute  name="post_installation" value="mkdir -p $INSTALLDIR/bin_dce; cp -vf utilities/ovs-controller utilities/ovs-vsctl ovsdb/ovsdb-tool ovsdb/ovsdb-server $INSTALLDIR/build/bin_dce"/>
+         <!-- attribute name="post_installation" value="cd $SRCDIR; mkdir $INSTALLDIR/bin_dce; /bin/cp -f openvswitch/utilities/ovs-controller $INSTALLDIR/build/bin_dce; /bin/cp -f openvswitch/utilities/ovs-vsctl $INSTALLDIR/build/bin_dce; /bin/cp -f openvswitch/utilities/ovsdb-tool $INSTALLDIR/build/bin_dce; /bin/cp -f openvswitch/utilities/ovsdb-server $INSTALLDIR/build/bin_dce; mkdir $INSTALLDIR/build/bin_dce/share/openvswitch; mkdir $INSTALLDIR/build/bin_dce/share/openvswitch; /bin/cp -f openvswitch/vswitchd/vswitch.ovsschema $INSTALLDIR/build/bin_dce/share/openvswitch;"/-->
+      </build>
+     </module>
+
+    <!-- dce -->
+
+    <module name="dce">
+      <source type="mercurial">
+        <attribute name="url" value="http://code.nsnam.org/epmancini/ns-3-dce"/>
+        <attribute name="module_directory" value="ns-3-dce"/>
+      </source>
+      <depends_on name="ns-3.19" optional="False"/>
+      <depends_on name="elf-loader" optional="True"/>
+      <depends_on name="openvswitch" optional="True"/>
+      <depends_on name="net-next-sim-2.6.36" optional="False"/>
+      <build type="waf" objdir="yes" sourcedir="ns-3-dce">
+	<attribute name="supported_os" value="linux;linux2"/>
+        <attribute name="configure_arguments" 
+		   value="configure --prefix=$INSTALLDIR --with-ns3=$INSTALLDIR --with-elf-loader=$INSTALLDIR/lib --with-libaspect=$INSTALLDIR --enable-kernel-stack=$SRCDIR/../net-next-sim-2.6.36/arch"/>
+      </build>
+    </module>
+
+
+
+  </modules>
+ 
+
+  <predefined name="dce">
+    <enable name="dce"/>
+  </predefined>
+</configuration>
