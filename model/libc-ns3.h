@@ -387,6 +387,7 @@ NATIVE (sigismember)
 DCE (sigprocmask)
 DCE    (sigwait)
 DCE    (kill)
+NATIVE (sys_siglist)
 
 // PTHREAD.H
 DCE (pthread_create)
