@@ -18,12 +18,18 @@ Tested platforms
 - Ubuntu 12.04 32bit/64bit
 - Ubuntu 12.10 64bit
 - Ubuntu 13.04 64bit
+- Ubuntu 13.10 64bit (new)
 - Fedora 18 32bit
 - CentOS 6.2 64bit
 - CentOS 6.4 64bit
+- Debian Jessie 64bit (new)
 
 New user-visible features
 -------------------------
+- DCE now requires an additional option to LDFLAGS for applications running on DCE (Bug 1773).
+  - we only needed to add '-pie' option to build PIE (Position Independent Executable) binary
+  - (new) but we need '-rdynamic' option from now to resolve symbols defined in PIE applications.
+
 - LinuxStackHelper now can configure IPv6 addresses with the support of Ipv6AddressHelper
 - DCE Cradle now support IPv6 sockets (TCP6, UDP6, RAW6, DCCP6, SCTP6)
 - Stream Control Transmission Protocol (SCTP) support, DCE Cradle as well
@@ -35,6 +41,7 @@ Bugs fixed
 - Bug 1827 - Linux SCTP support over DCE
 - Bug 1828 - Tests and examples do not compile when sctp-tools is not enabled 
 - Bug 1825 - IpL4Protocol not declared in this scope in ipv6-linux.cc
+- Bug 1773 - DCE doesn't run on Fedora 19, Ubuntu 13.10 (64bits) (temporal fix)
 
 Release dce-1.2
 =============
