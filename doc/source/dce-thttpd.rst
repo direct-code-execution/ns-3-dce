@@ -20,7 +20,7 @@ tar xf thttpd-2.25b.tar.gz
 cd thttpd-2.25b
 ./configure
 patch -p1 < dce-thttpd.patch
-CFLAGS=-fPIC LDFLAGS=-pie make
+CFLAGS=-fPIC LDFLAGS="-pie -rdynamic" make
 cp thttpd $BASEDCE/build/bin_dce
 
 WGET ----------------------------------------------------------------------------------------------------
@@ -31,7 +31,7 @@ echo to get wget sources you need wget binary :)
 wget http://ftp.gnu.org/gnu/wget/wget-1.14.tar.gz
 tar xf wget-1.14.tar.gz
 cd wget-1.14/
-CFLAGS=-fPIC LDFLAGS=-pie ./configure --disable-opie  --disable-digest --disable-ntlm  --disable-largefile --disable-threads --disable-nls  --disable-rpath  --disable-iri --without-ssl --without-zlib  --without-libiconv-prefix --without-libintl-prefix --without-libpth-prefix  --without-included-regex
+CFLAGS=-fPIC LDFLAGS="-pie -rdynamic" ./configure --disable-opie  --disable-digest --disable-ntlm  --disable-largefile --disable-threads --disable-nls  --disable-rpath  --disable-iri --without-ssl --without-zlib  --without-libiconv-prefix --without-libintl-prefix --without-libpth-prefix  --without-included-regex
 make
 cp src/wget $BASEDCE/build/bin_dce
 

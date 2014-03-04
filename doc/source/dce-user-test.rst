@@ -25,7 +25,7 @@ First, you need to compile your application with additional flags. **-fprofile-a
 ::
 
   gcc -fprofile-arcs -ftest-coverage -fPIC -c foo.c
-  gcc -fprofile-arcs -pie foo.o -o newapp
+  gcc -fprofile-arcs -pie -rdynamic foo.o -o newapp
 
 Write Test Program
 ^^^^^^^^^^^^^^^^^^

@@ -217,7 +217,7 @@ def dce_kw(**kw):
     debug_dl = []
     d['cxxflags'] = d.get('cxxflags', []) + ['-fpie'] + mcmodel + nofortify
     d['cflags'] = d.get('cflags', []) + ['-fpie'] + mcmodel + nofortify
-    d['linkflags'] = d.get('linkflags', []) + ['-pie'] + ['-lrt'] + debug_dl
+    d['linkflags'] = d.get('linkflags', []) + ['-pie'] + ['-lrt'] + ['-rdynamic'] + debug_dl
     return d
 
 def build_dce_tests(module, bld):

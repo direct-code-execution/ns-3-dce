@@ -258,7 +258,7 @@ int (*DceManager::PrepareDoStartProcess (Thread * current)) (int, char **)
       line += exeFullPath;
       line += "'.";
       AppendStatusFile (current->process->pid, current->process->nodeId, line);
-      NS_ASSERT_MSG (!main, line.c_str ());
+      NS_ASSERT_MSG (main, line.c_str ());
     }
   else
     {
