@@ -70,13 +70,13 @@ def _check_nonfatal(conf, *args, **kwargs):
 def configure(conf):
     conf.env['ENABLE_PYTHON_BINDINGS'] = False
     if Options.options.python_disable:
-        conf.report_optional_feature("python", "Python Bindings", False,
+        ns3waf._report_optional_feature(conf, "python", "Python Bindings", False,
                                      "disabled by user request")
         return
     # Disable python in static builds (bug #1253)
     if ((conf.env['ENABLE_STATIC_NS3']) or \
       (conf.env['ENABLE_SHARED_AND_STATIC_NS3'])):
-        conf.report_optional_feature("python", "Python Bindings", False,
+        ns3waf._report_optional_feature(conf, "python", "Python Bindings", False,
                                      "bindings incompatible with static build")
         return
 
@@ -87,7 +87,7 @@ def configure(conf):
     all_modules_enabled = (enabled_modules == available_modules)
 
     if sys.platform == 'cygwin':
-        conf.report_optional_feature("python", "Python Bindings", False,
+        ns3waf._report_optional_feature(conf, "python", "Python Bindings", False,
                                      "unsupported platform 'cygwin'")
         Logs.warn("Python is not supported in CygWin environment.")
         return
@@ -101,19 +101,19 @@ def configure(conf):
     try:
         conf.load('python')
     except Errors.ConfigurationError, ex:
-        conf.report_optional_feature("python", "Python Bindings", False,
+        ns3waf._report_optional_feature(conf, "python", "Python Bindings", False,
                                      "The python interpreter was not found")
         return
     try:
         conf.check_python_version((2,3))
     except Errors.ConfigurationError, ex:
-        conf.report_optional_feature("python", "Python Bindings", False,
+        ns3waf._report_optional_feature(conf, "python", "Python Bindings", False,
                                      "The python found version is too low (2.3 required)")
         return
     try:
         conf.check_python_headers()
     except Errors.ConfigurationError, ex:
-        conf.report_optional_feature("python", "Python Bindings", False,
+        ns3waf._report_optional_feature(conf, "python", "Python Bindings", False,
                                      "Python library or headers missing")
         return
 
