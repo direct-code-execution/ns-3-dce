@@ -374,6 +374,10 @@ CoojaLoader::Lookup (void *module, std::string symbol)
 {
   NS_LOG_FUNCTION (this << module << symbol);
   void *p = dlsym (module, symbol.c_str ());
+  if (!p)
+    {
+      NS_LOG_WARN (dlerror());
+    }
   return p;
 }
 
