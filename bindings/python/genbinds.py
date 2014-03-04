@@ -17,10 +17,11 @@ from pygccxml.declarations.calldef import free_function_t, member_function_t, co
 import ns3modulegen_core_customizations
 
 includes_dce = [
-  'dce-application.h',
-  'dce-application-helper.h',
-  'dce-manager-helper.h',
-  'ipv4-dce-routing-helper.h',
+  #'dce-application.h',
+  #'dce-application-helper.h',
+  #'dce-manager-helper.h',
+  #'ipv4-dce-routing-helper.h',
+  'linux-stack-helper.h',
 ]
 
 
@@ -382,6 +383,7 @@ def dcepy_module_gen( binddir, ns3path, dcepath ):
         module_parser.module.add_include('<ns3/dce-manager-helper.h>')
         module_parser.module.add_include('<ns3/dce-application.h>')
         module_parser.module.add_include('<ns3/ipv4-dce-routing-helper.h>')
+        module_parser.module.add_include('<ns3/linux-stack-helper.h>')
         pybindgen.write_preamble(FileCodeSink(pygen_file))
         module_parser.module.generate(FileCodeSink(pygen_file))
     
