@@ -8,9 +8,10 @@ are the DCE developers, not the users willing to make simulations. People not
 interested in adding new public API can ignore this section, and read the chapter 
 :ref:`python_scripts-label`.
 
-Waf configuration scripts generate the Python bindings in a semi-automatic way,
-matching almost closely what ns-3 does. It uses `PyBindGen <http://packages.python.org/PyBindGen>`_
-to generate a Python script, that needs to be manually calibrated. This intermediate
+Waf configuration scripts generate the Python bindings in a semi-automatic way. 
+They use `PyBindGen <http://packages.python.org/PyBindGen>`_
+to generate a Python script template. This script needs to be manually updated. 
+This intermediate
 script will generate a C++ source file that can be then compiled as a shared object,
 installed and imported by the Python scripts.
 
@@ -21,7 +22,7 @@ Step 1: Api scan
 ----------------
 
 In this step, ``Waf`` calls PyBindGen to analyze the DCE public reference headers, 
-in order to generate a temporary Python file that will generate a C++ file.
+in order to generate a temporary template Python file, that will generate a C++ file.
 
 .. code-block:: sh
 
