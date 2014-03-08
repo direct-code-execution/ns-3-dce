@@ -42,6 +42,7 @@ Bugs fixed
 - Bug 1828 - Tests and examples do not compile when sctp-tools is not enabled 
 - Bug 1825 - IpL4Protocol not declared in this scope in ipv6-linux.cc
 - Bug 1773 - DCE doesn't run on Fedora 19, Ubuntu 13.10 (64bits) (temporal fix)
+- Bug 1875 - Memory leak: LinuxSocketImpl:Send()/Sendto() with DCE Cradle
 
 Release dce-1.2
 =============

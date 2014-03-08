@@ -354,7 +354,7 @@ LinuxSocketImpl::Send (Ptr<Packet> p, uint32_t flags)
     {
       NS_LOG_INFO ("send returns " << ret << " errno " << Current ()->err);
     }
-
+  delete[] buf;
   LeaveFakeTask (pid);
   return ret;
 }
@@ -399,6 +399,7 @@ LinuxSocketImpl::SendTo (Ptr<Packet> p, uint32_t flags, const Address &address)
     {
       NS_LOG_INFO ("sendmsg returns " << ret << " errno " << Current ()->err);
     }
+  delete[] buf;
   LeaveFakeTask (pid);
   return ret;
 }
