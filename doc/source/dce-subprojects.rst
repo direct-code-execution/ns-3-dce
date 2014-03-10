@@ -19,7 +19,7 @@ For more detail document, see :doc:`dce-ccnx`.
 Quagga
 ======
 `Quagga <http://www.quagga.net/about.php>`_ is a routing software suite, providing implementations of OSPFv2, OSPFv3, RIP v1 and v2, RIPng and BGP-4 for Unix platforms, particularly FreeBSD, Linux, Solaris and NetBSD.
-For more information, see the latest support `document <../ns-3-dce-quagga/html/index.html>`_.
+For more information, see the latest support `document <../../manual-dce-quagga/html/index.html>`_.
 
 iperf
 =====
@@ -42,7 +42,7 @@ umip (Mobilt IPv6 daemon)
 =========================
 The `umip <http://umip.org>`_ (Usagi-Patched Mobile IPv6 stack) support on DCE enables the users to reuse routing protocol implementations of Mobile IPv6. UMIP now supports Mobile IPv6 (RFC3775), Network Mobility (RFC3963), Proxy Mobile Ipv6 (RFC5213), etc, and can be used these protocols implementation as models of network simulation. 
 
-For more information, see the latest support `document <../ns-3-dce-umip/html/index.html>`_.
+For more information, see the latest support `document <../../manual-umip/html/index.html>`_.
 
 Linux kernel (from 2.6.36 to 3.7 version)
 =========================================
