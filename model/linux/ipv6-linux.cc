@@ -362,6 +362,46 @@ Ipv6Linux::SetIpForward (bool forward)
     }
 }
 
+Ipv6Address
+Ipv6Linux::SourceAddressSelection (uint32_t interface, Ipv6Address dest)
+{
+  NS_LOG_FUNCTION (this << interface << dest);
+  Ipv6Address ret;
+
+  if (dest.IsLinkLocal () || dest.IsLinkLocalMulticast ())
+    {
+      for (uint32_t i = 0; i < GetNAddresses (interface); i++)
+        {
+          Ipv6InterfaceAddress test = GetAddress (interface, i);
+          if (test.GetScope () == Ipv6InterfaceAddress::LINKLOCAL)
+            {
+              return test.GetAddress ();
+            }
+        }
+      NS_ASSERT_MSG (false, "No link-local address found on interface " << interface);
+    }
+
+  for (uint32_t i = 0; i < GetNAddresses (interface); i++)
+    {
+      Ipv6InterfaceAddress test = GetAddress (interface, i);
+
+      if (test.GetScope () == Ipv6InterfaceAddress::GLOBAL)
+        {
+          if (test.IsInSameSubnet (dest))
+            {
+              return test.GetAddress ();
+            }
+          else
+            {
+              ret = test.GetAddress ();
+            }
+        }
+    }
+
+  // no specific match found. Use a global address (any useful is fine).
+  return ret;
+}
+
 bool
 Ipv6Linux::GetIpForward (void) const
 {

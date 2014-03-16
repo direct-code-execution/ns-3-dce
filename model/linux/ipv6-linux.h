@@ -253,6 +253,14 @@ public:
   virtual void SetForwarding (uint32_t interface, bool val);
 
   /**
+   * \brief Choose the source address to use with destination address.
+   * \param interface interface index
+   * \param dest IPv6 destination address
+   * \return IPv6 source address to use
+   */
+  virtual Ipv6Address SourceAddressSelection (uint32_t interface, Ipv6Address dest);
+
+  /**
    * Do nothing
    */
   virtual Ptr<IpL4Protocol> GetProtocol (int protocolNumber) const ;
