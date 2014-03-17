@@ -1,5 +1,5 @@
-#ifndef LINUX_SOCKET_FD_H
-#define LINUX_SOCKET_FD_H
+#ifndef KERNEL_SOCKET_FD_H
+#define KERNEL_SOCKET_FD_H
 
 #include "unix-fd.h"
 #include "ns3/ptr.h"
@@ -10,15 +10,15 @@ struct SimSocket;
 
 namespace ns3 {
 
-class LinuxSocketFdFactory;
+class KernelSocketFdFactory;
 
 class Waiter;
 
-class LinuxSocketFd : public UnixFd
+class KernelSocketFd : public UnixFd
 {
 public:
-  LinuxSocketFd (Ptr<LinuxSocketFdFactory> factory, struct SimSocket *socket);
-  virtual ~LinuxSocketFd ();
+  KernelSocketFd (Ptr<KernelSocketFdFactory> factory, struct SimSocket *socket);
+  virtual ~KernelSocketFd ();
 
   virtual int Close (void);
   virtual ssize_t Write (const void *buf, size_t count);
@@ -58,12 +58,11 @@ public:
 
 
 private:
-  Ptr<LinuxSocketFdFactory> m_factory;
+  Ptr<KernelSocketFdFactory> m_factory;
   struct SimSocket *m_socket;
   int m_statusFlags;
-  void* m_kernelPollCtx;
 };
 
 } // namespace ns3
 
-#endif /* LINUX_SOCKET_FD_H */
+#endif /* KERNEL_SOCKET_FD_H */

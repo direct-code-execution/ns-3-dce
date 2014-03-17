@@ -1,5 +1,5 @@
-#include "linux-socket-fd.h"
-#include "linux-socket-fd-factory.h"
+#include "kernel-socket-fd.h"
+#include "kernel-socket-fd-factory.h"
 #include "utils.h"
 #include "process.h"
 #include "ns3/log.h"
@@ -8,29 +8,28 @@
 #include <sys/mman.h> // for MMAP_FAILED
 #include <poll.h>
 
-NS_LOG_COMPONENT_DEFINE ("LinuxSocketFd");
+NS_LOG_COMPONENT_DEFINE ("KernelSocketFd");
 
 namespace ns3 {
 
-LinuxSocketFd::LinuxSocketFd (Ptr<LinuxSocketFdFactory> factory, struct SimSocket *socket)
+KernelSocketFd::KernelSocketFd (Ptr<KernelSocketFdFactory> factory, struct SimSocket *socket)
   : m_factory (factory),
     m_socket (socket),
-    m_statusFlags (0),
-    m_kernelPollCtx (0)
+    m_statusFlags (0)
 {
 }
 
-LinuxSocketFd::~LinuxSocketFd ()
+KernelSocketFd::~KernelSocketFd ()
 {
 }
 
 int
-LinuxSocketFd::Close (void)
+KernelSocketFd::Close (void)
 {
   return m_factory->Close (m_socket);
 }
 ssize_t
-LinuxSocketFd::Write (const void *buf, size_t count)
+KernelSocketFd::Write (const void *buf, size_t count)
 {
   NS_LOG_FUNCTION (this << buf << count);
   struct msghdr msg;
@@ -47,7 +46,7 @@ LinuxSocketFd::Write (const void *buf, size_t count)
   return retval;
 }
 ssize_t
-LinuxSocketFd::Read (void *buf, size_t count)
+KernelSocketFd::Read (void *buf, size_t count)
 {
   NS_LOG_FUNCTION (this << buf << count);
   struct msghdr msg;
@@ -64,92 +63,92 @@ LinuxSocketFd::Read (void *buf, size_t count)
   return retval;
 }
 ssize_t
-LinuxSocketFd::Recvmsg (struct msghdr *msg, int flags)
+KernelSocketFd::Recvmsg (struct msghdr *msg, int flags)
 {
   bool nonBlocking = (m_statusFlags & O_NONBLOCK) == O_NONBLOCK;
   flags |= nonBlocking ? MSG_DONTWAIT : 0;
   return m_factory->Recvmsg (m_socket, msg, flags);
 }
 ssize_t
-LinuxSocketFd::Sendmsg (const struct msghdr *msg, int flags)
+KernelSocketFd::Sendmsg (const struct msghdr *msg, int flags)
 {
   bool nonBlocking = (m_statusFlags & O_NONBLOCK) == O_NONBLOCK;
   flags |= nonBlocking ? MSG_DONTWAIT : 0;
   return m_factory->Sendmsg (m_socket, msg, flags);
 }
 bool
-LinuxSocketFd::Isatty (void) const
+KernelSocketFd::Isatty (void) const
 {
   return false;
 }
 int
-LinuxSocketFd::Setsockopt (int level, int optname,
+KernelSocketFd::Setsockopt (int level, int optname,
                            const void *optval, socklen_t optlen)
 {
   return m_factory->Setsockopt (m_socket, level, optname, optval, optlen);
 }
 int
-LinuxSocketFd::Getsockopt (int level, int optname,
+KernelSocketFd::Getsockopt (int level, int optname,
                            void *optval, socklen_t *optlen)
 {
   return m_factory->Getsockopt (m_socket, level, optname, optval, optlen);
 }
 int
-LinuxSocketFd::Getsockname (struct sockaddr *name, socklen_t *namelen)
+KernelSocketFd::Getsockname (struct sockaddr *name, socklen_t *namelen)
 {
   return m_factory->Getsockname (m_socket, name, namelen);
 }
 int
-LinuxSocketFd::Getpeername (struct sockaddr *name, socklen_t *namelen)
+KernelSocketFd::Getpeername (struct sockaddr *name, socklen_t *namelen)
 {
   return m_factory->Getpeername (m_socket, name, namelen);
 }
 int
-LinuxSocketFd::Ioctl (int request, char *argp)
+KernelSocketFd::Ioctl (int request, char *argp)
 {
   return m_factory->Ioctl (m_socket, request, argp);
 }
 int
-LinuxSocketFd::Bind (const struct sockaddr *my_addr, socklen_t addrlen)
+KernelSocketFd::Bind (const struct sockaddr *my_addr, socklen_t addrlen)
 {
   return m_factory->Bind (m_socket, my_addr, addrlen);
 }
 int
-LinuxSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
+KernelSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
 {
   return m_factory->Connect (m_socket, my_addr, addrlen, m_statusFlags);
 }
 int
-LinuxSocketFd::Listen (int backlog)
+KernelSocketFd::Listen (int backlog)
 {
   return m_factory->Listen (m_socket, backlog);
 }
 int
-LinuxSocketFd::Shutdown (int how)
+KernelSocketFd::Shutdown (int how)
 {
   return m_factory->Shutdown (m_socket, how);
 }
 int
-LinuxSocketFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
+KernelSocketFd::Accept (struct sockaddr *my_addr, socklen_t *addrlen)
 {
   return m_factory->Accept (m_socket, my_addr, addrlen, m_statusFlags);
 }
 void *
-LinuxSocketFd::Mmap (void *start, size_t length, int prot, int flags, off64_t offset)
+KernelSocketFd::Mmap (void *start, size_t length, int prot, int flags, off64_t offset)
 {
   GET_CURRENT (start << length << prot << flags << offset);
   current->err = ENODEV;
   return MAP_FAILED;
 }
 off64_t
-LinuxSocketFd::Lseek (off64_t offset, int whence)
+KernelSocketFd::Lseek (off64_t offset, int whence)
 {
   GET_CURRENT (offset << whence);
   current->err = ESPIPE;
   return -1;
 }
 int
-LinuxSocketFd::Fxstat (int ver, struct ::stat *buf)
+KernelSocketFd::Fxstat (int ver, struct ::stat *buf)
 {
   GET_CURRENT (ver << buf);
   buf->st_mode = S_IFSOCK;
@@ -158,7 +157,7 @@ LinuxSocketFd::Fxstat (int ver, struct ::stat *buf)
   return 0;
 }
 int
-LinuxSocketFd::Fxstat64 (int ver, struct ::stat64 *buf)
+KernelSocketFd::Fxstat64 (int ver, struct ::stat64 *buf)
 {
   GET_CURRENT (ver << buf);
   buf->st_mode = S_IFSOCK;
@@ -167,7 +166,7 @@ LinuxSocketFd::Fxstat64 (int ver, struct ::stat64 *buf)
   return 0;
 }
 int
-LinuxSocketFd::Fcntl (int cmd, unsigned long arg)
+KernelSocketFd::Fcntl (int cmd, unsigned long arg)
 {
   switch (cmd)
     {
@@ -190,7 +189,7 @@ LinuxSocketFd::Fcntl (int cmd, unsigned long arg)
     }
 }
 int
-LinuxSocketFd::Settime (int flags,
+KernelSocketFd::Settime (int flags,
                         const struct itimerspec *new_value,
                         struct itimerspec *old_value)
 {
@@ -201,7 +200,7 @@ LinuxSocketFd::Settime (int flags,
   return -1;
 }
 int
-LinuxSocketFd::Gettime (struct itimerspec *cur_value) const
+KernelSocketFd::Gettime (struct itimerspec *cur_value) const
 {
   NS_LOG_FUNCTION (this << Current () << cur_value);
   NS_ASSERT (Current () != 0);
@@ -210,18 +209,18 @@ LinuxSocketFd::Gettime (struct itimerspec *cur_value) const
   return -1;
 }
 bool
-LinuxSocketFd::HangupReceived (void) const
+KernelSocketFd::HangupReceived (void) const
 {
   // XXX: TO BE IMPLEMENTED OR NOT :)
   return false;
 }
 int
-LinuxSocketFd::Poll (PollTable* ptable)
+KernelSocketFd::Poll (PollTable* ptable)
 {
   return m_factory->Poll (m_socket, ptable);
 }
 int
-LinuxSocketFd::Ftruncate (off_t length)
+KernelSocketFd::Ftruncate (off_t length)
 {
   NS_LOG_FUNCTION (this << Current ());
   NS_ASSERT (Current () != 0);
@@ -230,7 +229,7 @@ LinuxSocketFd::Ftruncate (off_t length)
   return -1;
 }
 int
-LinuxSocketFd::Fsync (void)
+KernelSocketFd::Fsync (void)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current);

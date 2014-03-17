@@ -511,11 +511,13 @@ def build(bld):
 
     if bld.env['KERNEL_STACK']:
         kernel_source = [
+            'model/kernel-socket-fd-factory.cc',
+            'model/kernel-socket-fd.cc',
             'model/linux-socket-fd-factory.cc',
-            'model/linux-socket-fd.cc',
             'model/linux/linux-socket-impl.cc',
             ]
         kernel_headers = [
+            'model/kernel-socket-fd-factory.h',
             'model/linux-socket-fd-factory.h',
             'model/linux/linux-socket-impl.h',
             ]

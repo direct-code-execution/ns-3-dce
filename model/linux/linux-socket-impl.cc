@@ -24,7 +24,7 @@
 #include "ns3/uinteger.h"
 #include "ns3/event-id.h"
 #include "linux-socket-fd-factory.h"
-#include "linux-socket-fd.h"
+#include "kernel-socket-fd.h"
 #include "linux-socket-impl.h"
 #include "dce-manager.h"
 #include "process.h"
@@ -561,9 +561,9 @@ LinuxSocketImpl::Poll ()
                 {
                   NS_LOG_INFO ("accept error");
                 }
-              LinuxSocketFd *kern_sock;
+              KernelSocketFd *kern_sock;
               FileUsage *fu = Current ()->process->openFiles[sock];
-              kern_sock = (LinuxSocketFd *)fu->GetFileInc ();
+              kern_sock = (KernelSocketFd *)fu->GetFileInc ();
               kern_sock->IncFdCount ();
               kern_sock->Fcntl (F_SETFL, O_NONBLOCK);
 
@@ -662,7 +662,7 @@ LinuxSocketImpl::CreateSocket ()
   NS_LOG_FUNCTION_NOARGS ();
   uint16_t pid = EnterFakeTask ();
   Ptr<LinuxSocketFdFactory> factory = m_node->GetObject<LinuxSocketFdFactory> ();
-  LinuxSocketFd *kern_sock = (LinuxSocketFd *)
+  KernelSocketFd *kern_sock = (KernelSocketFd *)
     factory->CreateSocket (m_family, m_socktype, m_protocol);
   LeaveFakeTask (pid);
   if (kern_sock < 0)

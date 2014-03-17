@@ -29,7 +29,7 @@ namespace ns3 {
 class Node;
 class Packet;
 class Task;
-class LinuxSocketFd;
+class KernelSocketFd;
 
 class LinuxSocketImpl : public Socket
 {
@@ -79,7 +79,7 @@ public:
   void SetNs3ToPosixConverter (LinuxSocketImpl::Ns3ToPosixConverter cb);
   void SetPosixToNs3Converter (LinuxSocketImpl::PosixToNs3Converter cb);
 
-  LinuxSocketFd *m_kernsock;
+  KernelSocketFd *m_kernsock;
   Task *m_task;
   Ns3ToPosixConverter m_ns3toposix;
   PosixToNs3Converter m_posixtons3;
