@@ -13,7 +13,7 @@
 #include "sys/dce-stat.h"
 #include "dce-fcntl.h"
 #include "dce-stdio.h"
-#include "sim/include/sim-init.h"
+#include "include/sim-init.h"
 #include "ns3/log.h"
 #include "ns3/string.h"
 #include "ns3/double.h"
@@ -823,7 +823,7 @@ KernelSocketFdFactory::Accept (struct SimSocket *socket, struct sockaddr *my_add
   return fd;
 }
 int
-KernelSocketFdFactory::Ioctl (struct SimSocket *socket, int request, char *argp)
+KernelSocketFdFactory::Ioctl (struct SimSocket *socket, unsigned long request, char *argp)
 {
   GET_CURRENT (socket << request << argp);
   m_loader->NotifyStartExecute ();

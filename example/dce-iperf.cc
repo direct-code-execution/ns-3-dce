@@ -33,11 +33,11 @@ NS_LOG_COMPONENT_DEFINE ("DceIperf");
 // ===========================================================================
 int main (int argc, char *argv[])
 {
-  bool useKernel = 0;
+  std::string stack = "ns3";
   bool useUdp = 0;
   std::string bandWidth = "1m";
   CommandLine cmd;
-  cmd.AddValue ("kernel", "Use kernel linux IP stack.", useKernel);
+  cmd.AddValue ("stack", "Name of IP stack: ns3/linux/freebsd.", stack);
   cmd.AddValue ("udp", "Use UDP. Default false (0)", useUdp);
   cmd.AddValue ("bw", "BandWidth. Default 1m.", bandWidth);
   cmd.Parse (argc, argv);
@@ -49,21 +49,24 @@ int main (int argc, char *argv[])
   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
   pointToPoint.SetChannelAttribute ("Delay", StringValue ("1ms"));
 
-  NetDeviceContainer devices;
+  NetDeviceContainer devices, devices2;
   devices = pointToPoint.Install (nodes);
+  devices2 = pointToPoint.Install (nodes);
 
   DceManagerHelper dceManager;
   dceManager.SetTaskManagerAttribute ("FiberManagerType", StringValue ("UcontextFiberManager"));
 
-  if (!useKernel)
+  if (stack == "ns3")
     {
       InternetStackHelper stack;
       stack.Install (nodes);
+      dceManager.Install (nodes);
     }
-  else
+  else if (stack == "linux")
     {
 #ifdef KERNEL_STACK
       dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
+      dceManager.Install (nodes);
       LinuxStackHelper stack;
       stack.Install (nodes);
 #else
@@ -72,21 +75,35 @@ int main (int argc, char *argv[])
       return 0;
 #endif
     }
+  else if (stack == "freebsd")
+    {
+#ifdef KERNEL_STACK
+      dceManager.SetNetworkStack ("ns3::FreeBSDSocketFdFactory", "Library", StringValue ("libfreebsd.so"));
+      dceManager.Install (nodes);
+      FreeBSDStackHelper stack;
+      stack.Install (nodes);
+#else
+      NS_LOG_ERROR ("FreeBSD kernel stack for DCE is not available. build with dce-freebsd module.");
+      // silently exit
+      return 0;
+#endif
+    }
 
   Ipv4AddressHelper address;
   address.SetBase ("10.1.1.0", "255.255.255.252");
   Ipv4InterfaceContainer interfaces = address.Assign (devices);
+  address.SetBase ("10.1.2.0", "255.255.255.252");
+  interfaces = address.Assign (devices2);
 
   // setup ip routes
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 #ifdef KERNEL_STACK
-  if (useKernel)
+  if (stack == "linux")
     {
       LinuxStackHelper::PopulateRoutingTables ();
     }
 #endif
 
-  dceManager.Install (nodes);
 
   DceApplicationHelper dce;
   ApplicationContainer apps;
@@ -128,7 +145,7 @@ int main (int argc, char *argv[])
 
   apps = dce.Install (nodes.Get (1));
 
-  pointToPoint.EnablePcapAll (useKernel ? "iperf-kernel" : "iperf-ns3", false);
+  pointToPoint.EnablePcapAll ("iperf-" + stack, false);
 
   apps.Start (Seconds (0.6));
 

@@ -34,6 +34,7 @@ New user-visible features
 - DCE Cradle now support IPv6 sockets (TCP6, UDP6, RAW6, DCCP6, SCTP6)
 - Stream Control Transmission Protocol (SCTP) support, DCE Cradle as well
   you need to install lksctp-dev/lksctp-tools-devel to run example.
+- FreeBSD version of network stack is now supported (Bug 1878).
 
 Bugs fixed
 ----------
@@ -43,6 +44,7 @@ Bugs fixed
 - Bug 1825 - IpL4Protocol not declared in this scope in ipv6-linux.cc
 - Bug 1773 - DCE doesn't run on Fedora 19, Ubuntu 13.10 (64bits) (temporal fix)
 - Bug 1875 - Memory leak: LinuxSocketImpl:Send()/Sendto() with DCE Cradle
+- Bug 1878 - FreeBSD version of network stack for DCE
 
 Release dce-1.2
 =============

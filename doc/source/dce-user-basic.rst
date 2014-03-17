@@ -13,4 +13,5 @@ Basic Use Cases
    dce-user-config
    dce-cradle 
    dce-user-aspect-trace
+   dce-user-freebsd
 

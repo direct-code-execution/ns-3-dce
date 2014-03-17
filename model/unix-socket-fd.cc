@@ -670,7 +670,7 @@ UnixSocketFd::Getpeername (struct sockaddr *name, socklen_t *namelen)
   return -1;
 }
 int
-UnixSocketFd::Ioctl (int request, char *argp)
+UnixSocketFd::Ioctl (unsigned long request, char *argp)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current);

@@ -120,7 +120,7 @@ def configure(conf):
         conf.check(header_name='sim.h',
                    includes=os.path.join(Options.options.kernel_stack, 'sim/include'))
       #  conf.check()
-        conf.env['KERNEL_STACK'] = Options.options.kernel_stack
+        conf.env['KERNEL_STACK'] = Options.options.kernel_stack + '/sim'
         conf.env.append_value ('DEFINES', 'KERNEL_STACK=Y')
 
     conf.env['ENABLE_PYTHON_BINDINGS'] = False
@@ -296,6 +296,7 @@ def build_dce_examples(module, bld):
                     ['udp-echo-client', []],
                     ['dccp-server', []],
                     ['dccp-client', []],
+                    ['freebsd-iproute', []],
 #                    ['little-cout', []],
                     ]
 
@@ -456,6 +457,11 @@ def build_dce_kernel_examples(module, bld):
                            target='bin/dce-sctp-simple',
                            source=['example/dce-sctp-simple.cc'])
 
+    module.add_example(needed = ['core', 'network', 'dce', 'wifi', 'point-to-point', 'csma', 'mobility' ],
+                       target='bin/dce-freebsd',
+                       source=['example/dce-freebsd.cc'])
+
+
 # Add a script to build system 
 def build_a_script(bld, name, needed = [], **kw):
     external = [i for i in needed if not i == name]
@@ -514,11 +520,13 @@ def build(bld):
             'model/kernel-socket-fd-factory.cc',
             'model/kernel-socket-fd.cc',
             'model/linux-socket-fd-factory.cc',
+            'model/freebsd-socket-fd-factory.cc',
             'model/linux/linux-socket-impl.cc',
             ]
         kernel_headers = [
             'model/kernel-socket-fd-factory.h',
             'model/linux-socket-fd-factory.h',
+            'model/freebsd-socket-fd-factory.h',
             'model/linux/linux-socket-impl.h',
             ]
         kernel_includes = [bld.env['KERNEL_STACK']]
@@ -595,6 +603,7 @@ def build(bld):
         'model/exec-utils.cc',
         'model/linux/ipv4-linux.cc',
         'model/linux/ipv6-linux.cc',
+        'model/freebsd/ipv4-freebsd.cc',
         'model/dce-vfs.cc',
         'model/elf-ldd.cc',
         'model/dce-termio.cc',
@@ -625,6 +634,7 @@ def build(bld):
         'helper/dce-application-helper.cc',
         'helper/ccn-client-helper.cc',
         'helper/linux-stack-helper.cc',
+        'helper/freebsd-stack-helper.cc',
         ]
     module_headers = [
         'model/dce-manager.h',
@@ -636,6 +646,7 @@ def build(bld):
         'model/ipv4-dce-routing.h',
         'model/linux/ipv4-linux.h',
         'model/linux/ipv6-linux.h',
+        'model/freebsd/ipv4-freebsd.h',
         'model/process-delay-model.h',        
         'model/linux/linux-ipv4-raw-socket-factory.h',
         'model/linux/linux-ipv6-raw-socket-factory.h',
@@ -652,6 +663,7 @@ def build(bld):
         'helper/ccn-client-helper.h',
         'helper/ipv4-dce-routing-helper.h',
         'helper/linux-stack-helper.h',
+        'helper/freebsd-stack-helper.h',
         ]
 
     module_source = module_source + kernel_source

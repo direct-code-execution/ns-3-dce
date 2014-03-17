@@ -46,7 +46,7 @@ int main (int argc, char *argv[])
           tot += e;
         }
 
-      //    std::cout << "write: " << n << std::endl;
+      std::cout << "write: " << tot << std::endl;
       // sleep (1);
     }
 

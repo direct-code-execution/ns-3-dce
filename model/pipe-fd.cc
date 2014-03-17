@@ -273,7 +273,7 @@ PipeFd::Getpeername (struct sockaddr *name, socklen_t *namelen)
 }
 
 int
-PipeFd::Ioctl (int request, char *argp)
+PipeFd::Ioctl (unsigned long request, char *argp)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current);

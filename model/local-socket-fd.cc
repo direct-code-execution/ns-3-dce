@@ -158,7 +158,7 @@ LocalSocketFd::Setsockopt (int level, int optname, const void *optval, socklen_t
   return -1;
 }
 int
-LocalSocketFd::Ioctl (int request, char *argp)
+LocalSocketFd::Ioctl (unsigned long request, char *argp)
 {
   Current ()->err = EINVAL;
   return -1;

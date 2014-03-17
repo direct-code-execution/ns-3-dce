@@ -120,7 +120,7 @@ UnixTimerFd::Getpeername (struct sockaddr *name, socklen_t *namelen)
   return -1;
 }
 int
-UnixTimerFd::Ioctl (int request, char *argp)
+UnixTimerFd::Ioctl (unsigned long request, char *argp)
 {
   //XXX
   return -1;

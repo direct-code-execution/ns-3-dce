@@ -86,6 +86,7 @@ cpp_examples = [
     ("dce-httpd", "True", "True"),
     ("dce-wifi-ccnx", "True", "True"),
     ("dce-sctp-simple", "True", "True"),
+    ("dce-freebsd", "True", "True"),
 ]
 
 # A list of Python examples to run in order to ensure that they remain

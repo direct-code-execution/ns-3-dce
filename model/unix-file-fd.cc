@@ -119,7 +119,7 @@ UnixFileFdBase::Getpeername (struct sockaddr *name, socklen_t *namelen)
 }
 
 int
-UnixFileFdBase::Ioctl (int request, char *argp)
+UnixFileFdBase::Ioctl (unsigned long request, char *argp)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (this << current);

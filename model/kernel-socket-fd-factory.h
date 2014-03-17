@@ -71,7 +71,7 @@ private:
   int Listen (struct SimSocket *socket, int backlog);
   int Shutdown (struct SimSocket *socket, int how);
   int Accept (struct SimSocket *socket, struct sockaddr *my_addr, socklen_t *addrlen, int flags);
-  int Ioctl (struct SimSocket *socket, int request, char *argp);
+  int Ioctl (struct SimSocket *socket, unsigned long request, char *argp);
   int Setsockopt (struct SimSocket *socket, int level, int optname,
                   const void *optval, socklen_t optlen);
   int Getsockopt (struct SimSocket *socket, int level, int optname,

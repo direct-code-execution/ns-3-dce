@@ -104,7 +104,7 @@ KernelSocketFd::Getpeername (struct sockaddr *name, socklen_t *namelen)
   return m_factory->Getpeername (m_socket, name, namelen);
 }
 int
-KernelSocketFd::Ioctl (int request, char *argp)
+KernelSocketFd::Ioctl (unsigned long request, char *argp)
 {
   return m_factory->Ioctl (m_socket, request, argp);
 }

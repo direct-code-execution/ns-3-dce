@@ -32,7 +32,7 @@ public:
                           void *optval, socklen_t *optlen);
   virtual int Getsockname (struct sockaddr *name, socklen_t *namelen);
   virtual int Getpeername (struct sockaddr *name, socklen_t *namelen);
-  virtual int Ioctl (int request, char *argp);
+  virtual int Ioctl (unsigned long request, char *argp);
   virtual int Bind (const struct sockaddr *my_addr, socklen_t addrlen);
   virtual int Connect (const struct sockaddr *my_addr, socklen_t addrlen);
   virtual int Listen (int backlog);

@@ -25,7 +25,7 @@ class DceManagerTestCase : public TestCase
 {
 public:
   DceManagerTestCase (std::string filename, Time maxDuration, std::string stdinFilename,
-                      bool useNet, bool useK, bool skip);
+                      bool useNet, std::string stack, bool skip);
 private:
   virtual void DoRun (void);
   static void Finished (int *pstatus, uint16_t pid, int status);
@@ -33,22 +33,22 @@ private:
   std::string m_filename;
   std::string m_stdinFilename;
   Time m_maxDuration;
-  bool m_useKernel;
+  std::string m_netstack;
   bool m_useNet;
   bool m_skip;
 };
 
 DceManagerTestCase::DceManagerTestCase (std::string filename, Time maxDuration,
-                                        std::string stdin, bool useNet, bool useK,
+                                        std::string stdin, bool useNet, std::string stack,
                                         bool skip)
   : TestCase (std::string ("") + (skip ? "(SKIP) " : "") +
               "Check that process \"" + filename +
-              (useK ? " (kernel)" : " (ns3)") +
+              "(" + stack +")" +
               "\" completes correctly."),
     m_filename (filename),
     m_stdinFilename (stdin),
     m_maxDuration (maxDuration),
-    m_useKernel (useK),
+    m_netstack (stack),
     m_useNet (useNet),
     m_skip (skip)
 {
@@ -75,7 +75,7 @@ DceManagerTestCase::DoRun (void)
 
   if (m_useNet)
     {
-      if (m_useKernel)
+      if (m_netstack == "linux")
         {
           dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
           dceManager.Install (nodes);
@@ -102,7 +102,7 @@ DceManagerTestCase::DoRun (void)
           apps.Start (Seconds (3.0));
 
         }
-      else
+      else if (m_netstack == "ns3")
         {
           dceManager.Install (nodes);
 
@@ -110,6 +110,18 @@ DceManagerTestCase::DoRun (void)
           Ipv4DceRoutingHelper ipv4RoutingHelper;
           stack.SetRoutingHelper (ipv4RoutingHelper);
           stack.Install (nodes);
+        }
+      else if (m_netstack == "freebsd")
+        {
+          dceManager.SetNetworkStack ("ns3::FreeBSDSocketFdFactory", "Library", StringValue ("libfreebsd.so"));
+          dceManager.Install (nodes);
+
+          dce.SetBinary ("freebsd-iproute");
+          dce.SetStackSize (1 << 16);
+          dce.ResetArguments ();
+          dce.ParseArguments ("lo0 127.0.0.1 255.0.0.0");
+          apps = dce.Install (nodes.Get (0));
+          apps.Start (Seconds (2.0));
         }
     }
   else
@@ -147,6 +159,9 @@ private:
 } g_processTests;
 //
 
+#define NS3_STACK      (1 << 0)
+#define LINUX_STACK    (1 << 1)
+#define FREEBSD_STACK  (1 << 2)
 
 DceManagerTestSuite::DceManagerTestSuite ()
   : TestSuite ("process-manager", UNIT)
@@ -158,45 +173,46 @@ DceManagerTestSuite::DceManagerTestSuite ()
     const char *stdinfile;
     bool useNet;
     bool skipUctx;
+    uint32_t stackMask;
   } testPair;
 
   const testPair tests[] = {
-    { "test-empty", 0, "", false, false},
-    {  "test-sleep", 0, "", false, false},
-    {  "test-pthread", 0, "", false, false},
-    {  "test-mutex", 0, "", false, false},
-    {  "test-once", 0, "", false, false},
-    {  "test-pthread-key", 0, "", false, false},
-    {  "test-sem", 0, "", false, false},
-    {  "test-malloc", 0, "", false, false},
-    {  "test-malloc-2", 0, "", false, false},
-    {  "test-fd-simple", 0, "", false, false},
-    {  "test-strerror", 0, "", false, false},
-    {  "test-stdio", 0, "/etc/passwd",false, false},
-    {  "test-string", 0, "", false, false},
-    {  "test-netdb", 3600, "", true, false},
-    {  "test-env", 0, "", false, false},
-    {  "test-cond", 0, "", false, false},
-    {  "test-timer-fd", 0, "", false, false},
-    {  "test-stdlib", 0, "", false, false},
-    {  "test-fork", 0, "", false, true},
-    {  "test-select", 3600, "", true, false},
-    {  "test-nanosleep", 0, "", false, false},
-    {  "test-random", 0, "", false, false},
-    {  "test-local-socket", 0, "", false, false},
-    {  "test-poll", 3200, "", true, false},
-    {  "test-tcp-socket", 320, "", true, false},
-    {  "test-exec", 0, "", false, true},
-    {  "test-raw-socket", 320, "", true, false},
-    {  "test-iperf", 0, "", false, false},
-    {  "test-name", 0, "", false, false},
-    {  "test-pipe", 0, "", false, false},
-    {  "test-dirent", 0, "", false, false},
-    {  "test-socket", 30, "", true, false},
-    {  "test-bug-multi-select", 30, "", true, false},
-    {  "test-tsearch", 0, "", false, false},
-    {  "test-clock-gettime", 0, "", false, false},
-    {  "test-gcc-builtin-apply", 0, "", false, false},
+    { "test-empty", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-sleep", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-pthread", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-mutex", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-once", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-pthread-key", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-sem", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-malloc", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-malloc-2", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-fd-simple", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-strerror", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-stdio", 0, "/etc/passwd",false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-string", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-netdb", 3600, "", true, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-env", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-cond", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-timer-fd", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-stdlib", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-fork", 0, "", false, true, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-select", 3600, "", true, false, NS3_STACK|LINUX_STACK},
+    {  "test-nanosleep", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-random", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-local-socket", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-poll", 3200, "", true, false, NS3_STACK|LINUX_STACK},
+    {  "test-tcp-socket", 320, "", true, false, NS3_STACK|LINUX_STACK},
+    {  "test-exec", 0, "", false, true, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-raw-socket", 320, "", true, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-iperf", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-name", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-pipe", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-dirent", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-socket", 30, "", true, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-bug-multi-select", 30, "", true, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-tsearch", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-clock-gettime", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-gcc-builtin-apply", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
     // XXX: not completely tested      {  "test-signal", 30, "" , false},
   };
 
@@ -228,28 +244,50 @@ DceManagerTestSuite::DceManagerTestSuite ()
         }
     }
 
+  // ns-3 stack
   for (unsigned int i = 0; i < sizeof(tests) / sizeof(testPair); i++)
     {
 
       AddTestCase (new DceManagerTestCase (tests[i].name,  Seconds (tests[i].duration),
                                            tests[i].stdinfile,
                                            tests[i].useNet,
-                                           false,
-                                           isUctxFiber ? tests[i].skipUctx : false
+                                           "ns3",
+                                           (tests[i].stackMask & NS3_STACK) ?
+                                           (isUctxFiber ? tests[i].skipUctx : false) : true
                                            ),
                    TestCase::QUICK);
     }
+
+  // linux stack
   TypeId tid;
-  bool kern = TypeId::LookupByNameFailSafe ("ns3::LinuxSocketFdFactory", &tid);
-  if (kern)
+  bool kern_linux = TypeId::LookupByNameFailSafe ("ns3::LinuxSocketFdFactory", &tid);
+  if (kern_linux)
     {
       for (unsigned int i = 0; i < sizeof(tests) / sizeof(testPair); i++)
         {
           AddTestCase (new DceManagerTestCase (tests[i].name,  Seconds (tests[i].duration),
                                                tests[i].stdinfile,
                                                tests[i].useNet,
-                                               true,
-                                               isUctxFiber ? tests[i].skipUctx : false
+                                               "linux",
+                                               (tests[i].stackMask & LINUX_STACK) ?
+                                               (isUctxFiber ? tests[i].skipUctx : false) : true
+                                               ),
+                       TestCase::QUICK);
+        }
+    }
+
+  // FreeBSD
+  bool kern_freebsd = TypeId::LookupByNameFailSafe ("ns3::FreeBSDSocketFdFactory", &tid);
+  if (kern_freebsd)
+    {
+      for (unsigned int i = 0; i < sizeof(tests) / sizeof(testPair); i++)
+        {
+          AddTestCase (new DceManagerTestCase (tests[i].name,  Seconds (tests[i].duration),
+                                               tests[i].stdinfile,
+                                               tests[i].useNet,
+                                               "linux",
+                                               (tests[i].stackMask & LINUX_STACK) ?
+                                               (isUctxFiber ? tests[i].skipUctx : false) : true
                                                ),
                        TestCase::QUICK);
         }
