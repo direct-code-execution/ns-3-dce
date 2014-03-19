@@ -23,6 +23,14 @@ int main (int argc, char *argv[])
   char linkType = 'p'; // P2P
   bool reliable = true;
 
+  // for the moment: not supported quagga for freebsd
+  std::string filePath = SearchExecFile ("DCE_PATH", "libfreebsd.so", 0);
+  if (filePath.length () <= 0)
+    {
+      NS_LOG_UNCOND ("no libfreebsd.so found. exit.");
+      exit (0);
+    }
+
   cmd.AddValue ("linkType", "Link type: ie : C for CSMA, P for Point to Point and w for Wifi, default to P2P", linkType);
   cmd.AddValue ("reliable", "If true use TCP transport else UDP, default is TCP", reliable);
   cmd.Parse (argc, argv);

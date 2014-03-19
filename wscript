@@ -648,6 +648,8 @@ def build(bld):
         'model/linux/ipv6-linux.h',
         'model/freebsd/ipv4-freebsd.h',
         'model/process-delay-model.h',        
+        'model/exec-utils.h',
+        'model/utils.h',
         'model/linux/linux-ipv4-raw-socket-factory.h',
         'model/linux/linux-ipv6-raw-socket-factory.h',
         'model/linux/linux-udp-socket-factory.h',

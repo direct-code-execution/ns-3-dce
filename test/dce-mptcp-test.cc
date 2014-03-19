@@ -237,13 +237,19 @@ DceMptcpTestSuite::DceMptcpTestSuite ()
     bool isSkip;
   } testPair;
 
-  const testPair tests[] = {
+  testPair tests[] = {
     {"tcp", "ns3::LinuxTcpSocketFactory", 30, false},
   };
 
   Packet::EnablePrinting ();
+  // for the moment: not supported dce cradle for freebsd
+  std::string filePath = SearchExecFile ("DCE_PATH", "liblinux.so", 0);
   for (unsigned int i = 0; i < sizeof(tests)/sizeof(testPair); i++)
     {
+      if (filePath.length () <= 0)
+        {
+          tests[i].isSkip = true;
+        }
 
       AddTestCase (new DceMptcpTestCase (tests[i].name,
                                          Seconds (tests[i].duration),

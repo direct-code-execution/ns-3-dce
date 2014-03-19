@@ -261,7 +261,8 @@ DceManagerTestSuite::DceManagerTestSuite ()
   // linux stack
   TypeId tid;
   bool kern_linux = TypeId::LookupByNameFailSafe ("ns3::LinuxSocketFdFactory", &tid);
-  if (kern_linux)
+  std::string filePath = SearchExecFile ("DCE_PATH", "liblinux.so", 0);
+  if (kern_linux && (filePath.length () > 0))
     {
       for (unsigned int i = 0; i < sizeof(tests) / sizeof(testPair); i++)
         {
@@ -278,15 +279,16 @@ DceManagerTestSuite::DceManagerTestSuite ()
 
   // FreeBSD
   bool kern_freebsd = TypeId::LookupByNameFailSafe ("ns3::FreeBSDSocketFdFactory", &tid);
-  if (kern_freebsd)
+  filePath = SearchExecFile ("DCE_PATH", "libfreebsd.so", 0);
+  if (kern_freebsd && (filePath.length () > 0))
     {
       for (unsigned int i = 0; i < sizeof(tests) / sizeof(testPair); i++)
         {
           AddTestCase (new DceManagerTestCase (tests[i].name,  Seconds (tests[i].duration),
                                                tests[i].stdinfile,
                                                tests[i].useNet,
-                                               "linux",
-                                               (tests[i].stackMask & LINUX_STACK) ?
+                                               "freebsd",
+                                               (tests[i].stackMask & FREEBSD_STACK) ?
                                                (isUctxFiber ? tests[i].skipUctx : false) : true
                                                ),
                        TestCase::QUICK);

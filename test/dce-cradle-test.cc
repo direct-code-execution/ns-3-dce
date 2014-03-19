@@ -148,7 +148,7 @@ DceCradleTestSuite::DceCradleTestSuite ()
     bool isSkip;
   } testPair;
 
-  const testPair tests[] = {
+  testPair tests[] = {
     {"raw", "ns3::LinuxIpv4RawSocketFactory", 30, false},
     {"udp", "ns3::LinuxUdpSocketFactory", 30, false},
     {"tcp", "ns3::LinuxTcpSocketFactory", 30, false},
@@ -161,8 +161,14 @@ DceCradleTestSuite::DceCradleTestSuite ()
     {"sctp6", "ns3::LinuxSctp6SocketFactory", 20, false},
   };
 
+  // for the moment: not supported mptcp for freebsd
+  std::string filePath = SearchExecFile ("DCE_PATH", "liblinux.so", 0);
   for (unsigned int i = 0; i < sizeof(tests)/sizeof(testPair); i++)
     {
+      if (filePath.length () <= 0)
+        {
+          tests[i].isSkip = true;
+        }
 
       AddTestCase (new DceCradleTestCase (tests[i].name,
                                           Seconds (tests[i].duration),
