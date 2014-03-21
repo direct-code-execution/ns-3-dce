@@ -28,7 +28,9 @@ int main (int argc, char *argv[])
   if (filePath.length () <= 0)
     {
       NS_LOG_UNCOND ("no libfreebsd.so found. exit.");
-      exit (0);
+      Simulator::Run ();
+      Simulator::Destroy ();
+      return (0);
     }
 
   cmd.AddValue ("linkType", "Link type: ie : C for CSMA, P for Point to Point and w for Wifi, default to P2P", linkType);
