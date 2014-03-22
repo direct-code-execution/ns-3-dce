@@ -665,9 +665,11 @@ LinuxSocketImpl::CreateSocket ()
   KernelSocketFd *kern_sock = (KernelSocketFd *)
     factory->CreateSocket (m_family, m_socktype, m_protocol);
   LeaveFakeTask (pid);
-  if (kern_sock < 0)
+  if (!kern_sock)
     {
-      NS_ASSERT (0);
+      NS_ASSERT_MSG (0, "can't create socket: not enabled particular socket ? (af=" 
+                     << m_family << ", socktype=" << m_socktype
+                     << ", proto=" << m_protocol << ")");
       return;
     }
   kern_sock->Fcntl (F_SETFL, O_NONBLOCK);
