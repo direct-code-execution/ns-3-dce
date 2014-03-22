@@ -69,6 +69,11 @@ public:
   virtual bool GetAllowBroadcast () const;
   void Poll ();
 
+  void Setsockopt (int level, int optname,
+                   const void *optval, socklen_t optlen);
+  int Getsockopt (int level, int optname,
+                void *optval, socklen_t *optlen);
+
   Address PosixAddressToNs3Address (const struct sockaddr *my_addr, socklen_t addrlen);
   int Ns3AddressToPosixAddress (const Address& nsaddr,
                                 struct sockaddr *addr, socklen_t *addrlen);

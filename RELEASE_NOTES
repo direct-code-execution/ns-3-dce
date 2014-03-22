@@ -35,6 +35,7 @@ New user-visible features
 - Stream Control Transmission Protocol (SCTP) support, DCE Cradle as well
   you need to install lksctp-dev/lksctp-tools-devel to run example.
 - FreeBSD version of network stack is now supported (Bug 1878).
+- support socket option (Get/Set sockopt) for DCE Cradle
 
 Bugs fixed
 ----------

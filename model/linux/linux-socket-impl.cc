@@ -515,6 +515,31 @@ LinuxSocketImpl::BindToNetDevice (Ptr<NetDevice> netdevice)
 }
 
 void
+LinuxSocketImpl::Setsockopt (int level, int optname,
+                             const void *optval, socklen_t optlen)
+{
+  NS_LOG_FUNCTION (level << optname << optval << optlen);
+  uint16_t pid = EnterFakeTask ();
+  int ret = this->m_kernsock->Setsockopt (level, optname,
+                                          optval, optlen);
+  NS_LOG_INFO ("setsockopt returns " << ret << " errno " << Current ()->err);
+  LeaveFakeTask (pid);
+  return;
+}
+int
+LinuxSocketImpl::Getsockopt (int level, int optname,
+                             void *optval, socklen_t *optlen)
+{
+  NS_LOG_FUNCTION (level << optname << optval << optlen);
+  uint16_t pid = EnterFakeTask ();
+  int ret = this->m_kernsock->Getsockopt (level, optname,
+                                          optval, optlen);
+  NS_LOG_INFO ("getsockopt returns " << ret << " errno " << Current ()->err);
+  LeaveFakeTask (pid);
+  return ret;
+}
+
+void
 LinuxSocketImpl::Poll ()
 {
   NS_LOG_FUNCTION (this);
@@ -589,7 +614,7 @@ LinuxSocketImpl::Poll ()
           else
             {
               // FIXME: handle closed socket
-              if (mask & POLLRDHUP || mask & POLLHUP)
+              if (mask & POLLRDHUP || mask & POLLHUP || mask & POLLERR)
                 {
                   NS_LOG_FUNCTION ("socket has closed ?" << mask);
                   // FIXME: may need m_closed flag
