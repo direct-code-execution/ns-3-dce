@@ -613,30 +613,6 @@ KernelSocketFdFactory::InitializeStack (void)
   NS_LOG_FUNCTION (this << "m_exported " << m_exported);
 }
 
-void
-KernelSocketFdFactory::NotifyNewAggregate (void)
-{
-  Ptr<Node> node = this->GetObject<Node> ();
-  Ptr<LoaderFactory> loaderFactory = this->GetObject<LoaderFactory> ();
-  Ptr<TaskManager> taskManager = this->GetObject<TaskManager> ();
-  if (node != 0 && loaderFactory != 0 && taskManager != 0 && m_loader == 0)
-    {
-      m_manager = taskManager;
-      m_loader = loaderFactory->Create (0, 0, 0);
-      UtilsEnsureDirectoryExists (UtilsGetAbsRealFilePath (node->GetId (), "/var"));
-      UtilsEnsureDirectoryExists (UtilsGetAbsRealFilePath (node->GetId (), "/var/log"));
-      std::string path = UtilsGetAbsRealFilePath (node->GetId (), "/var/log/messages");
-      m_logFile = fopen (path.c_str (), "w");
-      setlinebuf (m_logFile);
-      // must use ScheduleWithContext to ensure that the initialization task gets
-      // a node context to be able to retrieve the task manager when it runs.
-      // i.e., TaskManager::Current() needs it.
-      Simulator::ScheduleWithContext (node->GetId (), Seconds (0.0),
-                                      &KernelSocketFdFactory::ScheduleTask, this,
-                                      MakeEvent (&KernelSocketFdFactory::InitializeStack, this));
-    }
-}
-
 UnixFd *
 KernelSocketFdFactory::CreateSocket (int domain, int type, int protocol)
 {

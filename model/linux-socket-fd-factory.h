@@ -26,6 +26,7 @@ public:
   std::string Get (std::string path);
 
 private:
+  virtual void NotifyNewAggregate (void);
   void InitializeStack (void);
   std::vector<std::pair<std::string,struct SimSysFile *> > GetSysFileList (void);
   void SetTask (std::string path, std::string value);

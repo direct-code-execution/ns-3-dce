@@ -51,6 +51,7 @@ protected:
   struct SimExported *m_exported;
   Ptr<TaskManager> m_manager;
   Loader *m_loader;
+  FILE *m_logFile;
 
 private:
   friend class KernelSocketFd;
@@ -118,7 +119,6 @@ private:
 
   // inherited from Object.
   virtual void DoDispose (void);
-  virtual void NotifyNewAggregate (void);
   // called from Node
   void NotifyAddDevice (Ptr<NetDevice> device);
   // called during initialization with a task context
@@ -144,7 +144,6 @@ private:
   std::list<Task *> m_kernelTasks;
   UniformVariable m_variable;
   KingsleyAlloc *m_alloc;
-  FILE *m_logFile;
   std::vector<Ptr<KernelDeviceStateListener> > m_listeners;
   double m_rate;
   RandomVariable m_ranvar;
