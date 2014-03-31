@@ -11,7 +11,7 @@ In order to this you should follow the two following rules:
 
  1. (option) Some application needs to be compile with **-U_FORTIFY_SOURCE** so that the application doesn't use alternative symbols including **__chk** (like memcpy_chk).
 
-2. Link your executable using this gcc flag: **-pie** and **-rdynamic** for exemple:   ``gcc -o foo -pie foo.o``
+2. Link your executable using this gcc flag: **-pie** and **-rdynamic** for exemple:   ``gcc -o foo -pie -rdynamic foo.o``
 3. Verify the produced executable using readelf utility in order to display the ELF file header and to verify that your exe is of type **DYN** indicating that DCE should be able to relocate and virtualize it under |ns3| virtual world and network. For exemple: ``readelf -h foo|grep Type:`` ==> ``Type: DYN (Shared object file)``
 4. Check also that your executable runs as expected outside of |ns3| and DCE.
 
