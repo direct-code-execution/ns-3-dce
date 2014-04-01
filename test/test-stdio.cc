@@ -376,6 +376,7 @@ static void test_tmpfile(void)
 {
   FILE *f = tmpfile();
   TEST_ASSERT(f!=NULL);
+  fclose( f );
 }
 
 
