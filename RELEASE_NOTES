@@ -36,6 +36,7 @@ New user-visible features
   you need to install lksctp-dev/lksctp-tools-devel to run example.
 - FreeBSD version of network stack is now supported (Bug 1878).
 - support socket option (Get/Set sockopt) for DCE Cradle
+- Support for tmpfile, timer_create, timer_settime and timer_gettime functions
 
 Bugs fixed
 ----------
