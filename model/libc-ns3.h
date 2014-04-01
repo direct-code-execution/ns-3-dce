@@ -108,6 +108,7 @@ DCE (abort)
 DCE (__assert_fail)
 DCE (__stack_chk_fail)
 DCE (mkstemp)
+DCE (tmpfile)
 DCE (rename)
 
 // STRING.H

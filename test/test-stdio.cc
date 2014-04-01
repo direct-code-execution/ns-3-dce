@@ -372,6 +372,13 @@ void simple_dup (void)
 }
 extern char *__progname;
 
+static void test_tmpfile(void)
+{
+  FILE *f = tmpfile();
+  TEST_ASSERT(f!=NULL);
+}
+
+
 
 int main (int argc, char *argv[])
 {
@@ -386,6 +393,7 @@ int main (int argc, char *argv[])
   test_stdin ();
   test_dup ();
   simple_dup ();
+  test_tmpfile();
   // Should be last because it closes all open streams, including stdout et al.
   test_fcloseall ();
   return 0;

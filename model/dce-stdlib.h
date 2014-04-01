@@ -2,6 +2,7 @@
 #define SIMU_STDLIB_H
 
 #include <stdlib.h>
+#include "dce-stdio.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,6 +24,7 @@ int dce_setenv (const char *name, const char *value, int overwrite);
 int dce_unsetenv (const char *name);
 int dce_clearenv (void);
 int dce_mkstemp (char *temp);
+FILE * dce_tmpfile(void);
 int dce_rename (const char *oldpath, const char *newpath);
 
 #ifdef __cplusplus
