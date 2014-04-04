@@ -35,6 +35,7 @@ def register_types(module):
     module.add_class('NodeContainer', import_from_module='ns.network')
     module.add_class('Ipv4RoutingProtocol', import_from_module='ns.network')
     module.add_class('Ipv4StaticRoutingHelper', import_from_module='ns.network')
+    module.add_class('Time', import_from_module='ns.core')
 
     # DCE 
     module.add_class('DceApplication', parent=root_module['ns3::Application'])
@@ -43,6 +44,7 @@ def register_types(module):
     module.add_class('ProcStatus')
     module.add_class('DceManagerHelper', parent=root_module['ns3::Object'])
     module.add_class('Ipv4DceRoutingHelper', parent=root_module['ns3::Ipv4StaticRoutingHelper'])
+    module.add_class('LinuxStackHelper')
 
     # Containers
     module.add_container('std::vector< std::string >', 'std::string', container_type=u'vector')
@@ -66,6 +68,7 @@ def register_methods(root_module):
     register_Ns3ProcStatus_methods(root_module, root_module['ns3::ProcStatus'])
     register_Ns3DceManagerHelper_methods(root_module, root_module['ns3::DceManagerHelper'])
     register_Ns3Ipv4DceRoutingHelper_methods(root_module, root_module['ns3::Ipv4DceRoutingHelper'])
+    register_Ns3LinuxStackHelper_methods(root_module, root_module['ns3::LinuxStackHelper'])
     return
 
 def register_Ns3Application_methods(root_module, cls):
@@ -360,6 +363,48 @@ def register_Ns3Ipv4DceRoutingHelper_methods(root_module, cls):
                    retval('ns3::Ptr<ns3::Ipv4RoutingProtocol >', caller_owns_return=False),
                    [param('ns3::Node *', 'node', transfer_ownership=False)], 
                    is_const=True, is_virtual=True)
+    return
+
+def register_Ns3LinuxStackHelper_methods(root_module, cls):
+    ## linux-stack-helper.h: ns3::LinuxStackHelper::LinuxStackHelper(ns3::LinuxStackHelper const & arg0) [copy constructor]
+    cls.add_constructor([param('ns3::LinuxStackHelper const &', 'arg0')])
+    ## linux-stack-helper.h: ns3::LinuxStackHelper::LinuxStackHelper() [constructor]
+    cls.add_constructor([])
+    ## linux-stack-helper.h: void ns3::LinuxStackHelper::Install(ns3::Ptr<ns3::Node> node) [member function]
+    cls.add_method('Install', 
+                   'void', 
+                   [param('ns3::Node *', 'node', transfer_ownership=False)])
+    ## linux-stack-helper.h: void ns3::LinuxStackHelper::Install(ns3::NodeContainer c) [member function]
+    cls.add_method('Install', 
+                   'void', 
+                   [param('ns3::NodeContainer', 'c')])
+    ## linux-stack-helper.h: void ns3::LinuxStackHelper::InstallAll() [member function]
+    cls.add_method('InstallAll', 
+                   'void', 
+                   [])
+    cls.add_method('PopulateRoutingTables', 
+                   'void', 
+                   [], 
+                   is_static=True)
+    cls.add_method('RunIp', 
+                   'void', 
+                   [param('ns3::Node *', 'node', transfer_ownership=False), 
+                    param('ns3::Time', 'at'), 
+                    param('std::string', 'str')], 
+                   is_static=True)
+    cls.add_method('SetRoutingHelper', 
+                   'void', 
+                   [param('ns3::Ipv4RoutingHelper const &', 'routing')])
+    cls.add_method('SysctlGet', 
+                   'void', 
+                   [param('ns3::Node *', 'node', transfer_ownership=False), 
+                    param('ns3::Time', 'at'), 
+                    param('std::string', 'path'), 
+                    param('void ( * ) ( std::string, std::string ) *', 'callback')], 
+                   is_static=True)
+    cls.add_method('SysctlSet', 
+                   'void', 
+                   [param('ns3::NodeContainer', 'c'), param('std::string', 'path'), param('std::string', 'value')])
     return
 
 def register_functions(root_module):

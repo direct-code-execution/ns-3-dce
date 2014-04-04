@@ -20,7 +20,10 @@
 #ifndef LINUX_STACK_HELPER_H
 #define LINUX_STACK_HELPER_H
 
-#include "ns3/object.h"
+//#include "ns3/object.h"
+#include <string>
+#include <stdint.h>
+#include <vector>
 
 namespace ns3 {
 
@@ -28,6 +31,9 @@ class Node;
 class NodeContainer;
 class Time;
 class Ipv4RoutingHelper;
+
+template <class T>
+class Ptr;
 
 /**
  * \brief aggregate Ipv4Linux to nodes
@@ -52,7 +58,7 @@ public:
    *
    * \param nodeName The name of the node on which to install the stack.
    */
-  void Install (std::string nodeName);
+  //void Install (std::string nodeName);
 
   /**
    * Aggregate ns3::Ipv4Linux classe onto the provided node.
