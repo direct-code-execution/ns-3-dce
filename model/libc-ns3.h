@@ -607,6 +607,8 @@ NATIVE (__cmsg_nxthdr)
 // math.h
 NATIVE (lrintl)
 NATIVE (llrintl)
+NATIVE (ceil)
+NATIVE (floor)
 
 #undef DCE
 #undef DCET
