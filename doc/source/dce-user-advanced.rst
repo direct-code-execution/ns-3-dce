@@ -8,6 +8,7 @@ Advanced Use Cases
    :maxdepth: 1
 
    dce-user-elfloader
+   dce-user-scalability.rst
    dce-user-debug
    dce-user-test
 
