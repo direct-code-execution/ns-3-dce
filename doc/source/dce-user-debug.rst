@@ -53,6 +53,13 @@ inside:
 
   handle SIGUSR1 nostop
 
+or it can be put on the command line using the "-ex" flag:
+
+:: 
+
+  ./waf --run SCRIPT_NAME_HERE --command-template="gdb -ex 'handle SIGUSR1 nostop noprint' --args %s <args>"
+
+
 Setup Eclipse Remote Debugging Environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

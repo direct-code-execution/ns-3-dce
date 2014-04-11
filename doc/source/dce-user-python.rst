@@ -69,4 +69,20 @@ In this example, DCE executes a program running ten seconds on a single node.
     ns.core.Simulator.Run ()
     ns.core.Simulator.Destroy ()
     print "Done."
-    
+   
+
+You can then run the example with "waf --pyrun ..."
+
+.. code-block:: sh
+
+    ./waf --pyrun PATH_TO_YOUR_SCRIPT_HERE
+
+
+or attach gdb to the python script:
+
+.. code-block:: sh
+
+    ./waf shell
+    gdb python -ex "set args PATH_TO_YOUR_SCRIPT_HERE" -ex "handle SIGUSR1 nostop noprint"
+
+
