@@ -229,6 +229,11 @@ def register_Ns3DceApplicationHelper_methods(root_module, cls):
     cls.add_method('SetUid', 
                    'void', 
                    [param('ns3::uid_t', 'i')])
+    ## dce-application-helper.h: void ns3::DceApplicationHelper::GetPid [member function]
+    cls.add_method('GetPid', 
+                   'uint16_t',
+                   [param('ns3::Application *', 'app', transfer_ownership=False)],
+                   is_virtual=True)
     return
 
 def register_Ns3Object_methods(root_module, cls):

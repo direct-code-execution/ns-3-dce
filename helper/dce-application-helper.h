@@ -121,6 +121,12 @@ public:
    */
   void SetEgid (uid_t i);
 
+  /**
+   * Get the PID of an application instance. It must be an instance of DceApplication.
+   * \param app the DceApplication instance.
+   */
+  virtual uint16_t GetPid (Application *app);
+
 private:
   bool m_isBinary;
   std::string m_filename;

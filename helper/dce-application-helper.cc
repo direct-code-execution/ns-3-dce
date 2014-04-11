@@ -210,4 +210,11 @@ DceApplicationHelper::SetEgid (uid_t i)
 {
   m_egid = i;
 }
+uint16_t 
+DceApplicationHelper::GetPid (Application *app)
+{
+  DceApplication *dceapp = (DceApplication *)app;
+  return dceapp -> GetPid ();
+}
+
 } // namespace ns3
