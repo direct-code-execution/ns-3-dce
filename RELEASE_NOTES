@@ -44,6 +44,7 @@ New user-visible features
 - FreeBSD version of network stack is now supported (Bug 1878).
 - support socket option (Get/Set sockopt) for DCE Cradle
 - Support for tmpfile, timer_create, timer_settime and timer_gettime functions
+- Support for Python bindings. The bindings do not exactly match the C++ API 
 
 Bugs fixed
 ----------

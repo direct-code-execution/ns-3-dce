@@ -85,4 +85,9 @@ or attach gdb to the python script:
     ./waf shell
     gdb python -ex "set args PATH_TO_YOUR_SCRIPT_HERE" -ex "handle SIGUSR1 nostop noprint"
 
+Limitations
+###########
+
+The DCE Python bindings does not currently match completely the C++ API of DCE.
+The implemented ones are generated using Pybindgen from the file bindings/python/ns3_module_dce.py.
 
