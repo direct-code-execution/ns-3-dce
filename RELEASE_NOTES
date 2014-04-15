@@ -5,12 +5,21 @@ This file contains Direct Code Execution release notes (most recent releases fir
 
 Please refer the page http://www.nsnam.org/projects/direct-code-execution/ for detailed instructions
 
-Release dce-dev
-=============
+Release dce-1.3
+===============
 
 Availability
 ------------
-This release is not yet available.
+In order to use DCE, please use bake tool to install DCE.
+The followings are the basic steps to use DCE.
+
+ % bake.py configure -e dce-ns3-1.3
+   or
+ % bake.py configure -e dce-linux-1.3
+ % bake.py download
+ % bake.py build
+
+For more information, please refer the document.
 
 Tested platforms
 -------------------
@@ -21,8 +30,6 @@ Tested platforms
 - Ubuntu 13.10 64bit (new)
 - Fedora 18 32bit
 - CentOS 6.2 64bit
-- CentOS 6.4 64bit
-- Debian Jessie 64bit (new)
 
 New user-visible features
 -------------------------
@@ -47,6 +54,8 @@ Bugs fixed
 - Bug 1773 - DCE doesn't run on Fedora 19, Ubuntu 13.10 (64bits) (temporal fix)
 - Bug 1875 - Memory leak: LinuxSocketImpl:Send()/Sendto() with DCE Cradle
 - Bug 1878 - FreeBSD version of network stack for DCE
+- Bug 1892 - Support for tmpfile function
+- Bug 1806 - CcnClientHelper m_files is never cleared
 
 Release dce-1.2
 =============
