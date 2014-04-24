@@ -19,7 +19,7 @@ For more detail document, see :doc:`dce-ccnx`.
 Quagga
 ======
 `Quagga <http://www.quagga.net/about.php>`_ is a routing software suite, providing implementations of OSPFv2, OSPFv3, RIP v1 and v2, RIPng and BGP-4 for Unix platforms, particularly FreeBSD, Linux, Solaris and NetBSD.
-For more information, see the latest support `document <../../manual-dce-quagga/html/index.html>`_.
+For more information, see the latest support `document <../../manual-quagga/html/index.html>`_.
 
 iperf
 =====
