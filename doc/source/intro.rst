@@ -73,9 +73,9 @@ DCE has been tested on the following distributions:
 - Ubuntu 12.04 32bit/64bit
 - Ubuntu 12.10 64bit
 - Ubuntu 13.04 64bit
+- Ubuntu 13.10 64bit (new)
 - Fedora 18 32bit
 - CentOS 6.2 64bit
-- CentOS 6.4 64bit
 
 but you can try on the others (e.g., CentOS, RHEL).
 If you got run on another distribution, please let us know.
