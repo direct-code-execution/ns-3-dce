@@ -191,7 +191,7 @@ def configure(conf):
                                          "PyBindGen version not correct and newer version could not be retrieved")
             return
         else:
-            conf.msg("pybindgen: ok", False)
+            conf.msg("PyBindGen", True)
 
     def test(t1, t2):
         test_program = '''
