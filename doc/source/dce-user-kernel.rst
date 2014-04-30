@@ -47,7 +47,7 @@ If everything is fine, you will see **liblinux.so** linked to **libsim-linuxv.y.
 
 ::
 
-    make meunconfig ARCH=sim
+    make menuconfig ARCH=sim
 
 .. figure:: images/dce-make-menuconfig.png
    :scale: 70 %
