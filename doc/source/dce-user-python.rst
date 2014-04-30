@@ -88,6 +88,31 @@ or attach gdb to the python script:
 Limitations
 ###########
 
-The DCE Python bindings does not currently match completely the C++ API of DCE.
-The implemented ones are generated using Pybindgen from the file bindings/python/ns3_module_dce.py.
+The DCE Python bindings does not currently match completely the C++ API of DCE. The following
+classes are supported:
+
++--------------------------+-----------------------------------------------------------------+
+| Class                    | Methods                                                         |
++==========================+=================================================================+
+|**DceApplication**        | GetPid, SetArguments, SetBinary, SetEgid, SetEnvironment,       |
+|                          | SetEuid, SetGid, SetStackSize, SetStdinFile, SetUid	     |
++--------------------------+-----------------------------------------------------------------+
+|**DceApplicationHelper**  | AddArgument, AddArguments, AddEnvironment, Install,             |
+|                          | InstallInNode, ParseArguments, ResetArguments, ResetEnvironment,|
+|                          | SetBinary, SetEgid, SetEuid, SetGid, SetStackSize, SetStdinFile,|
+|                          | SetUid, GetPid                                                  |
++--------------------------+-----------------------------------------------------------------+
+|**ProcStatus**            | GetCmdLine, GetExitCode, GetNode, GetPid, GetRealDuration,      |
+|                          | GetRealEndTime, GetRealStartTime, GetSimulatedDuration,         |
+|                          | GetSimulatedEndTime, GetSimulatedStartTime                      |
++--------------------------+-----------------------------------------------------------------+
+|**DceManagerHelper**      | GetProcStatus, GetVirtualPath, Install, SetAttribute,           |
+|                          | SetVirtualPath                                                  |
++--------------------------+-----------------------------------------------------------------+
+|**Ipv4DceRoutingHelper**  | Copy, Create                                                    |
++--------------------------+-----------------------------------------------------------------+
+|**LinuxStackHelper**      | Install, InstallAll, RunIp, SetRoutingHelper, SysctlGet,        |
+|                          | SysctlSet                                                       |
++--------------------------+-----------------------------------------------------------------+
+
 
