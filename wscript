@@ -433,7 +433,6 @@ def build_dce_kernel_examples(module, bld):
 
     module.add_example(needed = ['core', 'network', 'dce', 'point-to-point', 'mobility', 'wifi', 'lte', 'dce-quagga'],
                        target='bin/dce-mptcp-lte-wifi-v6',
-                       linkflags = ['-Wl,--dynamic-linker=' + os.path.abspath (bld.env['ELF_LOADER_PATH'] + '/ldso')],
                        source=['example/dce-mptcp-lte-wifi-v6.cc'])
 
     module.add_example(needed = ['core', 'network', 'dce', 'point-to-point', 'applications'],
