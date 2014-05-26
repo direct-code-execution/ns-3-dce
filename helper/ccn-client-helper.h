@@ -12,12 +12,15 @@ class CcnClientHelper : public DceApplicationHelper
 public:
   CcnClientHelper ();
   virtual ApplicationContainer Install (NodeContainer c);
+  virtual ApplicationContainer InstallInNode (Ptr<Node> node);
+
   void AddFile (std::string from, std::string to);
 
   /**
    * Reset environmental variables for the main binary for this application.
    */
   void ResetEnvironment (void);
+
 
 private:
   std::string GetKeystoreDir (void);

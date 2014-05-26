@@ -52,6 +52,41 @@ CcnClientHelper::Install (NodeContainer c)
   return DceApplicationHelper::Install (c);
 }
 
+ApplicationContainer 
+CcnClientHelper::InstallInNode (Ptr<Node> node)
+{
+  NS_LOG_FUNCTION (this);
+  ApplicationContainer apps;
+      int nodeId = node->GetId ();
+      CreateKeystore ();
+      std::stringstream oss;
+
+      oss << "files-" << nodeId << "/root/.ccnx/";
+      UtilsEnsureAllDirectoriesExist (oss.str ());
+      oss << ".ccnx_keystore";
+
+      CopyFile (GetKeystoreTemplate (), oss.str ());
+
+      oss.str ("");
+      oss.clear ();
+
+      oss << "files-" << nodeId;
+      UtilsEnsureDirectoryExists (oss.str ());
+
+      oss << "/var/";
+      UtilsEnsureDirectoryExists (oss.str ());
+
+      oss << "tmp";
+      UtilsEnsureDirectoryExists (oss.str ());
+
+      for (std::vector <std::pair <std::string, std::string> >::iterator i = m_files.begin ();
+           i != m_files.end (); ++i)
+        {
+          CopyRealFileToVirtual (nodeId, (*i).first, (*i).second);
+        }
+  return DceApplicationHelper::InstallInNode (node);
+}
+
 std::string
 CcnClientHelper::GetKeystoreDir (void)
 {

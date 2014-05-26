@@ -45,6 +45,7 @@ def register_types(module):
     module.add_class('DceManagerHelper', parent=root_module['ns3::Object'])
     module.add_class('Ipv4DceRoutingHelper', parent=root_module['ns3::Ipv4StaticRoutingHelper'])
     module.add_class('LinuxStackHelper')
+    module.add_class('CcnClientHelper', parent=root_module['ns3::DceApplicationHelper'])
 
     # Containers
     module.add_container('std::vector< std::string >', 'std::string', container_type=u'vector')
@@ -69,6 +70,7 @@ def register_methods(root_module):
     register_Ns3DceManagerHelper_methods(root_module, root_module['ns3::DceManagerHelper'])
     register_Ns3Ipv4DceRoutingHelper_methods(root_module, root_module['ns3::Ipv4DceRoutingHelper'])
     register_Ns3LinuxStackHelper_methods(root_module, root_module['ns3::LinuxStackHelper'])
+    register_Ns3CcnClientHelper_methods(root_module, root_module['ns3::CcnClientHelper'])
     return
 
 def register_Ns3Application_methods(root_module, cls):
@@ -410,6 +412,31 @@ def register_Ns3LinuxStackHelper_methods(root_module, cls):
     cls.add_method('SysctlSet', 
                    'void', 
                    [param('ns3::NodeContainer', 'c'), param('std::string', 'path'), param('std::string', 'value')])
+    return
+  
+def register_Ns3CcnClientHelper_methods(root_module, cls):
+    ## ccn-client-helper.h: ns3::CcnClientHelper::CcnClientHelper(ns3::CcnClientHelper const & arg0) [copy constructor]
+    cls.add_constructor([param('ns3::CcnClientHelper const &', 'arg0')])
+    ## ccn-client-helper.h: ns3::CcnClientHelper::CcnClientHelper() [constructor]
+    cls.add_constructor([])
+    ## ccn-client-helper.h: void ns3::CcnClientHelper::AddFile(std::string from, std::string to) [member function]
+    cls.add_method('AddFile', 
+                   'void', 
+                   [param('std::string', 'from'), param('std::string', 'to')])
+    ## ccn-client-helper.h: ns3::ApplicationContainer ns3::CcnClientHelper::Install(ns3::NodeContainer c) [member function]
+    cls.add_method('Install', 
+                   'ns3::ApplicationContainer', 
+                   [param('ns3::NodeContainer', 'c')], 
+                   is_virtual=True)
+    ## ccn-client-helper.h: ns3::ApplicationContainer ns3::CcnClientHelper::InstallInNode(ns3::Ptr<ns3::Node> node) [member function]
+    cls.add_method('InstallInNode', 
+                   'ns3::ApplicationContainer', 
+                   [param('ns3::Node *', 'node', transfer_ownership=False)], 
+                   is_virtual=True)
+    ## ccn-client-helper.h: void ns3::CcnClientHelper::ResetEnvironment() [member function]
+    cls.add_method('ResetEnvironment', 
+                   'void', 
+                   [])
     return
 
 def register_functions(root_module):

@@ -21,7 +21,8 @@ includes_dce = [
   #'dce-application-helper.h',
   #'dce-manager-helper.h',
   #'ipv4-dce-routing-helper.h',
-  'linux-stack-helper.h',
+  #'linux-stack-helper.h',
+  'ccn-client-helper.h'
 ]
 
 

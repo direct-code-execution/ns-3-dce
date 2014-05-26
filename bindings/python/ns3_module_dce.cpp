@@ -276,6 +276,50 @@ extern PyTypeObject PyNs3LinuxStackHelper_Type;
 
 typedef struct {
     PyObject_HEAD
+    ns3::CcnClientHelper *obj;
+    PyObject *inst_dict;
+    PyBindGenWrapperFlags flags:8;
+} PyNs3CcnClientHelper;
+
+
+extern PyTypeObject PyNs3CcnClientHelper_Type;
+
+class PyNs3CcnClientHelper__PythonHelper : public ns3::CcnClientHelper
+{
+public:
+    PyObject *m_pyself;
+    PyNs3CcnClientHelper__PythonHelper(ns3::CcnClientHelper const & arg0)
+        : ns3::CcnClientHelper(arg0), m_pyself(NULL)
+        {}
+
+    PyNs3CcnClientHelper__PythonHelper()
+        : ns3::CcnClientHelper(), m_pyself(NULL)
+        {}
+
+
+    void set_pyobj(PyObject *pyobj)
+    {
+        Py_XDECREF(m_pyself);
+        Py_INCREF(pyobj);
+        m_pyself = pyobj;
+    }
+
+    virtual ~PyNs3CcnClientHelper__PythonHelper()
+    {
+        Py_CLEAR(m_pyself);
+    }
+
+
+    virtual ns3::ApplicationContainer Install(ns3::NodeContainer c);
+
+    virtual ns3::ApplicationContainer InstallInNode(ns3::Node *node);
+
+    virtual uint16_t GetPid(ns3::Application *app);
+};
+
+
+typedef struct {
+    PyObject_HEAD
     std::vector< std::string > *obj;
 } Pystd__vector__lt___std__string___gt__;
 
@@ -2716,6 +2760,465 @@ PyTypeObject PyNs3LinuxStackHelper_Type = {
 };
 
 
+
+
+ns3::ApplicationContainer
+PyNs3CcnClientHelper__PythonHelper::Install(ns3::NodeContainer c)
+{
+    PyGILState_STATE __py_gil_state;
+    PyObject *py_method;
+    ns3::CcnClientHelper *self_obj_before;
+    PyObject *py_retval;
+    PyNs3NodeContainer *py_NodeContainer;
+    PyNs3ApplicationContainer *tmp_ApplicationContainer;
+
+    __py_gil_state = (PyEval_ThreadsInitialized() ? PyGILState_Ensure() : (PyGILState_STATE) 0);
+    py_method = PyObject_GetAttrString(m_pyself, (char *) "Install"); PyErr_Clear();
+    if (py_method == NULL || Py_TYPE(py_method) == &PyCFunction_Type) {
+        Py_XDECREF(py_method);
+        if (PyEval_ThreadsInitialized())
+            PyGILState_Release(__py_gil_state);
+        return ns3::CcnClientHelper::Install(c);
+    }
+    self_obj_before = reinterpret_cast< PyNs3CcnClientHelper* >(m_pyself)->obj;
+    reinterpret_cast< PyNs3CcnClientHelper* >(m_pyself)->obj = (ns3::CcnClientHelper*) this;
+    py_NodeContainer = PyObject_New(PyNs3NodeContainer, &PyNs3NodeContainer_Type);
+    py_NodeContainer->flags = PYBINDGEN_WRAPPER_FLAG_NONE;
+    py_NodeContainer->obj = new ns3::NodeContainer(c);
+    py_retval = PyObject_CallMethod(m_pyself, (char *) "Install", (char *) "N", py_NodeContainer);
+    if (py_retval == NULL) {
+        PyErr_Print();
+        reinterpret_cast< PyNs3CcnClientHelper* >(m_pyself)->obj = self_obj_before;
+        Py_XDECREF(py_method);
+        if (PyEval_ThreadsInitialized())
+            PyGILState_Release(__py_gil_state);
+        return ns3::CcnClientHelper::Install(c);
+    }
+    py_retval = Py_BuildValue((char*) "(N)", py_retval);
+    if (!PyArg_ParseTuple(py_retval, (char *) "O!", &PyNs3ApplicationContainer_Type, &tmp_ApplicationContainer)) {
+        PyErr_Print();
+        Py_DECREF(py_retval);
+        reinterpret_cast< PyNs3CcnClientHelper* >(m_pyself)->obj = self_obj_before;
+        Py_XDECREF(py_method);
+        if (PyEval_ThreadsInitialized())
+            PyGILState_Release(__py_gil_state);
+        return ns3::CcnClientHelper::Install(c);
+    }
+    ns3::ApplicationContainer retval = *tmp_ApplicationContainer->obj;
+    Py_DECREF(py_retval);
+    reinterpret_cast< PyNs3CcnClientHelper* >(m_pyself)->obj = self_obj_before;
+    Py_XDECREF(py_method);
+    if (PyEval_ThreadsInitialized())
+        PyGILState_Release(__py_gil_state);
+    return retval;
+}
+
+ns3::ApplicationContainer
+PyNs3CcnClientHelper__PythonHelper::InstallInNode(ns3::Node *node)
+{
+    PyGILState_STATE __py_gil_state;
+    PyObject *py_method;
+    ns3::CcnClientHelper *self_obj_before;
+    PyObject *py_retval;
+    PyNs3Node *py_Node;
+    PyNs3ApplicationContainer *tmp_ApplicationContainer;
+
+    __py_gil_state = (PyEval_ThreadsInitialized() ? PyGILState_Ensure() : (PyGILState_STATE) 0);
+    py_method = PyObject_GetAttrString(m_pyself, (char *) "InstallInNode"); PyErr_Clear();
+    if (py_method == NULL || Py_TYPE(py_method) == &PyCFunction_Type) {
+        Py_XDECREF(py_method);
+        if (PyEval_ThreadsInitialized())
+            PyGILState_Release(__py_gil_state);
+        return ns3::CcnClientHelper::InstallInNode(node);
+    }
+    self_obj_before = reinterpret_cast< PyNs3CcnClientHelper* >(m_pyself)->obj;
+    reinterpret_cast< PyNs3CcnClientHelper* >(m_pyself)->obj = (ns3::CcnClientHelper*) this;
+    py_Node = PyObject_New(PyNs3Node, &PyNs3Node_Type);
+    py_Node->flags = PYBINDGEN_WRAPPER_FLAG_NONE;
+    py_Node->obj = new ns3::Node(*node);
+    py_retval = PyObject_CallMethod(m_pyself, (char *) "InstallInNode", (char *) "N", py_Node);
+    if (py_retval == NULL) {
+        PyErr_Print();
+        reinterpret_cast< PyNs3CcnClientHelper* >(m_pyself)->obj = self_obj_before;
+        Py_XDECREF(py_method);
+        if (PyEval_ThreadsInitialized())
+            PyGILState_Release(__py_gil_state);
+        return ns3::CcnClientHelper::InstallInNode(node);
+    }
+    py_retval = Py_BuildValue((char*) "(N)", py_retval);
+    if (!PyArg_ParseTuple(py_retval, (char *) "O!", &PyNs3ApplicationContainer_Type, &tmp_ApplicationContainer)) {
+        PyErr_Print();
+        Py_DECREF(py_retval);
+        reinterpret_cast< PyNs3CcnClientHelper* >(m_pyself)->obj = self_obj_before;
+        Py_XDECREF(py_method);
+        if (PyEval_ThreadsInitialized())
+            PyGILState_Release(__py_gil_state);
+        return ns3::CcnClientHelper::InstallInNode(node);
+    }
+    ns3::ApplicationContainer retval = *tmp_ApplicationContainer->obj;
+    Py_DECREF(py_retval);
+    reinterpret_cast< PyNs3CcnClientHelper* >(m_pyself)->obj = self_obj_before;
+    Py_XDECREF(py_method);
+    if (PyEval_ThreadsInitialized())
+        PyGILState_Release(__py_gil_state);
+    return retval;
+}
+
+uint16_t
+PyNs3CcnClientHelper__PythonHelper::GetPid(ns3::Application *app)
+{
+    PyGILState_STATE __py_gil_state;
+    PyObject *py_method;
+    ns3::DceApplicationHelper *self_obj_before;
+    PyObject *py_retval;
+    uint16_t retval;
+    PyNs3Application *py_Application;
+    int tmp;
+
+    __py_gil_state = (PyEval_ThreadsInitialized() ? PyGILState_Ensure() : (PyGILState_STATE) 0);
+    py_method = PyObject_GetAttrString(m_pyself, (char *) "GetPid"); PyErr_Clear();
+    if (py_method == NULL || Py_TYPE(py_method) == &PyCFunction_Type) {
+        Py_XDECREF(py_method);
+        if (PyEval_ThreadsInitialized())
+            PyGILState_Release(__py_gil_state);
+        return ns3::DceApplicationHelper::GetPid(app);
+    }
+    self_obj_before = reinterpret_cast< PyNs3DceApplicationHelper* >(m_pyself)->obj;
+    reinterpret_cast< PyNs3DceApplicationHelper* >(m_pyself)->obj = (ns3::DceApplicationHelper*) this;
+    py_Application = PyObject_New(PyNs3Application, &PyNs3Application_Type);
+    py_Application->flags = PYBINDGEN_WRAPPER_FLAG_NONE;
+    py_Application->obj = new ns3::Application(*app);
+    py_retval = PyObject_CallMethod(m_pyself, (char *) "GetPid", (char *) "N", py_Application);
+    if (py_retval == NULL) {
+        PyErr_Print();
+        reinterpret_cast< PyNs3DceApplicationHelper* >(m_pyself)->obj = self_obj_before;
+        Py_XDECREF(py_method);
+        if (PyEval_ThreadsInitialized())
+            PyGILState_Release(__py_gil_state);
+        return ns3::DceApplicationHelper::GetPid(app);
+    }
+    py_retval = Py_BuildValue((char*) "(N)", py_retval);
+    if (!PyArg_ParseTuple(py_retval, (char *) "i", &tmp)) {
+        PyErr_Print();
+        Py_DECREF(py_retval);
+        reinterpret_cast< PyNs3DceApplicationHelper* >(m_pyself)->obj = self_obj_before;
+        Py_XDECREF(py_method);
+        if (PyEval_ThreadsInitialized())
+            PyGILState_Release(__py_gil_state);
+        return ns3::DceApplicationHelper::GetPid(app);
+    }
+    if (tmp > 0xffff) {
+        PyErr_SetString(PyExc_ValueError, "Out of range");
+        Py_DECREF(py_retval);
+        reinterpret_cast< PyNs3DceApplicationHelper* >(m_pyself)->obj = self_obj_before;
+        Py_XDECREF(py_method);
+        if (PyEval_ThreadsInitialized())
+            PyGILState_Release(__py_gil_state);
+        return ns3::DceApplicationHelper::GetPid(app);
+    }
+    retval = tmp;
+    Py_DECREF(py_retval);
+    reinterpret_cast< PyNs3DceApplicationHelper* >(m_pyself)->obj = self_obj_before;
+    Py_XDECREF(py_method);
+    if (PyEval_ThreadsInitialized())
+        PyGILState_Release(__py_gil_state);
+    return retval;
+}
+
+
+static int
+_wrap_PyNs3CcnClientHelper__tp_init__0(PyNs3CcnClientHelper *self, PyObject *args, PyObject *kwargs, PyObject **return_exception)
+{
+    PyNs3CcnClientHelper *arg0;
+    const char *keywords[] = {"arg0", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, (char *) "O!", (char **) keywords, &PyNs3CcnClientHelper_Type, &arg0)) {
+        {
+            PyObject *exc_type, *traceback;
+            PyErr_Fetch(&exc_type, return_exception, &traceback);
+            Py_XDECREF(exc_type);
+            Py_XDECREF(traceback);
+        }
+        return -1;
+    }
+    if (Py_TYPE(self) != &PyNs3CcnClientHelper_Type)
+    {
+        self->obj = new PyNs3CcnClientHelper__PythonHelper(*((PyNs3CcnClientHelper *) arg0)->obj);
+        self->flags = PYBINDGEN_WRAPPER_FLAG_NONE;
+        ((PyNs3CcnClientHelper__PythonHelper*) self->obj)->set_pyobj((PyObject *)self);
+    } else {
+        // visibility: 'public'
+        self->obj = new ns3::CcnClientHelper(*((PyNs3CcnClientHelper *) arg0)->obj);
+        self->flags = PYBINDGEN_WRAPPER_FLAG_NONE;
+    }
+    return 0;
+}
+
+static int
+_wrap_PyNs3CcnClientHelper__tp_init__1(PyNs3CcnClientHelper *self, PyObject *args, PyObject *kwargs, PyObject **return_exception)
+{
+    const char *keywords[] = {NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, (char *) "", (char **) keywords)) {
+        {
+            PyObject *exc_type, *traceback;
+            PyErr_Fetch(&exc_type, return_exception, &traceback);
+            Py_XDECREF(exc_type);
+            Py_XDECREF(traceback);
+        }
+        return -1;
+    }
+    if (Py_TYPE(self) != &PyNs3CcnClientHelper_Type)
+    {
+        self->obj = new PyNs3CcnClientHelper__PythonHelper();
+        self->flags = PYBINDGEN_WRAPPER_FLAG_NONE;
+        ((PyNs3CcnClientHelper__PythonHelper*) self->obj)->set_pyobj((PyObject *)self);
+    } else {
+        // visibility: 'public'
+        self->obj = new ns3::CcnClientHelper();
+        self->flags = PYBINDGEN_WRAPPER_FLAG_NONE;
+    }
+    return 0;
+}
+
+int _wrap_PyNs3CcnClientHelper__tp_init(PyNs3CcnClientHelper *self, PyObject *args, PyObject *kwargs)
+{
+    int retval;
+    PyObject *error_list;
+    PyObject *exceptions[2] = {0,};
+    retval = _wrap_PyNs3CcnClientHelper__tp_init__0(self, args, kwargs, &exceptions[0]);
+    if (!exceptions[0]) {
+        return retval;
+    }
+    retval = _wrap_PyNs3CcnClientHelper__tp_init__1(self, args, kwargs, &exceptions[1]);
+    if (!exceptions[1]) {
+        Py_DECREF(exceptions[0]);
+        return retval;
+    }
+    error_list = PyList_New(2);
+    PyList_SET_ITEM(error_list, 0, PyObject_Str(exceptions[0]));
+    Py_DECREF(exceptions[0]);
+    PyList_SET_ITEM(error_list, 1, PyObject_Str(exceptions[1]));
+    Py_DECREF(exceptions[1]);
+    PyErr_SetObject(PyExc_TypeError, error_list);
+    Py_DECREF(error_list);
+    return -1;
+}
+
+
+PyObject *
+_wrap_PyNs3CcnClientHelper_AddFile(PyNs3CcnClientHelper *self, PyObject *args, PyObject *kwargs)
+{
+    PyObject *py_retval;
+    const char *from;
+    Py_ssize_t from_len;
+    const char *to;
+    Py_ssize_t to_len;
+    const char *keywords[] = {"from", "to", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, (char *) "s#s#", (char **) keywords, &from, &from_len, &to, &to_len)) {
+        return NULL;
+    }
+    self->obj->AddFile(std::string(from, from_len), std::string(to, to_len));
+    Py_INCREF(Py_None);
+    py_retval = Py_None;
+    return py_retval;
+}
+
+
+PyObject *
+_wrap_PyNs3CcnClientHelper_InstallInNode(PyNs3CcnClientHelper *self, PyObject *args, PyObject *kwargs)
+{
+    PyObject *py_retval;
+    PyNs3Node *node;
+    ns3::Node *node_ptr;
+    PyNs3CcnClientHelper__PythonHelper *helper_class = dynamic_cast<PyNs3CcnClientHelper__PythonHelper*> (self->obj);
+    const char *keywords[] = {"node", NULL};
+    PyNs3ApplicationContainer *py_ApplicationContainer;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, (char *) "O!", (char **) keywords, &PyNs3Node_Type, &node)) {
+        return NULL;
+    }
+    node_ptr = (node ? node->obj : NULL);
+    ns3::ApplicationContainer retval = (helper_class == NULL)? (self->obj->InstallInNode(node_ptr)) : (self->obj->ns3::CcnClientHelper::InstallInNode(node_ptr));
+    py_ApplicationContainer = PyObject_New(PyNs3ApplicationContainer, &PyNs3ApplicationContainer_Type);
+    py_ApplicationContainer->flags = PYBINDGEN_WRAPPER_FLAG_NONE;
+    py_ApplicationContainer->obj = new ns3::ApplicationContainer(retval);
+    py_retval = Py_BuildValue((char *) "N", py_ApplicationContainer);
+    return py_retval;
+}
+
+
+PyObject *
+_wrap_PyNs3CcnClientHelper_Install(PyNs3CcnClientHelper *self, PyObject *args, PyObject *kwargs)
+{
+    PyObject *py_retval;
+    PyNs3NodeContainer *c;
+    PyNs3CcnClientHelper__PythonHelper *helper_class = dynamic_cast<PyNs3CcnClientHelper__PythonHelper*> (self->obj);
+    const char *keywords[] = {"c", NULL};
+    PyNs3ApplicationContainer *py_ApplicationContainer;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, (char *) "O!", (char **) keywords, &PyNs3NodeContainer_Type, &c)) {
+        return NULL;
+    }
+    ns3::ApplicationContainer retval = (helper_class == NULL)? (self->obj->Install(*((PyNs3NodeContainer *) c)->obj)) : (self->obj->ns3::CcnClientHelper::Install(*((PyNs3NodeContainer *) c)->obj));
+    py_ApplicationContainer = PyObject_New(PyNs3ApplicationContainer, &PyNs3ApplicationContainer_Type);
+    py_ApplicationContainer->flags = PYBINDGEN_WRAPPER_FLAG_NONE;
+    py_ApplicationContainer->obj = new ns3::ApplicationContainer(retval);
+    py_retval = Py_BuildValue((char *) "N", py_ApplicationContainer);
+    return py_retval;
+}
+
+
+PyObject *
+_wrap_PyNs3CcnClientHelper_ResetEnvironment(PyNs3CcnClientHelper *self)
+{
+    PyObject *py_retval;
+
+    self->obj->ResetEnvironment();
+    Py_INCREF(Py_None);
+    py_retval = Py_None;
+    return py_retval;
+}
+
+
+static PyObject*
+_wrap_PyNs3CcnClientHelper__copy__(PyNs3CcnClientHelper *self)
+{
+
+    PyNs3CcnClientHelper *py_copy;
+    py_copy = PyObject_GC_New(PyNs3CcnClientHelper, &PyNs3CcnClientHelper_Type);
+    py_copy->inst_dict = NULL;
+    py_copy->obj = new ns3::CcnClientHelper(*self->obj);
+    py_copy->inst_dict = NULL;
+    py_copy->flags = PYBINDGEN_WRAPPER_FLAG_NONE;
+    return (PyObject*) py_copy;
+}
+
+static PyMethodDef PyNs3CcnClientHelper_methods[] = {
+    {(char *) "AddFile", (PyCFunction) _wrap_PyNs3CcnClientHelper_AddFile, METH_KEYWORDS|METH_VARARGS, NULL },
+    {(char *) "InstallInNode", (PyCFunction) _wrap_PyNs3CcnClientHelper_InstallInNode, METH_KEYWORDS|METH_VARARGS, NULL },
+    {(char *) "Install", (PyCFunction) _wrap_PyNs3CcnClientHelper_Install, METH_KEYWORDS|METH_VARARGS, NULL },
+    {(char *) "ResetEnvironment", (PyCFunction) _wrap_PyNs3CcnClientHelper_ResetEnvironment, METH_NOARGS, NULL },
+    {(char *) "__copy__", (PyCFunction) _wrap_PyNs3CcnClientHelper__copy__, METH_NOARGS, NULL},
+    {NULL, NULL, 0, NULL}
+};
+
+static void
+PyNs3CcnClientHelper__tp_clear(PyNs3CcnClientHelper *self)
+{
+    Py_CLEAR(self->inst_dict);
+        ns3::CcnClientHelper *tmp = self->obj;
+    self->obj = NULL;
+    if (!(self->flags&PYBINDGEN_WRAPPER_FLAG_OBJECT_NOT_OWNED)) {
+        delete tmp;
+    }
+}
+
+
+static int
+PyNs3CcnClientHelper__tp_traverse(PyNs3CcnClientHelper *self, visitproc visit, void *arg)
+{
+    Py_VISIT(self->inst_dict);
+
+    if (self->obj && typeid(*self->obj).name() == typeid(PyNs3CcnClientHelper__PythonHelper).name() )
+        Py_VISIT((PyObject *) self);
+
+    return 0;
+}
+
+
+static void
+_wrap_PyNs3CcnClientHelper__tp_dealloc(PyNs3CcnClientHelper *self)
+{
+    PyNs3CcnClientHelper__tp_clear(self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
+}
+
+static PyObject*
+_wrap_PyNs3CcnClientHelper__tp_richcompare (PyNs3CcnClientHelper *PYBINDGEN_UNUSED(self), PyNs3CcnClientHelper *other, int opid)
+{
+
+    if (!PyObject_IsInstance((PyObject*) other, (PyObject*) &PyNs3CcnClientHelper_Type)) {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+    switch (opid)
+    {
+    case Py_LT:
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    case Py_LE:
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    case Py_EQ:
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    case Py_NE:
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    case Py_GE:
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    case Py_GT:
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    } /* closes switch (opid) */
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
+}
+
+PyTypeObject PyNs3CcnClientHelper_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    (char *) "dce.CcnClientHelper",            /* tp_name */
+    sizeof(PyNs3CcnClientHelper),                  /* tp_basicsize */
+    0,                                 /* tp_itemsize */
+    /* methods */
+    (destructor)_wrap_PyNs3CcnClientHelper__tp_dealloc,        /* tp_dealloc */
+    (printfunc)0,                      /* tp_print */
+    (getattrfunc)NULL,       /* tp_getattr */
+    (setattrfunc)NULL,       /* tp_setattr */
+    (cmpfunc)NULL,           /* tp_compare */
+    (reprfunc)NULL,             /* tp_repr */
+    (PyNumberMethods*)NULL,     /* tp_as_number */
+    (PySequenceMethods*)NULL, /* tp_as_sequence */
+    (PyMappingMethods*)NULL,   /* tp_as_mapping */
+    (hashfunc)NULL,             /* tp_hash */
+    (ternaryfunc)NULL,          /* tp_call */
+    (reprfunc)NULL,              /* tp_str */
+    (getattrofunc)NULL,     /* tp_getattro */
+    (setattrofunc)NULL,     /* tp_setattro */
+    (PyBufferProcs*)NULL,  /* tp_as_buffer */
+    Py_TPFLAGS_BASETYPE|Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,                      /* tp_flags */
+    NULL,                        /* Documentation string */
+    (traverseproc)PyNs3CcnClientHelper__tp_traverse,     /* tp_traverse */
+    (inquiry)PyNs3CcnClientHelper__tp_clear,             /* tp_clear */
+    (richcmpfunc)_wrap_PyNs3CcnClientHelper__tp_richcompare,   /* tp_richcompare */
+    0,             /* tp_weaklistoffset */
+    (getiterfunc)NULL,          /* tp_iter */
+    (iternextfunc)NULL,     /* tp_iternext */
+    (struct PyMethodDef*)PyNs3CcnClientHelper_methods, /* tp_methods */
+    (struct PyMemberDef*)0,              /* tp_members */
+    0,                     /* tp_getset */
+    NULL,                              /* tp_base */
+    NULL,                              /* tp_dict */
+    (descrgetfunc)NULL,    /* tp_descr_get */
+    (descrsetfunc)NULL,    /* tp_descr_set */
+    offsetof(PyNs3CcnClientHelper, inst_dict),                 /* tp_dictoffset */
+    (initproc)_wrap_PyNs3CcnClientHelper__tp_init,             /* tp_init */
+    (allocfunc)PyType_GenericAlloc,           /* tp_alloc */
+    (newfunc)PyType_GenericNew,               /* tp_new */
+    (freefunc)0,             /* tp_free */
+    (inquiry)NULL,             /* tp_is_gc */
+    NULL,                              /* tp_bases */
+    NULL,                              /* tp_mro */
+    NULL,                              /* tp_cache */
+    NULL,                              /* tp_subclasses */
+    NULL,                              /* tp_weaklist */
+    (destructor) NULL                  /* tp_del */
+};
+
+
 /* --- containers --- */
 
 
@@ -3357,6 +3860,12 @@ MOD_INIT(dce)
         return MOD_ERROR;
     }
     PyModule_AddObject(m, (char *) "LinuxStackHelper", (PyObject *) &PyNs3LinuxStackHelper_Type);
+    /* Register the 'ns3::CcnClientHelper' class */
+    PyNs3CcnClientHelper_Type.tp_base = &PyNs3DceApplicationHelper_Type;
+    if (PyType_Ready(&PyNs3CcnClientHelper_Type)) {
+        return MOD_ERROR;
+    }
+    PyModule_AddObject(m, (char *) "CcnClientHelper", (PyObject *) &PyNs3CcnClientHelper_Type);
     /* Register the 'std::vector< std::string >' class */
     if (PyType_Ready(&Pystd__vector__lt___std__string___gt___Type)) {
         return MOD_ERROR;
