@@ -1,8 +1,8 @@
 FROM ubuntu:12.04
-MAINTAINER Hajime Tazakii <thehajime@gmail.com>
+MAINTAINER Hajime Tazaki <thehajime@gmail.com>
 
 RUN apt-get update
-RUN apt-get -y mercurial libexpat1-dev git-core build-essential bison flex libssl-dev libdb-dev libpcap-dev libc6-dbg pkg-config
+RUN apt-get install -y mercurial libexpat1-dev git-core build-essential bison flex libssl-dev libdb-dev libpcap-dev libc6-dbg pkg-config
 
 WORKDIR /var/lib/dce-linux-dev
 # bake
