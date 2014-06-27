@@ -231,7 +231,7 @@ int main ()
     conf.msg('Checking for the apidefs that can be used for Python bindings', msg)
 
     if conf.env['PYTHON_BINDINGS_APIDEFS'] is None:
-        conf.report_optional_feature("python", "Python Bindings", False,
+        ns3waf._report_optional_feature("python", "Python Bindings", False,
                                      "No apidefs are available that can be used in this system")
         return
 
@@ -287,7 +287,7 @@ int main ()
         gccxml = None
     if not gccxml:
         Logs.warn("gccxml missing; automatic scanning of API definitions will not be possible")
-        conf.report_optional_feature("pygccxml", "Python API Scanning Support", False,
+        ns3waf._report_optional_feature(conf, "pygccxml", "Python API Scanning Support", False,
                                      "gccxml missing")
         return
 
