@@ -5,6 +5,25 @@ This file contains Direct Code Execution release notes (most recent releases fir
 
 Please refer the page http://www.nsnam.org/projects/direct-code-execution/ for detailed instructions
 
+Release dce-dev
+=============
+
+Availability
+------------
+This release is not yet available.
+    
+Tested platforms
+-------------------
+
+New user-visible features
+-------------------------
+
+Bugs fixed
+----------
+- Bug 1949 - iproute build failed
+
+
+
 Release dce-1.3
 ===============
 
