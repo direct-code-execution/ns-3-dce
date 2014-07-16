@@ -164,14 +164,14 @@ DceManager::CreatePidFile (struct Thread *current, std::string filename)
   int fd = dce_creat (s.c_str (), S_IWUSR | S_IRUSR);
   return fd;
 }
-int (*DceManager::PrepareDoStartProcess (Thread * current)) (int, char **)
+int (*DceManager::PrepareDoStartProcess (Thread * current)) (int, char **, char **)
 {
   // Note : this preparing process is out of method DoStartProcess in order to
   //        free all local variable in particular the std library ones before the main execution
   //        because main call will reset allocation counters of std library then we must not free std::string
   //        after the main call !
   int err = 0;
-  int (*main)(int, char **) = 0;
+  int (*main)(int, char **, char **) = 0;
   GetLibc ();
   UnixFd *unixFd = 0;
 
@@ -247,10 +247,10 @@ int (*DceManager::PrepareDoStartProcess (Thread * current)) (int, char **)
       return 0;
     }
 
-  main = (int (*) (int, char **))LoadMain (current->process->loader,
-                                           exeFullPath,
-                                           current->process,
-                                           err);
+  main = (int (*) (int, char **, char **))LoadMain (current->process->loader,
+                                                    exeFullPath,
+                                                    current->process,
+                                                    err);
 
   if (!main)
     {
@@ -272,13 +272,14 @@ void
 DceManager::DoStartProcess (void *context)
 {
   Thread *current = (Thread *)context;
-  int (*main)(int, char **) = PrepareDoStartProcess (current);
+  int (*main)(int, char **, char **) = PrepareDoStartProcess (current);
   int retval = 127;
 
   if (main)
     {
       StartProcessDebugHook ();
-      retval = main (current->process->originalArgc, current->process->originalArgv);
+      retval = main (current->process->originalArgc, current->process->originalArgv,
+                     current->process->originalEnvp);
     }
   dce_exit (retval);
 }
@@ -1283,12 +1284,13 @@ DceManager::LoadMain (Loader *ld, std::string filename, Process *proc, int &err)
 void
 DceManager::DoExecProcess (void *c)
 {
-  int (*main)(int, char **) = (int (*) (int, char **))c;
+  int (*main)(int, char **, char **) = (int (*) (int, char **, char **))c;
   Thread *current = Current ();
 
   StartProcessDebugHook ();
 
-  int retval = main (current->process->originalArgc, current->process->originalArgv);
+  int retval = main (current->process->originalArgc, current->process->originalArgv,
+                     current->process->originalEnvp);
   dce_exit (retval);
 }
 void

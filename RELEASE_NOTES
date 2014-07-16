@@ -21,6 +21,7 @@ New user-visible features
 Bugs fixed
 ----------
 - Bug 1949 - iproute build failed
+- Bug 1952 - DCE can't parse envp argument of main function
 
 
 

@@ -130,7 +130,7 @@ private:
   // inherited from Object.
   virtual void DoDispose (void);
 
-  static int (*PrepareDoStartProcess (Thread * current)) (int, char **);
+  static int (*PrepareDoStartProcess (Thread * current)) (int, char **, char **);
   static void DoStartProcess (void *context);
   bool CheckProcessContext (void) const;
   uint16_t AllocatePid (void);
