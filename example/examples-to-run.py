@@ -16,7 +16,7 @@ cpp_examples = [
 #    ("dce-tap-udp-echo", "True", "True"), 
 #    ("dce-tap-ccnd", "True", "True"), 
 #    ("dce-tap-vlc", "True", "True"), 
-#    ("dce-bash-simple", "True", "True"), 
+    ("dce-bash-simple", "True", "True"), 
 #    ("dce-ccn-cache", "True", "True"), 
     ("dce-linux-simple", "True", "True"), 
     ("dce-linux", "True", "True"), 

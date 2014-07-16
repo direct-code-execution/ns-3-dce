@@ -17,12 +17,13 @@ Tested platforms
 
 New user-visible features
 -------------------------
+- A simple bash example is now added for DCE. You can use a shell script to run on your simulation.
 
 Bugs fixed
 ----------
 - Bug 1949 - iproute build failed
 - Bug 1952 - DCE can't parse envp argument of main function
-
+- Bug 1953 - add bash-4.1 build for DCE
 
 
 Release dce-1.3

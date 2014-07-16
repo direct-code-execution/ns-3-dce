@@ -1,3 +1,24 @@
+/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+/*
+ * Copyright (c) 2012 INRIA
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation;
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * Author: Fr辿d辿ric Urbani
+ *         Hajime Tazaki <tazaki@sfc.wide.ad.jp>
+ */
+
 #include "ns3/network-module.h"
 #include "ns3/core-module.h"
 #include "ns3/internet-module.h"
@@ -8,10 +29,7 @@
 using namespace ns3;
 
 /*
- * Test with bash version 4.1.0
- *
- *  CFLAGS="-g -fPIC" LDFLAGS=-pie CFLAGS_FOR_BUILD='-g -fPIC'   ./configure --without-bash-malloc
- *  make
+ * Tested with bash version 4.1.0
  *
  */
 
@@ -27,7 +45,6 @@ int main (int argc, char *argv[])
   stack.Install (nodes);
 
   DceManagerHelper dceManager;
-  //dceManager.SetVirtualPath ("/bin:/user/furbani/home/local/bin/");
   dceManager.Install (nodes);
 
   mkdir ("files-0", 0700);
@@ -36,33 +53,21 @@ int main (int argc, char *argv[])
   mkdir ("files-0/home/dce", 0700);
 
   FILE *script = fopen ("files-0/tmp/script.sh", "w");
-//                  12345678901234567890 123456 7890123456789012345
-  fprintf (script, "echo BEFORE $LINENO\nuname\necho AFTER: $LINENO");
-  //  fprintf (script, "cat <$0\necho $$\necho $LINENO\necho Hello NS3..\nexit 0\n" );
-  /*
-
-  fprintf (script, "cd /tmp\necho Hello NS3 Virtual Machine\nwhich echo\necho $PATH $PWD\n");
-  fprintf (script, "ls /tmp\ncd /tmp\nccnd-init-keystore-helper /tmp\n");
-  */
+  fprintf (script, "echo BEFORE $LINENO\ncd /tmp\necho $PWD\necho AFTER: $LINENO");
   fclose (script);
 
   DceApplicationHelper dce;
   ApplicationContainer apps;
 
-//  dce.SetBinary ("/bin/sh not here");
-//  dce.SetBinary ("/libtest.so"); // TEMPOFUR
-  dce.SetBinary ("/bin/sh");
+  dce.SetBinary ("bash");
   dce.SetStackSize (1 << 20);
   dce.AddEnvironment ("PATH","/bin:/usr/local/ssl/bin");
   dce.AddEnvironment ("HOME","/home/dce");
-  // dce.SetStdinFile ("/tmp/script.sh");
-  // dce.SetStdinFile ("/tmp/ccnd-init-keystore-helper");
-  dce.AddArgument ("/tmp/ccnd-init-keystore-helper");
-  dce.AddArgument ("urbanos");
+  dce.AddArgument ("/tmp/script.sh");
   apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds (4.0));
 
-  Simulator::Stop (Seconds (1000100.0));
+  Simulator::Stop (Seconds (10.0));
   Simulator::Run ();
   Simulator::Destroy ();
 
