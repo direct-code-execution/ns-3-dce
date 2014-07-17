@@ -112,6 +112,7 @@ DCE (tmpfile)
 DCE (rename)
 
 // STRING.H
+NATIVE (bzero)
 NATIVE (strerror)
 NATIVE (strerror_r)
 NATIVE (strcoll)
