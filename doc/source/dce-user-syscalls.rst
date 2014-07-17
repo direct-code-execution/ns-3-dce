@@ -28,6 +28,11 @@ There are two types of symbols that is defined in DCE.
 * DCE
  DCE symbol is a symbol that DCE reimplements its behavior instead of using the underlying system's one. For instance, ``socket()`` call used in an application redirected to DCE to cooperate with |ns3| or Linux network stack managed by DCE. ``malloc()`` is also this kind.
 
+In general (but not strictly), if a call is related to a kernel resource (like NIC, clock,
+etc), it should use ``DCE`` macro. Otherwise (like strcmp, atoi etc), the call should use ``NATIVE``.
+
+
+
 Files should be modified
 ------------------------
 In order to add function calls or system calls that DCE can handle, you need to modify the following files.

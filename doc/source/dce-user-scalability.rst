@@ -65,3 +65,23 @@ or
   myuser         hard    nproc     65536
 
 
+
+Stack size
+..........
+
+
+DCE directly manages the stack of the processes running on it, 
+assigning it a default value 8192. For complex executables
+this value is too small, and may raise 'stack overflow' exceptions,
+or in other cases it may originate inconsistent values. For example,
+a value passed to a function changes without apparent reason when the program enters in 
+that function.
+The value of the stack size can be changed with the SetStackSize instruction:
+
+.. highlight:: c++
+::
+
+  DceApplicationHelper dce;
+  dce.SetStackSize (1<<20);
+
+
