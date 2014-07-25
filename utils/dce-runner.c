@@ -43,7 +43,7 @@ static void *lookup_entry_point (void *h)
 
 int main (int argc, char *argv[])
 {
-  void *h = dlmopen (LM_ID_NEWLM, argv[1], RTLD_LAZY | RTLD_GLOBAL | __RTLD_OPENEXEC);
+  void *h = dlmopen (LM_ID_NEWLM, argv[1], RTLD_NOW | RTLD_GLOBAL | __RTLD_OPENEXEC);
   if (h == 0)
     {
       fprintf (stderr, "unable to open %s %s\n", argv[1], dlerror ());
