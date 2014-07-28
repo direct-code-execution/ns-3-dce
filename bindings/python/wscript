@@ -75,6 +75,7 @@ def configure(conf):
         return
     # Disable python in static builds (bug #1253)
     if ((conf.env['ENABLE_STATIC_NS3']) or \
+        (conf.env['NS3_ENABLE_STATIC']) or \
       (conf.env['ENABLE_SHARED_AND_STATIC_NS3'])):
         ns3waf._report_optional_feature(conf, "python", "Python Bindings", False,
                                      "bindings incompatible with static build")
