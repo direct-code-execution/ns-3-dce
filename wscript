@@ -93,6 +93,7 @@ def configure(conf):
     ns3waf.check_modules(conf, ['mpi', 'lte'], mandatory = False)
     ns3waf.check_modules(conf, ['visualizer'], mandatory = False)
     ns3waf.check_modules(conf, ['applications'], mandatory = False)
+    ns3waf.check_modules(conf, ['fd-net-device'], mandatory = False)
     conf.check_tool('compiler_cc')
     conf.check(header_name='stdint.h', define_name='HAVE_STDINT_H', mandatory=False)
     conf.check(header_name='inttypes.h', define_name='HAVE_INTTYPES_H', mandatory=False)
@@ -355,6 +356,10 @@ def build_dce_examples(module, bld):
     module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim', 'csma'], 
                        target='bin/dce-iperf',
                        source=['example/dce-iperf.cc', 'example/ccnx/misc-tools.cc'])
+
+    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim', 'csma', 'fd-net-device'], 
+                       target='bin/dce-iperf-emulation',
+                       source=['example/dce-iperf-emulation.cc', 'example/ccnx/misc-tools.cc'])
                        
     module.add_example(needed = ['core', 'network', 'internet', 'dce', 'point-to-point', 'csma', 'applications'],
                        target='bin/linear-udp-perf',
