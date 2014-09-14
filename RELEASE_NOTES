@@ -5,25 +5,43 @@ This file contains Direct Code Execution release notes (most recent releases fir
 
 Please refer the page http://www.nsnam.org/projects/direct-code-execution/ for detailed instructions
 
-Release dce-dev
-=============
+Release dce-1.4
+===============
 
 Availability
 ------------
-This release is not yet available.
+In order to use DCE, please use bake tool to install DCE.
+The followings are the basic steps to use DCE.
+
+ % bake.py configure -e dce-ns3-1.4
+   or
+ % bake.py configure -e dce-linux-1.4
+ % bake.py download
+ % bake.py build
+
+For more information, please refer the document.
     
 Tested platforms
 -------------------
+- Ubuntu 10.04 64bit
+- Ubuntu 12.04 32bit/64bit
+- Ubuntu 13.04 64bit
+- Ubuntu 14.04 64bit (new)
+- Fedora 18 32bit
+- CentOS 6.2 64bit
 
 New user-visible features
 -------------------------
 - A simple bash example is now added for DCE. You can use a shell script to run on your simulation.
+- add Dockerfile for dce-linux-dev
+- add emulation version of dce-iperf.cc
 
 Bugs fixed
 ----------
 - Bug 1949 - iproute build failed
 - Bug 1952 - DCE can't parse envp argument of main function
 - Bug 1953 - add bash-4.1 build for DCE
+- avoid python bindings build for static build 
 
 
 Release dce-1.3
