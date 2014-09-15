@@ -89,7 +89,9 @@ SetMptcpEnabled (std::string key, std::string value)
 void
 DceMptcpTestCase::DoRun (void)
 {
-  LogComponentEnable ("PacketSink", LOG_LEVEL_INFO);
+  // Disable it for a while
+  // Bug 1908 - LogComponentEnable causes SIGILL with static and optimized build
+  // LogComponentEnable ("PacketSink", LOG_LEVEL_INFO);
   if (m_skip)
     {
       return;
