@@ -27,6 +27,7 @@ def register_types(module):
     # ns-3 core
     module.add_class('AttributeValue', import_from_module='ns.core')
     module.add_class('Object', import_from_module='ns.core')
+    module.add_class('EmptyAttributeValue', import_from_module='ns.core')
 
     # ns-3 network
     module.add_class('Application', import_from_module='ns.network')
@@ -327,15 +328,19 @@ def register_Ns3DceManagerHelper_methods(root_module, cls):
     cls.add_method('SetAttribute', 
                    'void', 
                    [param('std::string', 'n1'), param('ns3::AttributeValue const &', 'v1')])
+    '''                  
     ## dce-manager-helper.h: void ns3::DceManagerHelper::SetDelayModel(std::string type, std::string n0="", ns3::AttributeValue const & v0=ns3::EmptyAttributeValue(), std::string n1="", ns3::AttributeValue const & v1=ns3::EmptyAttributeValue()) [member function]
-    '''
     cls.add_method('SetDelayModel', 
                    'void', 
                    [param('std::string', 'type'), param('std::string', 'n0', default_value='""'), param('ns3::AttributeValue const &', 'v0', default_value='ns3::EmptyAttributeValue()'), param('std::string', 'n1', default_value='""'), param('ns3::AttributeValue const &', 'v1', default_value='ns3::EmptyAttributeValue()')])
+    '''                  
+    
     ## dce-manager-helper.h: void ns3::DceManagerHelper::SetLoader(std::string type) [member function]
     cls.add_method('SetLoader', 
                    'void', 
                    [param('std::string', 'type')])
+    
+    '''                  
     ## dce-manager-helper.h: void ns3::DceManagerHelper::SetNetworkStack(std::string type, std::string n0="", ns3::AttributeValue const & v0=ns3::EmptyAttributeValue()) [member function]
     cls.add_method('SetNetworkStack', 
                    'void', 
@@ -348,7 +353,7 @@ def register_Ns3DceManagerHelper_methods(root_module, cls):
     cls.add_method('SetTaskManagerAttribute', 
                    'void', 
                    [param('std::string', 'n0'), param('ns3::AttributeValue const &', 'v0')])
-                   '''
+    '''                  
     ## dce-manager-helper.h: void ns3::DceManagerHelper::SetVirtualPath(std::string p) [member function]
     cls.add_method('SetVirtualPath', 
                    'void', 
