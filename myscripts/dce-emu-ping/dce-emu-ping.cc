@@ -57,7 +57,7 @@
 #include "ns3/core-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/network-module.h"
-#include "ns3/emu-module.h"
+#include "ns3/fd-net-device-module.h"
 #include "ns3/applications-module.h"
 #include "ns3/ipv4-static-routing-helper.h"
 #include "ns3/ipv4-list-routing-helper.h"
@@ -134,13 +134,15 @@ main (int argc, char *argv[])
   // OUI flying around.  Be aware.
   //
   NS_LOG_INFO ("Create Device");
-  Ptr<EmuNetDevice> device = CreateObject<EmuNetDevice> ();
+  EmuFdNetDeviceHelper emu;
+  emu.SetDeviceName (deviceName);
+  NetDeviceContainer devices = emu.Install (node);
+  Ptr<NetDevice> device = devices.Get (0);
   device->SetAttribute ("Address", Mac48AddressValue ("00:00:00:00:00:02"));
-  device->SetAttribute ("DeviceName", StringValue (deviceName));
 
-  Ptr<Queue> queue = CreateObject<DropTailQueue> ();
-  device->SetQueue (queue);
-  node->AddDevice (device);
+  // Ptr<Queue> queue = CreateObject<DropTailQueue> ();
+  // device->SetQueue (queue);
+  // node->AddDevice (device);
 
   //
   // Add a default internet stack to the node.  This gets us the ns-3 versions
@@ -201,7 +203,6 @@ main (int argc, char *argv[])
   //
   // Enable a promiscuous pcap trace to see what is coming and going on our device.
   //
-  EmuHelper emu;
   emu.EnablePcap ("emu-ping", device, true);
 
   //

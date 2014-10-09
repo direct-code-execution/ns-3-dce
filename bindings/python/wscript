@@ -514,7 +514,7 @@ def genbind(bld):
     sys.path.append( bld.env['WITH_PYBINDGEN'] )
     sys.path.append( bld.path.abspath() )
     from genbinds import dcepy_module_gen
-    ns3inc=bld.env['INCLUDES_NS3_EMU'][0]
+    ns3inc=bld.env['INCLUDES_NS3_CORE'][0]
     dcepy_module_gen(binddir=bld.path.abspath(), ns3path=ns3inc, dcepath=os.getcwd() )
 
     bindpath = os.path.abspath("build/bindings/python")
@@ -528,7 +528,7 @@ def printInfo(bld):
     print "| bld.env['ENABLE_PYTHON_BINDINGS']:        " + str(  bld.env['ENABLE_PYTHON_BINDINGS'] );
     print "| bld.env['WITH_PYBINDGEN']:   "+str(bld.env['WITH_PYBINDGEN'])
     print "| bld.env['NS3_DIR']:          "+str(bld.env['NS3_DIR'])
-    print "| bld.env['INCLUDES_NS3_EMU']: "+str(bld.env['INCLUDES_NS3_EMU'])
+    print "| bld.env['INCLUDES_NS3_CORE']: "+str(bld.env['INCLUDES_NS3_CORE'])
     print "| Current dir: os.getcwd():    " + str(os.getcwd())
     print "| bld.path.abspath():          " + bld.path.abspath()
     print "--------------------------------------------------------------------"
@@ -554,7 +554,7 @@ def compileBindings(bld):
     print "\n--------------------------------------------------------------------"
     print " Python bindings compilation "
     print "--------------------------------------------------------------------"
-    ns3inc=bld.env['INCLUDES_NS3_EMU'][0]
+    ns3inc=bld.env['INCLUDES_NS3_CORE'][0]
     dceinc = os.path.abspath('build/include')
     
     needed = bld.env['NS3_MODULES_FOUND']

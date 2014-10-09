@@ -3,10 +3,10 @@
 import ns3waf
 
 def configure(conf):
-    ns3waf.check_modules(conf, ['core', 'internet', 'point-to-point', 'emu'], mandatory = True)
+    ns3waf.check_modules(conf, ['core', 'internet', 'point-to-point', 'fd-net-device'], mandatory = True)
 
 def build(bld):
-    bld.build_a_script('dce', needed = ['core', 'internet', 'point-to-point', 'emu', 'dce', 'netanim' ],
+    bld.build_a_script('dce', needed = ['core', 'internet', 'point-to-point', 'fd-net-device', 'dce', 'netanim' ],
 				  target='bin/dce-emu-ping',
 				  source=['dce-emu-ping.cc', 'misc-tools.cc']
 				  )
