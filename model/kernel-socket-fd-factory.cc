@@ -17,9 +17,10 @@
 #include "ns3/log.h"
 #include "ns3/string.h"
 #include "ns3/double.h"
+#include "ns3/pointer.h"
 #include "ns3/node.h"
 #include "ns3/net-device.h"
-#include "ns3/random-variable.h"
+#include "ns3/random-variable-stream.h"
 #include "ns3/event-id.h"
 #include "ns3/simulator.h"
 #include "ns3/mac48-address.h"
@@ -78,9 +79,9 @@ KernelSocketFdFactory::GetTypeId (void)
                    MakeDoubleAccessor (&KernelSocketFdFactory::m_rate),
                    MakeDoubleChecker<double> ())
     .AddAttribute ("RanVar", "The decision variable attached to this error model.",
-                   RandomVariableValue (UniformVariable (0.0, 1.0)),
-                   MakeRandomVariableAccessor (&KernelSocketFdFactory::m_ranvar),
-                   MakeRandomVariableChecker ())
+                   StringValue ("ns3::UniformRandomVariable[Min=0.0|Max=1.0]"),
+                   MakePointerAccessor (&KernelSocketFdFactory::m_ranvar),
+                   MakePointerChecker<RandomVariableStream> ())
   ;
   return tid;
 }
@@ -91,6 +92,7 @@ KernelSocketFdFactory::KernelSocketFdFactory ()
     m_logFile (0)
 {
   TypeId::LookupByNameFailSafe ("ns3::LteUeNetDevice", &m_lteUeTid);
+  m_variable = CreateObject<UniformRandomVariable> ();
 }
 
 KernelSocketFdFactory::~KernelSocketFdFactory ()
@@ -137,7 +139,7 @@ void *
 KernelSocketFdFactory::Malloc (struct SimKernel *kernel, unsigned long size)
 {
   KernelSocketFdFactory *self = (KernelSocketFdFactory *)kernel;
-  if (self->m_ranvar.GetValue () < self->m_rate)
+  if (self->m_ranvar->GetValue () < self->m_rate)
     {
       NS_LOG_DEBUG ("return null");
       // Inject fault
@@ -256,7 +258,7 @@ KernelSocketFdFactory::Random (struct SimKernel *kernel)
   } u;
   for (uint8_t i = 0; i < sizeof (u.buffer); i++)
     {
-      u.buffer[i] = self->m_variable.GetInteger (0,255);
+      u.buffer[i] = self->m_variable->GetInteger (0,255);
     }
   return u.v;
 }

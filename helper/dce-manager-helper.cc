@@ -5,7 +5,7 @@
 #include "task-scheduler.h"
 #include "task-manager.h"
 #include "loader-factory.h"
-#include "ns3/random-variable.h"
+#include "ns3/random-variable-stream.h"
 #include "ns3/uinteger.h"
 #include "ns3/string.h"
 #include "ns3/config.h"
@@ -23,8 +23,6 @@
 NS_LOG_COMPONENT_DEFINE ("DceManagerHelper");
 
 namespace ns3 {
-
-UniformVariable g_firstPid;
 
 NS_OBJECT_ENSURE_REGISTERED (DceManagerHelper);
 
@@ -111,7 +109,8 @@ DceManagerHelper::Install (NodeContainer nodes)
 
       taskManager->SetScheduler (scheduler);
       taskManager->SetDelayModel (delay);
-      manager->SetAttribute ("FirstPid", UintegerValue (g_firstPid.GetInteger (0, 0xffff)));
+      Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
+      manager->SetAttribute ("FirstPid", UintegerValue (uv->GetInteger (0, 0xffff)));
       Ptr<Node> node = *i;
       node->AggregateObject (taskManager);
       node->AggregateObject (loader);

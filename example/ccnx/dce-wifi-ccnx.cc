@@ -35,7 +35,6 @@
 #include "ns3/dce-module.h"
 
 #include "ns3/rectangle.h"
-#include "ns3/random-variable.h"
 
 
 

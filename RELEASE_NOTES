@@ -20,7 +20,7 @@ New user-visible features
 
 Bugs fixed
 ----------
-- 
+- Bug 2009 - update code for RandomVariable deprecation
 
 Release dce-1.4
 ===============

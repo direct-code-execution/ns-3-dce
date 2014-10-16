@@ -19,6 +19,8 @@
  */
 #include "process-delay-model.h"
 #include "ns3/log.h"
+#include "ns3/string.h"
+#include "ns3/pointer.h"
 #include <sys/time.h>
 #include <time.h>
 
@@ -45,9 +47,9 @@ RandomProcessDelayModel::GetTypeId (void)
     .SetParent<ProcessDelayModel> ()
     .AddConstructor<RandomProcessDelayModel> ()
     .AddAttribute ("Variable", "Pick the process delay at random.",
-                   RandomVariableValue (ConstantVariable (0.0)),
-                   MakeRandomVariableAccessor (&RandomProcessDelayModel::m_variable),
-                   MakeRandomVariableChecker ())
+                   StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"),
+                   MakePointerAccessor (&RandomProcessDelayModel::m_variable),
+                   MakePointerChecker<RandomVariableStream> ())
   ;
   return tid;
 }
@@ -57,8 +59,9 @@ RandomProcessDelayModel::RandomProcessDelayModel ()
 }
 
 void
-RandomProcessDelayModel::SetVariable (RandomVariable variable)
+RandomProcessDelayModel::SetVariable (Ptr<RandomVariableStream> variable)
 {
+  m_variable = variable;
 }
 
 void
@@ -68,7 +71,7 @@ RandomProcessDelayModel::RecordStart (void)
 Time
 RandomProcessDelayModel::RecordEnd (void)
 {
-  return Seconds (m_variable.GetValue ());
+  return Seconds (m_variable->GetValue ());
 }
 
 NS_OBJECT_ENSURE_REGISTERED (TimeOfDayProcessDelayModel);

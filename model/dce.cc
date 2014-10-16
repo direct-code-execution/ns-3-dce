@@ -30,7 +30,6 @@
 #include "ns3/log.h"
 #include "ns3/simulator.h"
 #include "ns3/names.h"
-#include "ns3/random-variable.h"
 #include "ns3/ipv4-l3-protocol.h"
 #include "socket-fd-factory.h"
 
@@ -330,12 +329,12 @@ int dce_nanosleep (const struct timespec *req, struct timespec *rem)
 long int dce_random (void)
 {
   Thread *current = Current ();
-  return current->process->rndVarible.GetInteger ();
+  return current->process->rndVariable->GetInteger ();
 }
 int dce_rand (void)
 {
   Thread *current = Current ();
-  return current->process->rndVarible.GetInteger ();
+  return current->process->rndVariable->GetInteger ();
 }
 unsigned short int * dce_seed48 (unsigned short int seed16v[3])
 {

@@ -39,6 +39,7 @@
 #include "ns3/ptr.h"
 #include "ns3/uinteger.h"
 #include "ns3/boolean.h"
+#include "ns3/double.h"
 #include "ns3/trace-source-accessor.h"
 #include "ns3/enum.h"
 #include "file-usage.h"
@@ -349,7 +350,9 @@ DceManager::CreateProcess (std::string name, std::string stdinfilename, std::vec
   process->stdinFilename = stdinfilename;
 
   //"seeding" random variable
-  process->rndVarible = UniformVariable (0, RAND_MAX);
+  process->rndVariable = CreateObject<UniformRandomVariable> ();
+  process->rndVariable->SetAttribute ("Min", DoubleValue (0));
+  process->rndVariable->SetAttribute ("Max", DoubleValue (RAND_MAX));
 
   process->nodeId = UtilsGetNodeId ();
 
@@ -638,7 +641,9 @@ DceManager::Clone (Thread *thread)
   clone->penvp = thread->process->penvp;
 
   //"seeding" random variable
-  clone->rndVarible = UniformVariable (0, RAND_MAX);
+  clone->rndVariable = CreateObject<UniformRandomVariable> ();
+  clone->rndVariable->SetAttribute ("Min", DoubleValue (0));
+  clone->rndVariable->SetAttribute ("Max", DoubleValue (RAND_MAX));
   m_processes[clone->pid] = clone;
   Thread *cloneThread = CreateThread (clone);
 

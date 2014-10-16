@@ -4,7 +4,7 @@
 #include "socket-fd-factory.h"
 #include "task-manager.h"
 #include "ns3/net-device.h"
-#include "ns3/random-variable.h"
+#include "ns3/random-variable-stream.h"
 #include <sys/socket.h>
 #include <vector>
 #include <string>
@@ -142,11 +142,11 @@ private:
 
   std::vector<std::pair<Ptr<NetDevice>,struct SimDevice *> > m_devices;
   std::list<Task *> m_kernelTasks;
-  UniformVariable m_variable;
+  Ptr<UniformRandomVariable> m_variable;
   KingsleyAlloc *m_alloc;
   std::vector<Ptr<KernelDeviceStateListener> > m_listeners;
   double m_rate;
-  RandomVariable m_ranvar;
+  Ptr<RandomVariableStream> m_ranvar;
   uint16_t m_pid;
   TypeId m_lteUeTid;
 };

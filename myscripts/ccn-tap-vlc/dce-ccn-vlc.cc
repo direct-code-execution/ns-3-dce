@@ -154,7 +154,7 @@ main (int argc, char *argv[])
   NetDeviceContainer devices = csma.Install (nodes);
 
   Ptr<RateErrorModel> em = CreateObjectWithAttributes<RateErrorModel> (
-      "RanVar", RandomVariableValue (UniformVariable (0., 1.)),
+      "RanVar", StringValue ("ns3::UniformRandomVariable[Min=0.|Max=1.]"),
       "ErrorRate", DoubleValue (0.00001));
   // devices.Get (0)->SetAttribute ("ReceiveErrorModel", PointerValue (em));
 

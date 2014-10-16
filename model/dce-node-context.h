@@ -27,7 +27,7 @@
 #include "ns3/traced-callback.h"
 #include "ns3/simulator.h"
 #include <sys/utsname.h>
-#include "ns3/random-variable.h"
+#include "ns3/random-variable-stream.h"
 
 extern "C" struct Libc;
 
@@ -62,7 +62,7 @@ private:
   std::string m_release;
   std::string m_version;
   std::string m_hardId;
-  RandomVariable m_randomCtx;
+  Ptr<RandomVariableStream> m_randomCtx;
   uint32_t m_rndBuffer;
   uint8_t m_rndOffset;
 };

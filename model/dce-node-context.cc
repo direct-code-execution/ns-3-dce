@@ -25,6 +25,7 @@
 #include "ns3/node.h"
 #include "ns3/node-list.h"
 #include "ns3/names.h"
+#include "ns3/double.h"
 #include "utils.h"
 #include <string.h>
 #include "process.h"
@@ -51,8 +52,10 @@ DceNodeContext::GetInstanceTypeId (void) const
 }
 DceNodeContext::DceNodeContext ()
 {
-  m_randomCtx = NormalVariable (0, 2 ^ 32 - 1);
-  m_rndBuffer = m_randomCtx.GetInteger ();
+  m_randomCtx = CreateObject<NormalRandomVariable> ();
+  m_randomCtx->SetAttribute ("Mean", DoubleValue (0)); 
+  m_randomCtx->SetAttribute ("Variance", DoubleValue (2 ^ 32 - 1)); 
+  m_rndBuffer = m_randomCtx->GetInteger ();
   m_rndOffset = 0;
 }
 
@@ -127,7 +130,7 @@ DceNodeContext::GetNextRnd ()
   if (m_rndOffset >= 4)
     {
       m_rndOffset = 0;
-      m_rndBuffer = m_randomCtx.GetInteger ();
+      m_rndBuffer = m_randomCtx->GetInteger ();
     }
   return v;
 }

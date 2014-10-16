@@ -31,7 +31,7 @@
 #include "ns3/event-id.h"
 #include "ns3/nstime.h"
 #include "unix-fd.h"
-#include "ns3/random-variable.h"
+#include "ns3/random-variable-stream.h"
 
 class KingsleyAlloc;
 
@@ -188,7 +188,7 @@ struct Process
   // lifetime due to weirdness in the posix API.
   std::vector<void *> allocated;
   //random variable for rand and random implementation
-  RandomVariable rndVarible;
+  Ptr<RandomVariableStream> rndVariable;
   // srand48 seed
   struct drand48_data seed48Current;
   // Current umask

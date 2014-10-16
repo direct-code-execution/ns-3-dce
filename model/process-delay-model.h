@@ -21,7 +21,7 @@
 #define PROCESS_DELAY_MODEL_H
 
 #include "ns3/object.h"
-#include "ns3/random-variable.h"
+#include "ns3/random-variable-stream.h"
 #include "ns3/nstime.h"
 
 namespace ns3 {
@@ -42,13 +42,13 @@ public:
 
   RandomProcessDelayModel ();
 
-  void SetVariable (RandomVariable variable);
+  void SetVariable (Ptr<RandomVariableStream> variable);
 
   virtual void RecordStart (void);
   virtual Time RecordEnd (void);
 
 private:
-  RandomVariable m_variable;
+  Ptr<RandomVariableStream> m_variable;
 };
 
 class TimeOfDayProcessDelayModel : public ProcessDelayModel
