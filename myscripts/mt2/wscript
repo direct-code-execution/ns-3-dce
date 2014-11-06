@@ -11,5 +11,5 @@ def build(bld):
 				  target='bin/dce-mt2',
 				  source=['dce-mt2.cc'],
 				  )
-    bld.program(source='mcreceive.c', target='../../bin_dce/mcreceive', cflags = [ '-fPIC'], linkflags    = ['-pie'])
-    bld.program(source='mcsend.c', target='../../bin_dce/mcsend', cflags = [ '-fPIC'], linkflags    = ['-pie'])
+    bld.program(source='mcreceive.c', target='../../bin_dce/mcreceive', cflags = [ '-fPIC'], linkflags = ['-pie', '-rdynamic'])
+    bld.program(source='mcsend.c', target='../../bin_dce/mcsend', cflags = [ '-fPIC'], linkflags = ['-pie', '-rdynamic'])

@@ -17,7 +17,7 @@ def build(bld):
 				  linkflags=['-Wl,--dynamic-linker=' + linkerpath ] )				  
     bld.program(source='mytest.cc', target='../../bin_dce/mytest', use='../../lib/mylib',
                 cxxflags = [ '-fPIC'], 
-                linkflags = [ '-L'+os.path.abspath('build/lib/'), '-lmylib', '-lstdc++', '-pie'])
+                linkflags = [ '-L'+os.path.abspath('build/lib/'), '-lmylib', '-lstdc++', '-pie', '-rdynamic'])
     bld.shlib(source = ['mylib.cc'],
               target='../../lib/mylib', cflags=['-g'],
               linkflags=['-shared', '-Wl,-soname=libmylib.so'])
