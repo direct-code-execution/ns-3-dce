@@ -79,6 +79,8 @@ Ns3SocketFdFactory::CreateSocket (int domain, int type, int protocol)
           {
             TypeId tid = TypeId::LookupByName ("ns3::UdpSocketFactory");
             Ptr<SocketFactory> factory = GetObject<SocketFactory> (tid);
+            NS_ASSERT_MSG (factory, "InternetStackHelper is not installed. "
+                           "Install it before using Ns3SocketFdFactory.");
             sock = factory->CreateSocket ();
             socket = new UnixDatagramSocketFd (sock);
           } break;
@@ -86,6 +88,8 @@ Ns3SocketFdFactory::CreateSocket (int domain, int type, int protocol)
           {
             TypeId tid = TypeId::LookupByName ("ns3::Ipv4RawSocketFactory");
             Ptr<SocketFactory> factory = GetObject<SocketFactory> (tid);
+            NS_ASSERT_MSG (factory, "InternetStackHelper is not installed. "
+                           "Install it before using Ns3SocketFdFactory.");
             sock = factory->CreateSocket ();
             sock->SetAttribute ("Protocol", UintegerValue (protocol));
             socket = new UnixDatagramSocketFd (sock);
@@ -94,6 +98,8 @@ Ns3SocketFdFactory::CreateSocket (int domain, int type, int protocol)
           {
             TypeId tid = TypeId::LookupByName ("ns3::TcpSocketFactory");
             Ptr<SocketFactory> factory = GetObject<SocketFactory> (tid);
+            NS_ASSERT_MSG (factory, "InternetStackHelper is not installed. "
+                           "Install it before using Ns3SocketFdFactory.");
             sock = factory->CreateSocket ();
             socket = new UnixStreamSocketFd (sock);
           } break;
@@ -110,6 +116,8 @@ Ns3SocketFdFactory::CreateSocket (int domain, int type, int protocol)
           {
             TypeId tid = TypeId::LookupByName ("ns3::Ipv6RawSocketFactory");
             Ptr<SocketFactory> factory = GetObject<SocketFactory> (tid);
+            NS_ASSERT_MSG (factory, "InternetStackHelper (v6) is not installed. "
+                           "Install it before using Ns3SocketFdFactory.");
             sock = factory->CreateSocket ();
             sock->SetAttribute ("Protocol", UintegerValue (protocol));
             socket = new UnixDatagramSocketFd (sock);
@@ -121,6 +129,8 @@ Ns3SocketFdFactory::CreateSocket (int domain, int type, int protocol)
           {
             TypeId tid = TypeId::LookupByName ("ns3::TcpSocketFactory");
             Ptr<SocketFactory> factory = GetObject<SocketFactory> (tid);
+            NS_ASSERT_MSG (factory, "InternetStackHelper (v6) is not installed. "
+                           "Install it before using Ns3SocketFdFactory.");
             sock = factory->CreateSocket ();
             socket = new UnixStreamSocketFd (sock);
           } break;
@@ -153,6 +163,8 @@ Ns3SocketFdFactory::CreateSocket (int domain, int type, int protocol)
           {
             TypeId tid = TypeId::LookupByName ("ns3::PacketSocketFactory");
             Ptr<SocketFactory> factory = GetObject<SocketFactory> (tid);
+            NS_ASSERT_MSG (factory, "InternetStackHelper (packet) is not installed. "
+                           "Install it before using Ns3SocketFdFactory.");
             sock = factory->CreateSocket ();
 
             PacketSocketAddress a;
