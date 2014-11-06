@@ -21,6 +21,7 @@ New user-visible features
 Bugs fixed
 ----------
 - Bug 2009 - update code for RandomVariable deprecation
+- Bug 2015 - static/optimized build fails to execute with a script under myscripts
 
 Release dce-1.4
 ===============

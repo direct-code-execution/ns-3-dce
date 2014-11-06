@@ -475,7 +475,20 @@ def build_a_script(bld, name, needed = [], **kw):
     if 'features' not in kw:
         kw['features'] = 'cxx cxxprogram'
     if bld.env['NS3_ENABLE_STATIC']:
-        kw['linkflags'] = kw.get('linkflags', []) + ['-ldl']
+        for module in kw['use']:
+            kw['linkflags'] = kw.get('linkflags', [])
+            # XXX pkg-config doesn't give the proper order of whole-archive option..
+            if 'dce' in module.lower():
+                continue
+            if 'netlink' in module.lower():
+                continue
+            if 'header' in module.lower():
+                continue
+            if 'library' in module.lower():
+                continue
+            kw['linkflags'] += ['-ldl']
+            kw['linkflags'] += ['-Wl,--whole-archive,-Bstatic']
+            kw['linkflags'] += bld.env['STLIB_ST_%s' % module.upper()]
     program = bld(**kw)
     program.is_ns3_program = True
     bld.env.append_value('NS3_RUNNABLE_PROGRAMS', name)
