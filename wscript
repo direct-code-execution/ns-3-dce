@@ -118,10 +118,17 @@ def configure(conf):
         conf.env.append_value('CXXDEFINES', 'HAVE_VALGRIND_H')
 
     if Options.options.kernel_stack is not None and os.path.isdir(Options.options.kernel_stack):
+        # look for kernel dir from 1) {KERNEL_DIR}/sim, then 2) {KERNEL_DIR}/lib.
+        kernel_stack_sim_dir = os.path.join(Options.options.kernel_stack, "sim")
+        kernel_stack_lib_dir = os.path.join(Options.options.kernel_stack, "lib")
+        if os.path.isdir(kernel_stack_sim_dir):
+            kernel_stack_dir = kernel_stack_sim_dir
+        if os.path.isdir(kernel_stack_lib_dir):
+            kernel_stack_dir = kernel_stack_lib_dir
+
         conf.check(header_name='sim.h',
-                   includes=os.path.join(Options.options.kernel_stack, 'sim/include'))
-      #  conf.check()
-        conf.env['KERNEL_STACK'] = Options.options.kernel_stack + '/sim'
+                   includes=os.path.join(kernel_stack_dir, 'include'))
+        conf.env['KERNEL_STACK'] = kernel_stack_dir
         conf.env.append_value ('DEFINES', 'KERNEL_STACK=Y')
 
     conf.env['ENABLE_PYTHON_BINDINGS'] = False
