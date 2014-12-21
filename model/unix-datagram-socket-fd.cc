@@ -370,7 +370,10 @@ UnixDatagramSocketFd::DoSendmsg (const struct msghdr *msg, int flags)
         }
       else
         {
-          result = m_socket->Send (packet);
+          TaskManager *manager = TaskManager::Current ();
+          result = -1;
+          manager->ExecOnMain (MakeEvent (&UnixDatagramSocketFd::MainSend,
+                                          this, &result, packet));
         }
       if (result == -1)
         {
@@ -453,5 +456,10 @@ void
 UnixDatagramSocketFd::MainSendTo (int *r, Ptr<Packet> p, uint32_t f, Address ad)
 {
   *r = m_socket->SendTo (p, f, ad);
+}
+void
+UnixDatagramSocketFd::MainSend (int *r, Ptr<Packet> p)
+{
+  *r = m_socket->Send (p);
 }
 } // namespace ns3

@@ -188,7 +188,7 @@ void test_raw6 (void)
   TEST_ASSERT_UNEQUAL (sock, -1);
 }
 
-void test_udp (void)
+void test_udp (int connected)
 {
   int sock;
   const char buf[12] = "0123456789\0";
@@ -220,9 +220,18 @@ void test_udp (void)
   msg.msg_control = NULL;
   msg.msg_controllen = 0;
 
-  ret = sendmsg (sock, &msg, 0);
+  if (connected)
+    {
+      ret = connect (sock, (const struct sockaddr *) &dst, sizeof (dst));
+      TEST_ASSERT_EQUAL (ret, 0);
+      ret = send (sock, buf, sizeof (buf), 0);
+    }
+  else
+    {
+      ret = sendmsg (sock, &msg, 0);
+    }
   TEST_ASSERT_EQUAL (ret, sizeof (buf));
-  OUTPUT ("UDP send ret = " << ret);
+  OUTPUT ("UDP (" << (connected ? "connected" : "non-connected") << ") send ret = " << ret);
 
   // recvmsg
   iov.iov_base = (void *) buf;
@@ -515,7 +524,8 @@ int main (int argc, char *argv[])
   test_timestamp ();
   test_raw ();
   test_raw6 ();
-  test_udp ();
+  test_udp (0);
+  test_udp (1);
   test_tcp ();
   test_netlink ();
 

@@ -31,6 +31,7 @@ private:
   void QueueErr (sock_extended_err ee, struct sockaddr_in offender, uint8_t ttl);
   void CopyMacAddress (const Address &a,  uint8_t* const buf);
   void MainSendTo (int *r, Ptr<Packet> p, uint32_t f, Address ad);
+  void MainSend (int *r, Ptr<Packet> p);
 
   struct Error
   {

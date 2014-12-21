@@ -22,6 +22,7 @@ Bugs fixed
 ----------
 - Bug 2009 - update code for RandomVariable deprecation
 - Bug 2015 - static/optimized build fails to execute with a script under myscripts
+- Bug 2035 - write(2)/send(2) crashes with connected UDP socket
 
 Release dce-1.4
 ===============
