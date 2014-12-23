@@ -2655,6 +2655,86 @@ server29 (void *arg)
   return arg;
 }
 
+// test30
+// test readv(2) and writev(2)
+#define BUF_LEN30 ((size_t) 1024)
+static char readBuf30[BUF_LEN30];
+static char sendBuf30[BUF_LEN30];
+static void *
+client30 (void *arg)
+{
+  int sock = -1;
+  int status = 0;
+  struct msghdr msghdr;
+  struct iovec iov[2];
+
+  printf ("client30: start\n");
+  sleep (1);
+  sock = socket (AF_UNIX, SOCK_DGRAM, 0);
+  TEST_ASSERT (sock > 0);
+
+  memset (sendBuf30, 30, sizeof(sendBuf30));
+
+  iov[0].iov_base = &sendBuf30;
+  iov[0].iov_len = sizeof(sendBuf30);
+  iov[1].iov_base = &sendBuf30;
+  iov[1].iov_len = sizeof(sendBuf30);
+
+  msghdr.msg_name = (void*) PrepAddr ();
+  msghdr.msg_namelen = sizeof(sockaddr_un);
+  msghdr.msg_iov = iov;
+  msghdr.msg_iovlen = 1;
+  msghdr.msg_control = 0;
+  msghdr.msg_controllen = 0;
+  msghdr.msg_flags = 0;
+
+  ssize_t res =  sendmsg (sock, &msghdr, 0);
+  printf ("sendmsg --> %ld, errno: %d \n \n ", res, errno);
+  TEST_ASSERT_EQUAL (res, sizeof(sendBuf30) * msghdr.msg_iovlen);
+
+  sleep (1);
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  printf ("Client30: end \n\n ");
+
+  return arg;
+}
+
+static void *
+server30 (void *arg)
+{
+  unlink (SOCK_PATH);
+  int sock = CreateDgramBind ();
+  int status;
+  struct msghdr msghdr;
+  struct iovec iov[3];
+
+  printf ("server30: start\n");
+  TEST_ASSERT (sock >= 0);
+
+  iov[0].iov_base = &(readBuf30[sizeof (readBuf30) / 2  ]);
+  iov[0].iov_len = sizeof (readBuf30) / 2;
+  iov[1].iov_base = readBuf30;
+  iov[1].iov_len = sizeof (readBuf30) / 2;
+  iov[2].iov_base = readBuf30;
+  iov[2].iov_len = sizeof (readBuf30);
+
+  errno = 0;
+  ssize_t lu = readv (sock, iov, 3);
+  printf ("readv -> %ld, errno: %d \n\n ", lu, errno);
+  TEST_ASSERT_EQUAL (lu, sizeof (sendBuf30));
+
+  status = close (sock);
+  TEST_ASSERT_EQUAL (status, 0);
+
+  unlink (SOCK_PATH);
+
+  printf ("Server30: end \n\n ");
+
+  return arg;
+}
+
 static void
 launch (void * (*clientStart)(void *), void *(*serverStart)(void *))
 {
@@ -2720,6 +2800,8 @@ main (int argc, char *argv[])
       launch (client27, server27);
       launch (client28, server28);
       launch (client26, server26);
+      launch (client30, server30);
+      // should be the last test: dunno...
       launch (client29, server29);
     }
   else

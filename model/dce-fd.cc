@@ -412,7 +412,14 @@ ssize_t dce_readv (int fd, const struct iovec *iov, int iovcnt)
         }
       else
         {
-          return -1;
+          if (b == 0)
+            {
+              return -1;
+            }
+          else
+            {
+              return ret;
+            }
         }
     }
   return ret;
