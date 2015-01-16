@@ -24,6 +24,7 @@ Bugs fixed
 - Bug 2015 - static/optimized build fails to execute with a script under myscripts
 - Bug 2035 - write(2)/send(2) crashes with connected UDP socket
 - Bug 2036 - wrong return code from dce_readv in case it fails within multiple buffers loop
+- Bug 2039 - LinuxSocketImpl::RecvFrom uses fixed size buf and ignores maxSize
 
 Release dce-1.4
 ===============

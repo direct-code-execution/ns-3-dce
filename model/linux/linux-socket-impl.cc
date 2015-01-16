@@ -425,7 +425,12 @@ LinuxSocketImpl::RecvFrom (uint32_t maxSize, uint32_t flags,
                            Address &fromAddress)
 {
   NS_LOG_FUNCTION (this << maxSize << flags);
-  uint8_t buf[4096];
+  uint8_t *buf = (uint8_t *)malloc (maxSize);
+  if (!buf)
+    {
+      NS_ASSERT_MSG (0, "can't allocate memory (size=" << maxSize << ")");
+    }
+  
   struct sockaddr_storage my_addr;
   socklen_t addrlen = sizeof (struct sockaddr_storage);
   struct msghdr msg;
@@ -434,7 +439,7 @@ LinuxSocketImpl::RecvFrom (uint32_t maxSize, uint32_t flags,
   msg.msg_controllen = 0;
   msg.msg_iovlen = 1;
   msg.msg_iov = &iov;
-  iov.iov_len = sizeof (buf);
+  iov.iov_len = maxSize;
   iov.iov_base = buf;
   msg.msg_name = (void *)&my_addr;
   msg.msg_namelen = addrlen;
@@ -445,6 +450,7 @@ LinuxSocketImpl::RecvFrom (uint32_t maxSize, uint32_t flags,
     {
       NS_LOG_DEBUG ("recvmsg ret " << ret << " errno " << Current ()->err);
       LeaveFakeTask (pid);
+      free (buf);
       return 0;
     }
   LeaveFakeTask (pid);
@@ -459,6 +465,7 @@ LinuxSocketImpl::RecvFrom (uint32_t maxSize, uint32_t flags,
   LeaveFakeTask (pid);
   fromAddress = m_posixtons3 ((struct sockaddr *)&my_addr, addrlen);
 
+  free (buf);
   return p;
 }
 
