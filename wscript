@@ -503,6 +503,7 @@ def build_a_script(bld, name, needed = [], **kw):
 
 # Add directories under myscripts dir
 def add_myscripts(bld):
+    # submodule parse should be the first
     for dir in os.listdir('myscripts'):
         if dir.startswith('.') or dir == 'CVS':
             continue
