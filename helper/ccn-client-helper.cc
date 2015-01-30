@@ -14,6 +14,13 @@ CcnClientHelper::CcnClientHelper ()
 {
 }
 
+CcnClientHelper::~CcnClientHelper ()
+{
+  std::stringstream oss;
+  oss << "rm -rf /tmp/.dck" << ::getpid () << "/";
+  ::system (oss.str ().c_str ());
+}
+  
 ApplicationContainer
 CcnClientHelper::Install (NodeContainer c)
 {

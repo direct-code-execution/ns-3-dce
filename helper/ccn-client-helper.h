@@ -11,6 +11,7 @@ class CcnClientHelper : public DceApplicationHelper
 {
 public:
   CcnClientHelper ();
+  ~CcnClientHelper ();
   virtual ApplicationContainer Install (NodeContainer c);
   virtual ApplicationContainer InstallInNode (Ptr<Node> node);
 
