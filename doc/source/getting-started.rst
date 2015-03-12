@@ -268,9 +268,9 @@ if you have already built the advanced mode, you can use Linux network stack ove
 ::
 
   cd source/ns-3-dce
-  ./waf --run "dce-iperf --kernel=1"
+  ./waf --run "dce-iperf --stack=linux"
 
-the command line option **--kernel=1** makes the simulation use the Linux kernel stack instead of |ns3| network stack.
+the command line option **--stack=linux** makes the simulation use the Linux kernel stack instead of |ns3| network stack.
 
 .. highlight:: none
 ::
