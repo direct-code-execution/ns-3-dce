@@ -23,6 +23,7 @@ Tested platforms
 
 New user-visible features
 -------------------------
+- adapt new SimExported API for net-next-sim
 
 Bugs fixed
 ----------

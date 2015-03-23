@@ -528,7 +528,11 @@ KernelSocketFdFactory::NotifyAddDeviceTask (Ptr<NetDevice> device)
       flags |= SIM_DEV_NOARP;
     }
   m_loader->NotifyStartExecute (); // Restore the memory of the kernel before access it !
+#if ((LIBOS_API_VERSION == 2))
+  struct SimDevice *dev = m_exported->dev_create ("sim%d", PeekPointer (device), (enum SimDevFlags)flags);
+#else
   struct SimDevice *dev = m_exported->dev_create (PeekPointer (device), (enum SimDevFlags)flags);
+#endif  // LIBOS_API_VERSION
   m_loader->NotifyEndExecute ();
   Ptr<KernelDeviceStateListener> listener = Create <KernelDeviceStateListener> (device, this);
   m_listeners.push_back (listener);
