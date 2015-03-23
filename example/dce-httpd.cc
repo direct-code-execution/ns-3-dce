@@ -86,11 +86,10 @@ main (int argc, char *argv[])
   if (useKernel)
     {
       LinuxStackHelper::PopulateRoutingTables ();
+      LinuxStackHelper::RunIp (nodes.Get (0), NanoSeconds (100), "addr list");
     }
 
   dceManager.Install (nodes);
-  LinuxStackHelper::RunIp (nodes.Get (0), NanoSeconds (100), "addr list");
-
 
   DceApplicationHelper dce;
   ApplicationContainer server, client;
