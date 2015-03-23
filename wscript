@@ -504,11 +504,24 @@ def build_a_script(bld, name, needed = [], **kw):
 # Add directories under myscripts dir
 def add_myscripts(bld):
     # submodule parse should be the first
+    submodules = []
+    scratches = []
+
     for dir in os.listdir('myscripts'):
         if dir.startswith('.') or dir == 'CVS':
             continue
         if os.path.isdir(os.path.join('myscripts', dir)):
-             bld.add_subdirs(os.path.join('myscripts', dir))
+            if dir.startswith('ns-3-dce-'):
+                submodules.append(dir)
+        else:
+            scratches.append(dir)
+
+    for dir in submodules:
+        bld.add_subdirs(os.path.join('myscripts', dir))
+
+    for dir in scratches:
+        if os.path.isdir(os.path.join('myscripts', dir)):
+            bld.add_subdirs(os.path.join('myscripts', dir))
         elif dir.endswith(".cc"):
             bld.build_a_script('dce',
                                needed = bld.env['NS3_MODULES_FOUND'] + ['dce'],

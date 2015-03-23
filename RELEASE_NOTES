@@ -26,7 +26,7 @@ New user-visible features
 
 Bugs fixed
 ----------
--
+- Bug 2051 - DCE submodules (dce-quagga, dce-umip, etc) are not linked to scripts under myscripts
 
 
 Release dce-1.5
