@@ -5,9 +5,21 @@ This file contains Direct Code Execution release notes (most recent releases fir
 
 Please refer the page http://www.nsnam.org/projects/direct-code-execution/ for detailed instructions
 
-Release dce-dev
+Release dce-1.6
 ===============
-This release is not yet available.
+Availability
+------------
+In order to use DCE, please use bake tool to install DCE.
+The followings are the basic steps to use DCE.
+
+ % bake.py configure -e dce-ns3-1.6
+   or
+ % bake.py configure -e dce-linux-1.6
+ % bake.py download
+ % bake.py build
+
+For more information, please refer the document.
+
 
 Availability
 ------------
