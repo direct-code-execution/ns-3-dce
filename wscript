@@ -513,6 +513,8 @@ def add_myscripts(bld):
         if os.path.isdir(os.path.join('myscripts', dir)):
             if dir.startswith('ns-3-dce-'):
                 submodules.append(dir)
+            else:
+                scratches.append(dir)
         else:
             scratches.append(dir)
 
