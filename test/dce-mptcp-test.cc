@@ -17,6 +17,8 @@ public:
   DceMptcpTestCase (std::string testname, Time maxDuration, std::string sock_factory, bool skip);
 private:
   virtual void DoRun (void);
+  virtual void DoBasicRun (void);
+  virtual void DoAddrTestRun (void);
   static void Finished (int *pstatus, uint16_t pid, int status);
 
   std::string m_testname;
@@ -54,14 +56,14 @@ ReceivedBytes (std::string context, Ptr<const Packet> originalPacket)
   if (ppp.GetProtocol () == 0x0021) // IPv4
     {
       packet->RemoveHeader (v4hdr);
-      if (v4hdr.GetDestination () == Ipv4Address ("10.2.0.1"))
+      if (v4hdr.GetSource () == Ipv4Address ("10.1.0.1"))
         {
-          std::cout << "daddr1 = " << v4hdr.GetDestination () << std::endl;
+          std::cout << "saddr1 = " << v4hdr.GetSource () << std::endl;
           g_rcv0 = true;
         }
-      if (v4hdr.GetDestination () == Ipv4Address ("10.2.1.1"))
+      if (v4hdr.GetSource () == Ipv4Address ("10.1.1.1"))
         {
-          std::cout << "daddr2 = " << v4hdr.GetDestination () << std::endl;
+          std::cout << "saddr2 = " << v4hdr.GetSource () << std::endl;
           g_rcv1 = true;
         }
     }
@@ -87,15 +89,10 @@ SetMptcpEnabled (std::string key, std::string value)
 }
 
 void
-DceMptcpTestCase::DoRun (void)
+DceMptcpTestCase::DoBasicRun (void)
 {
-  // Disable it for a while
-  // Bug 1908 - LogComponentEnable causes SIGILL with static and optimized build
-  // LogComponentEnable ("PacketSink", LOG_LEVEL_INFO);
-  if (m_skip)
-    {
-      return;
-    }
+  g_rcv0 = false;
+  g_rcv1 = false;
 
   uint32_t nRtrs = 2;
   std::string m_rate = "200Bps";
@@ -220,6 +217,134 @@ DceMptcpTestCase::DoRun (void)
   NS_TEST_ASSERT_MSG_EQ (status, 1, "Process did not return successfully: " << g_testError);
 }
 
+void
+DceMptcpTestCase::DoAddrTestRun (void)
+{
+  g_rcv0 = false;
+  g_rcv1 = false;
+
+  double stopTime = 15.0;
+  std::string p2pdelay = "10ms";
+  std::string iperfTime = "10";
+
+  PointToPointHelper pointToPoint;
+  NodeContainer nodes;
+  LinuxStackHelper stack;
+  DceManagerHelper dceManager;
+  NetDeviceContainer clientDevices;
+
+  nodes.Create (3);
+
+  dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
+  stack.Install (nodes);
+  dceManager.Install (nodes);
+
+  LinuxStackHelper::SysctlGet (nodes.Get (0), Seconds (1.0),
+                               ".net.mptcp.mptcp_debug", &SetMptcpEnabled);
+
+  pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("100Kb/s"));
+  pointToPoint.SetChannelAttribute ("Delay", StringValue (p2pdelay));
+  pointToPoint.Install(nodes.Get(1), nodes.Get(2));
+
+  /*Setup Server Routes*/
+  LinuxStackHelper::RunIp (nodes.Get (2), Seconds (0.1), "link set up dev sim0");
+  LinuxStackHelper::RunIp (nodes.Get (2), Seconds (0.1), "addr add 172.16.1.1/24 dev sim0");
+  LinuxStackHelper::RunIp (nodes.Get (2), Seconds (0.1), "route add 10.1.0.0/24 via 172.16.1.10 dev sim0");
+  LinuxStackHelper::RunIp (nodes.Get (2), Seconds (0.1), "route add 10.1.1.0/24 via 172.16.1.10 dev sim0");
+
+  /*Setup Gateway->Server*/
+  LinuxStackHelper::RunIp (nodes.Get (1), Seconds (0.1), "link set up dev sim0");
+  LinuxStackHelper::RunIp (nodes.Get (1), Seconds (0.1), "addr add 172.16.1.10/24 dev sim0");
+
+  /*Setup Client Addresses*/
+  pointToPoint.Install(nodes.Get(0), nodes.Get(1));
+  LinuxStackHelper::RunIp (nodes.Get (0), Seconds (0.1), "link set up dev sim0");
+  LinuxStackHelper::RunIp (nodes.Get (0), Seconds (0.2), "addr add 10.1.0.1/24 dev sim0");
+  LinuxStackHelper::RunIp (nodes.Get (0), Seconds (0.3), "route add default via 10.1.0.10 dev sim0 metric 1");
+  LinuxStackHelper::RunIp (nodes.Get (0), Seconds (0.4), "rule add from 10.1.0.0/24 lookup 1");
+  LinuxStackHelper::RunIp (nodes.Get (0), Seconds (0.3), "route add default via 10.1.0.10 dev sim0 table 1");
+  LinuxStackHelper::RunIp (nodes.Get (0), Seconds (0.1), "route add 10.1.0.0/24 dev sim0 table 1");
+
+  LinuxStackHelper::RunIp (nodes.Get (0), Seconds (3.2), "addr add 10.1.1.1/24 dev sim0");
+  LinuxStackHelper::RunIp (nodes.Get (0), Seconds (3.3), "route add default via 10.1.1.10 dev sim0 metric 1");
+  LinuxStackHelper::RunIp (nodes.Get (0), Seconds (3.4), "rule add from 10.1.1.0/24 lookup 1");
+  LinuxStackHelper::RunIp (nodes.Get (0), Seconds (3.3), "route add default via 10.1.1.10 dev sim0 table 1");
+  LinuxStackHelper::RunIp (nodes.Get (0), Seconds (3.1), "route add 10.1.1.0/24 dev sim0 table 1");
+
+  /*Setup Gateway Addresses*/
+  LinuxStackHelper::RunIp (nodes.Get (1), Seconds (0.1), "link set up dev sim1");
+  LinuxStackHelper::RunIp (nodes.Get (1), Seconds (0.2), "addr add 10.1.0.10/24 dev sim1");
+  LinuxStackHelper::RunIp (nodes.Get (1), Seconds (3), "addr add 10.1.1.10/24 dev sim1");
+
+  /*Enable Multipath and debugging etc*/
+  stack.SysctlSet (nodes, ".net.ipv4.conf.default.forwarding", "1");
+  stack.SysctlSet (nodes, ".net.mptcp.mptcp_debug", "1");
+  stack.SysctlSet (nodes, ".net.mptcp.mptcp_enabled", "1");
+  stack.SysctlSet (nodes, ".net.mptcp.mptcp_path_manager", "fullmesh");
+  stack.SysctlSet (nodes, ".net.ipv4.tcp_congestion_control", "olia");
+
+  DceApplicationHelper dce;
+  ApplicationContainer apps;
+
+  dce.SetStackSize (1 << 20);
+
+  /*Setup iPerf session*/
+  std::string iperfArgs = "-c 172.16.1.1 --time 10 -i 1";
+  dce.SetBinary ("iperf");
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
+  dce.ParseArguments (iperfArgs.c_str ());
+  apps = dce.Install (nodes.Get (0));
+  apps.Start (Seconds (10.0));
+
+  dce.SetBinary ("iperf");
+  dce.ResetArguments ();
+  dce.ResetEnvironment ();
+  dce.AddArgument ("-s");
+  apps = dce.Install (nodes.Get (2));
+  apps.Start (Seconds (8.00));
+
+  Config::Connect ("/NodeList/2/DeviceList/*/$ns3::PointToPointNetDevice/PhyRxEnd",
+                   MakeCallback (&ReceivedBytes));
+
+  // pointToPoint.EnablePcapAll("mptcp-address-test");
+
+  Simulator::Stop (Seconds (stopTime));
+  Simulator::Run ();
+  Simulator::Destroy ();
+
+  if (!isMptcpEnabled)
+    {
+      std::cout << "Probably failed? Because mptcp disabled kernel. SKIP." << std::endl;
+      return;
+    }
+
+  int status = (g_rcv0 == true && g_rcv1 == true);
+  NS_TEST_ASSERT_MSG_EQ (status, 1, "Process did not return successfully: " << g_testError);
+}
+
+void
+DceMptcpTestCase::DoRun (void)
+{
+  // Disable it for a while
+  // Bug 1908 - LogComponentEnable causes SIGILL with static and optimized build
+  // LogComponentEnable ("PacketSink", LOG_LEVEL_INFO);
+  if (m_skip)
+    {
+      return;
+    }
+
+  if (m_testname == "basic")
+    {
+      DoBasicRun ();
+    }
+  else if (m_testname == "addr-test")
+    {
+      DoAddrTestRun ();
+    }
+
+}
+
 static class DceMptcpTestSuite : public TestSuite
 {
 public:
@@ -240,7 +365,8 @@ DceMptcpTestSuite::DceMptcpTestSuite ()
   } testPair;
 
   testPair tests[] = {
-    {"tcp", "ns3::LinuxTcpSocketFactory", 30, false},
+    {"basic", "ns3::LinuxTcpSocketFactory", 30, false},
+    {"addr-test", "ns3::LinuxTcpSocketFactory", 30, false},
   };
 
   Packet::EnablePrinting ();
