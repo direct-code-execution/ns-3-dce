@@ -57,8 +57,6 @@ UnixSocketFd::UnixSocketFd (Ptr<Socket> socket)
     m_recvTimeout (Seconds (0.0)),
     m_peekedData (0)
 {
-  m_socket->SetAttributeFailSafe ("SndBufSize", UintegerValue (126976));
-  m_socket->SetAttributeFailSafe ("RcvBufSize", UintegerValue (126976));
   m_socket->SetRecvCallback (MakeCallback (&UnixSocketFd::RecvSocketData, this));
   m_socket->SetSendCallback (MakeCallback (&UnixSocketFd::SendSocketData, this));
 }

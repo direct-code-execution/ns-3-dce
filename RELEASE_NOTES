@@ -26,7 +26,9 @@ New user-visible features
 
 Bugs fixed
 ----------
+- Bug 2080 - MPTCP - FullMesh: queue_delayed_work is only successful on the first
 - Bug 2085 - DCE build process crashes when using compiler flag for C++0x / C++11
+- Bug 1980 - setting UnixSocketFd socket buffer size
 
 
 Release dce-1.6
