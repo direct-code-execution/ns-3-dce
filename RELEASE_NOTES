@@ -26,7 +26,7 @@ New user-visible features
 
 Bugs fixed
 ----------
--
+- Bug 2085 - DCE build process crashes when using compiler flag for C++0x / C++11
 
 
 Release dce-1.6

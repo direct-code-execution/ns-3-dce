@@ -65,8 +65,8 @@ static void test_fopen (void)
 static void test_freadwrite (void)
 {
   char buffer[] = {
-    0xff, 0xfe, 0xfd, 0x00,
-    0x02, 0x05, 0x12, 0x15
+    static_cast<char>(0xff), static_cast<char>(0xfe), static_cast<char>(0xfd), static_cast<char>(0x00),
+    static_cast<char>(0x02), static_cast<char>(0x05), static_cast<char>(0x12), static_cast<char>(0x15)
   };
   int status;
   status = unlink ("X");
@@ -158,8 +158,8 @@ void test_seek (void)
   unlink ("X");
   // let's write a file
   char buffer[] = {
-    0xff, 0xfe, 0xfd, 0x00,
-    0x02, 0x05, 0x12, 0x15
+    static_cast<char>(0xff), static_cast<char>(0xfe), static_cast<char>(0xfd), static_cast<char>(0x00),
+    static_cast<char>(0x02), static_cast<char>(0x05), static_cast<char>(0x12), static_cast<char>(0x15)
   };
   FILE *file;
   file = fopen ("X", "w+");
