@@ -125,7 +125,7 @@ int dce_timer_create(clockid_t clockid, struct sigevent *sevp, timer_t *timerid)
   NS_ASSERT (current != 0);
 
   int fd = UtilsAllocateFd ();
-  *timerid = (timer_t)fd;
+  memcpy (timerid, &fd, sizeof (timer_t));
   if (fd == -1)
   {
      current->err = EMFILE;

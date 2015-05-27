@@ -324,7 +324,7 @@ ssize_t dce_writev (int fd, const struct iovec *iov, int iovcnt)
   for (int i = 0; i < iovcnt; ++i)
     {
       memcpy (bufp, iov[i].iov_base, iov[i].iov_len);
-      bufp += iov[i].iov_len;
+      bufp = (char *)bufp + iov[i].iov_len;
     }
 
   UnixFd *unixFd = current->process->openFiles[fd]->GetFileInc ();

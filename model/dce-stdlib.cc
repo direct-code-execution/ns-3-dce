@@ -117,9 +117,10 @@ int dce_mkstemp (char *temp)
   return fd;
 }
 
-FILE * dce_tmpfile(void) {
-	int fd = dce_mkstemp ("temp");
-  	return dce_fdopen(fd, "w+");
+FILE * dce_tmpfile (void)
+{
+  int fd = dce_mkstemp ((char *)"temp");
+  return dce_fdopen (fd, "w+");
 }
 
 int dce_rename (const char *oldpath, const char *newpath)
