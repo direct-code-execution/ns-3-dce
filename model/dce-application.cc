@@ -16,7 +16,8 @@ DceApplication::GetTypeId (void)
     .SetParent<Application> ()
     .AddConstructor<DceApplication> ()
     .AddTraceSource ("ProcessStarted", "notify when the dce is started",
-                     MakeTraceSourceAccessor (&DceApplication::m_dceStarted))
+                     MakeTraceSourceAccessor (&DceApplication::m_dceStarted),
+                     "ns3::ValueClassTest::TracedValueCallback")
   ;
   return tid;
 }
