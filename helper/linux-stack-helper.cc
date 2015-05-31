@@ -109,7 +109,10 @@ LinuxStackHelper::PopulateRoutingTables ()
     {
       Ptr<Node> node = *i;
       Ptr<Ipv4Linux> ipv4 = node->GetObject<Ipv4Linux> ();
-      ipv4->PopulateRoutingTable ();
+      if(ipv4)
+        {
+          ipv4->PopulateRoutingTable ();
+        }
     }
 #endif
 }

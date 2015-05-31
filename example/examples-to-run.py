@@ -58,6 +58,7 @@ cpp_examples = [
 #    ("dce-ltp", "True", "True"),
     ("dce-cradle-mptcp", "True", "True"),
     ("dce-iperf-mptcp", "True", "True"),
+    ("dce-iperf-heterogeneous-multihop", "True", "True"),
     ("dce-mptcp-handoff-v6", "True", "True"),
     ("dce-mptcp-handoff-v6 --errRate=0.05", "True", "True"),
     ("dce-mptcp-handoff-v6 --errRate=0.1", "True", "True"),
