@@ -30,6 +30,7 @@ Bugs fixed
 - Bug 2085 - DCE build process crashes when using compiler flag for C++0x / C++11
 - Bug 1980 - setting UnixSocketFd socket buffer size
 - Bug 2129 - DCE-Linux simulations with heterogeneous nodes crash (some DCE-Linux and some ns3)
+- Bug 2101 - When loading binary not compiled with the correct options, dce crashes
 
 
 Release dce-1.6

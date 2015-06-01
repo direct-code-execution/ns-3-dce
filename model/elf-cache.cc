@@ -163,6 +163,13 @@ ElfCache::EditBuffer (uint8_t *map, uint32_t selfId) const
 
   // find DYNAMIC and fill DataSection
   struct FileInfo fileInfo;
+
+  if (header->e_type != ET_DYN)
+    {
+      fileInfo.p_vaddr = -1;
+      return fileInfo;
+    }
+
   ElfW (Phdr) * pt_load_rw = 0;
   ElfW (Phdr) * pt_gnu_relro = 0;
   for (uint32_t i = 0; i < header->e_phnum; i++, phdr++)
@@ -257,6 +264,12 @@ ElfCache::EditFile (std::string filename, uint32_t selfId) const
   close (fd);
 
   struct FileInfo fileInfo = EditBuffer (buffer, selfId);
+  if (fileInfo.p_vaddr == -1)
+    {
+      NS_LOG_UNCOND ("*** unable to open non-shared object file=" << filename << " ***");
+      NS_ASSERT_MSG (false, "make it sure that DCE binrary file " << filename 
+                     << " was built with correct options: (CFLAGS=-fPIC, LDFLAGS=-pie -rdynamic)");
+    }
 
   // write back changes to hard disk
   retval = ::msync (buffer, size, MS_SYNC);

@@ -91,6 +91,13 @@ DlmLoader::Load (std::string filename, int flag)
 {
   NS_LOG_FUNCTION (this << filename << flag);
   void *module = dlmopen (m_lmid, filename.c_str (), flag);
+  if (!module)
+    {
+      NS_LOG_UNCOND ("*** unable to open non-shared object file=" << filename << " ***");
+      NS_LOG_UNCOND ("dlerror() = " << dlerror ());
+      NS_ASSERT_MSG (false, "make it sure that DCE binrary file " << filename 
+                     << " was built with correct options: (CFLAGS=-fPIC, LDFLAGS=-pie -rdynamic)");
+    }
   m_loaded.push_back (module);
   return module;
 }
