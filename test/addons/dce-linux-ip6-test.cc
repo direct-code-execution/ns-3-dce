@@ -370,7 +370,7 @@ DceLinuxIp6TestSuite::DceLinuxIp6TestSuite ()
     bool skip;
   } testPair;
 
-  const testPair tests[] = {
+  testPair tests[] = {
     {"plain", 120, false},
     {"ip6gre", 120, false},
     {"ip6ip6", 120, false},
@@ -380,11 +380,13 @@ DceLinuxIp6TestSuite::DceLinuxIp6TestSuite ()
  
   TypeId tid;
   bool kern = TypeId::LookupByNameFailSafe ("ns3::LinuxSocketFdFactory", &tid);
+  std::string filePath = SearchExecFile ("DCE_PATH", "libsim-linux.so", 0);
+
   for (unsigned int i = 0; i < sizeof(tests) / sizeof(testPair); i++)
     {
-      if (!kern)
+      if (!kern || filePath.length () <= 0)
         {
-          continue;
+          tests[i].skip = true;
         }
       AddTestCase (new DceLinuxIp6TestCase (std::string (tests[i].name),
                                             Seconds (tests[i].duration),
