@@ -237,7 +237,13 @@ def build_dce_tests(module, bld):
             'test/dce-cradle-test.cc',
             'test/dce-mptcp-test.cc',
             ]
-        
+
+    for dir in os.listdir('test/addons'):
+        if dir.startswith('.') or dir == 'CVS':
+            continue
+        elif dir.endswith(".cc"):
+            tests_source += ["test/addons/" + dir]
+
     module.add_runner_test(needed=['core', 'dce', 'internet', 'applications'],
                            source=tests_source)
 
