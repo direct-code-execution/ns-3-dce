@@ -154,6 +154,9 @@ DceLinuxIp6TestCase::DoRun (void)
 {
   if (m_skip)
     {
+      // XXX: crash with optimized build if there is no Simulator::Run()
+      Simulator::Run ();
+      Simulator::Destroy ();
       return;
     }
 
