@@ -2,7 +2,7 @@
 # this script should display one implemented syscall per line
 # it assumes libc-ns3.h only implements one syscall per line
 # this line removes C/C++ comments
-file="../model/libc-ns3.h"
+file="$(dirname ${BASH_SOURCE:-$0})/../model/libc-ns3.h"
 
 if [ $# -gt 1 ]; then
 	file="$1"
