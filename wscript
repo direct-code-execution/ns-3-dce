@@ -81,8 +81,10 @@ def configure(conf):
         conf.env['NS3_DIR']= os.path.abspath(Options.options.with_ns3)
         if not 'PKG_CONFIG_PATH' in os.environ:
             os.environ['PKG_CONFIG_PATH']= os.path.join(Options.options.with_ns3, 'lib', 'pkgconfig')
+            os.environ['PKG_CONFIG_PATH']+= ":" + os.path.join(Options.options.with_ns3, 'lib64', 'pkgconfig')
         else:
             os.environ['PKG_CONFIG_PATH']+= ":" + os.path.join(Options.options.with_ns3, 'lib', 'pkgconfig')
+            os.environ['PKG_CONFIG_PATH']+= ":" + os.path.join(Options.options.with_ns3, 'lib64', 'pkgconfig')
 
         conf.env.append_value('NS3_EXECUTABLE_PATH', os.path.join(conf.env['NS3_DIR'], 'bin'))
 

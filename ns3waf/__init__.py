@@ -154,7 +154,7 @@ def _check_dependencies(conf, required, mandatory):
             continue
         # XXX need better way to find .pc files
         for ver in ns3_versions:
-            pcfiles = glob.glob(conf.env['NS3_DIR'] + '/lib/pkgconfig/' + 'libns%s*-%s-%s*'
+            pcfiles = glob.glob(conf.env['NS3_DIR'] + '/lib*/pkgconfig/' + 'libns%s*-%s-%s*'
                                 % (ver, module.lower(), conf.env['LIB_SUFFIX']))
             if not len(pcfiles) is 0:
                 match_pkg = os.path.basename(pcfiles[0])
