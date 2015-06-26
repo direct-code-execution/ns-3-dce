@@ -14,7 +14,7 @@ public:
   virtual void NotifyEndExecute (void);
   virtual Loader * Clone (void) = 0;
   virtual void UnloadAll (void) = 0;
-  virtual void * Load (std::string filename, int flag) = 0;
+  virtual void * Load (std::string filename, int flag, bool failsafe = false) = 0;
   virtual void Unload (void *module) = 0;
   virtual void * Lookup (void *module, std::string symbol) = 0;
 };

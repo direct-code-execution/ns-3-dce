@@ -17,7 +17,7 @@ public:
   };
   typedef std::vector<struct Dependency>::const_iterator Iterator;
 
-  ElfDependencies (std::string filename);
+  ElfDependencies (std::string filename, bool failsafe = false);
 
   Iterator Begin (void) const;
   Iterator End (void) const;

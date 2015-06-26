@@ -616,6 +616,7 @@ def build(bld):
         'model/dce-time.cc',
         'model/dce-stat.cc',
         'model/dce-syslog.cc',
+        'model/dce-dl.cc',
         'model/dce-global-variables.cc',
         'model/cmsg.cc',
         'model/waiter.cc',
@@ -767,12 +768,12 @@ def build(bld):
     
     bld.program(source='utils/dcemakeversion.c', 
                 name='dcemakeversion',
-                target='dcemakeversion', cflags = [ '-g'], linkflags    = ['-lpthread', '-lrt', '-lm'])
+                target='dcemakeversion', cflags = [ '-g'], linkflags    = ['-lpthread', '-lrt', '-lm', '-ldl'])
 
     bld(source=['dcemakeversion','model/libc-ns3.version' , 'model/libpthread-ns3.version' ,
-                'model/librt-ns3.version', 'model/libm-ns3.version'],
-        target=['model/libc.version','model/libpthread.version','model/librt.version','model/libm.version'],
-        rule='${SRC[0].abspath()} ${SRC[1].abspath()}  ${SRC[2].abspath()}  ${SRC[3].abspath()} ${SRC[4].abspath()}')
+                'model/librt-ns3.version', 'model/libm-ns3.version', 'model/libdl-ns3.version'],
+        target=['model/libc.version','model/libpthread.version','model/librt.version','model/libm.version','model/libdl.version'],
+        rule='${SRC[0].abspath()} ${SRC[1].abspath()}  ${SRC[2].abspath()}  ${SRC[3].abspath()} ${SRC[4].abspath()}  ${SRC[5].abspath()}')
 
     bld.add_group('dce_use_version_files')
 
@@ -810,6 +811,15 @@ def build(bld):
               linkflags=['-nostdlib', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'libm.version'),
                          '-Wl,-soname=libm.so.6'])
+
+    # The very small libdl used to replace the glibc
+    # and forward to the dce_* code
+    bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc'],
+              target='lib/dl-ns3', cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage'],
+              defines=['LIBSETUP=libdl_setup'],
+              linkflags=['-nostdlib', '-fno-profile-arcs',
+                         '-Wl,--version-script=' + os.path.join('model', 'libdl.version'),
+                         '-Wl,-soname=libdl.so.2'])
 
     bld.add_subdirs(['utils'])
     bld.recurse('bindings/python')

@@ -23,6 +23,7 @@ Tested platforms
 
 New user-visible features
 -------------------------
+- dlopen(3), dlsym(3) support, this is useful for newer iproute2
 
 Bugs fixed
 ----------

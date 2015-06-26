@@ -612,6 +612,10 @@ NATIVE (llrintl)
 NATIVE (ceil)
 NATIVE (floor)
 
+// dlfcn.h
+DCE_WITH_ALIAS2 (dlopen, __dlopen)
+DCE (dlsym)
+
 #undef DCE
 #undef DCET
 #undef DCE_EXPLICIT

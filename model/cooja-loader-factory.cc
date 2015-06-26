@@ -63,14 +63,15 @@ private:
   virtual void NotifyEndExecute (void);
   virtual Loader * Clone (void);
   virtual void UnloadAll (void);
-  virtual void * Load (std::string filename, int flag);
+  virtual void * Load (std::string filename, int flag, bool failsafe = false);
   virtual void Unload (void *module);
   virtual void * Lookup (void *module, std::string symbol);
 
   static struct SharedModules * Peek (void);
   struct CoojaLoader::Module * SearchModule (uint32_t id);
   struct SharedModule * SearchSharedModule (uint32_t id);
-  struct CoojaLoader::Module * LoadModule (std::string filename, int flag);
+  struct CoojaLoader::Module * LoadModule (std::string filename, int flag,
+                                           bool failsafe = false);
   void UnrefSharedModule (SharedModule *search);
 
   std::list<struct Module *> m_modules;
@@ -167,9 +168,13 @@ CoojaLoader::Clone (void)
 }
 
 void *
-CoojaLoader::Load (std::string filename, int flag)
+CoojaLoader::Load (std::string filename, int flag, bool failsafe)
 {
-  struct Module *module = LoadModule (filename, flag);
+  struct Module *module = LoadModule (filename, flag, failsafe);
+  if (!module)
+    {
+      return NULL;
+    }
 
   // acquire ref for client
   module->refcount++;
@@ -210,14 +215,18 @@ CoojaLoader::SearchSharedModule (uint32_t id)
   (((unsigned long)addr) - (((unsigned long)(addr)) % (align)))
 
 struct CoojaLoader::Module *
-CoojaLoader::LoadModule (std::string filename, int flag)
+CoojaLoader::LoadModule (std::string filename, int flag, bool failsafe)
 {
   NS_LOG_FUNCTION (this << filename << flag);
   struct SharedModules *modules = Peek ();
-  ElfDependencies deps = ElfDependencies (filename);
+  ElfDependencies deps = ElfDependencies (filename, failsafe);
   struct Module *module = 0;
   for (ElfDependencies::Iterator i = deps.Begin (); i != deps.End (); ++i)
     {
+      if (i->found == "")
+        {
+          continue;
+        }
       ElfCache::ElfCachedFile cached = modules->cache.Add (i->found);
       struct SharedModule *sharedModule = SearchSharedModule (cached.id);
       if (sharedModule == 0)

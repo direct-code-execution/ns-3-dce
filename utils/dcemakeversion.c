@@ -207,6 +207,7 @@ main (int argc, char *argv[])
   createversion (seek4Lib ("libpthread.so"), argv[++i], "model/libpthread.version");
   createversion (seek4Lib ("librt.so"), argv[++i], "model/librt.version");
   createversion (seek4Lib ("libm.so"), argv[++i], "model/libm.version");
+  createversion (seek4Lib ("libdl.so"), argv[++i], "model/libdl.version");
 
   return 0;
 }

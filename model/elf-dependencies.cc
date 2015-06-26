@@ -20,12 +20,19 @@ namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE ("ElfDependencies");
 
-ElfDependencies::ElfDependencies (std::string filename)
+ElfDependencies::ElfDependencies (std::string filename, bool failsafe)
 {
   std::string fullname;
   bool found;
+
+  if (filename == "")
+    return;
+
   found = SearchFile (filename, &fullname);
-  NS_ASSERT (found);
+  if (!failsafe)
+    {
+      NS_ASSERT (found);
+    }
   if (getenv ("OLDDEP"))
     {
       m_deps = GatherDependencies (fullname);

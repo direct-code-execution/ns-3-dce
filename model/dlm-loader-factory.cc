@@ -33,7 +33,7 @@ public:
     return 0;                             /* XXX */
   }
   virtual void UnloadAll (void);
-  virtual void * Load (std::string filename, int flag);
+  virtual void * Load (std::string filename, int flag, bool failsafe);
   virtual void Unload (void *module);
   virtual void * Lookup (void *module, std::string symbol);
 private:
@@ -87,10 +87,10 @@ DlmLoader::UnloadAll (void)
     }
 }
 void *
-DlmLoader::Load (std::string filename, int flag)
+DlmLoader::Load (std::string filename, int flag, bool failsafe)
 {
   NS_LOG_FUNCTION (this << filename << flag);
-  void *module = dlmopen (m_lmid, filename.c_str (), flag);
+  void *module = dlmopen (m_lmid, (filename != "") ? filename.c_str () : NULL, flag);
   if (!module)
     {
       NS_LOG_UNCOND ("*** unable to open non-shared object file=" << filename << " ***");

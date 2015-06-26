@@ -1268,6 +1268,22 @@ DceManager::LoadMain (Loader *ld, std::string filename, Process *proc, int &err)
           libm_setup = (void (*) (const struct Libc *))(symbol);
           libm_setup (libc);
 
+          h = ld->Load ("libdl-ns3.so", RTLD_GLOBAL);
+          if (h == 0)
+            {
+              err = ENOMEM;
+              return 0;
+            }
+          symbol = ld->Lookup (h, "libdl_setup");
+          if (symbol == 0)
+            {
+              NS_FATAL_ERROR ("This is not our fake libdl !");
+            }
+          // construct libm now
+          void (*libdl_setup)(const struct Libc *fn);
+          libdl_setup = (void (*) (const struct Libc *))(symbol);
+          libdl_setup (libc);
+
           // finally, call into 'main'.
           h = ld->Load (filename, RTLD_GLOBAL);
 

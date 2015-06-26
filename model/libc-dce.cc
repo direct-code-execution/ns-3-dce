@@ -41,6 +41,7 @@
 #include "dce-dirent.h"
 #include "dce-vfs.h"
 #include "dce-termio.h"
+#include "dce-dl.h"
 
 #include <arpa/inet.h>
 #include <ctype.h>
@@ -98,6 +99,7 @@
 #include <termio.h>
 #include <math.h>
 #include <assert.h>
+#include <dlfcn.h>
 
 extern void __cxa_finalize (void *d);
 extern int __cxa_atexit (void (*func)(void *), void *arg, void *d);
