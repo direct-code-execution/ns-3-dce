@@ -240,16 +240,16 @@ DceLinuxIp6TestCase::DoRun (void)
     {
       LinuxStackHelper::RunIp (nodes.Get (0), Seconds (5.5),
                                "fou add port 5555 ipproto 6");
-      LinuxStackHelper::RunIp (nodes.Get (0), Seconds (5.5), "link add name tun1 type ip6tnl remote 2001:db8:0:1::2 "
-                               "local 2001:db8:0:1::2 ttl 225 encap fou"); // encap-sport auto encap-dport 5555");
-      LinuxStackHelper::RunIp (nodes.Get (0), Seconds (5.5), "-f inet6 addr add 2001:db8:0:5::1/64 dev tun1");
+      LinuxStackHelper::RunIp (nodes.Get (0), Seconds (5.5), "link add name tun1 type ipip remote 10.0.0.2 "
+                               "local 10.0.0.1 ttl 225 encap fou encap-sport auto encap-dport 5555");
+      LinuxStackHelper::RunIp (nodes.Get (0), Seconds (5.5), "-f inet addr add 1.1.1.1/24 dev tun1");
       LinuxStackHelper::RunIp (nodes.Get (0), Seconds (5.5), "link set tun1 up");
 
       LinuxStackHelper::RunIp (nodes.Get (1), Seconds (5.5),
                                "fou add port 5555 ipproto 6");
-      LinuxStackHelper::RunIp (nodes.Get (1), Seconds (5.5), "link add name tun1 type ip6tnl remote 2001:db8:0:1::1 "
-                               "local 2001:db8:0:1::2 ttl 225 encap fou"); // encap-sport auto encap-dport 5555");
-      LinuxStackHelper::RunIp (nodes.Get (1), Seconds (5.5), "-f inet6 addr add 2001:db8:0:5::2/64 dev tun1");
+      LinuxStackHelper::RunIp (nodes.Get (1), Seconds (5.5), "link add name tun1 type ipip remote 10.0.0.1 "
+                               "local 10.0.0.2 ttl 225 encap fou encap-sport auto encap-dport 5555");
+      LinuxStackHelper::RunIp (nodes.Get (1), Seconds (5.5), "-f inet addr add 1.1.1.2/24 dev tun1");
       LinuxStackHelper::RunIp (nodes.Get (1), Seconds (5.5), "link set tun1 up");
 
       LinuxStackHelper::RunIp (nodes.Get (0), Seconds (10.2), "addr show");
@@ -300,7 +300,7 @@ DceLinuxIp6TestCase::DoRun (void)
     }
   else if (m_testname == "ip6ip6" ||
            m_testname == "l2tp" ||
-           m_testname == "fou" ||
+           m_testname == "NIU-fou" ||
            m_testname == "ip6gre")
     {
       dce.SetBinary ("ping6");
@@ -312,14 +312,14 @@ DceLinuxIp6TestCase::DoRun (void)
       apps = dce.Install (nodes.Get (1));
       apps.Start (Seconds (10.0));
     }
-  else if (m_testname == "NIU-fou")
+  else if (m_testname == "fou")
     {
       dce.SetBinary ("ping");
       dce.SetStackSize (1 << 20);
       dce.ResetArguments ();
       dce.ResetEnvironment ();
       dce.SetFinishedCallback (MakeBoundCallback (&DceLinuxIp6TestCase::Finished, &status));
-      dce.AddArgument ("10.0.0.2");
+      dce.AddArgument ("1.1.1.1");
       apps = dce.Install (nodes.Get (1));
       apps.Start (Seconds (10.0));
     }
@@ -378,7 +378,7 @@ DceLinuxIp6TestSuite::DceLinuxIp6TestSuite ()
     {"ip6gre", 120, false},
     {"ip6ip6", 120, false},
     {"l2tp", 120, false},
-    {"fou", 120, true},         // no idea how to configure ip -6 tun for fou?
+    {"fou", 120, false},
   };
  
   TypeId tid;
