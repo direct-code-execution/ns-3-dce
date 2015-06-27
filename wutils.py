@@ -101,8 +101,10 @@ def get_proc_env(os_env=None):
     # DCE specific env
     proc_env[pathvar] = os.pathsep.join([proc_env[pathvar], \
                                              os.path.join(bld.out_dir, 'lib'), \
+                                             os.path.join(bld.out_dir, 'lib64'), \
                                              os.path.join(bld.out_dir, 'bin'), \
                                              os.path.join(bld.env.NS3_DIR, 'lib'), \
+                                             os.path.join(bld.env.NS3_DIR, 'lib64'), \
                                              os.path.join(bld.env.NS3_DIR, 'bin')])
 
 

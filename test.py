@@ -601,6 +601,7 @@ def make_paths():
         + os.path.join (NS3_BUILDDIR, "bin") + ":" \
         + os.path.join (NS3_BUILDDIR, "bin_dce") + ":" \
         + os.path.join (NS3_INSTALL_DIR, "lib") + ":" \
+        + os.path.join (NS3_INSTALL_DIR, "lib64") + ":" \
         + os.path.join (NS3_INSTALL_DIR, "sbin") + ":" \
         + os.path.join (NS3_INSTALL_DIR, "bin_dce") + ":" \
         + os.path.join (NS3_INSTALL_DIR, "bin")
