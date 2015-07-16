@@ -1,0 +1,13 @@
+diff -ur iputils.orig/Makefile iputils/Makefile
+--- iputils.orig/Makefile	2010-10-06 20:59:20.000000000 +0900
++++ iputils/Makefile	2013-02-06 12:50:08.702161380 +0900
+@@ -29,7 +29,8 @@
+ tftpd: tftpd.o tftpsubs.o
+ arping: arping.o -lsysfs
+ ping: ping.o ping_common.o
+-ping6: ping6.o ping_common.o -lresolv -lcrypto
++ping6: ping6.o ping_common.o
++ping6: LDLIBS = -lresolv -lcrypto
+ ping.o ping6.o ping_common.o: ping_common.h
+ tftpd.o tftpsubs.o: tftp.h
+ 
