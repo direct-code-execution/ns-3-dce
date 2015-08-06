@@ -32,6 +32,7 @@ Bugs fixed
 - Bug 1980 - setting UnixSocketFd socket buffer size
 - Bug 2129 - DCE-Linux simulations with heterogeneous nodes crash (some DCE-Linux and some ns3)
 - Bug 2101 - When loading binary not compiled with the correct options, dce crashes
+- Bug 2160 - Waf Fails to recognize pygccxml version 1.6.2
 
 
 Release dce-1.6
