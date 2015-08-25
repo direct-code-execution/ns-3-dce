@@ -95,11 +95,19 @@ DceManagerHelper::SetAttribute (std::string n1, const AttributeValue &v1)
 {
   m_managerFactory.Set (n1, v1);
 }
+
 void
 DceManagerHelper::Install (NodeContainer nodes)
 {
   for (NodeContainer::Iterator i = nodes.Begin (); i != nodes.End (); ++i)
     {
+        Install( *i );
+    }
+}
+void
+DceManagerHelper::Install (Ptr<Node> node)
+{
+
       Ptr<DceManager> manager = m_managerFactory.Create<DceManager> ();
       Ptr<TaskManager> taskManager = m_taskManagerFactory.Create<TaskManager> ();
       Ptr<TaskScheduler> scheduler = m_schedulerFactory.Create<TaskScheduler> ();
@@ -111,7 +119,6 @@ DceManagerHelper::Install (NodeContainer nodes)
       taskManager->SetDelayModel (delay);
       Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
       manager->SetAttribute ("FirstPid", UintegerValue (uv->GetInteger (0, 0xffff)));
-      Ptr<Node> node = *i;
       node->AggregateObject (taskManager);
       node->AggregateObject (loader);
       node->AggregateObject (manager);
@@ -119,7 +126,6 @@ DceManagerHelper::Install (NodeContainer nodes)
       node->AggregateObject (CreateObject<LocalSocketFdFactory> ());
       manager->AggregateObject (CreateObject<DceNodeContext> ());
       manager->SetVirtualPath (GetVirtualPath ());
-    }
 }
 void
 DceManagerHelper::SetVirtualPath (std::string p)

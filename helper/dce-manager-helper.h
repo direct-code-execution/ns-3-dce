@@ -158,6 +158,7 @@ public:
    * binary on nodes.
    */
   void Install (NodeContainer nodes);
+  void Install (Ptr<Node> node);
 
   /**
    * \param p the name of path
