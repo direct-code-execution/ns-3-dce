@@ -211,8 +211,9 @@ struct Thread
   bool hasExitValue;
   /* value passed to pthread_exit or returned from thread function */
   void *exitValue;
-  /* errno of the thread. */
+  /* (h_)errno of the thread. */
   int err;
+  int h_err;
   /* thread id. */
   uint16_t tid;
   Task *task;
