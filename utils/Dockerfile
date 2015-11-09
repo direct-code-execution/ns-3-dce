@@ -9,7 +9,7 @@ WORKDIR /var/lib/dce-linux-dev
 RUN mkdir -p /var/lib/dce-linux-dev
 RUN hg clone http://code.nsnam.org/bake
 
-RUN ./bake/bake.py configure -e dce-linux-dev
+RUN ./bake/bake.py configure -e dce-linux-dev -e dce-umip-dev
 RUN ./bake/bake.py download
 RUN ./bake/bake.py build
 
