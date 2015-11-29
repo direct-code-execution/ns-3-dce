@@ -407,6 +407,7 @@ map_newlink (int index, struct ifaddrs_storage *ifas, int *map, int max)
   /* This should never be reached. If this will be reached, we have
      a very big problem.  */
   dce_abort ();
+  return 0;
 }
 
 static void

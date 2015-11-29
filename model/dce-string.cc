@@ -24,7 +24,7 @@ char * dce___strcpy_chk (char *__restrict __dest,
                          size_t __destlen)
 {
   /// \todo Do actual checking
-  strcpy (__dest, __src);
+  return strcpy (__dest, __src);
 }
 
 char * dce_strpbrk (const char *s, const char *a)

@@ -30,7 +30,7 @@ int main (int argc, char *argv[])
   size_t bLen = 1 + strlen (argv[2]);
   char *buffer = (char *)malloc (bLen);
 
-  memset (buffer, 0, sizeof (buffer));
+  memset (buffer, 0, bLen*sizeof (char));
 
   socklen_t aLen = sizeof(addr);
 

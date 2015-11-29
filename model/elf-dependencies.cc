@@ -101,7 +101,7 @@ ElfDependencies::GatherDependencies (std::string fullname) const
   int ret = system (lddCmd.str ().c_str ());
   if (ret == -1)
     {
-      NS_LOG_ERROR (lddCmd << " failed");
+      NS_LOG_ERROR (lddCmd.str () << " failed");
       return dependencies;
     }
 

@@ -434,7 +434,7 @@ void
 NetlinkSocketTestCase::ReceiveMulticastPacket (Ptr<Socket> socket)
 {
   Ptr<Packet> packet;
-  while (packet = socket->Recv ())
+  while ((packet = socket->Recv ()))
     {
       MultipartNetlinkMessage nlmsg;
       packet->RemoveHeader (nlmsg);
