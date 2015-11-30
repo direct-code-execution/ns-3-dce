@@ -26,7 +26,7 @@ New user-visible features
 
 Bugs fixed
 ----------
--
+- Bug 2098 - DCE_PATH and DCE_ROOT are now taken into account by DCE
 
 
 Release dce-1.7
