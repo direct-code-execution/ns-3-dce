@@ -18,7 +18,9 @@ time_t dce_time (time_t *t)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
-  time_t time = (time_t)UtilsSimulationTimeToTime (Now ()).GetSeconds ();
+
+  Time nodeTime = UtilsNodeTime(UtilsGetNodeId ());
+  time_t time = (time_t)UtilsSimulationTimeToTime (nodeTime).GetSeconds ();
   if (t != 0)
     {
       *t = time;
@@ -67,9 +69,11 @@ int dce_clock_gettime (clockid_t c, struct timespec *tp)
       Current ()->err = EFAULT;
       return -1;
     }
-  *tp = UtilsTimeToTimespec (UtilsSimulationTimeToTime (Now ()));
+  Time t = UtilsNodeTime(UtilsGetNodeId ());
+  *tp = UtilsTimeToTimespec (UtilsSimulationTimeToTime (t));
   return 0;
 }
+
 void dce_tzset ()
 {
 

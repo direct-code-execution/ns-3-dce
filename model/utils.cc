@@ -14,14 +14,20 @@
 #include <list>
 #include <fcntl.h>
 #include <unistd.h>
+#include "dce-unistd.h"
 #include "file-usage.h"
 #include "ns3/global-value.h"
 #include "ns3/uinteger.h"
+#include "ns3/node-list.h"
+#include "ns3/node.h"
 
 NS_LOG_COMPONENT_DEFINE ("ProcessUtils");
 
 namespace ns3 {
 
+/**
+ * \brief Set the epoch of the simulation
+ */
 GlobalValue g_timeBase = GlobalValue ("SimulationTimeBase",
                                       "The timebase for this simulation",
                                       // January 1st, 2010, 00:00:00
@@ -153,6 +159,31 @@ struct timespec UtilsTimeToTimespec (Time time)
   tv.tv_nsec = n % 1000000000;
   return tv;
 }
+
+std::string
+UtilsGenerateIfNameFromIndex(uint32_t i) {
+    std::stringstream ss;
+    ss <<  "ns3-device " << i;
+    return ss.str();
+}
+
+Ptr<Node>
+UtilsGetNode(uint32_t nodeId)
+{
+  Ptr<Node> node(NodeList::GetNode(nodeId));
+  NS_ASSERT(node);
+  return node;
+}
+
+Time
+UtilsNodeTime(uint32_t nodeId)
+{
+  Ptr<Node> node(UtilsGetNode(nodeId));
+  Time t = node->GetLocalTime();
+  t = UtilsSimulationTimeToTime (t);
+  return t;
+}
+
 Time UtilsSimulationTimeToTime (Time time)
 {
   UintegerValue uintegerValue;
