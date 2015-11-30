@@ -113,20 +113,29 @@ def configure(conf):
     conf.check (lib='dl', mandatory = True)
     conf.check_cc(fragment='int main() {__get_cpu_features();}\n', msg='Checking for glibc get_cpu_features', define_name='HAVE_GETCPUFEATURES', mandatory=False)
     conf.check_cc(fragment='int main() {__secure_getenv("test");}\n', msg='Checking for glibc __secure_getenv', define_name='HAVE___SECURE_GETENV', mandatory=False)
-     
+
     vg_h = conf.check(header_name='valgrind/valgrind.h', mandatory=False)
     vg_memcheck_h = conf.check(header_name='valgrind/memcheck.h', mandatory=False)
     if vg_h and vg_memcheck_h:
         conf.env.append_value('CXXDEFINES', 'HAVE_VALGRIND_H')
 
-    if Options.options.kernel_stack is not None and os.path.isdir(Options.options.kernel_stack):
+    if Options.options.kernel_stack:
+        if not os.path.isdir(Options.options.kernel_stack):
+            Logs.error( "\"%s\" is not a directory: please fix your --enable-kernel-stack parameter." % (Options.options.kernel_stack))
+            raise SystemExit(1)
+
         # look for kernel dir from 1) {KERNEL_DIR}/sim, then 2) {KERNEL_DIR}/lib.
-        kernel_stack_sim_dir = os.path.join(Options.options.kernel_stack, "sim")
-        kernel_stack_lib_dir = os.path.join(Options.options.kernel_stack, "lib")
-        if os.path.isdir(kernel_stack_sim_dir):
-            kernel_stack_dir = kernel_stack_sim_dir
-        if os.path.isdir(kernel_stack_lib_dir):
-            kernel_stack_dir = kernel_stack_lib_dir
+        architectures = ["sim", "lib"]
+        kernel_stack_dir = None
+        for dir in architectures:
+            dir = os.path.join(Options.options.kernel_stack, dir)
+            if os.path.isdir(dir):
+                kernel_stack_dir = dir 
+                break
+
+        if not kernel_stack_dir:
+            Logs.error("Could not find any of the [%s] architecture. Make sure you use the net-next-sim kernel or fix your --enabled-kernel-stack parameter" % ','.join(architectures))
+            raise SystemExit(1)
 
         conf.check(header_name='sim.h',
                    includes=os.path.join(kernel_stack_dir, 'include'))
