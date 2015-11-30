@@ -525,6 +525,7 @@ DCE (syslog)
 DCE (vsyslog)
 
 // SETJMP.H
+NATIVE (_setjmp)
 NATIVE (__sigsetjmp)
 NATIVE (siglongjmp)
 
@@ -595,6 +596,7 @@ DCE    (__vfprintf_chk)
 DCE    (__fprintf_chk)
 DCE    (__snprintf_chk)
 DCE    (__errno_location)
+DCE    (__h_errno_location)
 DCE    (__vsnprintf_chk)
 
 DCE    (__xstat)
