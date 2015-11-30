@@ -20,7 +20,7 @@ Install the target executable
 ------------------------------
 
 Copy the executable file produced in a specified directory in the variable environment DCE_PATH so that DCE can find it.
-(FIXME: to be updated)
+DCE_PATH behaves like the variable PATH and can contain several directories such as ``/home/USER/iproute2/ip:/home/USER/iperf3/src:/home/USER/iperf2/src``
 
 Write a |ns3| script
 --------------------
