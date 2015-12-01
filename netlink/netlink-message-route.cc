@@ -24,6 +24,48 @@
 
 namespace ns3 {
 
+std::string NetlinkRtmTypeToStr(int type)
+{
+  static const char* str[] = {
+  "GETLINK",
+  "SETLINK",
+
+  "NEWADDR",
+  "DELADDR",
+  "GETADDR",
+
+  "NEWROUTE",
+  "DELROUTE",
+  "GETROUTE"
+  };
+
+  NS_ASSERT(type > NETLINK_RTM_BASE && type < NETLINK_RTM_MAX);
+  return str[type-NETLINK_RTM_GETLINK];
+
+}
+
+std::string NetlinkFamilyToStr(int family)
+{
+  static const char* str[] = {
+  "BASE",
+  "GETLINK",
+  "SETLINK",
+
+  "NEWADDR",
+  "DELADDR",
+  "GETADDR",
+
+  "NEWROUTE",
+  "DELROUTE",
+  "GETROUTE"
+  };
+
+  NS_ASSERT(family >= 0 && family < 30);
+  return str[family];
+
+}
+
+
 /***********************************************************************************
 * \ NetlinkPayload
 ***********************************************************************************/

@@ -44,7 +44,7 @@ typedef enum NetlinkAttributeValueType_e
   U64,
   STRING,
   ADDRESS,
-}NetlinkAttributeValueType;
+} NetlinkAttributeValueType;
 
 class NetlinkAttributeValue
 {
@@ -98,6 +98,8 @@ public:
   NetlinkAttribute (uint16_t type, NetlinkAttributeValueType payloadtype,  uint64_t payload);
   NetlinkAttribute (uint16_t type, NetlinkAttributeValueType payloadtype,  std::string payload);
   NetlinkAttribute (uint16_t type, NetlinkAttributeValueType payloadtype,  Address payload);
+
+  static std::string TypeToStr(NetlinkAttributeValueType type);
 
   //static TypeId GetTypeId (void);
   //virtual TypeId GetInstanceTypeId (void) const;

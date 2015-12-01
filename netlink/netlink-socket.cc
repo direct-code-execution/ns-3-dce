@@ -19,6 +19,12 @@
  *         Hajime Tazaki <tazaki@sfc.wide.ad.jp>
  */
 
+ #undef NS_LOG_APPEND_CONTEXT
+
+#define NS_LOG_APPEND_CONTEXT \
+    std::clog << Simulator::Now ().GetSeconds () << " ";
+
+
 #include "netlink-socket.h"
 #include "netlink-socket-address.h"
 #include "netlink-message.h"
@@ -31,6 +37,7 @@
 #include "ns3/simple-net-device.h"
 #include "ns3/uinteger.h"
 #include "ns3/trace-source-accessor.h"
+#include "ns3/names.h"
 #include <iostream>
 #include <sstream>
 #include "ns3/ipv6-address.h"
@@ -103,6 +110,11 @@ NetlinkSocket::GetTypeId (void)
                    CallbackValue (),
                    MakeCallbackAccessor (&NetlinkSocket::m_icmpCallback),
                    MakeCallbackChecker ())
+    .AddTraceSource ("PromiscSniffer",
+                     "Trace source simulating a promiscuous "
+                     "packet sniffer attached to the device",
+                     MakeTraceSourceAccessor (&NetlinkSocket::m_promiscSnifferTrace),
+                     "ns3::Packet::TracedCallback")
   ;
   return tid;
 }
@@ -168,7 +180,7 @@ NetlinkSocket::ErrnoToSimuErrno (void)
 void
 NetlinkSocket::SetNode (Ptr<Node> node)
 {
-  NS_LOG_FUNCTION_NOARGS ();
+  NS_LOG_FUNCTION (this);
   m_node = node;
 
   NS_LOG_DEBUG ("SetNode: " << node->GetId ());
@@ -427,6 +439,8 @@ NetlinkSocket::SendTo (Ptr<Packet> p, uint32_t flags, const Address &toAddress)
   packet_len = p->GetSize ();
   remain_len = packet_len;
 
+  m_promiscSnifferTrace (p);
+
   while (remain_len > NetlinkMessageHeader::GetHeaderSize ())
     {
       remain_len -= p->RemoveHeader (multipartnlmsg);
@@ -507,6 +521,9 @@ NetlinkSocket::ForwardUp (Ptr<Packet> packet, const NetlinkSocketAddress &addres
       tag.SetAddress (address);
       packet->AddByteTag (tag);
       m_dataReceiveQueue.push (packet);
+
+      m_promiscSnifferTrace (packet);
+
       m_rxAvailable += packet->GetSize ();
       NotifyDataRecv ();
     }
@@ -626,6 +643,7 @@ NetlinkSocket::HandleNetlinkRouteMessage (const NetlinkMessage &nlmsg)
   /* Only requests are handled by kernel now */
   if (!NetlinkMessage::IsMessageFlagsRequest (nlmsg.GetHeader ().GetMsgFlags ()))
     {
+      NS_LOG_WARN("Only requests are handled by kernel now");
       return 0;
     }
 
@@ -634,6 +652,7 @@ NetlinkSocket::HandleNetlinkRouteMessage (const NetlinkMessage &nlmsg)
   /* A control message: ignore them */
   if (NetlinkMessage::IsMessageNetlinkControl (type))
     {
+      NS_LOG_WARN("Ignoring message control");
       return 0;
     }
   else if (NetlinkMessage::IsMessageNetlinkRoute (type))
@@ -669,28 +688,30 @@ NetlinkSocket::HandleNetlinkRouteMessage (const NetlinkMessage &nlmsg)
 int32_t
 NetlinkSocket::DumpNetlinkRouteMessage (const NetlinkMessage &nlmsg, uint16_t type, uint8_t family)
 {
-  NS_LOG_FUNCTION (this << type << (int)family);
+  NS_LOG_FUNCTION (this << "type=" << type << "family=" << NetlinkRtmTypeToStr(type));
 
   NS_ASSERT (type == NETLINK_RTM_GETADDR || type == NETLINK_RTM_GETROUTE || type == NETLINK_RTM_GETLINK);
 
   MultipartNetlinkMessage nlmsg_dump;
   NetlinkMessageHeader nhr = nlmsg.GetHeader ();
+  uint32_t seq = nhr.GetMsgSeq();
   int32_t err;
 
   if (type == NETLINK_RTM_GETADDR)
     {
-      nlmsg_dump = BuildInterfaceAddressDumpMessages ();
+      nlmsg_dump = BuildInterfaceAddressDumpMessages (seq);
     }
   else if (type == NETLINK_RTM_GETLINK)
     {
-      nlmsg_dump = BuildInterfaceInfoDumpMessages ();
+      nlmsg_dump = BuildInterfaceInfoDumpMessages (seq);
     }
   else if (type == NETLINK_RTM_GETROUTE)
     {
-      nlmsg_dump = BuildRouteDumpMessages ();
+      nlmsg_dump = BuildRouteDumpMessages (seq);
     }
   else
     {
+      NS_LOG_ERROR ("Unknown type " << type);
       m_errno = ERROR_INVAL;
       return -1;
     }
@@ -698,11 +719,11 @@ NetlinkSocket::DumpNetlinkRouteMessage (const NetlinkMessage &nlmsg, uint16_t ty
   //then append netlink message with type NLMSG_DONE
   NetlinkMessage nlmsg_done;
   NetlinkMessageHeader nhr2 = NetlinkMessageHeader (NETLINK_MSG_DONE, NETLINK_MSG_F_MULTI,
-                                                    nhr.GetMsgSeq (), m_kernelPid);
+                                                    nhr.GetMsgSeq (), m_Pid);
+
   nlmsg_done.SetHeader (nhr2);
   //kernel append nlmsg_dump size to it, here we omit it
   nlmsg_dump.AppendMessage (nlmsg_done);
-
   err = SendMessageUnicast (nlmsg_dump, 1);
   return err;
 }
@@ -737,7 +758,7 @@ NetlinkSocket::DoNetlinkRouteMessage (const NetlinkMessage &nlmsg, uint16_t type
 }
 
 MultipartNetlinkMessage
-NetlinkSocket::BuildInterfaceAddressDumpMessages ()
+NetlinkSocket::BuildInterfaceAddressDumpMessages (uint32_t received_seq)
 {
   NS_LOG_FUNCTION (this);
   MultipartNetlinkMessage nlmsg_dump;
@@ -767,7 +788,10 @@ NetlinkSocket::BuildInterfaceAddressDumpMessages ()
 
       //next fill the message body
       NetlinkMessage nlmsg_ifa;
-      NetlinkMessageHeader nhr = NetlinkMessageHeader (NETLINK_RTM_NEWADDR, NETLINK_MSG_F_MULTI, 0, m_kernelPid);
+      NetlinkMessageHeader nhr = NetlinkMessageHeader (NETLINK_RTM_NEWADDR, NETLINK_MSG_F_MULTI,
+                                received_seq,
+                                m_Pid
+                                );
       InterfaceAddressMessage ifamsg;
 
       ifamsg.SetInterfaceIndex (i);
@@ -776,6 +800,8 @@ NetlinkSocket::BuildInterfaceAddressDumpMessages ()
       ifamsg.SetFlags (0);
       ifamsg.SetScope (RouteMessage::RT_SCOPE_UNIVERSE);
 
+      std::string name = UtilsGenerateIfNameFromIndex (i);
+      ifamsg.AppendAttribute (NetlinkAttribute (InterfaceInfoMessage::IFL_A_IFNAME,    STRING, name ));
       ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_LOCAL,    ADDRESS, addri));
       ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_ADDRESS,  ADDRESS, addri));
       ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_BROADCAST,ADDRESS, bcast));
@@ -814,7 +840,8 @@ NetlinkSocket::BuildInterfaceAddressDumpMessages ()
 
           //next fill the message body
           NetlinkMessage nlmsg_ifa;
-          NetlinkMessageHeader nhr = NetlinkMessageHeader (NETLINK_RTM_NEWADDR, NETLINK_MSG_F_MULTI, 0, m_kernelPid);
+          NetlinkMessageHeader nhr = NetlinkMessageHeader (
+            NETLINK_RTM_NEWADDR, NETLINK_MSG_F_MULTI, received_seq, m_Pid);
           InterfaceAddressMessage ifamsg;
 
           ifamsg.SetInterfaceIndex (i);
@@ -832,7 +859,10 @@ NetlinkSocket::BuildInterfaceAddressDumpMessages ()
               ifamsg.SetScope (RouteMessage::RT_SCOPE_UNIVERSE);
             }
 
+          std::string name = UtilsGenerateIfNameFromIndex (i);
 
+          ifamsg.AppendAttribute (NetlinkAttribute (InterfaceInfoMessage::IFL_A_IFNAME,    STRING,  name));
+          ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_LOCAL,    ADDRESS, addri));
           ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_LOCAL,    ADDRESS, addri));
           ifamsg.AppendAttribute (NetlinkAttribute (InterfaceAddressMessage::IF_A_ADDRESS,  ADDRESS, addri));
           //XXXother attributes not used by ns3
@@ -846,9 +876,9 @@ NetlinkSocket::BuildInterfaceAddressDumpMessages ()
 }
 
 NetlinkMessage
-NetlinkSocket::BuildInterfaceInfoDumpMessage (uint32_t interface_num)
+NetlinkSocket::BuildInterfaceInfoDumpMessage (uint32_t interface_num, uint32_t seq)
 {
-  NS_LOG_FUNCTION (this << interface_num);
+  NS_LOG_FUNCTION (this << interface_num << seq);
 
   Ptr<Ipv4> ipv4 = m_node->GetObject<Ipv4> ();
   Ptr<NetDevice> dev = m_node->GetDevice (interface_num);
@@ -883,7 +913,7 @@ NetlinkSocket::BuildInterfaceInfoDumpMessage (uint32_t interface_num)
     }
 
   NetlinkMessage nlmsg_ifinfo;
-  NetlinkMessageHeader nhr = NetlinkMessageHeader (NETLINK_RTM_NEWLINK, NETLINK_MSG_F_MULTI, 0, m_kernelPid);
+  NetlinkMessageHeader nhr = NetlinkMessageHeader (NETLINK_RTM_NEWLINK, NETLINK_MSG_F_MULTI, seq, m_Pid);
   InterfaceInfoMessage ifinfomsg;
 
   ifinfomsg.SetFamily (0);      // AF_UNSPEC
@@ -918,18 +948,18 @@ NetlinkSocket::BuildInterfaceInfoDumpMessage (uint32_t interface_num)
 }
 
 MultipartNetlinkMessage
-NetlinkSocket::BuildInterfaceInfoDumpMessages ()
+NetlinkSocket::BuildInterfaceInfoDumpMessages (uint32_t seq)
 {
-  NS_LOG_FUNCTION (this);
   MultipartNetlinkMessage nlmsg_dump;
   for (uint32_t i = 0; i < m_node->GetNDevices (); i++)
     {
-      nlmsg_dump.AppendMessage (BuildInterfaceInfoDumpMessage (i));
+      NetlinkMessage msg = BuildInterfaceInfoDumpMessage (i, seq);
+      nlmsg_dump.AppendMessage (msg);
     }
   return nlmsg_dump;
 }
 MultipartNetlinkMessage
-NetlinkSocket::BuildRouteDumpMessages ()
+NetlinkSocket::BuildRouteDumpMessages (uint32_t seq)
 {
   NS_LOG_FUNCTION (this);
   MultipartNetlinkMessage nlmsg_dump;
@@ -945,7 +975,8 @@ NetlinkSocket::BuildRouteDumpMessages ()
   for (uint32_t i = 0; i < m_ipv4Routing->GetNRoutes (); i++)
     {
       NetlinkMessage nlmsg_rt;
-      NetlinkMessageHeader nhr = NetlinkMessageHeader (NETLINK_RTM_NEWROUTE, NETLINK_MSG_F_MULTI, 0, m_kernelPid);
+      NetlinkMessageHeader nhr = NetlinkMessageHeader (NETLINK_RTM_NEWROUTE, NETLINK_MSG_F_MULTI,
+                            seq, m_Pid);
       RouteMessage rtmsg;
       Ipv4RoutingTableEntry route = m_ipv4Routing->GetRoute (i);
 
@@ -1587,13 +1618,18 @@ NetlinkSocket::NotifyIfLinkMessage (uint32_t interface_num)
 {
   if (m_ipv4Routing == 0)
     {
+      NS_LOG_ERROR ("No Ipv4 routing set");
       return -1;                     //should be some nicer error code
-
     }
+
   NS_LOG_FUNCTION (this << interface_num);
 
+  /////////////////////////////////////////////////////////
+  //// WARNING: SEQUENCE NUMBER IS WRONG HERE !!!!
+  /////////////////////////////////////////////////////////
+  NS_LOG_ERROR ("Sequence number might be wrong here");
   MultipartNetlinkMessage nlmsg_multi;
-  nlmsg_multi.AppendMessage (BuildInterfaceInfoDumpMessage (interface_num));
+  nlmsg_multi.AppendMessage (BuildInterfaceInfoDumpMessage (interface_num, 0));
 
   //then append netlink message with type NLMSG_DONE
   NetlinkMessage nlmsg_done;

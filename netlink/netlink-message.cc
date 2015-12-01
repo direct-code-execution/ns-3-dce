@@ -458,7 +458,7 @@ NetlinkMessage::Print (std::ostream &os) const
 
   if (type == NETLINK_MSG_DONE)
     {
-      os << "multipart message ends here";
+      os << "\nmultipart message ends here";
     }
   else if (type == NETLINK_MSG_ERROR)
     {
@@ -606,6 +606,7 @@ MultipartNetlinkMessage::Print (std::ostream &os) const
   for (uint32_t i = 0; i <  m_netlinkMessages.size (); i++)
     {
       m_netlinkMessages[i].Print (os);
+      os << std::endl;
     }
 }
 uint32_t

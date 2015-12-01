@@ -277,10 +277,27 @@ NetlinkAttributeValue::GetSize () const
   return len;
 }
 
+std::string
+NetlinkAttribute::TypeToStr(NetlinkAttributeValueType type)
+{
+  static const char* str[] = {
+    "UNSPEC", // invalid initial value.
+  "U8",
+  "U16",
+  "U32",
+  "U64",
+  "STRING",
+  "ADDRESS"
+  };
+
+  NS_ASSERT(type >= UNSPEC && type <= ADDRESS);
+  return str[type];
+}
+
 void
 NetlinkAttributeValue::Print (std::ostream &os) const
 {
-  os << "NetlinkAttributeValue (type= " << m_type << ", v= ";
+  os << "NetlinkAttributeValue (type= " << NetlinkAttribute::TypeToStr(m_type) << ", v= ";
   if (m_type == U8)
     {
       os << m_u8;
@@ -400,7 +417,7 @@ NetlinkAttribute::Print (std::ostream &os) const
      << "type: " << m_type << " "
      << "payload:[";
   m_payload.Print (os);
-  os << "]";
+  os << "]" << std::endl;
 }
 
 uint32_t
