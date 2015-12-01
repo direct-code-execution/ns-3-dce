@@ -320,7 +320,7 @@ ssize_t dce_writev (int fd, const struct iovec *iov, int iovcnt)
     }
 
   void *buf = malloc (count);
-  void *bufp = buf;
+  char *bufp = (char *)buf;
   for (int i = 0; i < iovcnt; ++i)
     {
       memcpy (bufp, iov[i].iov_base, iov[i].iov_len);

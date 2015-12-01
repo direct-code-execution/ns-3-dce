@@ -731,7 +731,7 @@ LocalDatagramSocketFd::Sendmsg (const struct msghdr *msg, int flags)
     {
       uint8_t *buf = (uint8_t *) msg->msg_iov[i].iov_base;
       ssize_t len = msg->msg_iov[i].iov_len;
-      size_t ret = 0;
+      int ret = 0;
 
       while (m_state < REMOTECLOSED)
         {
@@ -888,6 +888,9 @@ LocalDatagramSocketFd::RemoveConnected (LocalDatagramSocketFd *freeOne, bool and
           }
       }
       break;
+    default:
+        NS_LOG_WARN ("Unhandled case");
+        break;
     }
 }
 

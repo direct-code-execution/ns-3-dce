@@ -44,6 +44,7 @@ dce_setlogmask (int maskpri)
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << maskpri);
   NS_ASSERT (Current () != 0);
   // ignore
+  return 0;
 }
 
 void
