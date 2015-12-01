@@ -133,8 +133,7 @@ DceLinuxIp6TestCase::CsmaRxCallback (std::string context, Ptr<const Packet> orig
 }
 
 DceLinuxIp6TestCase::DceLinuxIp6TestCase (std::string testname, Time maxDuration, bool skip)
-  : TestCase (skip ? "(SKIP) " + testname : "" "Check that process \"" + testname
-              + "\" completes correctly."),
+  : TestCase (skip ? "(SKIP) " + testname : testname),
     m_testname (testname),
     m_maxDuration (maxDuration),
     m_pingStatus (false),

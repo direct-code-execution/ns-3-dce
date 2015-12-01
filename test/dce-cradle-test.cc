@@ -26,9 +26,7 @@ private:
 };
 
 DceCradleTestCase::DceCradleTestCase (std::string testname, Time maxDuration, std::string sock_factory, bool skip)
-  : TestCase (std::string ("") + (skip ? "(SKIP) " : "" ) + 
-              "Check that process \"" + testname +
-              "\" completes correctly."),
+  : TestCase (std::string ("") + (skip ? "(SKIP) " : "" ) + testname),
     m_testname (testname), 
     m_maxDuration (maxDuration),
     m_sockf (sock_factory), 

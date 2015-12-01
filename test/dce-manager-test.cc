@@ -42,9 +42,8 @@ DceManagerTestCase::DceManagerTestCase (std::string filename, Time maxDuration,
                                         std::string stdin, bool useNet, std::string stack,
                                         bool skip)
   : TestCase (std::string ("") + (skip ? "(SKIP) " : "") +
-              "Check that process \"" + filename +
-              "(" + stack +")" +
-              "\" completes correctly."),
+              filename +
+              " (" + stack +")"),
     m_filename (filename),
     m_stdinFilename (stdin),
     m_maxDuration (maxDuration),
