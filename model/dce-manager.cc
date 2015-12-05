@@ -74,7 +74,9 @@ DceManager::GetTypeId (void)
     .SetParent<Object> ()
     .AddConstructor<DceManager> ()
     .AddTraceSource ("Exit", "A process has exited",
-                     MakeTraceSourceAccessor (&DceManager::m_processExit))
+                     MakeTraceSourceAccessor (&DceManager::m_processExit),
+                     "ns3::DceManager::ProcessExitTracedCallback"
+                     )
     .AddAttribute ("FirstPid", "The PID used by default when creating a process in this manager.",
                    UintegerValue (1),
                    MakeUintegerAccessor (&DceManager::m_nextPid),

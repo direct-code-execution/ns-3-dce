@@ -61,4 +61,5 @@ void *dce_dlsym(void *handle, const char *symbol)
 
 int dce_dlclose(void *handle)
 {
+    return 0;
 }

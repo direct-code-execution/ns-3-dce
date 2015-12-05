@@ -204,9 +204,9 @@ main (int argc, char *argv[])
   // ----------------------------------------------------------------------
   // Make left side fast connection and assign addresses (10.1.i.*/24)
   // ----------------------------------------------------------------------
-  NetDeviceContainer linkL[numRouters/2];
+  std::vector<NetDeviceContainer> linkL;
 
-  linkL[0] = fastLink.Install  (client, routersL.Get(0));
+  linkL.push_back(fastLink.Install  (client, routersL.Get(0)));
   address.SetBase ("10.1.0.0", "255.255.255.0");
   address.Assign (linkL[0]);
 
@@ -215,7 +215,7 @@ main (int argc, char *argv[])
   // ----------------------------------------------------------------------
   for(int i=1; i<numRouters/2; i++)
     {
-      linkL[i] = slowLink.Install (routersL.Get(i-1), routersL.Get(i));
+      linkL.push_back(slowLink.Install (routersL.Get(i-1), routersL.Get(i)));
 
       std::ostringstream oss;
       oss << "10.1." << i << ".0";
@@ -235,11 +235,11 @@ main (int argc, char *argv[])
   // ----------------------------------------------------------------------
   // Make extra right side slow connections and assign addresses (10.1.i.*/24)
   // ----------------------------------------------------------------------
-  NetDeviceContainer linkR[numRouters/2];
+  std::vector<NetDeviceContainer> linkR;
 
   for(int i=1; i<numRouters/2; i++)
     {
-      linkR[i] = slowLink.Install (routersR.Get(i-1), routersR.Get(i));
+      linkR.push_back(slowLink.Install (routersR.Get(i-1), routersR.Get(i)));
 
       std::ostringstream oss;
       oss << "10.3." << i << ".0";

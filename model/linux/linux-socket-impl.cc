@@ -218,6 +218,9 @@ LinuxSocketImpl::GetSocketType (void) const
     default:
         break;
     }
+
+    // To remove compiler warning
+    return NS3_SOCK_RAW;
 }
 
 uint16_t

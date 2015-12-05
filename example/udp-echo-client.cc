@@ -42,7 +42,7 @@ int main (int argc, char *argv[])
 
     if (wLen > 0)
       {
-        memset (buffer, 0, sizeof(buffer));
+        memset (buffer, 0, bLen);
         ssize_t n = read (sock, buffer, bLen);
 
         if (n > 0)

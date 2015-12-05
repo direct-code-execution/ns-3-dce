@@ -93,7 +93,8 @@ NetlinkSocket::GetTypeId (void)
     .SetParent<Socket> ()
     .AddConstructor<NetlinkSocket> ()
     .AddTraceSource ("Drop", "Drop packet due to receive buffer overflow",
-                     MakeTraceSourceAccessor (&NetlinkSocket::m_dropTrace))
+                     MakeTraceSourceAccessor (&NetlinkSocket::m_dropTrace),
+                     "ns3::NetlinkSocket::PacketTracedCallback")
     .AddAttribute ("RcvBufSize",
                    "NetlinkSocket maximum receive buffer size (bytes)",
                    UintegerValue (0xffffffffl),

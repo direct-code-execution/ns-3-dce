@@ -179,7 +179,7 @@ void InstallGetters (NodeContainer nodes)
         {
           int nodeNum = GetNodes [n];
 
-          if ((onlySomeNodes &&  (nodeNum == 13) || (nodeNum == 39))||(!onlySomeNodes))
+          if (((onlySomeNodes &&  (nodeNum == 13)) || (nodeNum == 39))||(!onlySomeNodes))
             {
 
               getNumber++;
