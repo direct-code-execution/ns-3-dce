@@ -54,13 +54,14 @@ public:
 
   int RandomRead (void *buf, size_t count);
 
+  std::string m_sysName;  //!< Returned by `uname -o`
+  std::string m_release;  //!< Returned by `uname -r`
+  std::string m_version;  //!< Returned by `uname -v`
+
 private:
   inline uint8_t GetNextRnd ();
 
-  std::string m_sysName;
   std::string m_nodeName;
-  std::string m_release;
-  std::string m_version;
   std::string m_hardId;
   Ptr<RandomVariableStream> m_randomCtx;
   uint32_t m_rndBuffer;
