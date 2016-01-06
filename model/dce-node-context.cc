@@ -50,7 +50,9 @@ DceNodeContext::GetInstanceTypeId (void) const
 {
   return DceNodeContext::GetTypeId ();
 }
-DceNodeContext::DceNodeContext ()
+DceNodeContext::DceNodeContext () :
+  m_release("3"),
+  m_version("12")
 {
   m_randomCtx = CreateObject<NormalRandomVariable> ();
   m_randomCtx->SetAttribute ("Mean", DoubleValue (0)); 
@@ -71,31 +73,31 @@ DceNodeContext::UName (struct utsname *buf)
       uint32_t nodeId = UtilsGetNodeId ();
       Ptr<Node> node = NodeList::GetNode (nodeId);
       NS_ASSERT (node != 0);
-      std::string nn = Names::FindName (node);
+      std::string nodeName = Names::FindName (node);
       std::ostringstream oss;
 
-      if (nn.length () == 0)
+      if (nodeName.length () == 0)
         {
           oss << "NODE_" << nodeId;
-          nn = oss.str ();
+          nodeName = oss.str ();
 
           oss.str ("");
           oss.clear ();
         }
-      m_sysName = nn + "'s OS";
-      m_nodeName = nn;
-      m_release = "3"; // XXX
-      m_version = "12"; // XXX
+      m_sysName = nodeName + "'s OS";
+      m_nodeName = nodeName;
+
       oss << nodeId;
       m_hardId = oss.str ();
     }
   memset (buf, 0, sizeof (struct utsname));
 
-  memcpy (buf->sysname, m_sysName.c_str (), std::min ((int) m_sysName.length (), 64));
-  memcpy (buf->nodename, m_nodeName.c_str (), std::min ((int) m_nodeName.length (), 64));
-  memcpy (buf->release, m_release.c_str (), std::min ((int) m_release.length (), 64));
-  memcpy (buf->version, m_version.c_str (), std::min ((int) m_version.length (), 64));
-  memcpy (buf->machine, m_hardId.c_str (), std::min ((int) m_hardId.length (), 64));
+  const std::size_t maxLen = sizeof( ((struct utsname*) 0)->sysname);
+  memcpy (buf->sysname, m_sysName.c_str (), std::min ( m_sysName.length (), maxLen));
+  memcpy (buf->nodename, m_nodeName.c_str (), std::min ( m_nodeName.length (), maxLen));
+  memcpy (buf->release, m_release.c_str (), std::min ( m_release.length (), maxLen));
+  memcpy (buf->version, m_version.c_str (), std::min ( m_version.length (), maxLen));
+  memcpy (buf->machine, m_hardId.c_str (), std::min ( m_hardId.length (), maxLen));
 
   return 0;
 }
