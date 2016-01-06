@@ -29,6 +29,7 @@
 #include "dce-unistd.h"
 #include "dce-pthread.h"
 #include "dce-fcntl.h"
+#include "dce-node-context.h"
 #include "sys/dce-stat.h"
 #include "loader-factory.h"
 #include "ns3/node.h"
@@ -42,6 +43,7 @@
 #include "ns3/double.h"
 #include "ns3/trace-source-accessor.h"
 #include "ns3/enum.h"
+#include "ns3/string.h"
 #include "file-usage.h"
 #include "wait-queue.h"
 #include "waiter.h"
@@ -85,6 +87,16 @@ DceManager::GetTypeId (void)
                    BooleanValue (false),
                    MakeBooleanAccessor (&DceManager::m_minimizeFiles),
                    MakeBooleanChecker ())
+    .AddAttribute ("UnameStringRelease",
+                   "release member of struct utsname returned by uname(2).",
+                   StringValue ("3"),
+                   MakeStringAccessor (&DceManager::m_release),
+                   MakeStringChecker ())
+    .AddAttribute ("UnameStringVersion",
+                   "version member of struct utsname returned by uname(2).",
+                   StringValue ("12"),
+                   MakeStringAccessor (&DceManager::m_version),
+                   MakeStringChecker ())
   ;
   return tid;
 }

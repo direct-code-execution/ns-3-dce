@@ -12,6 +12,8 @@ int main (int argc, char *argv[])
   TEST_ASSERT_EQUAL (ret, 0);
 
   std::cout << "NodeName:" << n.nodename << std::endl;
+  std::cout << "Uname release: " << n.release << ", version: " << n.version
+            << std::endl;
 
   ret = gethostname (gifbuffer, sizeof (gifbuffer));
 

@@ -72,6 +72,9 @@ DceManagerTestCase::DoRun (void)
   ApplicationContainer apps;
   DceManagerHelper dceManager;
 
+  dceManager.SetAttribute ("UnameStringRelease", StringValue ("3"));
+  dceManager.SetAttribute ("UnameStringVersion", StringValue ("25"));
+
   if (m_useNet)
     {
       if (m_netstack == "linux")

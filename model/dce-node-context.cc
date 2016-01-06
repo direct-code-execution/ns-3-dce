@@ -26,6 +26,7 @@
 #include "ns3/node-list.h"
 #include "ns3/names.h"
 #include "ns3/double.h"
+#include "ns3/string.h"
 #include "utils.h"
 #include <string.h>
 #include "process.h"
@@ -50,9 +51,7 @@ DceNodeContext::GetInstanceTypeId (void) const
 {
   return DceNodeContext::GetTypeId ();
 }
-DceNodeContext::DceNodeContext () :
-  m_release("3"),
-  m_version("12")
+DceNodeContext::DceNodeContext ()
 {
   m_randomCtx = CreateObject<NormalRandomVariable> ();
   m_randomCtx->SetAttribute ("Mean", DoubleValue (0)); 
@@ -68,6 +67,14 @@ DceNodeContext::~DceNodeContext ()
 int
 DceNodeContext::UName (struct utsname *buf)
 {
+  Thread *current = Current ();
+  NS_ASSERT (current != 0);
+  DceManager *manager = current->process->manager;
+  NS_ASSERT (manager != 0);
+  StringValue release, version;
+  manager->GetAttribute("UnameStringRelease", release);
+  manager->GetAttribute("UnameStringVersion", version);
+
   if (0 == m_sysName.length ())
     {
       uint32_t nodeId = UtilsGetNodeId ();
@@ -93,10 +100,11 @@ DceNodeContext::UName (struct utsname *buf)
   memset (buf, 0, sizeof (struct utsname));
 
   const std::size_t maxLen = sizeof( ((struct utsname*) 0)->sysname);
+
   memcpy (buf->sysname, m_sysName.c_str (), std::min ( m_sysName.length (), maxLen));
   memcpy (buf->nodename, m_nodeName.c_str (), std::min ( m_nodeName.length (), maxLen));
-  memcpy (buf->release, m_release.c_str (), std::min ( m_release.length (), maxLen));
-  memcpy (buf->version, m_version.c_str (), std::min ( m_version.length (), maxLen));
+  memcpy (buf->release, release.Get ().c_str (), std::min ( release.Get ().length (), maxLen));
+  memcpy (buf->version, version.Get ().c_str (), std::min ( version.Get ().length (), maxLen));
   memcpy (buf->machine, m_hardId.c_str (), std::min ( m_hardId.length (), maxLen));
 
   return 0;

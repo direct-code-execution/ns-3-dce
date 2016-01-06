@@ -161,6 +161,8 @@ private:
   // If true close stderr and stdout between writes .
   bool m_minimizeFiles;
   std::string m_virtualPath;
+  std::string m_release;  //!< Returned by `uname -r`
+  std::string m_version;  //!< Returned by `uname -v`
 };
 
 } // namespace ns3

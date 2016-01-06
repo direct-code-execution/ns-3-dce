@@ -27,6 +27,7 @@ New user-visible features
 Bugs fixed
 ----------
 - Bug 2098 - DCE_PATH and DCE_ROOT are now taken into account by DCE
+- github #5  Allow to override values returned by DceNodeContext::UName #5
 
 
 Release dce-1.7
