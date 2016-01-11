@@ -89,7 +89,7 @@ DceManager::GetTypeId (void)
                    MakeBooleanChecker ())
     .AddAttribute ("UnameStringRelease",
                    "release member of struct utsname returned by uname(2).",
-                   StringValue ("3"),
+                   StringValue ("3.2.3"),
                    MakeStringAccessor (&DceManager::m_release),
                    MakeStringChecker ())
     .AddAttribute ("UnameStringVersion",
