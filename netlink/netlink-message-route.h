@@ -60,6 +60,11 @@ enum NetlinkRtmType_e
   NETLINK_RTM_MAX,
 };
 
+/*
+NETLINK_RTM_BASE
+*/
+std::string NetlinkRtmTypeToStr(int);
+
 /**
 * \Types of netlink groups,here we only define types quagga used
 */

@@ -22,6 +22,12 @@
 #include "netlink-socket-factory.h"
 #include "netlink-socket.h"
 #include "ns3/node.h"
+#include "ns3/log.h"
+
+#include "ns3/trace-helper.h"
+#include <sstream>
+
+NS_LOG_COMPONENT_DEFINE ("DceNetlinkSocketFactory");
 
 namespace ns3 {
 
@@ -43,6 +49,7 @@ NetlinkSocketFactory::NetlinkSocketFactory ()
 
 Ptr<Socket> NetlinkSocketFactory::CreateSocket (void)
 {
+  NS_LOG_FUNCTION_NOARGS();
   Ptr<Node> node = GetObject<Node> ();
   Ptr<NetlinkSocket> socket = CreateObject<NetlinkSocket> ();
   socket->SetNode (node);

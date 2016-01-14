@@ -33,8 +33,11 @@
 #include "ns3/assert.h"
 #include "ns3/log.h"
 #include "ns3/socket.h"
+#include "ns3/pcap-file.h"
+#include "ns3/pcap-file-wrapper.h"
 #include "netlink-message.h"
 #include "netlink-socket-address.h"
+#include "netlink-socket.h"
 #include <sys/socket.h>
 #include <string>
 #include <list>
@@ -550,6 +553,14 @@ NetlinkSocketTestCase::DoRun (void)
   addr.SetProcessID (m_pid + 1);
   addr.SetGroupsMask (NETLINK_RTM_GRP_IPV4_IFADDR | NETLINK_RTM_GRP_IPV4_ROUTE);
   m_groupSock->Bind (addr);
+
+
+
+  PcapHelper pcapHelper;
+  std::string filename = "netlink-test.pcap";
+  Ptr<PcapFileWrapper> file = pcapHelper.CreateFile (filename, std::ios::out, PcapHelper::DLT_NETLINK);
+  // for now we test only one socket
+  pcapHelper.HookDefaultSink<NetlinkSocket> (DynamicCast<NetlinkSocket>(m_cmdSock), "PromiscSniffer", file);
 
   /*test 1: for Serialize and Deserialize*/
   TestNetlinkSerialization ();

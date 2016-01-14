@@ -107,6 +107,7 @@ public:
    * stack. What it does is simply dumping on the wire the current
    * interface info with or without UP & RUNNING flags.
    *
+   * \warn Seq number sent in this case might be wrong
    */
   int32_t NotifyIfLinkMessage (uint32_t interface_num);
 
@@ -119,6 +120,10 @@ public:
   //  int32_t NotifyRouteMessage(Ojbect route, uint16_t type, uint8_t family);
 
 private:
+  /**
+   * DoBind should assign a port id equal to the processus id, except if that processus
+   * opens several sockets in which case it should be increased
+   **/
   int DoBind (const NetlinkSocketAddress &address);
   virtual void DoDispose (void);
   void ForwardUp (Ptr<Packet> p, const NetlinkSocketAddress &address);
@@ -150,50 +155,53 @@ private:
   * \brief spread message to netlink group user
   * \param nlmsg the netlink message to transmit
   * \param group multicast group id
-  * \param node ?
+  * \param node Node
   */
   static int32_t SendMessageBroadcast (const MultipartNetlinkMessage &nlmsg,
                                        uint32_t group, Ptr<Node> node);
 
   /**
-  * these functions below are for NETLINK_ROUTE protocol, it handle the netlink
-  * message like linux kernel work.  this implementation follows the kernel code
-  * linux/rtnetlink.c, focus on "interface address, interface info and route entry",
-  * now we will only simply support three types operations of  NETLINK_ROUTE
-  * protocol
-  */
+   * these functions below are for NETLINK_ROUTE protocol, it handle the netlink
+   * message like linux kernel work.  this implementation follows the kernel code
+   * linux/rtnetlink.c, focus on "interface address, interface info and route entry",
+   * now we will only simply support three types operations of  NETLINK_ROUTE
+   * protocol
+   */
 
   /**
-  * \returns 0 if messge not processed, < 0 for success or an error.
-  * this function would call dumping/doing functions to
-  */
+   * \returns 0 if message not processed, < 0 for success or an error.
+   */
   int32_t HandleNetlinkRouteMessage (const NetlinkMessage &nlmsg);
 
   /**
-  * \returns 0 if dumping operation is OK, < 0 for an error.
-  */
+   * \todo see below
+   * \param type Should be of type NetlinkRtmType_e
+   * \param family
+   * \returns 0 if dumping operation is OK, < 0 for an error.
+   */
   int32_t
   DumpNetlinkRouteMessage (const NetlinkMessage &nlmsg,
                            uint16_t type, uint8_t family);
 
   MultipartNetlinkMessage
-  BuildInterfaceAddressDumpMessages ();
+  BuildInterfaceAddressDumpMessages (uint32_t received_seq);
 
   /**
    * \brief Build an InterfaceInfo message corresponding to n-th interface
+   * \param interface_id n-th interface
    */
   NetlinkMessage
-  BuildInterfaceInfoDumpMessage (uint32_t interface_num);
+  BuildInterfaceInfoDumpMessage (uint32_t interface_id, uint32_t seq);
 
   /**
    * \brief Build a multipart netlink message consisting of several
    * (possibly zero) InterfaceInfo dump messages
    */
   MultipartNetlinkMessage
-  BuildInterfaceInfoDumpMessages ();
+  BuildInterfaceInfoDumpMessages (uint32_t seq);
 
   MultipartNetlinkMessage
-  BuildRouteDumpMessages ();
+  BuildRouteDumpMessages (uint32_t seq);
 
   /**
   * \returns 0 if doing operation(ADD/DEL/GET) is OK, < 0 for an error.
@@ -224,9 +232,11 @@ private:
   // Socket options (attributes)
   uint32_t m_rcvBufSize;
 
-  uint32_t m_Pid;
+  uint32_t m_Pid;     /**< port id of the socket */
   uint32_t m_Groups;
   Callback<void, Ipv4Address,uint8_t,uint8_t,uint8_t,uint32_t> m_icmpCallback;
+
+  TracedCallback<Ptr<const Packet> > m_promiscSnifferTrace;
 };
 
 } //namespace ns3

@@ -64,6 +64,12 @@ bool CheckShellScript (std::string fileName,
 char * seek_env (const char *name, char **array);
 std::string UtilsGetCurrentDirName (void);
 
+
+/** ns3 does not name interfaces but some applications using netlink expect consistent
+ * interface naming hence DCE propose its scheme.
+ */
+std::string UtilsGenerateIfNameFromIndex(uint32_t i);
+
 #define MAX_FDS 1024
 
 #define OPENED_FD_METHOD_ERR(errCode, rettype, args) \

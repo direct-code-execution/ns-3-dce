@@ -42,7 +42,7 @@ class MultipartNetlinkMessage;
 There are three levels to a Netlink message: The general Netlink
 message header, the IP service specific template, and the IP service
 specific data.
-
+\verbatim
 0                   1                   2                   3
 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -58,6 +58,7 @@ specific data.
 |                  IP Service specific data in TLVs             |
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\endverbatim
 */
 
 enum NetlinkMessageFlag
@@ -96,6 +97,13 @@ class NetlinkMessageHeader : public ObjectBase
 {
 public:
   NetlinkMessageHeader ();
+
+  /**
+   * \param type Should be of type NetlinkMessageType
+   * \param flags
+   * \param seq Sequence number
+   * \param pid Processus id
+   */
   NetlinkMessageHeader (uint16_t type, uint16_t flags, uint32_t seq, uint32_t pid);
 
   static TypeId GetTypeId (void);
@@ -125,12 +133,20 @@ private:
   uint16_t m_nlmsgType; /* Message content */
   uint16_t m_nlmsgFlags;        /* Additional flags */
   uint32_t m_nlmsgSeq;  /* Sequence number */
-  uint32_t m_nlmsgPid;  /* Sending process PID */
+
+  /*
+   * Portd ID (PID)
+   * The port number specifies the peer to which the message should be delivered to.
+   * If not specified, the message will be delivered to the first matching
+   * kernel side socket of the same protocol family.
+   * \see http://www.infradead.org/~tgr/libnl/doc/core.html#core_addressing
+   */
+  uint32_t m_nlmsgPid;
 };
 
 /**
-* \brief The struct nlmsgerr
-*/
+ * \brief The struct nlmsgerr
+ */
 class NetlinkMessageError : public NetlinkPayload
 {
 public:
@@ -156,6 +172,10 @@ private:
 };
 
 
+/**
+ * Netlink messages consist of a byte stream with one or multiple nlmsghdr
+ * headers  and  associated  payload.
+ */
 class NetlinkMessage : public ObjectBase
 {
 public:
@@ -230,6 +250,13 @@ private:
   RouteMessage m_routeTemplate;
 };
 
+/**
+ * Excerpt of manpage:
+ In  multipart  messages  (multiple  nlmsghdr  headers  with  associated
+       payload in one byte stream) the first and all  following  headers  have
+       the NLM_F_MULTI flag set, except for the last header which has the type
+       NLMSG_DONE.
+ */
 class MultipartNetlinkMessage : public Header
 {
 public:

@@ -153,6 +153,14 @@ struct timespec UtilsTimeToTimespec (Time time)
   tv.tv_nsec = n % 1000000000;
   return tv;
 }
+
+std::string
+UtilsGenerateIfNameFromIndex(uint32_t i) {
+    std::stringstream ss;
+    ss <<  "ns3-device " << i;
+    return ss.str();
+}
+
 Time UtilsSimulationTimeToTime (Time time)
 {
   UintegerValue uintegerValue;
