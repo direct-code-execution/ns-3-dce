@@ -154,6 +154,7 @@ def _check_dependencies(conf, required, mandatory):
             continue
         # XXX need better way to find .pc files
         for ver in ns3_versions:
+            match_pkg = 'None'
             pcfiles = glob.glob(conf.env['NS3_DIR'] + '/lib*/pkgconfig/' + 'libns%s*-%s-%s*'
                                 % (ver, module.lower(), conf.env['LIB_SUFFIX']))
             if not len(pcfiles) is 0:
@@ -162,11 +163,12 @@ def _check_dependencies(conf, required, mandatory):
                     match_pkg = os.path.splitext(match_pkg)[0]
                 break
 
-        retval = conf.check_cfg(package = match_pkg,
+        lib = re.search("(ns[0-9][\.\-][dev0-9\.]+)", match_pkg)
+        lib = lib.group(0) if lib else 'None'
+
+        retval = conf.check_cfg(package = match_pkg or 'None',
                                 args='--cflags --libs', mandatory=mandatory,
-                                msg="Checking for ns3-%s (%s)" % (module.lower(),
-                                                                  re.search("(ns[0-9][\.\-][dev0-9\.]+)",
-                                                                            match_pkg).group(0) if match_pkg else 'None'),
+                                msg="Checking for ns3-%s (%s)" % (module.lower(), lib),
                                 uselib_store='NS3_%s' % module.upper())
         if not retval is None:
             # XXX pkg-config doesn't give the proper order of whole-archive option..

@@ -29,6 +29,7 @@ Bugs fixed
 - Bug 2098 - DCE_PATH and DCE_ROOT are now taken into account by DCE
 - github #5  Allow to override values returned by DceNodeContext::UName #5
 - github issue#2 - dce_getifaddrs() now returns a correct result
+- github #28 - waf incorrectly detects present modules
 
 Release dce-1.7
 ===============
