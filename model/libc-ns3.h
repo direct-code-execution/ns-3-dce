@@ -222,7 +222,12 @@ DCE (select)
 DCE (isatty)
 DCE (exit)
 DCE (getcwd)
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 DCE (getwd)
+#pragma GCC diagnostic pop
+
 DCE (get_current_dir_name)
 DCE (chdir)
 DCE (fchdir)
