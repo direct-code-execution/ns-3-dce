@@ -10,7 +10,7 @@
 #include <limits.h>
 
 
-NS_LOG_COMPONENT_DEFINE ("SimuStdlib");
+NS_LOG_COMPONENT_DEFINE ("DceStdlib");
 
 using namespace ns3;
 

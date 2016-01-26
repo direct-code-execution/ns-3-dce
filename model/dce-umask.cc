@@ -7,7 +7,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("SimuUmask");
+NS_LOG_COMPONENT_DEFINE ("DceUmask");
 
 mode_t dce_umask (mode_t mask)
 {

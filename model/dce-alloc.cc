@@ -6,7 +6,7 @@
 #include "ns3/log.h"
 #include <string.h>
 
-NS_LOG_COMPONENT_DEFINE ("SimuAlloc");
+NS_LOG_COMPONENT_DEFINE ("DceAlloc");
 
 using namespace ns3;
 

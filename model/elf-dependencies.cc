@@ -18,7 +18,7 @@
 
 namespace ns3 {
 
-NS_LOG_COMPONENT_DEFINE ("ElfDependencies");
+NS_LOG_COMPONENT_DEFINE ("DceElfDependencies");
 
 ElfDependencies::ElfDependencies (std::string filename, bool failsafe)
 {

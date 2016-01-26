@@ -38,7 +38,7 @@
 
 
 
-NS_LOG_COMPONENT_DEFINE ("dce-wifi-ccnx");
+NS_LOG_COMPONENT_DEFINE ("DceWifiCcnx");
 
 using namespace ns3;
 

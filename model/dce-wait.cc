@@ -9,7 +9,7 @@
 #include <errno.h>
 #include <vector>
 
-NS_LOG_COMPONENT_DEFINE ("SimuWait");
+NS_LOG_COMPONENT_DEFINE ("DceWait");
 
 using namespace ns3;
 

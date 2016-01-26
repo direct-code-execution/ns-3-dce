@@ -5,7 +5,7 @@
 #include "ns3/assert.h"
 #include <string.h>
 
-NS_LOG_COMPONENT_DEFINE ("SimuEnv");
+NS_LOG_COMPONENT_DEFINE ("DceEnv");
 
 using namespace ns3;
 

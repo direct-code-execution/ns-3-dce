@@ -37,7 +37,7 @@
 #include "freebsd-dccp-socket-factory-impl.h"
 #endif
 
-NS_LOG_COMPONENT_DEFINE ("Ipv4FreeBSD");
+NS_LOG_COMPONENT_DEFINE ("DceIpv4FreeBSD");
 
 
 namespace ns3 {

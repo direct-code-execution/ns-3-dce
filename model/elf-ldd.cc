@@ -43,7 +43,7 @@
 namespace ns3 {
 using namespace std;
 
-NS_LOG_COMPONENT_DEFINE ("ElfLdd");
+NS_LOG_COMPONENT_DEFINE ("DceElfLdd");
 
 class SharedLibrary
 {

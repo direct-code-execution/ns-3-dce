@@ -22,7 +22,7 @@
 #include "ns3/log.h"
 #include "unix-fd.h"
 
-NS_LOG_COMPONENT_DEFINE ("FileUsage");
+NS_LOG_COMPONENT_DEFINE ("DceFileUsage");
 
 namespace ns3 {
 FileUsage::FileUsage (int fd, UnixFd *file)

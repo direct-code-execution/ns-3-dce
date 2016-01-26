@@ -23,6 +23,7 @@ Tested platforms
 
 New user-visible features
 -------------------------
+- All logger names start with Dce. DceAlloc got renamed to DceKingsleyAlloc
 
 Bugs fixed
 ----------

@@ -15,7 +15,7 @@
 #include <signal.h>
 #include <list>
 
-NS_LOG_COMPONENT_DEFINE ("SimuPthread");
+NS_LOG_COMPONENT_DEFINE ("DcePthread");
 
 using namespace ns3;
 

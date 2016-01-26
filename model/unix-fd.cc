@@ -6,7 +6,7 @@
 #include <fcntl.h>
 #include <errno.h>
 
-NS_LOG_COMPONENT_DEFINE ("UnixFd");
+NS_LOG_COMPONENT_DEFINE ("DceUnixFd");
 
 namespace ns3 {
 

@@ -42,7 +42,7 @@
 
 namespace ns3 {
 
-NS_LOG_COMPONENT_DEFINE ("PthreadFiberManager");
+NS_LOG_COMPONENT_DEFINE ("DcePthreadFiberManager");
 
 enum PthreadFiberState
 {

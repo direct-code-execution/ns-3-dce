@@ -11,7 +11,7 @@
 #include "dce-node-context.h"
 #include "poll.h"
 
-NS_LOG_COMPONENT_DEFINE ("UnixFileFd");
+NS_LOG_COMPONENT_DEFINE ("DceUnixFileFd");
 
 namespace ns3 {
 

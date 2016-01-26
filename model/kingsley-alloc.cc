@@ -5,7 +5,7 @@
 #include "ns3/assert.h"
 #include "ns3/log.h"
 
-NS_LOG_COMPONENT_DEFINE ("Alloc");
+NS_LOG_COMPONENT_DEFINE ("DceKingsleyAlloc");
 
 #ifdef HAVE_VALGRIND_H
 # include "valgrind/valgrind.h"

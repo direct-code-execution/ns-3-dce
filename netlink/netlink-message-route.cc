@@ -74,6 +74,7 @@ NetlinkPayload::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::NetlinkPayload")
     .SetParent<ObjectBase> ()
+    .SetGroupName ("Netlink")
   ;
   return tid;
 }
@@ -112,6 +113,7 @@ GeneralMessage::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::GeneralMessage")
     .SetParent<NetlinkPayload> ()
+    .SetGroupName ("Netlink")
     .AddConstructor<GeneralMessage> ()
   ;
   return tid;

@@ -34,7 +34,7 @@ struct SharedModule
 
 namespace ns3 {
 
-NS_LOG_COMPONENT_DEFINE ("CoojaLoaderFactory");
+NS_LOG_COMPONENT_DEFINE ("DceCoojaLoaderFactory");
 NS_OBJECT_ENSURE_REGISTERED (CoojaLoaderFactory);
 
 struct SharedModules

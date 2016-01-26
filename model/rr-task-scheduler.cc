@@ -20,7 +20,7 @@
 #include "rr-task-scheduler.h"
 #include "ns3/log.h"
 
-NS_LOG_COMPONENT_DEFINE ("RrTaskScheduler");
+NS_LOG_COMPONENT_DEFINE ("DceRrTaskScheduler");
 
 namespace ns3 {
 

@@ -25,7 +25,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-NS_LOG_COMPONENT_DEFINE ("LinuxSctpSocketFactoryImpl");
+NS_LOG_COMPONENT_DEFINE ("DceLinuxSctpSocketFactoryImpl");
 
 namespace ns3 {
 

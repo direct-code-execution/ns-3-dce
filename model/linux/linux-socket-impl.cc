@@ -39,7 +39,7 @@
 #include "ns3/inet-socket-address.h"
 #include "ns3/inet6-socket-address.h"
 
-NS_LOG_COMPONENT_DEFINE ("LinuxSocketImpl");
+NS_LOG_COMPONENT_DEFINE ("DceLinuxSocketImpl");
 
 namespace ns3 {
 

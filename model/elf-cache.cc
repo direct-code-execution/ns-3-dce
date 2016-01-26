@@ -13,7 +13,7 @@
 
 namespace ns3 {
 
-NS_LOG_COMPONENT_DEFINE ("ElfCache");
+NS_LOG_COMPONENT_DEFINE ("DceElfCache");
 
 ElfCache::ElfCache (std::string directory, uint32_t uid)
   : m_directory (directory),

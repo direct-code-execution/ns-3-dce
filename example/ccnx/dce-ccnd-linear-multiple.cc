@@ -40,7 +40,7 @@ using namespace ns3;
 // node 0 put a file and node X get the file
 //
 //
-NS_LOG_COMPONENT_DEFINE ("CcndInLine");
+NS_LOG_COMPONENT_DEFINE ("DceCcndInLine");
 
 void
 CreateReadme ()

@@ -9,7 +9,7 @@
 #include "ns3/fatal-error.h"
 #include "ns3/simulator.h"
 
-NS_LOG_COMPONENT_DEFINE ("Semaphore");
+NS_LOG_COMPONENT_DEFINE ("DceSemaphore");
 
 using namespace ns3;
 

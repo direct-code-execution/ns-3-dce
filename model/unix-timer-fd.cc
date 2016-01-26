@@ -9,7 +9,7 @@
 #include <sys/mman.h>
 #include <poll.h>
 
-NS_LOG_COMPONENT_DEFINE ("UnixTimerFd");
+NS_LOG_COMPONENT_DEFINE ("DceUnixTimerFd");
 
 namespace ns3 {
 

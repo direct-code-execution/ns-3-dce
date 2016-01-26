@@ -9,7 +9,7 @@
 #include "ns3/simulator.h"
 #include "ns3/node.h"
 
-NS_LOG_COMPONENT_DEFINE ("FreeBSDSocketFdFactory");
+NS_LOG_COMPONENT_DEFINE ("DceFreeBSDSocketFdFactory");
 
 namespace ns3 {
 NS_OBJECT_ENSURE_REGISTERED (FreeBSDSocketFdFactory);

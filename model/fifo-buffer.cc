@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-NS_LOG_COMPONENT_DEFINE ("FifoBuffer");
+NS_LOG_COMPONENT_DEFINE ("DceFifoBuffer");
 
 #define MIN_ALLOC 1024
 
