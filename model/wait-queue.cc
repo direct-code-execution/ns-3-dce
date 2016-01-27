@@ -28,7 +28,7 @@
 #include "utils.h"
 #include <map>
 
-NS_LOG_COMPONENT_DEFINE ("WaitQueue");
+NS_LOG_COMPONENT_DEFINE ("DceWaitQueue");
 
 namespace ns3 {
 WaitQueueEntry::WaitQueueEntry ()

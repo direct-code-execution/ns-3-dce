@@ -32,7 +32,7 @@
 #include "linux-dccp6-socket-factory-impl.h"
 #include "linux-sctp6-socket-factory-impl.h"
 
-NS_LOG_COMPONENT_DEFINE ("Ipv6Linux");
+NS_LOG_COMPONENT_DEFINE ("DceIpv6Linux");
 
 namespace ns3 {
 

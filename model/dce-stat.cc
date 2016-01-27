@@ -10,7 +10,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("SimuStat");
+NS_LOG_COMPONENT_DEFINE ("DceStat");
 
 int dce___xstat (int ver, const char *path, struct stat *buf)
 {

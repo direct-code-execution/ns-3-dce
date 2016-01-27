@@ -4,7 +4,7 @@
 #include <list>
 #include <dlfcn.h>
 
-NS_LOG_COMPONENT_DEFINE ("DlmLoaderFactory");
+NS_LOG_COMPONENT_DEFINE ("DceDlmLoaderFactory");
 
 extern "C" {
 // The function and structure declarations below are not exactly equal to the

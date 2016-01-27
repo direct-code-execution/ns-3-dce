@@ -34,7 +34,7 @@
 #include "wait-queue.h"
 #include <unistd.h>
 
-NS_LOG_COMPONENT_DEFINE ("LocalDatagramSocketFd");
+NS_LOG_COMPONENT_DEFINE ("DceLocalDatagramSocketFd");
 
 namespace ns3 {
 TypeId

@@ -8,7 +8,7 @@
 #include <sys/mman.h> // for MMAP_FAILED
 #include <poll.h>
 
-NS_LOG_COMPONENT_DEFINE ("KernelSocketFd");
+NS_LOG_COMPONENT_DEFINE ("DceKernelSocketFd");
 
 namespace ns3 {
 

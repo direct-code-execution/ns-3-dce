@@ -9,7 +9,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("SimuDebug");
+NS_LOG_COMPONENT_DEFINE ("DceDebug");
 
 static std::list<uint32_t> g_dce_debug_nodes;
 

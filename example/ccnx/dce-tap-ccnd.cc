@@ -80,7 +80,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("TapCCND");
+NS_LOG_COMPONENT_DEFINE ("DceTapCCND");
 
 void
 CreateReadme ()

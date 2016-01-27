@@ -26,7 +26,7 @@
 #include <errno.h>
 #include <fcntl.h>
 
-NS_LOG_COMPONENT_DEFINE ("PipeFd");
+NS_LOG_COMPONENT_DEFINE ("DcePipeFd");
 
 #define PIPE_CAPACITY 65536
 

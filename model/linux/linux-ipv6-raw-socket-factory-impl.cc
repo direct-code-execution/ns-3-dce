@@ -25,7 +25,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-NS_LOG_COMPONENT_DEFINE ("LinuxIpv6RawSocketFactoryImpl");
+NS_LOG_COMPONENT_DEFINE ("DceLinuxIpv6RawSocketFactoryImpl");
 
 namespace ns3 {
 

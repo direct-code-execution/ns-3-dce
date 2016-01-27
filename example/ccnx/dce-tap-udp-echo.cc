@@ -65,7 +65,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("TapUDPEcho");
+NS_LOG_COMPONENT_DEFINE ("DceTapUDPEcho");
 
 int
 main (int argc, char *argv[])

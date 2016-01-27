@@ -18,7 +18,7 @@
 #include "ns3/global-value.h"
 #include "ns3/uinteger.h"
 
-NS_LOG_COMPONENT_DEFINE ("ProcessUtils");
+NS_LOG_COMPONENT_DEFINE ("DceProcessUtils");
 
 namespace ns3 {
 

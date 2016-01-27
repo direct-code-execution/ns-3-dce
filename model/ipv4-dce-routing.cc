@@ -36,7 +36,7 @@
 #include "../netlink/netlink-socket.h"
 
 
-NS_LOG_COMPONENT_DEFINE ("Ipv4DceRouting");
+NS_LOG_COMPONENT_DEFINE ("DceIpv4DceRouting");
 
 using std::make_pair;
 

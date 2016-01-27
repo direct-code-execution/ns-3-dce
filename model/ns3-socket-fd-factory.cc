@@ -32,7 +32,7 @@
 #include <netpacket/packet.h>
 #include <net/ethernet.h>
 
-NS_LOG_COMPONENT_DEFINE ("Ns3SocketFdFactory");
+NS_LOG_COMPONENT_DEFINE ("DceNs3SocketFdFactory");
 
 namespace ns3 {
 

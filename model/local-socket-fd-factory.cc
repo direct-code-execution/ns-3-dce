@@ -26,7 +26,7 @@
 #include "ns3/log.h"
 #include <map>
 
-NS_LOG_COMPONENT_DEFINE ("LocalSocketFdFactory");
+NS_LOG_COMPONENT_DEFINE ("DceLocalSocketFdFactory");
 
 namespace ns3 {
 

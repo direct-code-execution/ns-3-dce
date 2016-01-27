@@ -7,7 +7,7 @@
 #include <vector>
 #include <errno.h>
 
-NS_LOG_COMPONENT_DEFINE ("SimuTermio");
+NS_LOG_COMPONENT_DEFINE ("DceTermio");
 
 using namespace ns3;
 

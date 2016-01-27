@@ -23,7 +23,7 @@
 #include "ns3/address-utils.h"
 #include "ns3/log.h"
 
-NS_LOG_COMPONENT_DEFINE ("NetlinkMessage");
+NS_LOG_COMPONENT_DEFINE ("DceNetlinkMessage");
 
 namespace ns3 {
 

@@ -18,7 +18,7 @@
 
 namespace ns3 {
 
-NS_LOG_COMPONENT_DEFINE ("TaskManager");
+NS_LOG_COMPONENT_DEFINE ("DceTaskManager");
 NS_OBJECT_ENSURE_REGISTERED (TaskManager);
 
 

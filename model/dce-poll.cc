@@ -11,7 +11,7 @@
 #include <map>
 
 
-NS_LOG_COMPONENT_DEFINE ("PollSelect");
+NS_LOG_COMPONENT_DEFINE ("DcePollSelect");
 
 using namespace ns3;
 

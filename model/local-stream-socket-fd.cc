@@ -35,7 +35,7 @@
 #include "ns3/simulator.h"
 #include "file-usage.h"
 
-NS_LOG_COMPONENT_DEFINE ("LocalStreamSocketFd");
+NS_LOG_COMPONENT_DEFINE ("DceLocalStreamSocketFd");
 
 namespace ns3 {
 TypeId

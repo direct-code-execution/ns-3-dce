@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <errno.h>
 
-NS_LOG_COMPONENT_DEFINE ("PthreadMutex");
+NS_LOG_COMPONENT_DEFINE ("DcePthreadMutex");
 
 using namespace ns3;
 

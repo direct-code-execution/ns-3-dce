@@ -35,7 +35,7 @@
 #include "linux-dccp-socket-factory-impl.h"
 #include "linux-sctp-socket-factory-impl.h"
 
-NS_LOG_COMPONENT_DEFINE ("Ipv4Linux");
+NS_LOG_COMPONENT_DEFINE ("DceIpv4Linux");
 
 namespace ns3 {
 

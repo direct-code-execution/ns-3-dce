@@ -7,7 +7,7 @@
 #include <vector>
 #include <errno.h>
 
-NS_LOG_COMPONENT_DEFINE ("SimuSignal");
+NS_LOG_COMPONENT_DEFINE ("DceSignal");
 
 using namespace ns3;
 

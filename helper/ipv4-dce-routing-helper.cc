@@ -31,7 +31,7 @@
 #include "../model/ipv4-dce-routing.h"
 #include "ipv4-dce-routing-helper.h"
 
-NS_LOG_COMPONENT_DEFINE ("Ipv4DceRoutingHelper");
+NS_LOG_COMPONENT_DEFINE ("DceIpv4DceRoutingHelper");
 
 namespace ns3 {
 

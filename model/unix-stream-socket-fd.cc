@@ -12,7 +12,7 @@
 #include <fcntl.h>
 #include "file-usage.h"
 
-NS_LOG_COMPONENT_DEFINE ("UnixStreamSocketFd");
+NS_LOG_COMPONENT_DEFINE ("DceUnixStreamSocketFd");
 
 namespace ns3 {
 

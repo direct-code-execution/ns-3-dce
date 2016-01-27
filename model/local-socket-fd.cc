@@ -31,7 +31,7 @@
 #include <exception>
 #include "poll.h"
 
-NS_LOG_COMPONENT_DEFINE ("LocalSocketFd");
+NS_LOG_COMPONENT_DEFINE ("DceLocalSocketFd");
 
 namespace ns3 {
 TypeId

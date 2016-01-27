@@ -27,7 +27,7 @@
 namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (ProcessDelayModel);
-NS_LOG_COMPONENT_DEFINE ("ProcessDelayModel");
+NS_LOG_COMPONENT_DEFINE ("DceProcessDelayModel");
 
 TypeId
 ProcessDelayModel::GetTypeId (void)

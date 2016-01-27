@@ -6,7 +6,7 @@
 #include "ns3/assert.h"
 #include <errno.h>
 
-NS_LOG_COMPONENT_DEFINE ("SimuPthreadCond");
+NS_LOG_COMPONENT_DEFINE ("DcePthreadCond");
 
 using namespace ns3;
 

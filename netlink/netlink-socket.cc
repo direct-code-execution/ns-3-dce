@@ -98,6 +98,7 @@ NetlinkSocket::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::NetlinkSocket")
     .SetParent<Socket> ()
+    .SetGroupName ("Netlink")
     .AddConstructor<NetlinkSocket> ()
     .AddTraceSource ("Drop", "Drop packet due to receive buffer overflow",
                      MakeTraceSourceAccessor (&NetlinkSocket::m_dropTrace))

@@ -39,6 +39,7 @@ NetlinkSocketFactory::GetTypeId (void)
   static TypeId tid = TypeId ("ns3::NetlinkSocketFactory")
     .AddConstructor<NetlinkSocketFactory> ()
     .SetParent<SocketFactory> ()
+    .SetGroupName ("Netlink")
   ;
   return tid;
 }

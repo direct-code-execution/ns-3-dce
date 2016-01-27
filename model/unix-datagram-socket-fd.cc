@@ -45,7 +45,7 @@
 #include <arpa/inet.h>
 #include <linux/if_arp.h>
 #include <poll.h>
-NS_LOG_COMPONENT_DEFINE ("UnixDatagramSocketFd");
+NS_LOG_COMPONENT_DEFINE ("DceUnixDatagramSocketFd");
 
 namespace ns3 {
 

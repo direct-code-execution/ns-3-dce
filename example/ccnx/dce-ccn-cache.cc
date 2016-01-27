@@ -15,7 +15,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("CcnCache");
+NS_LOG_COMPONENT_DEFINE ("DceCcnCache");
 
 std::vector<int> GetNodes;
 int middleNode = 0;

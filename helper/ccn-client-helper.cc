@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-NS_LOG_COMPONENT_DEFINE ("CcnClientHelper");
+NS_LOG_COMPONENT_DEFINE ("DceCcnClientHelper");
 
 namespace ns3 {
 

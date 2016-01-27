@@ -34,7 +34,7 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 
-NS_LOG_COMPONENT_DEFINE ("KernelSocketFdFactory");
+NS_LOG_COMPONENT_DEFINE ("DceKernelSocketFdFactory");
 
 namespace ns3 {
 

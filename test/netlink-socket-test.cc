@@ -43,7 +43,7 @@
 #include <list>
 
 
-NS_LOG_COMPONENT_DEFINE ("NetlinkSocketTest");
+NS_LOG_COMPONENT_DEFINE ("DceNetlinkSocketTest");
 
 namespace ns3 {
 

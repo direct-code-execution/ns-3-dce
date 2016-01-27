@@ -28,7 +28,7 @@
 #include "ns3/assert.h"
 #include <errno.h>
 
-NS_LOG_COMPONENT_DEFINE ("Waiter");
+NS_LOG_COMPONENT_DEFINE ("DceWaiter");
 
 namespace ns3 {
 

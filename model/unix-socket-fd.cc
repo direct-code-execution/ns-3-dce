@@ -47,7 +47,7 @@
 #include <linux/netlink.h>
 #include <sys/ioctl.h>
 
-NS_LOG_COMPONENT_DEFINE ("UnixSocketFd");
+NS_LOG_COMPONENT_DEFINE ("DceUnixSocketFd");
 
 namespace ns3 {
 

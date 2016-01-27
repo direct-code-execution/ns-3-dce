@@ -32,7 +32,7 @@
 #include "dce-stdlib.h"
 #include "pipe-fd.h"
 
-NS_LOG_COMPONENT_DEFINE ("SimuFd");
+NS_LOG_COMPONENT_DEFINE ("DceFd");
 
 
 #ifdef _K_SS_MAXSIZE

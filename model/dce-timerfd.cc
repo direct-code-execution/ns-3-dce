@@ -7,7 +7,7 @@
 #include "file-usage.h"
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("SimuTimerFd");
+NS_LOG_COMPONENT_DEFINE ("DceTimerFd");
 
 int dce_timerfd_create (int clockid, int flags)
 {

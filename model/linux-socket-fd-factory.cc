@@ -10,7 +10,7 @@
 #include "ns3/node.h"
 
 
-NS_LOG_COMPONENT_DEFINE ("LinuxSocketFdFactory");
+NS_LOG_COMPONENT_DEFINE ("DceLinuxSocketFdFactory");
 
 namespace ns3 {
 NS_OBJECT_ENSURE_REGISTERED (LinuxSocketFdFactory);
