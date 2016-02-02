@@ -588,7 +588,7 @@ private:
 } g_netlinkTestSuite;
 
 NetlinkSocketTestSuite::NetlinkSocketTestSuite ()
-  : TestSuite ("netlink-socket", UNIT)
+  : TestSuite ("dce-netlink-socket", UNIT)
 {
   AddTestCase (new NetlinkSocketTestCase (), TestCase::QUICK);
 }

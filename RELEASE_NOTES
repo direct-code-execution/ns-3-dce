@@ -24,6 +24,7 @@ Tested platforms
 New user-visible features
 -------------------------
 - All logger names start with Dce. DceAlloc got renamed to DceKingsleyAlloc
+- All test names are prefixed with 'dce' (concerns process-manager and netlink-socket tests)
 
 Bugs fixed
 ----------
