@@ -10,6 +10,8 @@
 #include <errno.h>
 #include <netdb.h>
 #include <poll.h>
+#include <time.h>
+#include <sys/time.h>
 
 struct a_client
 {
@@ -192,9 +194,9 @@ int main (int argc, char **argv)
                 }
             }
         }
-      printf ("%d: --> poll j=%d\n",time(NULL), j );
+      printf ("%lu: --> poll j=%d\n",time(NULL), j );
       int ret = poll (fds, j, 29000 * 1000);
-      printf ("%d: poll --> %d\n", time(NULL), ret);
+      printf ("%lu: poll --> %d\n", time(NULL), ret);
 
       if (ret <= 0)
         {

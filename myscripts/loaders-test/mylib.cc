@@ -12,6 +12,7 @@ int init_thing ()
     {
       good = -45;
     }
+    return 0;
 }
 
 int get_thing ()

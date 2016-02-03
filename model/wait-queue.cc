@@ -35,6 +35,10 @@ WaitQueueEntry::WaitQueueEntry ()
 {
 }
 
+WaitQueueEntry::~WaitQueueEntry ()
+{
+}
+
 WaitQueueEntryPoll::WaitQueueEntryPoll (Callback<void> cb) : m_func (cb)
 {
 }

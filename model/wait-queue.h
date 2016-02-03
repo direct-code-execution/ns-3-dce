@@ -44,7 +44,7 @@ class WaitQueueEntry
 {
 public:
   WaitQueueEntry ();
-  // virtual ~WaitQueueEntry ();
+  virtual ~WaitQueueEntry ();
 
   // Wake Up the waiter of some events
   // \param key: generic parameter describing the event source
