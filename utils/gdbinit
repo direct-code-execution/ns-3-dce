@@ -1,0 +1,3 @@
+# see https://www.nsnam.org/docs/dce/manual/html/dce-user-debug.html
+# from your dce folder: ln -s utils/gdbinit .gdbinit
+handle SIGUSR1 nostop noprint
