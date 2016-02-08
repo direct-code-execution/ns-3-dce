@@ -47,6 +47,15 @@ NS_LOG_COMPONENT_DEFINE ("DceNetlinkSocketTest");
 
 namespace ns3 {
 
+/* 
+Hopefully in next versions of ns3, one can use pcapHelper.HookDefaultSink to trace 
+header/packet and avoid copy of the SllHeader
+*/
+void
+DefaultSink (Ptr<PcapFileWrapper> file, const Header& header, Ptr<const Packet> p)
+{
+  file->Write (Simulator::Now (), header, p);
+}
 
 class NetlinkSocketTestCase : public TestCase
 {
@@ -554,13 +563,14 @@ NetlinkSocketTestCase::DoRun (void)
   addr.SetGroupsMask (NETLINK_RTM_GRP_IPV4_IFADDR | NETLINK_RTM_GRP_IPV4_ROUTE);
   m_groupSock->Bind (addr);
 
-
-
+  /* Example of how to export a netlink pcap */
   PcapHelper pcapHelper;
   std::string filename = "netlink-test.pcap";
-  Ptr<PcapFileWrapper> file = pcapHelper.CreateFile (filename, std::ios::out, PcapHelper::DLT_NETLINK);
+  Ptr<PcapFileWrapper> file = pcapHelper.CreateFile (filename, std::ios::out, PcapHelper::DLT_LINUX_SLL);
   // for now we test only one socket
-  pcapHelper.HookDefaultSink<NetlinkSocket> (DynamicCast<NetlinkSocket>(m_cmdSock), "PromiscSniffer", file);
+  bool result =
+    m_cmdSock->TraceConnectWithoutContext ("PromiscSniffer", MakeBoundCallback (&DefaultSink, file));
+  NS_ASSERT_MSG (result == true, "Unable to hook \"PromiscSniffer\"");
 
   /*test 1: for Serialize and Deserialize*/
   TestNetlinkSerialization ();
@@ -588,7 +598,7 @@ private:
 } g_netlinkTestSuite;
 
 NetlinkSocketTestSuite::NetlinkSocketTestSuite ()
-  : TestSuite ("netlink-socket", UNIT)
+  : TestSuite ("dce-netlink-socket", UNIT)
 {
   AddTestCase (new NetlinkSocketTestCase (), TestCase::QUICK);
 }
