@@ -110,7 +110,22 @@ public:
   /**
    * Do nothing
    */
-  //  virtual void Insert (Ptr<IpL4Protocol> protocol);
+  virtual void Insert (Ptr<IpL4Protocol> protocol);
+
+  /**
+   * Do nothing
+   */
+  virtual void Insert (Ptr<IpL4Protocol> protocol, uint32_t interfaceIndex);
+
+  /**
+   * Do nothing
+   */
+  virtual void Remove (Ptr<IpL4Protocol> protocol);
+
+  /**
+   * Do nothing
+   */
+  virtual void Remove (Ptr<IpL4Protocol> protocol, uint32_t interfaceIndex);
 
   /**
    * \brief Return the interface number of first interface found that
@@ -264,6 +279,11 @@ public:
    * Do nothing
    */
   virtual Ptr<IpL4Protocol> GetProtocol (int protocolNumber) const ;
+
+  /**
+   * Do nothing
+   */
+  virtual Ptr<IpL4Protocol> GetProtocol (int protocolNumber, int32_t interfaceIndex) const;
 
   /**
    * Do nothing

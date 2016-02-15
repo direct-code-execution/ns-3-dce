@@ -144,6 +144,24 @@ Ipv4Linux::Insert (Ptr<IpL4Protocol> protocol)
   NS_LOG_FUNCTION (this << "empty method.");
 }
 
+void
+Ipv4Linux::Insert (Ptr<IpL4Protocol> protocol, uint32_t interfaceIndex)
+{
+  NS_LOG_FUNCTION (this << "empty method.");
+}
+
+void
+Ipv4Linux::Remove (Ptr<IpL4Protocol> protocol)
+{
+  NS_LOG_FUNCTION (this << "empty method.");
+}
+
+void
+Ipv4Linux::Remove (Ptr<IpL4Protocol> protocol, uint32_t interfaceIndex)
+{
+  NS_LOG_FUNCTION (this << "empty method.");
+}
+
 bool
 Ipv4Linux::IsDestinationAddress (Ipv4Address address, uint32_t iif) const
 {
@@ -333,6 +351,12 @@ Ipv4Linux::RemoveAddress (uint32_t i, Ipv4Address address)
       return true;
     }
   return false;
+}
+
+Ipv4Address
+Ipv4Linux::SourceAddressSelection (uint32_t interfaceIdx, Ipv4Address dest)
+{
+  return 0;
 }
 
 Ipv4Address
@@ -534,6 +558,12 @@ Ipv4Linux::GetInterface (uint32_t index) const
 
 Ptr<IpL4Protocol>
 Ipv4Linux::GetProtocol (int protocolNumber) const
+{
+  return 0;
+}
+
+Ptr<IpL4Protocol>
+Ipv4Linux::GetProtocol (int protocolNumber, int32_t interfaceIndex) const
 {
   return 0;
 }

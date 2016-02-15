@@ -112,6 +112,21 @@ public:
   virtual void Insert (Ptr<IpL4Protocol> protocol);
 
   /**
+   * Do nothing
+   */
+  virtual void Insert (Ptr<IpL4Protocol> protocol, uint32_t interfaceIndex);
+
+  /**
+   * Do nothing
+   */
+  virtual void Remove (Ptr<IpL4Protocol> protocol);
+
+  /**
+   * Do nothing
+   */
+  virtual void Remove (Ptr<IpL4Protocol> protocol, uint32_t interfaceIndex);
+
+  /**
    * \brief Determine whether address and interface corresponding to
    *        received packet can be accepted for local delivery
    *
@@ -306,7 +321,17 @@ public:
   /**
    * Do nothing
    */
+  virtual Ipv4Address SourceAddressSelection (uint32_t interface, Ipv4Address dest);
+
+  /**
+   * Do nothing
+   */
   virtual Ptr<IpL4Protocol> GetProtocol (int protocolNumber) const ;
+
+  /**
+   * Do nothing
+   */
+  virtual Ptr<IpL4Protocol> GetProtocol (int protocolNumber, int32_t interfaceIndex) const;
 
   /**
    * Do nothing

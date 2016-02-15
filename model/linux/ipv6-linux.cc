@@ -137,13 +137,30 @@ Ipv6Linux::SendWithHeader (Ptr<Packet> packet, Ipv6Header ipHeader, Ptr<Ipv6Rout
   NS_LOG_FUNCTION (this << "empty method.");
 }
 
-#if 0
 void
 Ipv6Linux::Insert (Ptr<IpL4Protocol> protocol)
 {
   NS_LOG_FUNCTION (this << "empty method.");
 }
-#endif
+
+void
+Ipv6Linux::Insert (Ptr<IpL4Protocol> protocol, uint32_t interfaceIndex)
+{
+  NS_LOG_FUNCTION (this << "empty method.");
+}
+
+void
+Ipv6Linux::Remove (Ptr<IpL4Protocol> protocol)
+{
+  NS_LOG_FUNCTION (this << "empty method.");
+}
+
+void
+Ipv6Linux::Remove (Ptr<IpL4Protocol> protocol, uint32_t interfaceIndex)
+{
+  NS_LOG_FUNCTION (this << "empty method.");
+}
+
 
 
 int32_t
@@ -472,6 +489,12 @@ Ipv6Linux::GetInterface (uint32_t index) const
 
 Ptr<IpL4Protocol>
 Ipv6Linux::GetProtocol (int protocolNumber) const
+{
+  return 0;
+}
+
+Ptr<IpL4Protocol>
+Ipv6Linux::GetProtocol (int protocolNumber, int32_t interfaceIndex) const
 {
   return 0;
 }
