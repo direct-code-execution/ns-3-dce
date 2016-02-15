@@ -237,6 +237,13 @@ main (int argc, char *argv[])
   // ----------------------------------------------------------------------
   std::vector<NetDeviceContainer> linkR;
 
+  // ----------------------------------------------------------------------
+  // Make right side fast connections and assign addresses  (10.3.i.*/24)
+  // ----------------------------------------------------------------------
+  linkR.push_back (fastLink.Install (server, routersR.Get(0)));
+  address.SetBase ("10.3.0.0", "255.255.255.0");
+  address.Assign (linkR[0]);
+
   for(int i=1; i<numRouters/2; i++)
     {
       linkR.push_back(slowLink.Install (routersR.Get(i-1), routersR.Get(i)));
@@ -246,13 +253,6 @@ main (int argc, char *argv[])
       address.SetBase (oss.str ().c_str (), "255.255.255.0");
       address.Assign (linkR[i]);
     }
-
-  // ----------------------------------------------------------------------
-  // Make right side fast connections and assign addresses  (10.3.i.*/24)
-  // ----------------------------------------------------------------------
-  linkR[0] = fastLink.Install  (server, routersR.Get(0));
-  address.SetBase ("10.3.0.0", "255.255.255.0");
-  address.Assign (linkR[0]);
 
 
   // ----------------------------------------------------------------------
