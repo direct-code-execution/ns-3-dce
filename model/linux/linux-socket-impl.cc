@@ -473,6 +473,13 @@ LinuxSocketImpl::GetSockName (Address &address) const
 }
 
 int
+LinuxSocketImpl::GetPeerName (Address &address) const
+{
+  NS_LOG_FUNCTION_NOARGS ();
+  return -1;
+}
+
+int
 LinuxSocketImpl::MulticastJoinGroup (uint32_t interface, const Address &groupAddress)
 {
   NS_LOG_FUNCTION (interface << groupAddress);
