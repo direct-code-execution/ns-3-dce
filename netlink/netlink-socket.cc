@@ -50,6 +50,7 @@
 #include "ns3/ipv6-static-routing-helper.h"
 #include "ns3/ipv6-routing-table-entry.h"
 #include "ns3/socket.h"
+#include "ns3/sll-header.h"
 #include "ns3/mac48-address.h"
 #include "../model/ipv4-dce-routing.h"
 #include "../model/process.h"
@@ -63,6 +64,8 @@
 NS_LOG_COMPONENT_DEFINE ("DceNetlinkSocket");
 
 namespace ns3 {
+
+const int ARPHRD_NETLINK = 824;
 
 // GroupSockets store the netlinksocket with noero group value
 // it was due to the mulitcast netlink messages.
@@ -441,7 +444,11 @@ NetlinkSocket::SendTo (Ptr<Packet> p, uint32_t flags, const Address &toAddress)
   packet_len = p->GetSize ();
   remain_len = packet_len;
 
-  m_promiscSnifferTrace (p);
+
+  SllHeader header = SllHeader ();
+  header.SetArpType (ARPHRD_NETLINK);
+  header.SetPacketType (SllHeader::UNICAST_FROM_PEER_TO_ME);
+  m_promiscSnifferTrace (header, p);
 
   while (remain_len > NetlinkMessageHeader::GetHeaderSize ())
     {
@@ -524,7 +531,10 @@ NetlinkSocket::ForwardUp (Ptr<Packet> packet, const NetlinkSocketAddress &addres
       packet->AddByteTag (tag);
       m_dataReceiveQueue.push (packet);
 
-      m_promiscSnifferTrace (packet);
+      SllHeader header = SllHeader ();
+      header.SetArpType (ARPHRD_NETLINK);
+      header.SetPacketType (SllHeader::UNICAST_FROM_PEER_TO_ME);
+      m_promiscSnifferTrace (header, packet);
 
       m_rxAvailable += packet->GetSize ();
       NotifyDataRecv ();
