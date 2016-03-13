@@ -166,7 +166,7 @@ private:
 #define FREEBSD_STACK  (1 << 2)
 
 DceManagerTestSuite::DceManagerTestSuite ()
-  : TestSuite ("process-manager", UNIT)
+  : TestSuite ("dce-process-manager", UNIT)
 {
   typedef struct
   {
