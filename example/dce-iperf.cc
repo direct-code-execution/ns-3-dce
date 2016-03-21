@@ -133,14 +133,14 @@ int main (int argc, char *argv[])
   dce.SetStackSize (1 << 20);
 
 
-        //! 'i+1' because 0 is localhost
-        Ipv4Address serverAddr = serverNode->GetObject<Ipv4>()->GetAddress(i+1, 0).GetLocal();
-        Ipv4Address sourceAddr = clientNode->GetObject<Ipv4>()->GetAddress(i+1, 0).GetLocal();
+  //! 'i+1' because 0 is localhost
+  Ipv4Address serverAddr = serverNode->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal();
+  Ipv4Address sourceAddr = clientNode->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal();
 
-        //! TODO, we should be able to not specify a port but it seems buggy so for now, let's set a port
-      //  InetSocketAddress local( sourceAddr);
-        InetSocketAddress local(sourceAddr, 0);
-        InetSocketAddress remote(serverAddr, 5001);
+  //! TODO, we should be able to not specify a port but it seems buggy so for now, let's set a port
+  //  InetSocketAddress local( sourceAddr);
+  InetSocketAddress local(sourceAddr, 0);
+  InetSocketAddress remote(serverAddr, 5001);
   #ifdef IPERF3
   // Setup client on node 0
   dce.SetBinary ("iperf3");
