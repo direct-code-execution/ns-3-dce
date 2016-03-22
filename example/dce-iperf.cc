@@ -17,7 +17,7 @@ using namespace ns3;
 NS_LOG_COMPONENT_DEFINE ("DceIperf");
 // ===========================================================================
 //
-//         node 0                 node 1
+//     node 0 (client)       node 1 (server)
 //   +----------------+    +----------------+
 //   |                |    |                |
 //   +----------------+    +----------------+
@@ -136,20 +136,18 @@ int main (int argc, char *argv[])
   //! 'i+1' because 0 is localhost
   Ipv4Address serverAddr = serverNode->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal();
   Ipv4Address sourceAddr = clientNode->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal();
+//  NS_LOG_UNCOND ("serverAddr=" << serverAddr);
 
-  //! TODO, we should be able to not specify a port but it seems buggy so for now, let's set a port
-  //  InetSocketAddress local( sourceAddr);
-  InetSocketAddress local(sourceAddr, 0);
-  InetSocketAddress remote(serverAddr, 5001);
   #ifdef IPERF3
   // Setup client on node 0
   dce.SetBinary ("iperf3");
   dce.ResetArguments ();
   dce.ResetEnvironment ();
   dce.AddArgument ("-c");
-  dce.AddArgument ("10.2.0.1");
+  dce.AddArgument ("10.1.1.2");
   dce.AddArgument ("--interval=1"); // interval between reports
   dce.AddArgument ("--time=10");  // duration of the test
+  //TODO use iperfDuration
   dce.AddArgument ("--verbose");
   dce.AddArgument ("--json");   // export to json
   dce.AddArgument ("--logfile=client.res");  // into this file
@@ -174,6 +172,8 @@ int main (int argc, char *argv[])
   }
 
   apps = dce.Install (serverNode);
+
+  pointToPoint.EnablePcapAll ("iperf3-" + stack, false);
   #else
   /* By default iperf2 listens on port 5001 */
   oss.str("");
@@ -183,13 +183,15 @@ int main (int argc, char *argv[])
   dce.SetBinary ("iperf");
   dce.ResetArguments ();
   dce.ResetEnvironment ();
-  dce.AddArgument ("--client=10.2.0.1");
-//  dce.AddArgument ("");
+  oss.str("");
+  oss << "--client=";
+  serverAddr.Print(oss);
+  dce.AddArgument (oss.str());
   dce.AddArgument ("-i");
   dce.AddArgument ("1");
   dce.AddArgument ("--time");
   dce.AddArgument (iperfDuration);
-  dce.AddArgument ("--bind=10.1.0.1");  // TODO get address from clientNode
+//  dce.AddArgument ("--bind=10.1.1.1");  // TODO get address from clientNode
   dce.AddArgument ("--reportstyle=C");  // export as CSV
   dce.AddArgument (oss.str());   // size of Rcv or send buffer
 
@@ -202,7 +204,7 @@ int main (int argc, char *argv[])
   dce.ResetArguments ();
   dce.ResetEnvironment ();
   dce.AddArgument ("-s");
-  dce.AddArgument ("--bind=10.2.0.1");  //TODO get address programmatacilly from clientNode
+//  dce.AddArgument ("--bind=10.1.1.2");  //TODO get address programmatacilly from clientNode
   dce.AddArgument ("--parallel=1");
   dce.AddArgument (oss.str());   // size of Rcv or send buffer
   if (useUdp)
@@ -211,10 +213,9 @@ int main (int argc, char *argv[])
     }
 
   apps = dce.Install (serverNode);
+
+  pointToPoint.EnablePcapAll ("iperf2-" + stack, false);
   #endif
-
-
-  pointToPoint.EnablePcapAll ("iperf-" + stack, false);
 
   apps.Start (Seconds (0.6));
 
