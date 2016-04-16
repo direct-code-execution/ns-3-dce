@@ -63,7 +63,6 @@ LinuxStackHelper::SetRoutingHelper (const Ipv4RoutingHelper &routing)
 void
 LinuxStackHelper::Install (Ptr<Node> node)
 {
-#ifdef KERNEL_STACK
   Ipv4Linux::InstallNode (node);
 #if 0
   // Set routing
@@ -72,38 +71,30 @@ LinuxStackHelper::Install (Ptr<Node> node)
   ipv4->SetRoutingProtocol (ipv4Routing);
 #endif
   Ipv6Linux::InstallNode (node);
-#endif
 }
 void
 LinuxStackHelper::Install (std::string nodeName)
 {
-#ifdef KERNEL_STACK
   Ptr<Node> node = Names::Find<Node> (nodeName);
   Install (node);
-#endif
 }
 void
 LinuxStackHelper::Install (NodeContainer c)
 {
-#ifdef KERNEL_STACK
   for (NodeContainer::Iterator i = c.Begin (); i != c.End (); ++i)
     {
       Install (*i);
     }
-#endif
 }
 void
 LinuxStackHelper::InstallAll (void)
 {
-#ifdef KERNEL_STACK
   Install (NodeContainer::GetGlobal ());
-#endif
 }
 
 void
 LinuxStackHelper::PopulateRoutingTables ()
 {
-#ifdef KERNEL_STACK
   NodeContainer c =  NodeContainer::GetGlobal ();
   for (NodeContainer::Iterator i = c.Begin (); i != c.End (); ++i)
     {
@@ -114,13 +105,11 @@ LinuxStackHelper::PopulateRoutingTables ()
           ipv4->PopulateRoutingTable ();
         }
     }
-#endif
 }
 
 void
 LinuxStackHelper::RunIp (Ptr<Node> node, Time at, std::string str)
 {
-#ifdef KERNEL_STACK
   DceApplicationHelper process;
   ApplicationContainer apps;
   process.SetBinary ("ip");
@@ -129,14 +118,12 @@ LinuxStackHelper::RunIp (Ptr<Node> node, Time at, std::string str)
   process.ParseArguments (str.c_str ());
   apps = process.Install (node);
   apps.Start (at);
-#endif
 }
 
 void
 LinuxStackHelper::SysctlGetCallback (Ptr<Node> node, std::string path,
                                      void (*callback)(std::string, std::string))
 {
-#ifdef KERNEL_STACK
   Ptr<LinuxSocketFdFactory> sock = node->GetObject<LinuxSocketFdFactory> ();
   if (!sock)
     {
@@ -149,14 +136,12 @@ LinuxStackHelper::SysctlGetCallback (Ptr<Node> node, std::string path,
   std::string value = sock->Get (path);
   callback (path, value);
   return;
-#endif
 }
 
 void
 LinuxStackHelper::SysctlGet (Ptr<Node> node, Time at, std::string path,
                              void (*callback)(std::string, std::string))
 {
-#ifdef KERNEL_STACK
   Ptr<LinuxSocketFdFactory> sock = node->GetObject<LinuxSocketFdFactory> ();
   if (!sock)
     {
@@ -170,12 +155,10 @@ LinuxStackHelper::SysctlGet (Ptr<Node> node, Time at, std::string path,
                                   MakeEvent (&LinuxStackHelper::SysctlGetCallback,
                                              node, path, callback));
   return;
-#endif
 }
 void
 LinuxStackHelper::SysctlSet (NodeContainer c, std::string path, std::string value)
 {
-#ifdef KERNEL_STACK
   for (NodeContainer::Iterator i = c.Begin (); i != c.End (); ++i)
     {
       Ptr<Node> node = *i;
@@ -190,7 +173,6 @@ LinuxStackHelper::SysctlSet (NodeContainer c, std::string path, std::string valu
                                       MakeEvent (&LinuxSocketFdFactory::Set, sock,
                                                  path, value));
     }
-#endif
 }
 
 } // namespace ns3

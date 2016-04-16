@@ -162,9 +162,8 @@ main (int argc, char *argv[])
   ns3stack.Install (routersL);
   ns3stack.Install (routersR);
 
-#ifdef KERNEL_STACK
+
   LinuxStackHelper linuxStack;
-#endif
 
   if (stack == "ns3")
     {
@@ -175,17 +174,11 @@ main (int argc, char *argv[])
     }
   else if (stack == "linux")
     {
-#ifdef KERNEL_STACK
       dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
       dceManager.Install (client);
       dceManager.Install (server);
       linuxStack.Install (client);
       linuxStack.Install (server);
-#else
-      NS_LOG_ERROR ("Linux kernel stack for DCE is not available. Re-build with the dce-linux module.");
-      // silently exit
-      return 0;
-#endif
     }
 
   // ----------------------------------------------------------------------
@@ -259,12 +252,11 @@ main (int argc, char *argv[])
   // Calculate and populate routing tables
   // ----------------------------------------------------------------------
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
-#ifdef KERNEL_STACK
   if (stack == "linux")
     {
       LinuxStackHelper::PopulateRoutingTables ();
     }
-#endif
+
 
   // ----------------------------------------------------------------------
   // Launch iperf client on client
@@ -294,25 +286,25 @@ main (int argc, char *argv[])
   apps.Start (Seconds (0.75));
   apps.Stop  (Seconds (iperfDurationSeconds+3.0));
 
-#ifdef KERNEL_STACK
+
   if (stack == "linux")
     {
       if(clientTcp != "")
-	{
-	  linuxStack.SysctlSet (client,".net.ipv4.tcp_allowed_congestion_control", clientTcp); // done at 0.1 seconds
-	  linuxStack.SysctlSet (client,".net.ipv4.tcp_congestion_control",         clientTcp);
-	}
+    {
+      linuxStack.SysctlSet (client,".net.ipv4.tcp_allowed_congestion_control", clientTcp); // done at 0.1 seconds
+      linuxStack.SysctlSet (client,".net.ipv4.tcp_congestion_control",         clientTcp);
+    }
 
       LinuxStackHelper::SysctlGet (client, Seconds (0.11),
                                    ".net.ipv4.tcp_congestion_control", &PrintSysctlResult_client);
 
       if(clientNetmem != "")
-	{
-	  linuxStack.SysctlSet (client, ".net.core.wmem_default", clientNetmem); // done at 0.1 seconds
-	  linuxStack.SysctlSet (client, ".net.core.wmem_max",     clientNetmem);
-	  linuxStack.SysctlSet (client, ".net.core.rmem_default", clientNetmem);
-	  linuxStack.SysctlSet (client, ".net.core.rmem_max",     clientNetmem);
-	}
+    {
+      linuxStack.SysctlSet (client, ".net.core.wmem_default", clientNetmem); // done at 0.1 seconds
+      linuxStack.SysctlSet (client, ".net.core.wmem_max",     clientNetmem);
+      linuxStack.SysctlSet (client, ".net.core.rmem_default", clientNetmem);
+      linuxStack.SysctlSet (client, ".net.core.rmem_max",     clientNetmem);
+    }
 
       LinuxStackHelper::SysctlGet (client, Seconds (0.11),
                                    ".net.core.wmem_max",     &PrintSysctlResult_client);
@@ -323,7 +315,7 @@ main (int argc, char *argv[])
       LinuxStackHelper::SysctlGet (client, Seconds (0.11),
                                    ".net.core.rmem_default", &PrintSysctlResult_client);
     }
-#endif
+
 
   // ----------------------------------------------------------------------
   // Launch iperf server on server
@@ -345,25 +337,25 @@ main (int argc, char *argv[])
   apps.Start (Seconds (0.5));
   apps.Stop  (Seconds (iperfDurationSeconds+3.0));
 
-#ifdef KERNEL_STACK
+
   if (stack == "linux")
     {
       if (serverTcp != "")
-	{
-	  linuxStack.SysctlSet (server,".net.ipv4.tcp_allowed_congestion_control", serverTcp);
-	  linuxStack.SysctlSet (server,".net.ipv4.tcp_congestion_control",         serverTcp);
-	}
+    {
+      linuxStack.SysctlSet (server,".net.ipv4.tcp_allowed_congestion_control", serverTcp);
+      linuxStack.SysctlSet (server,".net.ipv4.tcp_congestion_control",         serverTcp);
+    }
 
       LinuxStackHelper::SysctlGet (server, Seconds (0.12),
                                    ".net.ipv4.tcp_congestion_control", &PrintSysctlResult_server);
 
       if(serverNetmem != "")
-	{
-	  linuxStack.SysctlSet (server, ".net.core.wmem_default", serverNetmem); // done at 0.1 seconds
-	  linuxStack.SysctlSet (server, ".net.core.wmem_max",     serverNetmem);
-	  linuxStack.SysctlSet (server, ".net.core.rmem_default", serverNetmem);
-	  linuxStack.SysctlSet (server, ".net.core.rmem_max",     serverNetmem);
-	}
+    {
+      linuxStack.SysctlSet (server, ".net.core.wmem_default", serverNetmem); // done at 0.1 seconds
+      linuxStack.SysctlSet (server, ".net.core.wmem_max",     serverNetmem);
+      linuxStack.SysctlSet (server, ".net.core.rmem_default", serverNetmem);
+      linuxStack.SysctlSet (server, ".net.core.rmem_max",     serverNetmem);
+    }
 
       LinuxStackHelper::SysctlGet (server, Seconds (0.12),
                                    ".net.core.wmem_max",     &PrintSysctlResult_server);
@@ -374,7 +366,6 @@ main (int argc, char *argv[])
       LinuxStackHelper::SysctlGet (server, Seconds (0.12),
                                    ".net.core.rmem_default", &PrintSysctlResult_server);
     }
-#endif
 
   // ----------------------------------------------------------------------
   // print routing tables

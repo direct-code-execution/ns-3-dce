@@ -91,5 +91,4 @@ improved in near future.
 TODO
 ----
 * refactoring with LinuxStackHelper/FreeBSDStackHelper
-* refactoring with wscript (--enable-kernel-stack uses both FreeBSD/Linux for now)
 

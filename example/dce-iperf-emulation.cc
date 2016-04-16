@@ -133,41 +133,29 @@ int main (int argc, char *argv[])
     }
   else if (stack == "linux")
     {
-#ifdef KERNEL_STACK
       dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
       dceManager.Install (nodes);
       LinuxStackHelper stack;
       stack.Install (nodes);
-#else
-      NS_LOG_ERROR ("Linux kernel stack for DCE is not available. build with dce-linux module.");
-      // silently exit
-      return 0;
-#endif
     }
   else if (stack == "freebsd")
     {
-#ifdef KERNEL_STACK
       dceManager.SetNetworkStack ("ns3::FreeBSDSocketFdFactory", "Library", StringValue ("libfreebsd.so"));
       dceManager.Install (nodes);
       FreeBSDStackHelper stack;
       stack.Install (nodes);
-#else
-      NS_LOG_ERROR ("FreeBSD kernel stack for DCE is not available. build with dce-freebsd module.");
-      // silently exit
-      return 0;
-#endif
     }
 
   Ipv4AddressHelper address;
   address.SetBase ("10.0.0.0", "255.255.255.252");
   Ipv4InterfaceContainer interfaces = address.Assign (devices);
 
-#ifdef KERNEL_STACK
+
   if (stack == "linux")
     {
       LinuxStackHelper::PopulateRoutingTables ();
     }
-#endif
+
 
   DceApplicationHelper dce;
   ApplicationContainer apps;

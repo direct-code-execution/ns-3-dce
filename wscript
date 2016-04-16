@@ -15,10 +15,6 @@ from waflib.Errors import WafError
 def options(opt):
     opt.tool_options('compiler_cc') 
     ns3waf.options(opt)
-    opt.add_option('--enable-kernel-stack',
-                   help=('Path to the prefix where the kernel wrapper headers are installed'),
-                   default=None,
-                   dest='kernel_stack', type="string")
     opt.add_option('--enable-mpi',
                    help=('Enable MPI and distributed simulation support'),
                    dest='enable_mpi', action='store_true',
@@ -118,29 +114,6 @@ def configure(conf):
     vg_memcheck_h = conf.check(header_name='valgrind/memcheck.h', mandatory=False)
     if vg_h and vg_memcheck_h:
         conf.env.append_value('CXXDEFINES', 'HAVE_VALGRIND_H')
-
-    if Options.options.kernel_stack:
-        if not os.path.isdir(Options.options.kernel_stack):
-            Logs.error( "\"%s\" is not a directory: please fix your --enable-kernel-stack parameter." % (Options.options.kernel_stack))
-            raise SystemExit(1)
-
-        # look for kernel dir from 1) {KERNEL_DIR}/sim, then 2) {KERNEL_DIR}/lib.
-        architectures = ["sim", "lib"]
-        kernel_stack_dir = None
-        for dir in architectures:
-            dir = os.path.join(Options.options.kernel_stack, dir)
-            if os.path.isdir(dir):
-                kernel_stack_dir = dir 
-                break
-
-        if not kernel_stack_dir:
-            Logs.error("Could not find any of the [%s] architecture. Make sure you use the net-next-sim kernel or fix your --enabled-kernel-stack parameter" % ','.join(architectures))
-            raise SystemExit(1)
-
-        conf.check(header_name='sim.h',
-                   includes=os.path.join(kernel_stack_dir, 'include'))
-        conf.env['KERNEL_STACK'] = kernel_stack_dir
-        conf.env.append_value ('DEFINES', 'KERNEL_STACK=Y')
 
     conf.env['ENABLE_PYTHON_BINDINGS'] = False
     conf.env['EXAMPLE_DIRECTORIES'] = '.'
@@ -243,11 +216,11 @@ def build_dce_tests(module, bld):
     tests_source = [
         'test/dce-manager-test.cc', 
         ]
-    if bld.env['KERNEL_STACK']:
-        tests_source += [
-            'test/dce-cradle-test.cc',
-            'test/dce-mptcp-test.cc',
-            ]
+    # if bld.env['KERNEL_STACK']:
+    tests_source += [
+        'test/dce-cradle-test.cc',
+        'test/dce-mptcp-test.cc',
+        ]
 
     for dir in os.listdir('test/addons'):
         if dir.startswith('.') or dir == 'CVS':
@@ -498,7 +471,7 @@ def build_dce_kernel_examples(module, bld):
 def build_a_script(bld, name, needed = [], **kw):
     external = [i for i in needed if not i == name]
     if not ns3waf.modules_found(bld, external):
-    	return
+        return
     kw['use'] = kw.get('use', []) + ns3waf.modules_uselib(bld, needed)
     if 'features' not in kw:
         kw['features'] = 'cxx cxxprogram'
@@ -559,7 +532,7 @@ def conf_myscripts(conf):
         if os.path.isdir(os.path.join('myscripts', dir)):
              conf.recurse(os.path.join('myscripts', dir))
 
-	
+    
 def _get_all_task_gen(self):
     for group in self.groups:
         for taskgen in group:
@@ -576,25 +549,25 @@ def build(bld):
     bld.add_group('ns3modulebuild')
     build_netlink(bld)
 
-    if bld.env['KERNEL_STACK']:
-        kernel_source = [
-            'model/kernel-socket-fd-factory.cc',
-            'model/kernel-socket-fd.cc',
-            'model/linux-socket-fd-factory.cc',
-            'model/freebsd-socket-fd-factory.cc',
-            'model/linux/linux-socket-impl.cc',
-            ]
-        kernel_headers = [
-            'model/kernel-socket-fd-factory.h',
-            'model/linux-socket-fd-factory.h',
-            'model/freebsd-socket-fd-factory.h',
-            'model/linux/linux-socket-impl.h',
-            ]
-        kernel_includes = [bld.env['KERNEL_STACK']]
-    else:
-        kernel_source = []
-        kernel_headers = []
-        kernel_includes = []
+    # if bld.env['KERNEL_STACK']:
+    kernel_source = [
+        'model/kernel-socket-fd-factory.cc',
+        'model/kernel-socket-fd.cc',
+        'model/linux-socket-fd-factory.cc',
+        'model/freebsd-socket-fd-factory.cc',
+        'model/linux/linux-socket-impl.cc',
+        ]
+    kernel_headers = [
+        'model/kernel-socket-fd-factory.h',
+        'model/linux-socket-fd-factory.h',
+        'model/freebsd-socket-fd-factory.h',
+        'model/linux/linux-socket-impl.h',
+        ]
+    # kernel_includes = [bld.env['KERNEL_STACK']]
+    # else:
+    #     kernel_source = []
+    #     kernel_headers = []
+    #     kernel_includes = []
 
     module_source = [
         'model/dce-manager.cc',
@@ -698,6 +671,7 @@ def build(bld):
         'helper/linux-stack-helper.cc',
         'helper/freebsd-stack-helper.cc',
         ]
+
     module_headers = [
         'model/dce-manager.h',
         'model/task-scheduler.h',
@@ -712,6 +686,8 @@ def build(bld):
         'model/process-delay-model.h',        
         'model/exec-utils.h',
         'model/utils.h',
+        'model/linux/sim-init.h',
+        'model/linux/sim-types.h',
         'model/linux/linux-ipv4-raw-socket-factory.h',
         'model/linux/linux-ipv6-raw-socket-factory.h',
         'model/linux/linux-udp-socket-factory.h',
@@ -737,7 +713,7 @@ def build(bld):
                                   source=module_source,
                                   headers=module_headers,
                                   use=uselib,
-                                  includes=kernel_includes,
+                                  includes=[],
                                   lib=['dl'])
 #                                  lib=['dl','efence'])
 
@@ -755,8 +731,8 @@ def build(bld):
                            source=['test/netlink-socket-test.cc'],
                            name='netlink')
 
-    if bld.env['KERNEL_STACK']:
-        build_dce_kernel_examples(module, bld)
+    # if bld.env['KERNEL_STACK']:
+    build_dce_kernel_examples(module, bld)
     
     # build test-runner
     module.add_example(target='bin/test-runner',
@@ -918,10 +894,10 @@ class Ns3ShellContext(Context.Context):
     def execute(self):
 
         # first we execute the build
-	bld = Context.create_context("build")
-	bld.options = Options.options # provided for convenience
-	bld.cmd = "build"
-	bld.execute()
+        bld = Context.create_context("build")
+        bld.options = Options.options # provided for convenience
+        bld.cmd = "build"
+        bld.execute()
 
         # Set this so that the lists won't be printed when the user
         # exits the shell.
@@ -944,10 +920,10 @@ class Ns3DoxygenContext(Context.Context):
     cmd = 'doxygen'
     def execute(self):
         # first we execute the build
-	bld = Context.create_context("build")
-	bld.options = Options.options # provided for convenience
-	bld.cmd = "build"
-	bld.execute()
+        bld = Context.create_context("build")
+        bld.options = Options.options # provided for convenience
+        bld.cmd = "build"
+        bld.execute()
         _doxygen(bld)
 
 from waflib import Context, Build

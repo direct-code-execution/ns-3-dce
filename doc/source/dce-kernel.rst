@@ -203,17 +203,7 @@ Finally **make** will compile all the needed sources and produce a file named **
 Usage
 -----
 
-To use this kernel you should:
-
-1. configure DCE in order to compile using the includes under **sim** directories to have the good interfaces between DCE and the kernel.
-For this you should give to the waf configure the path to the **ns-3-linux** directory i.e.:
-
-::
-
-  $ ./waf configure ----enable-kernel-stack=/ABSOLUTE-PATH-TO/ns-3-linux
-
-
-2. In your |ns3| scenario you should indicate the good kernel file: (the file should be located in a directory presents in the DCE_PATH env. variable)
+To use this kernel in your |ns3| scenario you should indicate the good kernel file: (the file should be located in a directory presents in the DCE_PATH env. variable)
 
 ::
 
