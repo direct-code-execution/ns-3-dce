@@ -226,7 +226,7 @@ private:
   bool m_shutdownSend;
   bool m_shutdownRecv;
 
-  std::queue<Ptr<Packet> > m_dataReceiveQueue;
+  std::queue<std::pair <Ptr<Packet>, Address> > m_dataReceiveQueue;
   uint32_t m_rxAvailable;
   TracedCallback<Ptr<const Packet> > m_dropTrace;
   // Socket options (attributes)

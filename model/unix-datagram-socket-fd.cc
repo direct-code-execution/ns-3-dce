@@ -206,7 +206,6 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
       memset (buf, 0, count);
       l = packet->CopyData (buf + 14, count - 14) + 14;
 
-      SocketAddressTag sat;
       PacketSocketTag pst;
       bool found;
 
@@ -214,15 +213,6 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
       if (found)
         {
           CopyMacAddress (pst.GetDestAddress (), buf);
-        }
-      found = packet->PeekPacketTag (sat);
-      if (found)
-        {
-          if (PacketSocketAddress::IsMatchingType (sat.GetAddress ()))
-            {
-              PacketSocketAddress psa = PacketSocketAddress::ConvertFrom (sat.GetAddress ());
-              CopyMacAddress (psa.GetPhysicalAddress (), buf);
-            }
         }
       memcpy (buf + 12, &(((struct sockaddr_ll *)msg->msg_name)->sll_protocol), 2);
     }

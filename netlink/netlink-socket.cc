@@ -368,12 +368,23 @@ Ptr<Packet>
 NetlinkSocket::Recv (uint32_t maxSize, uint32_t flags)
 {
   NS_LOG_FUNCTION (this << maxSize << flags);
+  Address dummy;
+
+  return RecvFrom (maxSize, flags, dummy);
+}
+
+Ptr<Packet>
+NetlinkSocket::RecvFrom (uint32_t maxSize, uint32_t flags, Address &fromAddress)
+{
+  NS_LOG_FUNCTION (this << maxSize << flags << fromAddress);
+
   if (m_dataReceiveQueue.empty ())
     {
       return 0;
     }
 
-  Ptr<Packet> p = m_dataReceiveQueue.front ();
+  Ptr<Packet> p = m_dataReceiveQueue.front ().first;
+  fromAddress = m_dataReceiveQueue.front ().second;
   if (p->GetSize () <= maxSize)
     {
       m_dataReceiveQueue.pop ();
@@ -384,22 +395,6 @@ NetlinkSocket::Recv (uint32_t maxSize, uint32_t flags)
       p = 0;
     }
   return p;
-}
-
-Ptr<Packet>
-NetlinkSocket::RecvFrom (uint32_t maxSize, uint32_t flags, Address &fromAddress)
-{
-  NS_LOG_FUNCTION (this << maxSize << flags << fromAddress);
-  Ptr<Packet> packet = Recv (maxSize, flags);
-  if (packet != 0)
-    {
-      SocketAddressTag tag;
-      bool found;
-      found = packet->FindFirstMatchingByteTag (tag);
-      NS_ASSERT (found);
-      fromAddress = tag.GetAddress ();
-    }
-  return packet;
 }
 
 int
@@ -526,10 +521,7 @@ NetlinkSocket::ForwardUp (Ptr<Packet> packet, const NetlinkSocketAddress &addres
     }
   if ((m_rxAvailable + packet->GetSize ()) <= m_rcvBufSize)
     {
-      SocketAddressTag tag;
-      tag.SetAddress (address);
-      packet->AddByteTag (tag);
-      m_dataReceiveQueue.push (packet);
+      m_dataReceiveQueue.push (std::make_pair (packet, address));
 
       SllHeader header = SllHeader ();
       header.SetArpType (ARPHRD_NETLINK);
