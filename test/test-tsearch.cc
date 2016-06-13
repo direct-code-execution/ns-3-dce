@@ -72,7 +72,7 @@ main (void)
         }
       else if ((*(int **) val) != ptr)
         {
-          free (ptr);
+//          free (ptr);
         }
     }
   twalk (root, action);
