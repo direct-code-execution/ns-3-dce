@@ -1,4 +1,4 @@
-FROM ubuntu:12.04
+FROM ubuntu:14.04
 MAINTAINER Hajime Tazaki <thehajime@gmail.com>
 
 RUN apt-get update
