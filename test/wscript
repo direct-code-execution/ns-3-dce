@@ -39,6 +39,7 @@ def build(bld):
     new_test(bld, 'test-random', '')
     new_test(bld, 'test-ioctl', '')
     new_test(bld, 'test-fork', '')
+    new_test(bld, 'test-tsearch', '')
     new_test(bld, 'test-local-socket', 'PTHREAD')
     new_test(bld, 'test-tcp-socket', 'PTHREAD')
     new_test(bld, 'test-pipe', 'PTHREAD')
