@@ -143,7 +143,6 @@ Then you can download and install *net-next-sim* and DCE (*net-next-sim* include
    # Download, configure, build and install DCE
    hg clone http://code.nsnam.org/ns-3-dce  -r dce-1.2
    ./waf configure --with-ns3=$HOME/dce/build --enable-opt \
-                   --enable-kernel-stack=$HOME/dce/net-next-sim/arch \
                    --prefix=$HOME/dce/build
    ./waf build
    ./waf install

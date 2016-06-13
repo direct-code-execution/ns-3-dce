@@ -3,7 +3,7 @@
 #include "loader-factory.h"
 #include "kernel-socket-fd.h"
 #include "utils.h"
-#include "include/sim-init.h"
+#include "linux/sim-init.h"
 #include "ns3/log.h"
 #include "ns3/string.h"
 #include "ns3/simulator.h"

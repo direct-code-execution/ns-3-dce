@@ -13,7 +13,7 @@
 #include "sys/dce-stat.h"
 #include "dce-fcntl.h"
 #include "dce-stdio.h"
-#include "include/sim-init.h"
+#include "linux/sim-init.h"
 #include "ns3/log.h"
 #include "ns3/string.h"
 #include "ns3/double.h"

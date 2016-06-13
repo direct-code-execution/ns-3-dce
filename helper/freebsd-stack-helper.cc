@@ -29,40 +29,31 @@ namespace ns3 {
 void
 FreeBSDStackHelper::Install (Ptr<Node> node)
 {
-#ifdef KERNEL_STACK
   Ipv4FreeBSD::InstallNode (node);
-#endif
 }
 void
 FreeBSDStackHelper::Install (std::string nodeName)
 {
-#ifdef KERNEL_STACK
   Ptr<Node> node = Names::Find<Node> (nodeName);
   Install (node);
-#endif
 }
 void
 FreeBSDStackHelper::Install (NodeContainer c)
 {
-#ifdef KERNEL_STACK
   for (NodeContainer::Iterator i = c.Begin (); i != c.End (); ++i)
     {
       Install (*i);
     }
-#endif
 }
 void
 FreeBSDStackHelper::InstallAll (void)
 {
-#ifdef KERNEL_STACK
   Install (NodeContainer::GetGlobal ());
-#endif
 }
 
 void
 FreeBSDStackHelper::PopulateRoutingTables ()
 {
-#ifdef KERNEL_STACK
   NodeContainer c =  NodeContainer::GetGlobal ();
   for (NodeContainer::Iterator i = c.Begin (); i != c.End (); ++i)
     {
@@ -70,13 +61,11 @@ FreeBSDStackHelper::PopulateRoutingTables ()
       Ptr<Ipv4FreeBSD> ipv4 = node->GetObject<Ipv4FreeBSD> ();
       ipv4->PopulateRoutingTable ();
     }
-#endif
 }
 
 void
 FreeBSDStackHelper::RunIp (Ptr<Node> node, Time at, std::string str)
 {
-#ifdef KERNEL_STACK
   DceApplicationHelper process;
   ApplicationContainer apps;
   process.SetBinary ("freebsd-iproute");
@@ -85,14 +74,12 @@ FreeBSDStackHelper::RunIp (Ptr<Node> node, Time at, std::string str)
   process.ParseArguments (str.c_str ());
   apps = process.Install (node);
   apps.Start (at);
-#endif
 }
 
 void
 FreeBSDStackHelper::SysctlGetCallback (Ptr<Node> node, std::string path,
                                      void (*callback)(std::string, std::string))
 {
-#ifdef KERNEL_STACK
   Ptr<FreeBSDSocketFdFactory> sock = node->GetObject<FreeBSDSocketFdFactory> ();
   if (!sock)
     {
@@ -105,14 +92,12 @@ FreeBSDStackHelper::SysctlGetCallback (Ptr<Node> node, std::string path,
   std::string value = sock->Get (path);
   callback (path, value);
   return;
-#endif
 }
 
 void
 FreeBSDStackHelper::SysctlGet (Ptr<Node> node, Time at, std::string path,
                              void (*callback)(std::string, std::string))
 {
-#ifdef KERNEL_STACK
   Ptr<FreeBSDSocketFdFactory> sock = node->GetObject<FreeBSDSocketFdFactory> ();
   if (!sock)
     {
@@ -126,12 +111,10 @@ FreeBSDStackHelper::SysctlGet (Ptr<Node> node, Time at, std::string path,
                                   MakeEvent (&FreeBSDStackHelper::SysctlGetCallback,
                                              node, path, callback));
   return;
-#endif
 }
 void
 FreeBSDStackHelper::SysctlSet (NodeContainer c, std::string path, std::string value)
 {
-#ifdef KERNEL_STACK
   for (NodeContainer::Iterator i = c.Begin (); i != c.End (); ++i)
     {
       Ptr<Node> node = *i;
@@ -145,7 +128,6 @@ FreeBSDStackHelper::SysctlSet (NodeContainer c, std::string path, std::string va
                                       MakeEvent (&FreeBSDSocketFdFactory::Set, sock,
                                                  path, value));
     }
-#endif
 }
 
 } // namespace ns3
