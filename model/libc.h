@@ -9,13 +9,15 @@
 struct Libc
 {
 
-#define DCE(name) void (*name ## _fn) (...);
+	//on peut utiliser des templates pour recuperer les arguments 
+#define DCE(rtype, name, ...) rtype (*name ## _fn) __VA_ARGS__ ;
+/* #define NATIVE */
+/* #define DCET(rtype, name) DCE (name) */
+/* #define NATIVET(rtype, name) NATIVE (name) */
 
-#define DCET(rtype, name) DCE (name)
-#define NATIVET(rtype, name) NATIVE (name)
+/* #define DCE_EXPLICIT(name,rtype,...) rtype (*name ## _fn) (__VA_ARGS__); */
+ #include "libc-ns3.h" 
 
-#define DCE_EXPLICIT(name,rtype,...) rtype (*name ## _fn) (__VA_ARGS__);
-#include "libc-ns3.h"
 
   char* (*strpbrk_fn)(const char *s, const char *accept);
   char* (*strstr_fn)(const char *a, const char *b);

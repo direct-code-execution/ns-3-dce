@@ -9,71 +9,71 @@
 extern "C" {
 #endif
 
-FILE * dce_fopen (const char *path, const char *mode);
-FILE * dce_fopen64 (const char *path, const char *mode);
-FILE * dce_fdopen (int fildes, const char *mode);
-FILE * dce_freopen (const char *path, const char *mode, FILE *stream);
-int dce_fclose (FILE *fp);
-int dce_fclose_unconditional (FILE *fp);
-int dce_fclose_onexec (FILE *file);
-int dce_fcloseall (void);
+DCE(FILE *, fopen , (const char *path, const char *mode));
+DCE(FILE *, fopen64 , (const char *path, const char *mode));
+DCE(FILE *, fdopen , (int fildes, const char *mode));
+DCE(FILE *, freopen , (const char *path, const char *mode, FILE *stream));
+DCE(int, fclose , (FILE *fp));
+DCE(int, fclose_unconditional , (FILE *fp));
+DCE(int, fclose_onexec , (FILE *file));
+DCE(int, fcloseall , (void));
 
-int dce_fflush (FILE *stream);
-void dce_clearerr (FILE *stream);
-int dce_feof (FILE *stream);
-int dce_ferror (FILE *stream);
-int dce_fileno (FILE *stream);
+DCE(int, fflush , (FILE *stream));
+DCE(void, clearerr , (FILE *stream));
+DCE(int, feof , (FILE *stream));
+DCE(int, ferror , (FILE *stream));
+DCE(int, fileno , (FILE *stream));
 
-int dce_fseek (FILE *stream, long offset, int whence);
-int dce_fseeko (FILE *stream, off_t offset, int whence);
-long dce_ftell (FILE *stream);
-off_t dce_ftello (FILE *stream);
-int dce_fgetpos (FILE *stream, fpos_t *pos);
-int dce_fsetpos (FILE *stream, const fpos_t *pos);
-void dce_rewind (FILE *stream);
+DCE(int,, fseek , (FILE *stream, long offset, int whence));
+DCE(int, fseeko , (FILE *stream, off_t offset, int whence));
+DCE(long, ftell , (FILE *stream));
+DCE(off_t, ftello , (FILE *stream));
+DCE(int, fgetpos , (FILE *stream, fpos_t *pos));
+DCE(int, fsetpos , (FILE *stream, const fpos_t *pos));
+DCE(void, rewind , (FILE *stream));
 
-int dce_setvbuf (FILE *stream, char *buf, int mode, size_t size);
-void dce_setbuf (FILE *stream, char *buf);
-void dce_setbuffer (FILE *stream, char *buf, size_t size);
-void dce_setlinebuf (FILE *stream);
+DCE(int,, setvbuf , (FILE *stream, char *buf, int mosize_t size)));
+DCE(void, setbuf , (FILE *stream, char *buf));
+DCE(void, setbuffer , (FILE *stream, char *buf, size_t size));
+DCE(void, setlinebuf , (FILE *stream));
 
-size_t dce_fread (void *ptr, size_t size, size_t nmemb, FILE *stream);
-size_t dce_fwrite (const void *ptr, size_t size, size_t nmemb,
+DCE(size_t,, freaoid *ptr, size_t size, size_t nmemb, FILE *stream)));
+DCE(size_t, fwrite , (const void *ptr, size_t size, size_t nmemb);
                    FILE *stream);
-int dce_fputc (int c, FILE *stream);
-int dce_fputs (const char *s, FILE *stream);
-int dce_fgetc (FILE *stream);
-char* dce_fgets (char *s, int size, FILE *stream);
-int dce_ungetc (int c, FILE *stream);
+DCE(int, fputc , (int c, FILE *stream));
+DCE(int, fputs , (const char *s, FILE *stream));
+DCE(int, fgetc , (FILE *stream));
+DCE(char*, fgets , (char *s, int size, FILE *stream));
+DCE(int, ungetc , (int c, FILE *stream));
 
-int dce_remove (const char *pathname);
+DCE(int, remove , (const char *pathname));
 
-int dce_printf (const char *format, ...);
-int dce_getchar (void);
-int dce__IO_getc (FILE *stream);
-int dce_putchar (int __c);
-int dce__IO_putc (int __c, FILE *__stream);
-int dce_puts (const char *__s);
+DCE(int, printf , (const char *format, ...));
+DCE(int, getchar , (void));
+DCE(int, _IO_getc , (FILE *stream));
+DCE(int, putchar , (int __c));
+DCE(int, _IO_putc , (int __c, FILE *__stream));
+DCE(int, puts , (const char *__s));
 
-void dce_perror (const char *s);
+DCE(void, perror , (const char *s));
 
-int dce___printf_chk (int __flag, __const char *__restrict __format, ...);
-int dce___vfprintf_chk (FILE *__restrict __stream, int __flag,
-                        __const char *__restrict __format, _G_va_list __ap);
-int dce___fprintf_chk (FILE *__restrict __stream, int __flag,
-                       __const char *__restrict __format, ...);
-int dce___snprintf_chk (char *__restrict __s, size_t __n, int __flag,
-                        size_t __slen, __const char *__restrict __format, ...);
+DCE(int, __printf_chk , (int __flag, __const char *__restrict __format, ...));
+DCE(int, __vfprintf_chk , (FILE *__restrict __stream, int __flag,
+                        __const char *__restrict __format, _G_va_list __ap));
+DCE(int, __fprintf_chk , (FILE *__restrict __stream, int __flag,
+                       __const char *__restrict __format, ...));
+DCE(int, __snprintf_chk , (char *__restrict __s, size_t __n, int __flag,
+                        size_t __slen, __const char *__restrict __format, ...));
 
-void dce___fpurge (FILE *stream);
-size_t dce___fpending (FILE *stream);
+DCE(void, __fpurge , (FILE *stream));
+DCE(size_t, __fpending , (FILE *stream));
 
-int dce_asprintf (char **strp, const char *fmt, ...);
-int dce_vasprintf (char **strp, const char *fmt, va_list ap);
-int dce_vsnprintf (char *s, size_t si, const char *f, va_list ap);
-int dce___vsnprintf_chk (char *__restrict __s, size_t __n, int __flag,
+DCE(int, asprintf , (char **strp, const char *fmt, ...));
+DCE(int, vasprintf , (char **strp, const char *fmt, va_list ap));
+DCE(int, vsnprintf , (char *s, size_t si, const char *f, va_list ap));
+DCE(int, __vsnprintf_chk , (char *__restrict __s, size_t __n, int __flag,
                                                size_t __slen,
-                         __const char *__restrict __format, _G_va_list __ap);
+                         __const char *__restrict __format, _G_va_list __ap));
 
 
 #ifdef __cplusplus

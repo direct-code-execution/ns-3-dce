@@ -12,6 +12,7 @@ import subprocess
 import Logs
 from waflib.Errors import WafError
 
+print (ns3waf.__file__)
 def options(opt):
     opt.tool_options('compiler_cc') 
     ns3waf.options(opt)
@@ -259,7 +260,8 @@ def build_dce_tests(module, bld):
                            source=tests_source)
 
     module.add_test(features='cxx cxxshlib', source=['test/test-macros.cc'], 
-                    target='lib/test', linkflags=['-Wl,-soname=libtest.so'])
+                    target='lib/test', cxxflags=["-fPIC"], 
+                    linkflags=['-Wl,-soname=libtest.so', "-pie"])
     bld.install_files('${PREFIX}/lib', 'lib/libtest.so', chmod=0755 )
 
     tests = [['test-empty', []],
@@ -737,6 +739,8 @@ def build(bld):
                                   source=module_source,
                                   headers=module_headers,
                                   use=uselib,
+                                  cxxflags=[ "-fPIC"],
+                                  linkflags=[ "-fPIC"],
                                   includes=kernel_includes,
                                   lib=['dl'])
 #                                  lib=['dl','efence'])
@@ -793,7 +797,7 @@ def build(bld):
               defines=['LIBSETUP=libc_setup'],
               linkflags=['-nostdlib', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'libc.version'),
-                         '-Wl,-soname=libc.so.6'])
+                         '-Wl,-f=libc.so.6'])
     # The very small libpthread used to replace the glibc
     # and forward to the dce_* code
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc'],

@@ -8,24 +8,24 @@
 extern "C" {
 #endif
 
-long int dce_strtol (const char *nptr, char **endptr, int base);
-long long int dce_strtoll (const char *nptr, char **endptr, int base);
-long unsigned int dce_strtoul (const char *nptr, char **endptr, int base);
-long long unsigned int dce_strtoull (const char *nptr, char **endptr, int base);
-double dce_strtod (const char *nptr, char **endptr);
-void * dce_calloc (size_t nmemb, size_t size);
-void * dce_malloc (size_t size);
-void dce_free (void *ptr);
-void * dce_realloc (void *ptr, size_t size);
-int dce_atexit (void (*function)(void));
-char * dce_getenv (const char *name);
-int dce_putenv (char *string);
-int dce_setenv (const char *name, const char *value, int overwrite);
-int dce_unsetenv (const char *name);
-int dce_clearenv (void);
-int dce_mkstemp (char *temp);
-FILE * dce_tmpfile(void);
-int dce_rename (const char *oldpath, const char *newpath);
+DCE(long int, strtol , (const char *nptr, char **endptr, int base));
+DCE(long long int, strtoll , (const char *nptr, char **endptr, int base));
+DCE(long unsigned, strtoul , (const char *nptr, char **endptr, int base));
+DCE(long, long unsigned, strtoull , (const char *nptr, char **endptr, int base));
+DCE(double, strtod , (const char *nptr, char **endptr));
+DCE(void *, calloc , (size_t nmemb, size_t size));
+DCE(void *, malloc , (size_t size));
+DCE(void, free , (void *ptr));
+DCE(void *, realloc , (void *ptr, size_t size));
+DCE(int, atexit , (void (*function)(void)));
+DCE(char *, getenv , (const char *name));
+DCE(int, putenv , (char *string));
+DCE(int, setenv , (const char *name, const char *value, int overwrite));
+DCE(int, unsetenv , (const char *name));
+DCE(int, clearenv , (void));
+DCE(int, mkstemp , (char *temp));
+DCE(FILE *, tmpfile, (void));
+DCE(int, rename , (const char *oldpath, const char *newpath));
 
 #ifdef __cplusplus
 }

@@ -42,6 +42,15 @@
 #define NATIVE_EXPLICIT(name,type) NATIVE (name)
 #endif
 
+#undef DCE_STAT_H
+  #include "sys/dce-stat.h"
+  #include "dce-time.h"
+  #include "sys/dce-select.h"
+  #include "dce-dl.h"
+  #include "sys/dce-socket.h"
+  #include "dce-stdlib.h"
+  #include "dce-stdio.h"
+
 // #ifndef ALIAS
 // #define ALIAS(base_function, alias_name)
 // #endif
@@ -52,7 +61,7 @@ NATIVE (dce_global_variables_setup)
 // Not sure where it is defined and implemented
 // NATIVE (__xpg_strerror_r)
 
-
+#if 0
 DCE    (__cxa_finalize)
 DCE    (__cxa_atexit)
 // Not sure where it is defined and implemented
@@ -618,7 +627,11 @@ NATIVE (floor)
 DCE_WITH_ALIAS2 (dlopen, __dlopen)
 DCE (dlsym)
 
+// link.h
 NATIVE (dl_iterate_phdr)
+
+#endif
+
 
 #undef DCE
 #undef DCET

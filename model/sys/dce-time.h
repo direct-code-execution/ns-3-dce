@@ -7,11 +7,11 @@
 extern "C" {
 #endif
 
-int dce_gettimeofday (struct timeval *tv, struct timezone *tz);
-int dce_getitimer (int which, struct itimerval *value);
-int dce_setitimer (int which, const struct itimerval *value,
-                   struct itimerval *ovalue);
-int dce_nanosleep (const struct timespec *req, struct timespec *rem);
+DCE(int, gettimeofday , (struct timeval *tv, struct timezone *tz));
+DCE(int, getitimer , (int which, struct itimerval *value));
+DCE(int, setitimer , (int which, const struct itimerval *value,
+                   struct itimerval *ovalue));
+DCE(int, nanosleep , (const struct timespec *req, struct timespec *rem));
 
 
 #ifdef __cplusplus
