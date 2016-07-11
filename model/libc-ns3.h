@@ -17,32 +17,32 @@
 #ifndef DCE
 #error Macro DCE should be defined before including libc-ns3.h
 #endif
+//
+//#ifndef NATIVE
+//#define NATIVE DCE
+//#endif
 
-#ifndef NATIVE
-#define NATIVE DCE
-#endif
+//#ifndef NATIVE_WITH_ALIAS
+//#define NATIVE_WITH_ALIAS NATIVE
+//#endif
+//
+//#ifndef NATIVE_WITH_ALIAS2
+//#define NATIVE_WITH_ALIAS2(name,internal) NATIVE_WITH_ALIAS (name)
+//#endif
+//
+//#ifndef DCE_WITH_ALIAS
+//#define DCE_WITH_ALIAS DCE
+//#endif
+//
+//#ifndef DCE_WITH_ALIAS2
+//#define DCE_WITH_ALIAS2(name,internal) DCE_WITH_ALIAS (name)
+//#endif
+//
+//#ifndef NATIVE_EXPLICIT
+//#define NATIVE_EXPLICIT(name,type) NATIVE (name)
+//#endif
 
-#ifndef NATIVE_WITH_ALIAS
-#define NATIVE_WITH_ALIAS NATIVE
-#endif
-
-#ifndef NATIVE_WITH_ALIAS2
-#define NATIVE_WITH_ALIAS2(name,internal) NATIVE_WITH_ALIAS (name)
-#endif
-
-#ifndef DCE_WITH_ALIAS
-#define DCE_WITH_ALIAS DCE
-#endif
-
-#ifndef DCE_WITH_ALIAS2
-#define DCE_WITH_ALIAS2(name,internal) DCE_WITH_ALIAS (name)
-#endif
-
-#ifndef NATIVE_EXPLICIT
-#define NATIVE_EXPLICIT(name,type) NATIVE (name)
-#endif
-
-#undef DCE_STAT_H
+//#undef DCE_STAT_H
   #include "sys/dce-stat.h"
   #include "dce-time.h"
   #include "sys/dce-select.h"

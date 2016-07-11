@@ -143,7 +143,7 @@ extern int __obstack_vprintf_chk (struct obstack *, int, const char *,
                                   _G_va_list) __THROW;
 extern void __stack_chk_fail (void);
 
-typedef void (*func_t)(...);
+//typedef void (*func_t)(...);
 
 extern "C" {
 
@@ -154,14 +154,14 @@ void libc_dce (struct Libc **libc)
 //#define DCE(name) (*libc)->name ## _fn = (func_t)(__typeof (&name))dce_ ## name;
 #define DCE(rtype,name, ...) (*libc)->name ## _fn = dce_ ## name;
 //#define DCET(rtype,name) DCE (name)
-#define DCE_EXPLICIT(name,rtype,...) (*libc)->name ## _fn = dce_ ## name;
+#define DCE_EXPLICIT(rtype,name,...) (*libc)->name ## _fn = dce_ ## name;
 
 #define NATIVE(name)                                                    \
-  (*libc)->name ## _fn = (func_t)name;
-#define NATIVET(rtype, name) NATIVE(name)
+  (*libc)->name ## _fn = name;
+//#define NATIVET(rtype, name) NATIVE(name)
 
 #define NATIVE_EXPLICIT(name, type)                             \
-  (*libc)->name ## _fn = (func_t)((type)name);
+  (*libc)->name ## _fn = ((type)name);
 
 #include "libc-ns3.h"
 
