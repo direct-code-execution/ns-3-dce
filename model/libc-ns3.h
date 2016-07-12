@@ -47,8 +47,9 @@
 //  NATIVE (global_variables_setup)
 
   #include "sys/dce-stat.h"
+  #include "dce-random.h"
 //  #include "dce-global-variables.h"
-//  #include "dce-time.h"
+  #include "dce-time.h"
 //  #include "sys/dce-select.h"
 //  #include "dce-dl.h"
 //  #include "sys/dce-socket.h"
@@ -71,30 +72,22 @@ DCE    (__cxa_atexit)
 // Not sure where it is defined and implemented
 NATIVE (__gxx_personality_v0)
 
-// STDLIB.H
-DCE (atexit)
-DCE (random)
-DCE (srandom)
-DCE (rand)
-DCE (srand)
-DCE (drand48)
-DCE (erand48)
-DCE (lrand48)
-DCE (nrand48)
-DCE (mrand48)
-DCE (jrand48)
-DCE (srand48)
-DCE (seed48)
-DCE (lcong48)
-NATIVE (drand48_r)
-NATIVE (erand48_r)
-NATIVE (lrand48_r)
-NATIVE (nrand48_r)
-NATIVE (mrand48_r)
-NATIVE (jrand48_r)
-NATIVE (srand48_r)
-NATIVE (seed48_r)
-NATIVE (lcong48_r)
+//// STDLIB.H
+//DCE (atexit)
+//DCE (random)
+//DCE (srandom)
+//DCE (rand)
+//DCE (srand)
+//DCE (drand48)
+//DCE (erand48)
+//DCE (lrand48)
+//DCE (nrand48)
+//DCE (mrand48)
+//DCE (jrand48)
+//DCE (srand48)
+//DCE (seed48)
+//DCE (lcong48)
+
 DCE (calloc)
 DCE_WITH_ALIAS2 (malloc, valloc)
 DCE (free)

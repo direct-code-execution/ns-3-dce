@@ -27,7 +27,7 @@ DCE(int , clock_gettime, (clockid_t c, struct timespec *t));
 DCE(int , utime, (const char *filename, const struct utimbuf *times));
 
 DCE(int , timer_create,(clockid_t clockid, struct sigevent *sevp, timer_t *timerid));
-DCE(int , timer_settime,(int timerid, int flags, 
+DCE(int , timer_settime, (int timerid, int flags, 
     const struct itimerspec *new_value, struct itimerspec *old_value));
 DCE(int , timer_gettime,(int timerid, struct itimerspec *cur_value));
 //#ifdef __cplusplus

@@ -2,26 +2,27 @@
 #define SIMU_RANDOM_H
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+//#ifdef __cplusplus
+//extern "C" {
+//#endif
+#include "dce-guard.h"
 
-long int dce_random (void);
-int dce_rand (void);
-void dce_srandom (unsigned int seed);
-void dce_srand (unsigned int seed);
-unsigned short int *dce_seed48 (unsigned short int seed16v[3]);
-double dce_drand48 (void);
-long int dce_nrand48 (unsigned short int xsubi[3]);
-long int dce_lrand48 (void);
-long int dce_mrand48 (void);
-double dce_erand48 (unsigned short xsubi[3]);
-long int dce_jrand48 (unsigned short int xsubi[3]);
-void dce_srand48 (long int seedval);
-void dce_lcong48 (unsigned short param[7]);
+DCE(long int, random, (void));
+DCE(int, rand, (void));
+DCE(void, srandom, (unsigned int seed));
+DCE(void, srand, (unsigned int seed));
+DCE(unsigned short int *, seed48, (unsigned short int seed16v[3]));
+DCE(double, drand48, (void));
+DCE(long int, nrand48, (unsigned short int xsubi[3]));
+DCE(long int, lrand48, (void));
+DCE(long int, mrand48, (void));
+DCE(double, erand48, (unsigned short xsubi[3]));
+DCE(long int, jrand48, (unsigned short int xsubi[3]));
+DCE(void, srand48, (long int seedval));
+DCE(void, lcong48, (unsigned short param[7]));
 
-#ifdef __cplusplus
-}
-#endif
+//#ifdef __cplusplus
+//}
+//#endif
 
 #endif /* SIMU_RANDOM_H */
