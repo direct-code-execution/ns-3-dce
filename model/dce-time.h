@@ -7,28 +7,31 @@
 #include <sys/sysinfo.h>
 #include <sys/types.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "dce-guard.h"
 
-time_t dce_time (time_t *t);
-struct tm * dce_gmtime (const time_t *timep);
-struct tm * dce_localtime (const time_t *timep);
-char * dce_ctime (const time_t *timep);
-char * dce_asctime (const struct tm *tm);
-int dce_clock_gettime (clockid_t which_clock, struct timespec *tp);
-int dce_sysinfo (struct sysinfo *info);
-void dce_tzset (void);
-int dce_clock_getres (clockid_t c, struct timespec *r);
-int dce_clock_gettime (clockid_t c, struct timespec *t);
-int dce_utime (const char *filename, const struct utimbuf *times);
 
-int dce_timer_create(clockid_t clockid, struct sigevent *sevp, timer_t *timerid);
-int dce_timer_settime(int timerid, int flags, const struct itimerspec *new_value, struct itimerspec *old_value);
-int dce_timer_gettime(int timerid, struct itimerspec *cur_value);
+//#ifdef __cplusplus
+//extern "C" {
+//#endif
 
-#ifdef __cplusplus
-}
-#endif
+DCE(time_t, time, (time_t *t));
+DCE(struct tm *, gmtime, (const time_t *timep));
+DCE(struct tm * , localtime, (const time_t *timep));
+DCE(char * , ctime, (const time_t *timep));
+DCE(char * , asctime, (const struct tm *tm));
+DCE(int , clock_gettime, (clockid_t which_clock, struct timespec *tp));
+DCE(int , sysinfo, (struct sysinfo *info));
+DCE(void , tzset, (void));
+DCE(int , clock_getres, (clockid_t c, struct timespec *r));
+DCE(int , clock_gettime, (clockid_t c, struct timespec *t));
+DCE(int , utime, (const char *filename, const struct utimbuf *times));
+
+DCE(int , timer_create,(clockid_t clockid, struct sigevent *sevp, timer_t *timerid));
+DCE(int , timer_settime,(int timerid, int flags, 
+    const struct itimerspec *new_value, struct itimerspec *old_value));
+DCE(int , timer_gettime,(int timerid, struct itimerspec *cur_value));
+//#ifdef __cplusplus
+//}
+//#endif
 
 #endif /* SIMU_TIME_H */

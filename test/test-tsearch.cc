@@ -72,10 +72,10 @@ main (void)
         }
       else if ((*(int **) val) != ptr)
         {
-          free (ptr);
+//          free (ptr);
         }
     }
   twalk (root, action);
-  tdestroy (root, free);
+//  tdestroy (root, free);
   exit (EXIT_SUCCESS);
 }

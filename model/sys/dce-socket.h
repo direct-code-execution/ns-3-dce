@@ -4,9 +4,10 @@
 #include <stdint.h>
 #include <sys/socket.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+//#ifdef __cplusplus
+//extern "C" {
+//#endif
+#include "dce-guard.h"
 
 DCE(int, socket , (int domain, int type, int protocol));
 DCE(int, bind , (int fd, const struct sockaddr *my_addr, socklen_t addrlen));
@@ -30,8 +31,8 @@ DCE(int, getsockname , (int s, struct sockaddr *name, socklen_t *namelen));
 DCE(int, getpeername , (int s, struct sockaddr *name, socklen_t *namelen));
 DCE(int, socketpair , (int domain, int type, int protocol, int sv[2]));
 
-#ifdef __cplusplus
-}
-#endif
+//#ifdef __cplusplus
+//}
+//#endif
 
 #endif /* SYS_DCE_SOCKET_H */

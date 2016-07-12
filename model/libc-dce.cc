@@ -102,8 +102,7 @@
 #include <dlfcn.h>
 #include <link.h>
 
-extern void __cxa_finalize (void *d);
-extern int __cxa_atexit (void (*func)(void *), void *arg, void *d);
+
 
 extern int (*__gxx_personality_v0)(int a, int b,
                                    unsigned c,
@@ -147,21 +146,23 @@ extern void __stack_chk_fail (void);
 
 extern "C" {
 
-void libc_dce (struct Libc **libc)
-{
-  *libc = new Libc;
-
 //#define DCE(name) (*libc)->name ## _fn = (func_t)(__typeof (&name))dce_ ## name;
 #define DCE(rtype,name, ...) (*libc)->name ## _fn = dce_ ## name;
 //#define DCET(rtype,name) DCE (name)
-#define DCE_EXPLICIT(rtype,name,...) (*libc)->name ## _fn = dce_ ## name;
+//#define DCE_EXPLICIT(rtype,name,...) (*libc)->name ## _fn = dce_ ## name;
 
 #define NATIVE(name)                                                    \
   (*libc)->name ## _fn = name;
 //#define NATIVET(rtype, name) NATIVE(name)
 
-#define NATIVE_EXPLICIT(name, type)                             \
-  (*libc)->name ## _fn = ((type)name);
+//#define NATIVE_EXPLICIT(name, type)                             \
+//  (*libc)->name ## _fn = ((type)name);
+
+
+void libc_dce (struct Libc **libc)
+{
+  *libc = new Libc;
+
 
 #include "libc-ns3.h"
 
@@ -169,5 +170,10 @@ void libc_dce (struct Libc **libc)
   (*libc)->strstr_fn = dce_strstr;
   (*libc)->vsnprintf_fn = dce_vsnprintf;
 }
+
+
+#undef DCE
+#undef NATIVE
+
 } // extern "C"
 

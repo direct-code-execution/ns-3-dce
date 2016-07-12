@@ -43,20 +43,24 @@
 //#endif
 
 //#undef DCE_STAT_H
+
+//  NATIVE (global_variables_setup)
+
   #include "sys/dce-stat.h"
-  #include "dce-time.h"
-  #include "sys/dce-select.h"
-  #include "dce-dl.h"
-  #include "sys/dce-socket.h"
-  #include "dce-stdlib.h"
-  #include "dce-stdio.h"
+//  #include "dce-global-variables.h"
+//  #include "dce-time.h"
+//  #include "sys/dce-select.h"
+//  #include "dce-dl.h"
+//  #include "sys/dce-socket.h"
+//  #include "dce-stdlib.h"
+//  #include "dce-stdio.h"
 
 // #ifndef ALIAS
 // #define ALIAS(base_function, alias_name)
 // #endif
 
 // // not really a libc function, but we still need to get pointer from DCE to this function
-NATIVE (dce_global_variables_setup)
+
 
 // Not sure where it is defined and implemented
 // NATIVE (__xpg_strerror_r)
@@ -633,14 +637,14 @@ NATIVE (dl_iterate_phdr)
 #endif
 
 
-#undef DCE
-#undef DCET
-#undef DCE_EXPLICIT
-#undef NATIVE
-#undef NATIVET
-#undef NATIVE_WITH_ALIAS
-#undef NATIVE_WITH_ALIAS2
-#undef NATIVE_EXPLICIT
-#undef DCE_WITH_ALIAS
-#undef DCE_WITH_ALIAS2
+//#undef DCE
+//#undef DCET
+//#undef DCE_EXPLICIT
+//#undef NATIVE
+//#undef NATIVET
+//#undef NATIVE_WITH_ALIAS
+//#undef NATIVE_WITH_ALIAS2
+//#undef NATIVE_EXPLICIT
+//#undef DCE_WITH_ALIAS
+//#undef DCE_WITH_ALIAS2
 

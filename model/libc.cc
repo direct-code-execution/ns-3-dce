@@ -19,28 +19,28 @@ extern "C" {
 #define NATIVE_WITH_ALIAS DCE_WITH_ALIAS
 #define NATIVE_WITH_ALIAS2 DCE_WITH_ALIAS2
 
-#define GCC_BT_NUM_ARGS 128
+//#define GCC_BT_NUM_ARGS 128
+//
+//#define GCC_BUILTIN_APPLY(export_symbol, func_to_call) \
+//  void export_symbol (...) { \
+//    void *args =  __builtin_apply_args (); \
+//    void *result = __builtin_apply (g_libc.func_to_call ## _fn, args, GCC_BT_NUM_ARGS); \
+//    __builtin_return (result); \
+//  }
+//
+//#define GCC_BUILTIN_APPLYT(rtype, export_symbol, func_to_call) \
+//  rtype export_symbol (...) { \
+//    void *args =  __builtin_apply_args (); \
+//    void *result = __builtin_apply ((void (*) (...)) g_libc.func_to_call ## _fn, args, GCC_BT_NUM_ARGS); \
+//    __builtin_return (result); \
+//  }
+//
 
-#define GCC_BUILTIN_APPLY(export_symbol, func_to_call) \
-  void export_symbol (...) { \
-    void *args =  __builtin_apply_args (); \
-    void *result = __builtin_apply (g_libc.func_to_call ## _fn, args, GCC_BT_NUM_ARGS); \
-    __builtin_return (result); \
-  }
-
-#define GCC_BUILTIN_APPLYT(rtype, export_symbol, func_to_call) \
-  rtype export_symbol (...) { \
-    void *args =  __builtin_apply_args (); \
-    void *result = __builtin_apply ((void (*) (...)) g_libc.func_to_call ## _fn, args, GCC_BT_NUM_ARGS); \
-    __builtin_return (result); \
-  }
-
-
-#define DCE(name)                                                               \
-  GCC_BUILTIN_APPLY (name,name)
-
-#define DCET(rtype,name)                                                               \
-  GCC_BUILTIN_APPLYT (rtype,name,name)
+//#define DCE(name)                                                               \
+//  GCC_BUILTIN_APPLY (name,name)
+//
+//#define DCET(rtype,name)                                                               \
+//  GCC_BUILTIN_APPLYT (rtype,name,name)
 
 /* From gcc/testsuite/gcc.dg/cpp/vararg2.c */
 /* C99 __VA_ARGS__ versions */
@@ -91,6 +91,9 @@ extern "C" {
 #undef putc
 #undef getc
 
+
+// generate the implementations of stub
+#define DCE(rtype,name, args...)
 #include "libc-ns3.h" // do the work
 
 // weak_alias (strtol, __strtol_internal);

@@ -5,9 +5,7 @@
 #include <stdio_ext.h>
 #include <unistd.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "dce-guard.h"
 
 DCE(FILE *, fopen , (const char *path, const char *mode));
 DCE(FILE *, fopen64 , (const char *path, const char *mode));
@@ -24,7 +22,7 @@ DCE(int, feof , (FILE *stream));
 DCE(int, ferror , (FILE *stream));
 DCE(int, fileno , (FILE *stream));
 
-DCE(int,, fseek , (FILE *stream, long offset, int whence));
+DCE(int, fseek , (FILE *stream, long offset, int whence));
 DCE(int, fseeko , (FILE *stream, off_t offset, int whence));
 DCE(long, ftell , (FILE *stream));
 DCE(off_t, ftello , (FILE *stream));
@@ -32,14 +30,14 @@ DCE(int, fgetpos , (FILE *stream, fpos_t *pos));
 DCE(int, fsetpos , (FILE *stream, const fpos_t *pos));
 DCE(void, rewind , (FILE *stream));
 
-DCE(int,, setvbuf , (FILE *stream, char *buf, int mosize_t size)));
+DCE(int, setvbuf, (FILE *stream, char *buf, int mode, size_t size));
 DCE(void, setbuf , (FILE *stream, char *buf));
 DCE(void, setbuffer , (FILE *stream, char *buf, size_t size));
 DCE(void, setlinebuf , (FILE *stream));
 
-DCE(size_t,, freaoid *ptr, size_t size, size_t nmemb, FILE *stream)));
-DCE(size_t, fwrite , (const void *ptr, size_t size, size_t nmemb);
-                   FILE *stream);
+DCE(size_t, fread, (void *ptr, size_t size, size_t nmemb, FILE *stream));
+DCE(size_t, fwrite , (const void *ptr, size_t size, size_t nmemb,
+                   FILE *stream));
 DCE(int, fputc , (int c, FILE *stream));
 DCE(int, fputs , (const char *s, FILE *stream));
 DCE(int, fgetc , (FILE *stream));
@@ -75,9 +73,5 @@ DCE(int, __vsnprintf_chk , (char *__restrict __s, size_t __n, int __flag,
                                                size_t __slen,
                          __const char *__restrict __format, _G_va_list __ap));
 
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* SIMU_STDIO_H */

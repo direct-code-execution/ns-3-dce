@@ -20,11 +20,12 @@
 #ifndef DCE_GLOBAL_VARIABLES_H
 #define DCE_GLOBAL_VARIABLES_H
 
+//#include "dce-guard.h"
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
 struct DceGlobalVariables
 {
   FILE **pstdin;
@@ -40,11 +41,15 @@ struct DceGlobalVariables
   char **pprogram_invocation_short_name;
 };
 
-void dce_global_variables_setup (struct DceGlobalVariables *variables);
-
 
 #ifdef __cplusplus
 }
 #endif
+
+void global_variables_setup(struct DceGlobalVariables *variables);
+//DCE(void, global_variables_setup, (struct DceGlobalVariables *variables) );
+
+//NATIVE (global_variables_setup)
+
 
 #endif /* DCE_GLOBAL_VARIABLES_H */
