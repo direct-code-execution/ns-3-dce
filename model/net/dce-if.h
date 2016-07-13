@@ -2,12 +2,14 @@
 #define DCE_IF_H
 
 
+#include "dce-guard.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-unsigned dce_if_nametoindex (const char *ifname);
-char * dce_if_indextoname (unsigned ifindex, char *ifname);
+DCE(unsigned , if_nametoindex, (const char *ifname));
+DCE(char * , if_indextoname, (unsigned ifindex, char *ifname));
 
 
 #ifdef __cplusplus

@@ -9,3 +9,18 @@
 	#define NATIVE_EXPLICIT(name, proto)
 	#define NATIVE_WITH_ALIAS (name)
 //#endif
+
+// macros stolen from glibc.
+//The weak attribute causes the declaration to be emitted as a weak symbol rather 
+//than a global. This is primarily useful in defining library functions which can 
+//be overridden in user code, though it can also be used with non-function declarations
+#define weak_alias(name, aliasname) \
+  extern __typeof (name) aliasname __attribute__ ((weak, alias (# name)))
+  
+#define DCE_WITH_ALIAS(name)                                    \
+  weak_alias (__ ## name, name);
+
+#define DCE_WITH_ALIAS2(name, internal)                 \
+  weak_alias (internal, name);
+
+#define NATIVE_WITH_ALIAS2 DCE_WITH_ALIAS2

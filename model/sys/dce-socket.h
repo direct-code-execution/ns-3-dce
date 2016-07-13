@@ -9,7 +9,7 @@
 //#endif
 #include "dce-guard.h"
 
-DCE(int, socket , (int domain, int type, int protocol));
+DCE (int, socket , (int domain, int type, int protocol));
 DCE(int, bind , (int fd, const struct sockaddr *my_addr, socklen_t addrlen));
 DCE(int, connect , (int fd, const struct sockaddr *my_addr, socklen_t addrlen));
 DCE(int, listen , (int sockfd, int backlog));

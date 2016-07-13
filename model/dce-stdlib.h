@@ -29,6 +29,17 @@ DCE(int, mkstemp , (char *temp));
 DCE(FILE *, tmpfile, (void));
 DCE(int, rename , (const char *oldpath, const char *newpath));
 
+#ifdef HAVE___SECURE_GETENV
+NATIVE (__secure_getenv)
+#endif
+
+NATIVE (atoi)
+NATIVE (atol)
+NATIVE (atoll)
+NATIVET (double, atof)
+
+NATIVE (qsort)
+
 NATIVE (drand48_r)
 NATIVE (erand48_r)
 NATIVE (lrand48_r)
@@ -38,6 +49,8 @@ NATIVE (jrand48_r)
 NATIVE (srand48_r)
 NATIVE (seed48_r)
 NATIVE (lcong48_r)
+
+NATIVE (__ctype_get_mb_cur_max)
 
 //#ifdef __cplusplus
 //}

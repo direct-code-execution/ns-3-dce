@@ -6,25 +6,32 @@
 #include <signal.h>
 #include <stdint.h>
 
+#include "dce-guard.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-sighandler_t dce_signal (int signum, sighandler_t handler);
-int dce_sigaction (int signum, const struct sigaction *act,
-                   struct sigaction *oldact);
-int dce_kill (pid_t pid, int sig);
-int dce_pthread_kill (pthread_t thread, int sig);
-void dce_abort ();
-void dce___assert_fail (const char *__assertion, const char *__file,
-                        unsigned int __line, const char *__function);
-void dce___stack_chk_fail (void);
-int dce_sigprocmask (int how, const sigset_t *set, sigset_t *oldset);
-int dce_sigwait (const sigset_t *set, int *sig);
+DCE(sighandler_t , signal, (int signum, sighandler_t handler));
+DCE(int , sigaction, (int signum, const struct sigaction *act, struct sigaction *oldact));
+DCE(int , kill, (pid_t pid, int sig));
+DCE(int , pthread_kill, (pthread_t thread, int sig));
+DCE(void , abort, ());
+DCE(void , __assert_fail, (const char *__assertion, const char *__file, unsigned int __line, const char *__function));
+DCE(void , __stack_chk_fail, (void));
+DCE(int , sigprocmask, (int how, const sigset_t *set, sigset_t *oldset));
+DCE(int , sigwait, (const sigset_t *set, int *sig));
+
+
+NATIVE (sigemptyset)
+NATIVE (sigfillset)
+NATIVE (sigaddset)
+NATIVE (sigdelset)
+NATIVE (sigismember)
+NATIVE (sys_siglist)
 
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif /* SIMU_SIGNAL_H */

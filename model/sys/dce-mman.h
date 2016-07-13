@@ -1,6 +1,7 @@
 #ifndef DCE_MMAN_H
 #define DCE_MMAN_H
 
+#include "../dce-guard.h"
 
 #ifdef __cplusplus
 extern "C" {

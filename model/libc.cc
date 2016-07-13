@@ -4,6 +4,9 @@
 struct Libc g_libc;
 
 // macros stolen from glibc.
+//The weak attribute causes the declaration to be emitted as a weak symbol rather 
+//than a global. This is primarily useful in defining library functions which can 
+//be overridden in user code, though it can also be used with non-function declarations
 #define weak_alias(name, aliasname) \
   extern __typeof (name) aliasname __attribute__ ((weak, alias (# name)))
 
@@ -76,14 +79,14 @@ extern "C" {
     return g_libc.name ## _fn (ARGS (__VA_ARGS__));              \
   }
 
+#endif // if 0
+  
 #define DCE_WITH_ALIAS(name)                                    \
-  GCC_BUILTIN_APPLY (__ ## name,name)                      \
   weak_alias (__ ## name, name);
 
 #define DCE_WITH_ALIAS2(name, internal)                 \
-  GCC_BUILTIN_APPLY (internal,name)                        \
   weak_alias (internal, name);
-#endif
+
 
 // Note: it looks like that the stdio.h header does
 // not define putc and getc as macros if you include

@@ -168,6 +168,8 @@ void libc_dce (struct Libc **libc)
 //#define DCE_EXPLICIT(rtype,name,...) (*libc)->name ## _fn = dce_ ## name;
 
 #define NATIVE(name)  (*libc)->name ## _fn = &name;
+#define DCE_WITH_ALIAS2(name, alias)
+#define NATIVE_WITH_ALIAS2(name, alias)
 
 #include "libc-ns3.h"
 
@@ -179,6 +181,8 @@ void libc_dce (struct Libc **libc)
 
 #undef DCE
 #undef NATIVE
+#undef NATIVE_WITH_ALIAS2
+#undef DCE_WITH_ALIAS2
 
 } // extern "C"
 

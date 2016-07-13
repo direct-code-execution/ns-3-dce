@@ -2,12 +2,14 @@
 #define SIMU_WAIT_H
 #include <sys/types.h>
 
+#include "dce-guard.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-pid_t dce_wait (void *status);
-pid_t dce_waitpid (pid_t pid, int *status, int options);
+DCE(pid_t , wait, (void *status));
+DCE(pid_t , waitpid, (pid_t pid, int *status, int options));
 
 
 #ifdef __cplusplus

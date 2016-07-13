@@ -1,11 +1,13 @@
 #ifndef SIMU_SCHED_H
 #define SIMU_SCHED_H
 
+#include "dce-guard.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int dce_sched_yield (void);
+DCE(int, sched_yield, (void));
 
 #ifdef __cplusplus
 }

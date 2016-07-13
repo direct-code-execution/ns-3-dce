@@ -4,11 +4,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "dce-guard.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-mode_t dce_umask (mode_t mask);
+DCE(mode_t, umask, (mode_t mask) );
 
 #ifdef __cplusplus
 }

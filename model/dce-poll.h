@@ -3,11 +3,13 @@
 
 #include <poll.h>
 
+#include "dce-guard.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int dce_poll (struct pollfd *fds, nfds_t nfds, int timeout);
+DCE(int, poll, (struct pollfd *fds, nfds_t nfds, int timeout) );
 
 #ifdef __cplusplus
 }

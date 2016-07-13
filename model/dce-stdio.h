@@ -36,8 +36,7 @@ DCE(void, setbuffer , (FILE *stream, char *buf, size_t size));
 DCE(void, setlinebuf , (FILE *stream));
 
 DCE(size_t, fread, (void *ptr, size_t size, size_t nmemb, FILE *stream));
-DCE(size_t, fwrite , (const void *ptr, size_t size, size_t nmemb,
-                   FILE *stream));
+DCE(size_t, fwrite , (const void *ptr, size_t size, size_t nmemb, FILE *stream));
 DCE(int, fputc , (int c, FILE *stream));
 DCE(int, fputs , (const char *s, FILE *stream));
 DCE(int, fgetc , (FILE *stream));
@@ -56,12 +55,9 @@ DCE(int, puts , (const char *__s));
 DCE(void, perror , (const char *s));
 
 DCE(int, __printf_chk , (int __flag, __const char *__restrict __format, ...));
-DCE(int, __vfprintf_chk , (FILE *__restrict __stream, int __flag,
-                        __const char *__restrict __format, _G_va_list __ap));
-DCE(int, __fprintf_chk , (FILE *__restrict __stream, int __flag,
-                       __const char *__restrict __format, ...));
-DCE(int, __snprintf_chk , (char *__restrict __s, size_t __n, int __flag,
-                        size_t __slen, __const char *__restrict __format, ...));
+DCE(int, __vfprintf_chk , (FILE *__restrict __stream, int __flag, __const char *__restrict __format, _G_va_list __ap));
+DCE(int, __fprintf_chk , (FILE *__restrict __stream, int __flag, __const char *__restrict __format, ...));
+DCE(int, __snprintf_chk , (char *__restrict __s, size_t __n, int __flag, size_t __slen, __const char *__restrict __format, ...));
 
 DCE(void, __fpurge , (FILE *stream));
 DCE(size_t, __fpending , (FILE *stream));
@@ -69,9 +65,34 @@ DCE(size_t, __fpending , (FILE *stream));
 DCE(int, asprintf , (char **strp, const char *fmt, ...));
 DCE(int, vasprintf , (char **strp, const char *fmt, va_list ap));
 DCE(int, vsnprintf , (char *s, size_t si, const char *f, va_list ap));
-DCE(int, __vsnprintf_chk , (char *__restrict __s, size_t __n, int __flag,
-                                               size_t __slen,
-                         __const char *__restrict __format, _G_va_list __ap));
+DCE(int, __vsnprintf_chk , (char *__restrict __s, size_t __n, int __flag, size_t __slen, __const char *__restrict __format, _G_va_list __ap));
 
+
+DCE_WITH_ALIAS2 (clearerr,clearerr_unlocked)
+NATIVE (fprintf)
+NATIVE (sprintf)
+NATIVE (dprintf)
+NATIVE (vdprintf)
+DCE_WITH_ALIAS2 (fgetc,fgetc_unlocked)
+NATIVE (getc)
+NATIVE (getc_unlocked)
+DCE_WITH_ALIAS2 (getchar,getchar_unlocked)
+DCE_WITH_ALIAS2 (fputc,fputc_unlocked)
+NATIVE (putc)
+NATIVE (putc_unlocked)
+DCE_WITH_ALIAS2 (putchar, putchar_unlocked)
+DCE_WITH_ALIAS2 (fgets, fgets_unlocked)
+DCE_WITH_ALIAS2 (fputs, fputs_unlocked)
+DCE_WITH_ALIAS2 (fread, fread_unlocked)
+DCE_WITH_ALIAS2 (fwrite,fwrite_unlocked)
+DCE_WITH_ALIAS2 (fflush,fflush_unlocked)
+DCE_WITH_ALIAS2 (ferror,ferror_unlocked)
+DCE_WITH_ALIAS2 (feof,feof_unlocked)
+DCE_WITH_ALIAS2 (fileno,fileno_unlocked)
+//NATIVE_WITH_ALIAS2 (sscanf, __isoc99_sscanf)
+
+NATIVE (__cmsg_nxthdr)
+NATIVE (flockfile)
+NATIVE (funlockfile)
 
 #endif /* SIMU_STDIO_H */

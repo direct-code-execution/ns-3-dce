@@ -24,20 +24,26 @@
 #include <sys/types.h>
 #include <dirent.h>
 
+
+#include "dce-guard.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-DIR * dce_opendir (const char *name);
-DIR * dce_fdopendir (int fd);
-struct dirent * dce_readdir (DIR *dirp);
-int dce_readdir_r (DIR *dirp, struct dirent *entry, struct dirent **result);
-int dce_closedir (DIR *dirp);
-int dce_dirfd (DIR *dirp);
-void dce_rewinddir (DIR *dirp);
-int dce_scandir (const char *dirp, struct dirent ***namelist,
-                 int (*filter)(const struct dirent *),
-                 int (*compar)(const struct dirent **, const struct dirent **));
+DCE(DIR * , opendir, (const char *name));
+DCE(DIR * , fdopendir, (int fd));
+DCE(struct dirent * , readdir, (DIR *dirp));
+DCE(int , readdir_r, (DIR *dirp, struct dirent *entry, struct dirent **result));
+DCE(int , closedir, (DIR *dirp));
+DCE(int , dirfd, (DIR *dirp));
+DCE(void , rewinddir, (DIR *dirp));
+DCE(int , scandir, (const char *dirp, struct dirent ***namelist, int (*filter)(const struct dirent *), int (*compar)(const struct dirent **, const struct dirent **)));
+
+
+NATIVE (alphasort)
+NATIVE (alphasort64)
+NATIVE (versionsort)
 
 #ifdef __cplusplus
 }
@@ -46,7 +52,7 @@ int dce_scandir (const char *dirp, struct dirent ***namelist,
 namespace ns3 {
 struct Thread;
 
-int dce_internalClosedir (DIR *dirp, struct Thread *cur);
+int , internalClosedir, (DIR *dirp, struct Thread *cur));
 
 }
 

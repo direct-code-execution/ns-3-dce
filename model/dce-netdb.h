@@ -3,23 +3,37 @@
 
 #include <netdb.h>
 
+#include "dce-guard.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct hostent * dce_gethostbyname (const char *name);
-struct hostent * dce_gethostbyname2 (const char *name, int af);
-int dce_getaddrinfo (const char *node, const char *service,
-                     const struct addrinfo *hints,
-                     struct addrinfo **res);
-void dce_freeaddrinfo (struct addrinfo *res);
-const char * dce_gai_strerror (int errcode);
-int dce_getnameinfo (const struct sockaddr *sa, socklen_t salen, char *host,
-                     socklen_t hostlen, char *serv, socklen_t servlen, unsigned int flags);
+DCE(struct hostent * , gethostbyname, (const char *name));
+DCE(struct hostent * , gethostbyname2, (const char *name, int af));
+DCE(int , getaddrinfo, (const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res));
+DCE(void , freeaddrinfo, (struct addrinfo *res));
+DCE(const char * , gai_strerror, (int errcode));
+DCE(int , getnameinfo, (const struct sockaddr *sa, socklen_t salen, char *host, socklen_t hostlen, char *serv, socklen_t servlen, unsigned int flags));
 
-void dce_herror (const char *string);
-int dce_getifaddrs (struct ifaddrs **ifap);
+DCE(void , herror, (const char *string));
+DCE(int , getifaddrs, (struct ifaddrs **ifap));
 
+NATIVE (freeifaddrs)
+NATIVE (gethostent)
+NATIVE (sethostent)
+NATIVE (endhostent)
+NATIVE (hstrerror) // this could be replaced by DCE call
+NATIVE (getprotoent)
+NATIVE (getprotobyname)
+NATIVE (getprotobynumber)
+NATIVE (setprotoent)
+NATIVE (endprotoent)
+NATIVE (getservent)
+NATIVE (getservbyname)
+NATIVE (getservbyport)
+NATIVE (setservent)
+NATIVE (endservent)
 #ifdef __cplusplus
 }
 #endif

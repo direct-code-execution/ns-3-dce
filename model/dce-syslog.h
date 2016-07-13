@@ -4,19 +4,16 @@
 
 #include <stdarg.h>
 
-void
-dce_closelog (void);
+#include "dce-guard.h"
 
-void
-dce_openlog (const char *ident, int logopt, int facility);
+DCE(void , closelog, (void));
 
-int
-dce_setlogmask (int maskpri);
+DCE(void , openlog, (const char *ident, int logopt, int facility));
 
-void
-dce_syslog (int priority, const char *message, ...);
+DCE(int , setlogmask, (int maskpri));
 
-void
-dce_vsyslog (int priority, const char *message, va_list args);
+DCE(void , syslog, (int priority, const char *message, ...));
+
+DCE(void , vsyslog, (int priority, const char *message, va_list args));
 
 #endif // DCE_SYSLOG_H

@@ -4,15 +4,19 @@
 #include <sys/types.h>
 #include <pwd.h>
 
+#include "dce-guard.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct passwd * dce_getpwnam (const char *name);
+DCE(struct passwd * , getpwnam, (const char *name));
 
-struct passwd * dce_getpwuid (uid_t uid);
+DCE(struct passwd * , getpwuid, (uid_t uid));
 
-void dce_endpwent (void);
+DCE(void , endpwent, (void));
+
+NATIVE (getpwnam)
 
 #ifdef __cplusplus
 }

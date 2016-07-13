@@ -6,13 +6,13 @@
 //#endif
 
 #include "dce-guard.h"
-#include "dce-cxa.i"
+//#include "dce-cxa.i"
 
 //extern void __cxa_finalize (void *d);
 //extern int __cxa_atexit (void (*func)(void *), void *arg, void *d);
 
-//DCE(int, __cxa_atexit , (void (*func)(void *), void *arg, void *d));
-//DCE(void, __cxa_finalize , (void *d));
+DCE(int, __cxa_atexit , (void (*func)(void *), void *arg, void *d));
+DCE(void, __cxa_finalize , (void *d));
 
 //#ifdef __cplusplus
 //}
