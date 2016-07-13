@@ -52,7 +52,8 @@ NATIVE (versionsort)
 namespace ns3 {
 struct Thread;
 
-int , internalClosedir, (DIR *dirp, struct Thread *cur));
+// used internally only
+int dce_internalClosedir (DIR *dirp, struct Thread *cur);
 
 }
 

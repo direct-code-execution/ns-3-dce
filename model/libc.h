@@ -14,7 +14,7 @@
 //on peut utiliser des templates pour recuperer les arguments 
 #define DCE(rtype, name, args...) rtype (*name ## _fn) args ;
 /* native => decltype(name) */
-#define NATIVE(name) decltype(&name) name ## _fn ;
+#define NATIVE(name) decltype(name) name ## _fn ;
 
 // NATIVE_EXPLICIT
 struct Libc
@@ -25,7 +25,7 @@ struct Libc
 /* #define NATIVET(rtype, name) NATIVE (name) */
 
 /* #define DCE_EXPLICIT(name,rtype,...) rtype (*name ## _fn) (__VA_ARGS__); */
- #include "libc-ns3.h" 
+ #include "libc-ns3.generated.h"
 
   void (*dce_global_variables_setup_fn)(struct DceGlobalVariables *variables);
   char* (*strpbrk_fn)(const char *s, const char *accept);

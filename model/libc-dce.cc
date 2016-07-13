@@ -101,6 +101,8 @@
 #include <math.h>
 #include <assert.h>
 #include <dlfcn.h>
+#include <dirent.h>
+#include <unistd.h>
 
 #include <locale.h>
 
@@ -168,10 +170,13 @@ void libc_dce (struct Libc **libc)
 //#define DCE_EXPLICIT(rtype,name,...) (*libc)->name ## _fn = dce_ ## name;
 
 #define NATIVE(name)  (*libc)->name ## _fn = &name;
+// should be ignored
+//#define NATIVE_WITH_ALIAS(name, alias)
+//#define DCE_WITH_ALIAS(name, alias)
 #define DCE_WITH_ALIAS2(name, alias)
 #define NATIVE_WITH_ALIAS2(name, alias)
 
-#include "libc-ns3.h"
+#include "libc-ns3.generated.h"
 
   (*libc)->strpbrk_fn = dce_strpbrk;
   (*libc)->strstr_fn = dce_strstr;

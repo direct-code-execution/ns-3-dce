@@ -105,6 +105,10 @@ extern "C" {
 
 #undef DCE
 #undef NATIVE
+#undef DCE_WITH_ALIAS
+#undef DCE_WITH_ALIAS2
+#undef NATIVE_WITH_ALIAS
+
 
 // weak_alias (strtol, __strtol_internal);
 // weak_alias (wctype_l, __wctype_l);

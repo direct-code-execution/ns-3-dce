@@ -5,11 +5,11 @@
 #include <stdarg.h>
 #include <unistd.h>
 
+#include "../dce-guard.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
 
 DCE(ssize_t , write, (int fd, const void *buf, size_t count));
 DCE(ssize_t , writev, (int fd, const struct iovec *iov, int iovcnt));

@@ -36,7 +36,7 @@ NATIVE (__secure_getenv)
 NATIVE (atoi)
 NATIVE (atol)
 NATIVE (atoll)
-NATIVET (double, atof)
+NATIVE (atof)
 
 NATIVE (qsort)
 

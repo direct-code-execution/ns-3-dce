@@ -3,7 +3,7 @@
 #
 # foulle dans liste de fichiers
 # list=(dce-termio.h dce-math.h dce-socket.h dce-fd.h)
-out="libc-ns3.generated.h"
+out="model/libc-ns3.generated.h"
 
 # sys/dce-socket.h 
 # read '' var <<'EOF'
