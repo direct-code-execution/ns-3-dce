@@ -14,10 +14,10 @@ extern "C" {
 // function calls with a large number of arguments.
 // \see http://tigcc.ticalc.org/doc/gnuexts.html#SEC67___builtin_apply_args
 // FIXME: 120925: 128 was heuristically picked to pass the test under 32bits environment.
-#define NATIVE DCE
-#define NATIVET DCET
-#define NATIVE_WITH_ALIAS DCE_WITH_ALIAS
-#define NATIVE_WITH_ALIAS2 DCE_WITH_ALIAS2
+//#define NATIVE DCE
+//#define NATIVET DCET
+//#define NATIVE_WITH_ALIAS DCE_WITH_ALIAS
+//#define NATIVE_WITH_ALIAS2 DCE_WITH_ALIAS2
 
 //#define GCC_BT_NUM_ARGS 128
 //
@@ -42,6 +42,7 @@ extern "C" {
 //#define DCET(rtype,name)                                                               \
 //  GCC_BUILTIN_APPLYT (rtype,name,name)
 
+#if 0
 /* From gcc/testsuite/gcc.dg/cpp/vararg2.c */
 /* C99 __VA_ARGS__ versions */
 #define c99_count(...)    _c99_count1 (, ## __VA_ARGS__) /* If only ## worked.*/
@@ -82,7 +83,7 @@ extern "C" {
 #define DCE_WITH_ALIAS2(name, internal)                 \
   GCC_BUILTIN_APPLY (internal,name)                        \
   weak_alias (internal, name);
-
+#endif
 
 // Note: it looks like that the stdio.h header does
 // not define putc and getc as macros if you include
@@ -93,8 +94,14 @@ extern "C" {
 
 
 // generate the implementations of stub
-#define DCE(rtype,name, args...)
-#include "libc-ns3.h" // do the work
+//#define DCE(rtype,name, args...)
+//#define NATIVE(rtype,name)
+
+// Assign final 
+//#include "libc-ns3.h" // do the work
+
+#undef DCE
+#undef NATIVE
 
 // weak_alias (strtol, __strtol_internal);
 // weak_alias (wctype_l, __wctype_l);

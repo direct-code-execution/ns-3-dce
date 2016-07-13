@@ -3,16 +3,19 @@
 
 #include <termio.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "dce-guard.h"
 
-int dce_tcgetattr (int fd, struct termios *termios_p);
-int dce_tcsetattr (int fd, int optional_actions, const struct termios *termios_p);
+#include "dce-termio.i"
 
-#ifdef __cplusplus
-}
-#endif
+//#ifdef __cplusplus
+//extern "C" {
+//#endif
+
+
+
+//#ifdef __cplusplus
+//}
+//#endif
 
 
 #endif /* SIMU_UIO_H */

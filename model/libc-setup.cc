@@ -5,6 +5,10 @@
 
 #include "libc-globals.h"
 #include "dce-global-variables.h"
+
+#define DCE(rtype,name, args...)
+#define NATIVE(name)
+
 #include "libc.h"
 
 extern Libc g_libc; // this is initialized in libc.c

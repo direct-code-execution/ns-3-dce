@@ -3,6 +3,8 @@
 
 #include <locale.h>
 
-char * dce_setlocale (int category, const char *locale);
+#include "dce-guard.h"
+#include "dce-locale.i"
+
 
 #endif // DCE_LOCALE_H

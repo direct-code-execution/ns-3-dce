@@ -43,6 +43,7 @@
 #include "dce-termio.h"
 #include "dce-dl.h"
 
+
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <fcntl.h>
@@ -100,7 +101,8 @@
 #include <math.h>
 #include <assert.h>
 #include <dlfcn.h>
-#include <link.h>
+
+#include <locale.h>
 
 
 
@@ -146,13 +148,10 @@ extern void __stack_chk_fail (void);
 
 extern "C" {
 
-//#define DCE(name) (*libc)->name ## _fn = (func_t)(__typeof (&name))dce_ ## name;
-#define DCE(rtype,name, ...) (*libc)->name ## _fn = dce_ ## name;
-//#define DCET(rtype,name) DCE (name)
-//#define DCE_EXPLICIT(rtype,name,...) (*libc)->name ## _fn = dce_ ## name;
+#undef DCE
+#undef NATIVE
 
-#define NATIVE(name)                                                    \
-  (*libc)->name ## _fn = name;
+
 //#define NATIVET(rtype, name) NATIVE(name)
 
 //#define NATIVE_EXPLICIT(name, type)                             \
@@ -163,6 +162,12 @@ void libc_dce (struct Libc **libc)
 {
   *libc = new Libc;
 
+//#define DCE(name) (*libc)->name ## _fn = (func_t)(__typeof (&name))dce_ ## name;
+#define DCE(rtype,name, ...) (*libc)->name ## _fn = dce_ ## name;
+//#define DCET(rtype,name) DCE (name)
+//#define DCE_EXPLICIT(rtype,name,...) (*libc)->name ## _fn = dce_ ## name;
+
+#define NATIVE(name)  (*libc)->name ## _fn = &name;
 
 #include "libc-ns3.h"
 

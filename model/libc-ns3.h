@@ -18,9 +18,10 @@
 #error Macro DCE should be defined before including libc-ns3.h
 #endif
 //
-//#ifndef NATIVE
+#ifndef NATIVE
 //#define NATIVE DCE
-//#endif
+#error Macro NATIVE should be defined before including libc-ns3.h
+#endif
 
 //#ifndef NATIVE_WITH_ALIAS
 //#define NATIVE_WITH_ALIAS NATIVE
@@ -45,14 +46,23 @@
 //#undef DCE_STAT_H
 
 //  NATIVE (global_variables_setup)
+// WCHAR.H
+NATIVE (wctob)
+NATIVE(btowc)
+NATIVE(mbrlen)
 
-  #include "sys/dce-stat.h"
-  #include "dce-random.h"
+  #include "sys/dce-stat.i"
+  #include "dce-random.i"
 //  #include "dce-global-variables.h"
-  #include "dce-time.h"
+  #include "dce-time.i"
+  #include "dce-locale.i"
+  #include "dce-termio.i"
+//  #include "dce-fcntl.h"
+//  #include "arpa/dce-inet.h"
 //  #include "sys/dce-select.h"
 //  #include "dce-dl.h"
 //  #include "sys/dce-socket.h"
+//  #include "dce-vfs.h"
 //  #include "dce-stdlib.h"
 //  #include "dce-stdio.h"
 
@@ -65,6 +75,11 @@
 
 // Not sure where it is defined and implemented
 // NATIVE (__xpg_strerror_r)
+
+
+
+// link.h
+//NATIVE (dl_iterate_phdr)
 
 #if 0
 DCE    (__cxa_finalize)
@@ -118,86 +133,86 @@ DCE (tmpfile)
 DCE (rename)
 
 // STRING.H
-NATIVE (bzero)
-NATIVE (strerror)
-NATIVE (strerror_r)
-NATIVE (strcoll)
-NATIVE (memset)
-NATIVE (memcpy)
-NATIVE (bcopy)
-NATIVE (memcmp)
-NATIVE (memmove)
-NATIVE_EXPLICIT (memchr, void * (*)(void *, int, size_t))
-NATIVE_EXPLICIT (memrchr, void * (*)(void *, int, size_t))
-NATIVE (strcpy)
-NATIVE (strncpy)
-NATIVE (strcat)
-NATIVE (strncat)
-NATIVE (strcmp)
-NATIVE (strncmp)
-NATIVE (strlen)
-NATIVE (strnlen)
-NATIVE (strcspn)
-NATIVE (strspn)
-NATIVE_EXPLICIT (strchr, char* (*)(char *, int))
-NATIVE_EXPLICIT (strrchr, const char * (*)(const char *, int))
-NATIVE (strcasecmp)
-NATIVE (strncasecmp)
-DCE_WITH_ALIAS (strdup) // because C++ defines both const and non-const functions
-DCE (strndup)
-NATIVE_EXPLICIT (index, char * (*)(char *, int))
-NATIVE_EXPLICIT (rindex, char * (*)(char *, int))
-NATIVE_EXPLICIT (strtok, char * (*)(char *, const char *))
-NATIVE_EXPLICIT (strtok_r,  char * (*)(char *, const char *, char **))
-NATIVE (strsep)
+//NATIVE (bzero)
+//NATIVE (strerror)
+//NATIVE (strerror_r)
+//NATIVE (strcoll)
+//NATIVE (memset)
+//NATIVE (memcpy)
+//NATIVE (bcopy)
+//NATIVE (memcmp)
+//NATIVE (memmove)
+//NATIVE_EXPLICIT (memchr, void * (*)(void *, int, size_t))
+//NATIVE_EXPLICIT (memrchr, void * (*)(void *, int, size_t))
+//NATIVE (strcpy)
+//NATIVE (strncpy)
+//NATIVE (strcat)
+//NATIVE (strncat)
+//NATIVE (strcmp)
+//NATIVE (strncmp)
+//NATIVE (strlen)
+//NATIVE (strnlen)
+//NATIVE (strcspn)
+//NATIVE (strspn)
+//NATIVE_EXPLICIT (strchr, char* (*)(char *, int))
+//NATIVE_EXPLICIT (strrchr, const char * (*)(const char *, int))
+//NATIVE (strcasecmp)
+//NATIVE (strncasecmp)
+//DCE_WITH_ALIAS (strdup) // because C++ defines both const and non-const functions
+//DCE (strndup)
+//NATIVE_EXPLICIT (index, char * (*)(char *, int))
+//NATIVE_EXPLICIT (rindex, char * (*)(char *, int))
+//NATIVE_EXPLICIT (strtok, char * (*)(char *, const char *))
+//NATIVE_EXPLICIT (strtok_r,  char * (*)(char *, const char *, char **))
+//NATIVE (strsep)
 
 
 // LOCALE.H
-DCE    (setlocale)
-NATIVE_WITH_ALIAS (newlocale)
-NATIVE_WITH_ALIAS (uselocale)
+//DCE    (setlocale)
+//NATIVE_WITH_ALIAS (newlocale)
+//NATIVE_WITH_ALIAS (uselocale)
 
-// WCHAR.H
-NATIVE (wctob)
-NATIVE (btowc)
-NATIVE (mbrlen)
+//// WCHAR.H
+//NATIVE (wctob)
+//NATIVE (btowc)
+//NATIVE (mbrlen)
 
 // ARPA/INET.H
-NATIVE (htonl)
-NATIVE (htons)
-NATIVE (ntohl)
-NATIVE (ntohs)
-NATIVE (lockf)
-NATIVE (inet_aton)
-NATIVE (inet_addr)
-NATIVE (inet_network)
-NATIVE (inet_ntoa)
-NATIVE (inet_makeaddr)
-NATIVE (inet_lnaof)
-NATIVE (inet_netof)
-DCE (inet_ntop)
-NATIVE (inet_pton)
-NATIVE (inet6_opt_find)
+//NATIVE (htonl)
+//NATIVE (htons)
+//NATIVE (ntohl)
+//NATIVE (ntohs)
+//NATIVE (lockf)
+//NATIVE (inet_aton)
+//NATIVE (inet_addr)
+//NATIVE (inet_network)
+//NATIVE (inet_ntoa)
+//NATIVE (inet_makeaddr)
+//NATIVE (inet_lnaof)
+//NATIVE (inet_netof)
+////DCE (inet_ntop)
+//NATIVE (inet_pton)
+//NATIVE (inet6_opt_find)
 
 // SYS/SOCKET.H
-DCE (socket)
-DCE (socketpair)
-DCE (getsockname)
-DCE (getpeername)
-DCE (bind)
-DCE (connect)
-DCE (setsockopt)
-DCE (getsockopt)
-DCE (listen)
-DCE (accept)
-DCE (shutdown)
-DCE (send)
-DCE (sendto)
-DCE (sendmsg)
-DCE (recv)
-DCE (recvfrom)
-DCE (recvmsg)
-DCE (getnameinfo)
+//DCE (socket)
+//DCE (socketpair)
+//DCE (getsockname)
+//DCE (getpeername)
+//DCE (bind)
+//DCE (connect)
+//DCE (setsockopt)
+//DCE (getsockopt)
+//DCE (listen)
+//DCE (accept)
+//DCE (shutdown)
+//DCE (send)
+//DCE (sendto)
+//DCE (sendmsg)
+//DCE (recv)
+//DCE (recvfrom)
+//DCE (recvmsg)
+//DCE (getnameinfo)
 
 
 // UNISTD.H
@@ -272,7 +287,6 @@ DCE (readv)
 DCE (writev)
 
 // STDIO.H
-DCE_WITH_ALIAS2 (clearerr,clearerr_unlocked)
 DCE (setvbuf)
 DCE (setbuf)
 DCE (setbuffer)
@@ -285,24 +299,34 @@ DCE (rewind)
 DCE (fgetpos)
 DCE (fsetpos)
 DCE (printf)
-NATIVE (fprintf)
-NATIVE (sprintf)
 DCE (asprintf)
 DCE (vasprintf)
+DCE (_IO_getc)
+DCE (_IO_putc)
+
+DCE_WITH_ALIAS2 (clearerr,clearerr_unlocked)
+NATIVE (fprintf)
+NATIVE (sprintf)
 NATIVE (dprintf)
 NATIVE (vdprintf)
 DCE_WITH_ALIAS2 (fgetc,fgetc_unlocked)
 NATIVE (getc)
 NATIVE (getc_unlocked)
 DCE_WITH_ALIAS2 (getchar,getchar_unlocked)
-DCE (_IO_getc)
 DCE_WITH_ALIAS2 (fputc,fputc_unlocked)
 NATIVE (putc)
 NATIVE (putc_unlocked)
 DCE_WITH_ALIAS2 (putchar, putchar_unlocked)
-DCE (_IO_putc)
 DCE_WITH_ALIAS2 (fgets, fgets_unlocked)
 DCE_WITH_ALIAS2 (fputs, fputs_unlocked)
+DCE_WITH_ALIAS2 (fread, fread_unlocked)
+DCE_WITH_ALIAS2 (fwrite,fwrite_unlocked)
+DCE_WITH_ALIAS2 (fflush,fflush_unlocked)
+DCE_WITH_ALIAS2 (ferror,ferror_unlocked)
+DCE_WITH_ALIAS2 (feof,feof_unlocked)
+DCE_WITH_ALIAS2 (fileno,fileno_unlocked)
+NATIVE_WITH_ALIAS2 (sscanf, __isoc99_sscanf)
+
 DCE (puts)
 DCE (ungetc)
 DCE (fclose)
@@ -311,29 +335,25 @@ DCE (fopen)
 DCE (fopen64)
 DCE (freopen)
 DCE (fdopen)
-DCE_WITH_ALIAS2 (fread, fread_unlocked)
-DCE_WITH_ALIAS2 (fwrite,fwrite_unlocked)
-DCE_WITH_ALIAS2 (fflush,fflush_unlocked)
-DCE_WITH_ALIAS2 (ferror,ferror_unlocked)
-DCE_WITH_ALIAS2 (feof,feof_unlocked)
-DCE_WITH_ALIAS2 (fileno,fileno_unlocked)
+
+
 DCE (perror)
 DCE (remove)
 //NATIVE (sscanf)
-NATIVE_WITH_ALIAS2 (sscanf, __isoc99_sscanf)
+
 NATIVE (flockfile)
 NATIVE (funlockfile)
 
 // STDARG.H
-DCE (vprintf)
-NATIVE (vfprintf)
-NATIVE (vsprintf)
+//DCE (vprintf)
+//NATIVE (vfprintf)
+//NATIVE (vsprintf)
 
 // FCNTL.H
-DCE (fcntl)
-DCE (open)
-DCE (open64)
-DCE (unlinkat)
+//DCE (fcntl)
+//DCE (open)
+//DCE (open64)
+//DCE (unlinkat)
 
 // TIME.H
 DCE (nanosleep)
@@ -569,18 +589,18 @@ NATIVE (fnmatch)
 NATIVE (nl_langinfo)
 
 // SYS/VFS.H
-DCE (fstatfs)
-DCE (fstatfs64)
-DCE (statfs)
-DCE (statfs64)
+//DCE (fstatfs)
+//DCE (fstatfs64)
+//DCE (statfs)
+//DCE (statfs64)
 
 // SYS/STATVFS.H
-DCE (statvfs)
-DCE (fstatvfs)
+//DCE (statvfs)
+//DCE (fstatvfs)
 
 // TERMIO.H
-DCE (tcgetattr)
-DCE (tcsetattr)
+//DCE (tcgetattr)
+//DCE (tcsetattr)
 
 ///////////////////// END OF INVENTAIRE //////////////////////////////////////////////////
 
@@ -615,17 +635,12 @@ DCE    (__fxstatat)
 NATIVE (__cmsg_nxthdr)
 
 // math.h
-NATIVE (lrintl)
-NATIVE (llrintl)
-NATIVE (ceil)
-NATIVE (floor)
 
 // dlfcn.h
 DCE_WITH_ALIAS2 (dlopen, __dlopen)
 DCE (dlsym)
 
-// link.h
-NATIVE (dl_iterate_phdr)
+
 
 #endif
 

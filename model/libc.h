@@ -2,9 +2,11 @@
 #define LIBC_H
 
 #include <stdarg.h>
-//#define _SYS_SELECT_H
+#define _SYS_SELECT_H
 #include <sys/types.h>
-//#undef _SYS_SELECT_H
+#undef _SYS_SELECT_H
+#include <wchar.h>
+#include <link.h>
 
 // Generate struct
 //#define GENERATE_LIBC
@@ -12,7 +14,7 @@
 //on peut utiliser des templates pour recuperer les arguments 
 #define DCE(rtype, name, args...) rtype (*name ## _fn) args ;
 /* native => decltype(name) */
-#define NATIVE(name) decltype( name ) name ## _fn;
+#define NATIVE(name) decltype(&name) name ## _fn ;
 
 // NATIVE_EXPLICIT
 struct Libc
