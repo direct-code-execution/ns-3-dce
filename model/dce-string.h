@@ -11,9 +11,7 @@
 
 DCE(char *, strdup, (const char *s));
 DCE(char *, strndup, (const char *s, size_t n));
-DCE(char *, __strcpy_chk, (char *__restrict __dest,
-                         const char *__restrict __src,
-                         size_t __destlen));
+DCE(char *, __strcpy_chk, (char *__restrict __dest, const char *__restrict __src, size_t __destlen));
 DCE(char *, strpbrk, (const char *s, const char *accept));
 DCE(char *, strstr, (const char *h, const char *n));
 

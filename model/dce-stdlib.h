@@ -29,9 +29,10 @@ DCE(int, mkstemp , (char *temp));
 DCE(FILE *, tmpfile, (void));
 DCE(int, rename , (const char *oldpath, const char *newpath));
 
-#ifdef HAVE___SECURE_GETENV
-NATIVE (__secure_getenv)
-#endif
+// REGRESSION
+//#ifdef HAVE___SECURE_GETENV
+//NATIVE (__secure_getenv)
+//#endif
 
 NATIVE (atoi)
 NATIVE (atol)

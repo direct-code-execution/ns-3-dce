@@ -28,7 +28,8 @@ NATIVE (sigfillset)
 NATIVE (sigaddset)
 NATIVE (sigdelset)
 NATIVE (sigismember)
-NATIVE (sys_siglist)
+//exists only for compatibility, we should use strsignal instead
+//NATIVE (sys_siglist) // REGRESSION
 
 #ifdef __cplusplus
 }

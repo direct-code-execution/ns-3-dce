@@ -72,8 +72,10 @@ NATIVE (isdigit)
 NATIVE (isxdigit)
 NATIVE (isalnum)
 NATIVE (__ctype_b_loc)
-NATIVE_WITH_ALIAS (wctype_l)
-NATIVE (__ctype_tolower_loc)
+
+// REGRESSION
+//NATIVE_WITH_ALIAS (wctype_l) 
+//NATIVE (__ctype_tolower_loc)
 
 
 // link.h

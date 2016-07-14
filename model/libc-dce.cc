@@ -44,67 +44,7 @@
 #include "dce-dl.h"
 
 
-#include <arpa/inet.h>
-#include <ctype.h>
-#include <fcntl.h>
-#include <getopt.h>
-#include <grp.h>
-#include <ifaddrs.h>
-#include <sys/uio.h>
-#include <libgen.h>
-#include <locale.h>
-#include <netdb.h>
-#include <net/if.h>
-#include <netinet/in.h>
-#include <poll.h>
-#include <semaphore.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdio_ext.h>
-#include <stddef.h>
-#include <stdarg.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <syslog.h>
-#include <sys/dir.h>
-#include <sys/ioctl.h>
-#include <sys/io.h>
-#include <sys/mman.h>
-#include <sys/timerfd.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/resource.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <sys/utsname.h>
-#include <sys/wait.h>
-#include <pthread.h>
-#include <pwd.h>
-#include <time.h>
-#include <unistd.h>
-#include <wchar.h>
-#include <wctype.h>
-#include <xlocale.h>
-#include <errno.h>
-#include <setjmp.h>
-#include <libintl.h>
-#include <pwd.h>
-#include <inttypes.h>
-#include <error.h>
-#include <netinet/ether.h>
-#include <search.h>
-#include <fnmatch.h>
-#include <langinfo.h>
-#include <sys/vfs.h>
-#include <termio.h>
-#include <math.h>
-#include <assert.h>
-#include <dlfcn.h>
-#include <dirent.h>
-#include <unistd.h>
 
-#include <locale.h>
 
 
 
@@ -152,7 +92,10 @@ extern "C" {
 
 #undef DCE
 #undef NATIVE
-
+#undef NATIVE_WITH_ALIAS
+#undef DCE_WITH_ALIAS
+#undef DCE_WITH_ALIAS2
+#undef NATIVE_WITH_ALIAS2
 
 //#define NATIVET(rtype, name) NATIVE(name)
 
@@ -162,18 +105,18 @@ extern "C" {
 
 void libc_dce (struct Libc **libc)
 {
-  *libc = new Libc;
+  *libc = new Libc();
 
 //#define DCE(name) (*libc)->name ## _fn = (func_t)(__typeof (&name))dce_ ## name;
-#define DCE(rtype,name, ...) (*libc)->name ## _fn = dce_ ## name;
+#define DCE(rtype,name, ...) (*libc)->name ## _fn = & dce_ ## name;
 //#define DCET(rtype,name) DCE (name)
 //#define DCE_EXPLICIT(rtype,name,...) (*libc)->name ## _fn = dce_ ## name;
 
-#define NATIVE(name)  (*libc)->name ## _fn = &name;
+#define NATIVE(name)  (*libc)->name ## _fn = name;
 // should be ignored
-//#define NATIVE_WITH_ALIAS(name, alias)
-//#define DCE_WITH_ALIAS(name, alias)
-#define DCE_WITH_ALIAS2(name, alias)
+#define NATIVE_WITH_ALIAS(name) NATIVE(name)
+#define DCE_WITH_ALIAS(name)
+#define DCE_WITH_ALIAS2(name, alias) 
 #define NATIVE_WITH_ALIAS2(name, alias)
 
 #include "libc-ns3.generated.h"
@@ -186,7 +129,11 @@ void libc_dce (struct Libc **libc)
 
 #undef DCE
 #undef NATIVE
+
+#undef NATIVE_WITH_ALIAS
 #undef NATIVE_WITH_ALIAS2
+
+#undef DCE_WITH_ALIAS
 #undef DCE_WITH_ALIAS2
 
 } // extern "C"

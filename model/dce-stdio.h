@@ -68,7 +68,8 @@ DCE(int, vsnprintf , (char *s, size_t si, const char *f, va_list ap));
 DCE(int, __vsnprintf_chk , (char *__restrict __s, size_t __n, int __flag, size_t __slen, __const char *__restrict __format, _G_va_list __ap));
 
 
-DCE_WITH_ALIAS2 (clearerr,clearerr_unlocked)
+
+//DCE_WITH_ALIAS2 (clearerr,clearerr_unlocked) REGRESSION
 NATIVE (fprintf)
 NATIVE (sprintf)
 NATIVE (dprintf)

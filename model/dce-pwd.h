@@ -16,8 +16,6 @@ DCE(struct passwd * , getpwuid, (uid_t uid));
 
 DCE(void , endpwent, (void));
 
-NATIVE (getpwnam)
-
 #ifdef __cplusplus
 }
 #endif

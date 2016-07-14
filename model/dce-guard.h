@@ -20,7 +20,7 @@
 //#define DCE_WITH_ALIAS(name) weak_alias (__ ## name, name);
 #define DCE_WITH_ALIAS(name)
 
-#define NATIVE_WITH_ALIAS DCE_WITH_ALIAS
+#define NATIVE_WITH_ALIAS NATIVE
 
 //#define DCE_WITH_ALIAS2(name, internal) weak_alias (internal, name);
 #define DCE_WITH_ALIAS2(name, internal)
