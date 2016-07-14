@@ -1,7 +1,7 @@
 //#ifdef DCE
 //  #pragma error DCE should be defined
 //#else
-	#define DCE(rtype, name, args...) extern "C" rtype dce_ ## name args ;
+	#define DCE(rtype, name, args...) rtype dce_ ## name args ;
 //#endif
 
 //#ifndef NATIVE
