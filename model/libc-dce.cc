@@ -124,9 +124,9 @@ void libc_dce (struct Libc **libc)
 
 #include "libc-ns3.generated.h"
 
-  (*libc)->strpbrk_fn = dce_strpbrk;
-  (*libc)->strstr_fn = dce_strstr;
-  (*libc)->vsnprintf_fn = dce_vsnprintf;
+//  (*libc)->strpbrk_fn = dce_strpbrk;
+//  (*libc)->strstr_fn = dce_strstr;
+//  (*libc)->vsnprintf_fn = dce_vsnprintf;
 }
 
 
