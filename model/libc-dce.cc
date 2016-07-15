@@ -47,6 +47,9 @@
 
 
 
+extern void __cxa_finalize (void *d);
+extern int __cxa_atexit (void (*func)(void *), void *arg, void *d);
+
 
 extern int (*__gxx_personality_v0)(int a, int b,
                                    unsigned c,

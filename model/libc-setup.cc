@@ -37,8 +37,10 @@ void setup_global_variables ()
   globals.pprogram_invocation_name = &program_invocation_name;
   globals.pprogram_invocation_short_name = &program_invocation_short_name;
 
-  typedef void (*dce_global_variables_setup_t)(struct DceGlobalVariables *);
-  ((dce_global_variables_setup_t)g_libc.dce_global_variables_setup_fn)(&globals);
+//  typedef void (*dce_global_variables_setup_t)(struct DceGlobalVariables *);
+//  ((dce_global_variables_setup_t)
+//  (g_libc.dce_global_variables_setup_fn)(&globals);
+  dce_global_variables_setup (&globals);
 }
 
 }

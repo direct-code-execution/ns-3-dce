@@ -234,6 +234,9 @@ CoojaLoader::LoadModule (std::string filename, int flag, bool failsafe)
           void *handle = dlopen (cached.cachedFilename.c_str (),
                                  RTLD_LAZY | RTLD_DEEPBIND | RTLD_LOCAL);
           NS_ASSERT_MSG (handle != 0, "Could not open " << cached.cachedFilename << " " << dlerror ());
+//          if(handle == 0) {
+//            NS_LOG_ERROR("Could not open " << cached.cachedFilename << " " << dlerror ());
+//          }
           struct link_map *link_map;
           dlinfo (handle, RTLD_DI_LINKMAP, &link_map);
 

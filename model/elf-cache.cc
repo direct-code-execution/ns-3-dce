@@ -225,6 +225,7 @@ ElfCache::EditBuffer (uint8_t *map, uint32_t selfId) const
         }
       else if (cur->d_tag == DT_SONAME)
         {
+          NS_LOG_DEBUG("patching soname");
           char *soname = (char *)(map + dt_strtab + cur->d_un.d_val);
           WriteString (soname, selfId);
         }
@@ -270,7 +271,7 @@ ElfCache::EditFile (std::string filename, uint32_t selfId) const
   if (fileInfo.p_vaddr == -1)
     {
       NS_LOG_UNCOND ("*** unable to open non-shared object file=" << filename << " ***");
-      NS_ASSERT_MSG (false, "make it sure that DCE binrary file " << filename 
+      NS_ASSERT_MSG (false, "make it sure that DCE binary file " << filename 
                      << " was built with correct options: (CFLAGS=-fPIC, LDFLAGS=-pie -rdynamic)");
     }
 

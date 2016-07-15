@@ -165,6 +165,9 @@ int vsnprintf (char *s, size_t si, const char *f, va_list v)
 
 #include "libc-globals.h"
 
+/**
+ LIBSETUP is a define setup in DCE wscript depending on the lib
+**/
 void LIBSETUP (const struct Libc *fn)
 {
   /* The following assignment of fn to g_libc is a bit weird: we perform a copy of the data

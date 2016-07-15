@@ -46,7 +46,8 @@ struct DceGlobalVariables
 }
 #endif
 
-void global_variables_setup(struct DceGlobalVariables *variables);
+// REGRESSION why does it need to be part of Libc ?
+void dce_global_variables_setup(struct DceGlobalVariables *variables);
 //DCE(void, global_variables_setup, (struct DceGlobalVariables *variables) );
 
 //NATIVE (global_variables_setup)
