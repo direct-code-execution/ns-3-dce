@@ -80,7 +80,9 @@ extern "C" {
   }
 
 #endif // if 0
-  
+
+
+
 #define DCE_WITH_ALIAS(name)                                    \
   weak_alias (__ ## name, name);
 
@@ -97,11 +99,16 @@ extern "C" {
 
 
 // generate the implementations of stub
-//#define DCE(rtype,name, args...)
-//#define NATIVE(rtype,name)
+#define DCE(rtype,name, args...) weak_alias (dce_ ## name, name);
+//#define NATIVE(name) 
 
-// Assign final 
-//#include "libc-ns3.h" // do the work
+/* 
+this code should generate functions with the name
+Assign final we should ha
+For instance if we have
+DCE(__cxa_finalize), it should generate a function with __cxa_finalize
+*/
+#include "libc-ns3.generated.h" // do the work
 
 #undef DCE
 #undef NATIVE
@@ -164,6 +171,7 @@ extern "C" {
 //}
 
 #include "libc-globals.h"
+
 
 /**
  LIBSETUP is a define setup in DCE wscript depending on the lib
