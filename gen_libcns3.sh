@@ -12,6 +12,7 @@ echo "/*THIS FILE WAS GENEREATED by $0*/" > "$out"
 # echo "$VAR" > "$out"
 # files="model/sys/dce-socket.h"
 # shopt -s globstar
+# could generate libdl / libm
 files=(model/**.h)
 grep --exclude="libc-ns3.h" --no-filename -e "^DCE.*(" -e "^NATIVE" $files >> "$out"
 

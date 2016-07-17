@@ -20,7 +20,7 @@
  */
 #include <iostream>
 #include <sstream>
-#include <string.h>
+#include <cstring>
 #include <vector>
 #include "exec-utils.h"
 #include "utils.h"

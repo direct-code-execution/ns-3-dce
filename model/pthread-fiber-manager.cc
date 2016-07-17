@@ -22,7 +22,7 @@
 #include "ns3/log.h"
 #include <pthread.h>
 #include <stdlib.h>
-#include <string.h>
+#include <cstring>
 #include <limits.h>
 #include <stdio.h>
 #include <setjmp.h>

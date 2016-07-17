@@ -2,7 +2,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <stdbool.h>
-#include <string.h>
+#include <cstring>
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/socket.h>

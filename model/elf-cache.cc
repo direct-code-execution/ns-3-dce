@@ -8,7 +8,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <sstream>
-#include <string.h>
+#include <cstring>
 #include <sys/mman.h>
 
 namespace ns3 {

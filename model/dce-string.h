@@ -1,19 +1,32 @@
 #ifndef SIMU_STRING_H
 #define SIMU_STRING_H
 
-#include <string.h>
+//extern "C" {
+#ifdef __cplusplus
+extern "C" {
+#endif
 
+//#undef __CORRECT_ISO_CPP_STRING_H_PROTO
+#include <cstring>
 #include "dce-guard.h"
-//#include "dce-string.i"
 
 
 
+
+// returns const char* in C++ version only 
+//DCE(char *, strpbrk, (const char *s, const char *accept));
+//DCE(const char *, strstr, (const char *h, const char *n));
+NATIVE_EXPLICIT(strpbrk, const char* (*)(const char*, const char*) )
+NATIVE_EXPLICIT( strstr, const char* (*)(const char*, const char*) )
 
 DCE(char *, strdup, (const char *s));
 DCE(char *, strndup, (const char *s, size_t n));
 DCE(char *, __strcpy_chk, (char *__restrict __dest, const char *__restrict __src, size_t __destlen));
-DCE(char *, strpbrk, (const char *s, const char *accept));
-DCE(char *, strstr, (const char *h, const char *n));
+
+
+
+
+
 
 NATIVE (bzero)
 NATIVE (strerror)
@@ -47,6 +60,10 @@ NATIVE_EXPLICIT (rindex, char * (*)(char *, int))
 NATIVE_EXPLICIT (strtok, char * (*)(char *, const char *))
 NATIVE_EXPLICIT (strtok_r,  char * (*)(char *, const char *, char **))
 NATIVE (strsep)
+
+#ifdef __cplusplus
+}
+#endif
 
 //#ifdef __cplusplus
 //extern "C" {

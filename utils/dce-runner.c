@@ -7,7 +7,7 @@
 #include <link.h>
 #include <assert.h>
 #include <stdlib.h>
-#include <string.h>
+#include <cstring>
 #include <unistd.h>
 #include <stdio.h>
 

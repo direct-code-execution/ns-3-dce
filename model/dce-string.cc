@@ -1,6 +1,6 @@
 #include "dce-string.h"
 #include "dce-stdlib.h"
-#include <string.h>
+#include <cstring>
 
 char * dce_strdup (const char *s)
 {
@@ -27,12 +27,12 @@ char * dce___strcpy_chk (char *__restrict __dest,
   return strcpy (__dest, __src);
 }
 
-char * dce_strpbrk (const char *s, const char *a)
-{
-  return (char*) strpbrk (s, a);
-}
+//char * dce_strpbrk (const char *s, const char *a)
+//{
+//  return (char*) strpbrk (s, a);
+//}
 
-char * dce_strstr (const char *u, const char *d)
-{
-  return (char*)strstr (u, d);
-}
+//const char * dce_strstr (const char *u, const char *d)
+//{
+//  return (const char*)strstr (u, d);
+//}

@@ -3,7 +3,7 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <stdio.h>
-#include <string.h>
+#include <cstring>
 #include <arpa/inet.h>
 
 struct sockaddr_in_f {

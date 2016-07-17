@@ -1,5 +1,5 @@
 #include "kingsley-alloc.h"
-#include <string.h>
+#include <cstring>
 #include <sys/mman.h>
 #include <stdlib.h>
 #include "ns3/assert.h"

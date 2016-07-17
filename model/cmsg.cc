@@ -2,7 +2,7 @@
 #include "ns3/log.h"
 #include "ns3/assert.h"
 #include <sys/socket.h>
-#include <string.h>
+#include <cstring>
 
 namespace ns3 {
 

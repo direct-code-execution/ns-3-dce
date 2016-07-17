@@ -1,4 +1,4 @@
-#include <string.h>
+#include <cstring>
 #include <stdlib.h>
 #include "test-macros.h"
 

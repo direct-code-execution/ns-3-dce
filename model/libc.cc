@@ -7,20 +7,20 @@ struct Libc g_libc;
 //The weak attribute causes the declaration to be emitted as a weak symbol rather 
 //than a global. This is primarily useful in defining library functions which can 
 //be overridden in user code, though it can also be used with non-function declarations
+// TODO use decltype(&name)
+
+//https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#Common-Function-Attributes
+//The alias attribute causes the declaration to be emitted as an alias for another symbol, which must be specified. For instance,
+//
+//          void __f () { /* Do something. */; }
+//          void f () __attribute__ ((weak, alias ("__f")));
+//
+//defines ‘f’ to be a weak alias for ‘__f’. In C++, the mangled name for the target must be used. It is an error if ‘__f’ is not defined in the same translation unit. 
 #define weak_alias(name, aliasname) \
-  extern __typeof (name) aliasname __attribute__ ((weak, alias (# name)))
+  extern __typeof (name) aliasname __attribute__ ((weak, alias (# name)));
 
-extern "C" {
+//#define weak(name) __attribute__((weak))
 
-// Step 2.  Very dirty trick to force redirection to library functions
-// This will work only with GCC. Number 128 was picked to be arbitrarily large to allow
-// function calls with a large number of arguments.
-// \see http://tigcc.ticalc.org/doc/gnuexts.html#SEC67___builtin_apply_args
-// FIXME: 120925: 128 was heuristically picked to pass the test under 32bits environment.
-//#define NATIVE DCE
-//#define NATIVET DCET
-//#define NATIVE_WITH_ALIAS DCE_WITH_ALIAS
-//#define NATIVE_WITH_ALIAS2 DCE_WITH_ALIAS2
 
 //#define GCC_BT_NUM_ARGS 128
 //
@@ -30,47 +30,9 @@ extern "C" {
 //    void *result = __builtin_apply (g_libc.func_to_call ## _fn, args, GCC_BT_NUM_ARGS); \
 //    __builtin_return (result); \
 //  }
-//
-//#define GCC_BUILTIN_APPLYT(rtype, export_symbol, func_to_call) \
-//  rtype export_symbol (...) { \
-//    void *args =  __builtin_apply_args (); \
-//    void *result = __builtin_apply ((void (*) (...)) g_libc.func_to_call ## _fn, args, GCC_BT_NUM_ARGS); \
-//    __builtin_return (result); \
-//  }
-//
 
-//#define DCE(name)                                                               \
-//  GCC_BUILTIN_APPLY (name,name)
-//
-//#define DCET(rtype,name)                                                               \
-//  GCC_BUILTIN_APPLYT (rtype,name,name)
 
 #if 0
-/* From gcc/testsuite/gcc.dg/cpp/vararg2.c */
-/* C99 __VA_ARGS__ versions */
-#define c99_count(...)    _c99_count1 (, ## __VA_ARGS__) /* If only ## worked.*/
-#define _c99_count1(...)  _c99_count2 (__VA_ARGS__,10,9,8,7,6,5,4,3,2,1,0)
-#define _c99_count2(_,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,n,...) n
-
-#define FULL_ARGS_0()
-#define FULL_ARGS_1(X0)  X0 a0
-#define FULL_ARGS_2(X0,X1)  X0 a0, X1 a1
-#define FULL_ARGS_3(X0,X1,X2)  X0 a0, X1 a1, X2 a2
-#define FULL_ARGS_4(X0,X1,X2,X3)  X0 a0, X1 a1, X2 a2, X3 a3
-#define FULL_ARGS_5(X0,X1,X2,X3,X4)  X0 a0, X1 a1, X2 a2, X3 a3, X4 a4
-
-#define _ARGS_0()
-#define _ARGS_1(X0)  a0
-#define _ARGS_2(X0,X1)   a0, a1
-#define _ARGS_3(X0,X1,X2)  a0, a1, a2
-#define _ARGS_4(X0,X1,X2,X3)  a0, a1, a2, a3
-#define _ARGS_5(X0,X1,X2,X3,X4) a0, a1, a2, a3, a4
-
-#define CAT(a, ...) PRIMITIVE_CAT (a, __VA_ARGS__)
-#define PRIMITIVE_CAT(a, ...) a ## __VA_ARGS__
-
-#define  FULL_ARGS(...) CAT (FULL_ARGS_,c99_count (__VA_ARGS__)) (__VA_ARGS__)
-#define  ARGS(...) CAT (_ARGS_,c99_count (__VA_ARGS__)) (__VA_ARGS__)
 
 
 #define DCE_EXPLICIT(name,rtype,...)                                    \
@@ -83,11 +45,7 @@ extern "C" {
 
 
 
-#define DCE_WITH_ALIAS(name)                                    \
-  weak_alias (__ ## name, name);
-
-#define DCE_WITH_ALIAS2(name, internal)                 \
-  weak_alias (internal, name);
+//#define DCE_WITH_ALIAS(name)  weak_alias (__ ## name, name);
 
 
 // Note: it looks like that the stdio.h header does
@@ -99,8 +57,31 @@ extern "C" {
 
 
 // generate the implementations of stub
-#define DCE(rtype,name, args...) weak_alias (dce_ ## name, name);
-//#define NATIVE(name) 
+//weak_alias (name, dce_ ## name);
+//extern "C"
+// Implemente comme des stubs, qui ne retourne rien
+
+//#define NATIVE(name) decltype(&name) name ## _fn ;
+//#define NATIVE_EXPLICIT(name, type) decltype( (type) &name) name ## _fn ;
+// return DCE
+#define DCE(rtype,name, args...)  rtype  __attribute__((weak)) name args {};
+// TODO generate fake entry too ? mark it as weak ?
+//#define NATIVE(name) extern decltype(name) name;
+#define NATIVE(name) 
+//#define NATIVE(name) decltype(name) name __attribute__((weak)) {};
+#define NATIVE_EXPLICIT(name, type) 
+#define NATIVE_WITH_ALIAS(name) 
+#define NATIVE_WITH_ALIAS2(name, alias) 
+#define DCE_WITH_ALIAS2(name, internal)
+#define DCE_WITH_ALIAS(name)
+
+#define DCE_ALIAS(name, internal)  weak_alias (name, internal);
+
+
+extern "C" {
+//__locale_t __attribute((weak)) newlocale (int __category_mask, const char *__locale,__locale_t __base)
+//{
+//}
 
 /* 
 this code should generate functions with the name
@@ -116,6 +97,8 @@ DCE(__cxa_finalize), it should generate a function with __cxa_finalize
 #undef DCE_WITH_ALIAS2
 #undef NATIVE_WITH_ALIAS
 
+extern void __cxa_finalize (void *d);
+extern int __cxa_atexit (void (*func)(void *), void *arg, void *d);
 
 // weak_alias (strtol, __strtol_internal);
 // weak_alias (wctype_l, __wctype_l);
@@ -174,8 +157,9 @@ DCE(__cxa_finalize), it should generate a function with __cxa_finalize
 
 
 /**
- LIBSETUP is a define setup in DCE wscript depending on the lib
-**/
+ * LIBSETUP is a define setup in DCE wscript depending on the lib
+ * @see DceManager::LoadMain
+ */
 void LIBSETUP (const struct Libc *fn)
 {
   /* The following assignment of fn to g_libc is a bit weird: we perform a copy of the data

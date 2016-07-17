@@ -21,7 +21,7 @@
 #include "fifo-buffer.h"
 #include "ns3/log.h"
 #include <stdlib.h>
-#include <string.h>
+#include <cstring>
 
 NS_LOG_COMPONENT_DEFINE ("DceFifoBuffer");
 

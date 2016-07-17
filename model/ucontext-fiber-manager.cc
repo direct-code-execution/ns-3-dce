@@ -5,7 +5,7 @@
 #include <ucontext.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <string.h>
+#include <cstring>
 #include <stdint.h>
 #include <unistd.h>
 #include <signal.h>

@@ -29,7 +29,7 @@ int dce_fstatfs (int fd, struct statfs *buf)
   return -1;
 }
 
-int dce_statfs64 (const char *path, struct statfs *buf)
+int dce_statfs64 (const char *path, struct statfs64 *buf)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -38,7 +38,7 @@ int dce_statfs64 (const char *path, struct statfs *buf)
   return -1;
 }
 
-int dce_fstatfs64 (int fd, struct statfs *buf)
+int dce_fstatfs64 (int fd, struct statfs64 *buf)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);

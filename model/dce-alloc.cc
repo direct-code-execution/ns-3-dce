@@ -4,7 +4,7 @@
 #include "process.h"
 #include "kingsley-alloc.h"
 #include "ns3/log.h"
-#include <string.h>
+#include <cstring>
 
 NS_LOG_COMPONENT_DEFINE ("DceAlloc");
 

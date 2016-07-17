@@ -31,7 +31,7 @@
 #include <fstream>
 #include <sys/stat.h>
 #include <sys/wait.h>
-#include <string.h>
+#include <cstring>
 #include <list>
 #include <errno.h>
 

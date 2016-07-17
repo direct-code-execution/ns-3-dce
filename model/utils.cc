@@ -10,7 +10,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <errno.h>
-#include <string.h>
+#include <cstring>
 #include <list>
 #include <fcntl.h>
 #include <unistd.h>

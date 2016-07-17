@@ -6,7 +6,7 @@
 #ifdef DCE_MPI
 #include "ns3/mpi-interface.h"
 #endif
-#include <string.h>
+#include <cstring>
 #include <dlfcn.h>
 #include <elf.h>
 #include <link.h>
@@ -231,9 +231,14 @@ CoojaLoader::LoadModule (std::string filename, int flag, bool failsafe)
       struct SharedModule *sharedModule = SearchSharedModule (cached.id);
       if (sharedModule == 0)
         {
+          /* RTLD_LOCAL => Symbols defined in this shared object are not made available
+              to resolve references in subsequently loaded shared objects 
+              DEEPBIND => This means that a self-contained object will use its own
+              symbols in preference to global symbols with the same name contained in objects that have already been loaded
+          */
           void *handle = dlopen (cached.cachedFilename.c_str (),
                                  RTLD_LAZY | RTLD_DEEPBIND | RTLD_LOCAL);
-          NS_ASSERT_MSG (handle != 0, "Could not open " << cached.cachedFilename << " " << dlerror ());
+          NS_ASSERT_MSG (handle != 0, "Could not open [" << cached.cachedFilename << "] " << dlerror ());
 //          if(handle == 0) {
 //            NS_LOG_ERROR("Could not open " << cached.cachedFilename << " " << dlerror ());
 //          }

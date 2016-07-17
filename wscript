@@ -733,6 +733,8 @@ def build(bld):
     module_source = module_source + kernel_source
     module_headers = module_headers + kernel_headers
     uselib = ns3waf.modules_uselib(bld, ['core', 'network', 'internet', 'netlink'])
+
+	# here we create the 
     module = ns3waf.create_module(bld, name='dce',
                                   source=module_source,
                                   headers=module_headers,
@@ -786,14 +788,24 @@ def build(bld):
 
     bld.add_group('dce_use_version_files')
 
-    # The very small libc used to replace the glibc
-    # and forward to the dce_* code
+#     # The very small libc used to replace the glibc
+#     # and forward to the dce_* code
+#     bld.shlib(source = module_source,
+# #['model/libc.cc', 'model/libc-setup.cc', 'model/libc-global-variables.cc'],
+#               target='lib/c-ns3', cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage'],
+#               defines=['LIBSETUP=libc_setup'],
+#               linkflags=['-nostdlib', '-fno-profile-arcs',
+#                          '-Wl,--version-script=' + os.path.join('model', 'libc.version'),
+#                          '-Wl,-soname=libc.so.6'])
+
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc', 'model/libc-global-variables.cc'],
               target='lib/c-ns3', cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage'],
               defines=['LIBSETUP=libc_setup'],
               linkflags=['-nostdlib', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'libc.version'),
                          '-Wl,-soname=libc.so.6'])
+
+
     # The very small libpthread used to replace the glibc
     # and forward to the dce_* code
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc'],

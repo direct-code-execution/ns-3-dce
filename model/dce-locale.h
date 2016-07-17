@@ -4,11 +4,14 @@
 #include <locale.h>
 
 #include "dce-guard.h"
-//#include "dce-locale.i"
 
 DCE(char *, setlocale, (int category, const char *locale));
 
-//NATIVE_WITH_ALIAS (newlocale)
-//NATIVE_WITH_ALIAS (uselocale)
+NATIVE(newlocale)
+NATIVE(uselocale)
+
+// REGRESSION
+DCE_ALIAS(newlocale, __newlocale)
+DCE_ALIAS(uselocale, __uselocale)
 
 #endif // DCE_LOCALE_H

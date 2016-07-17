@@ -3,7 +3,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/ip.h>
-#include <string.h>
+#include <cstring>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>

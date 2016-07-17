@@ -5,6 +5,9 @@
 #define _SYS_SELECT_H
 #include <sys/types.h>
 #undef _SYS_SELECT_H
+
+#undef __CORRECT_ISO_CPP_STRING_H_PROTO
+
 #include <wchar.h>
 #include <link.h>
 #include <arpa/inet.h>
@@ -28,7 +31,7 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
+#include <cstring>
 #include <syslog.h>
 #include <sys/dir.h>
 #include <sys/ioctl.h>
@@ -67,7 +70,6 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <wctype.h>
-
 #include <locale.h>
 
 // Generate struct
@@ -81,8 +83,12 @@
 #define DCE_WITH_ALIAS(name)
 #define DCE_WITH_ALIAS2(name, alias) 
 #define NATIVE_WITH_ALIAS2(name, alias)
+#define DCE_ALIAS(name, alias)
 
 // NATIVE_EXPLICIT
+/**
+TODO we could get rid of that ?!!!
+**/
 struct Libc
 {
 
@@ -103,6 +109,8 @@ struct Libc
 #undef NATIVE_EXPLICIT
 #undef NATIVE_WITH_ALIAS
 #undef NATIVE_WITH_ALIAS2
+#undef DCE_WITH_ALIAS
+#undef DCE_WITH_ALIAS2
 
 //#undef GENERATE_LIBC
 

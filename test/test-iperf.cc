@@ -1,7 +1,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <string.h>
+#include <cstring>
 #include <sys/time.h>
 #include <sched.h>
 #include <pthread.h>

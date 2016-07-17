@@ -3,7 +3,7 @@
 // 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>        /* for memset */
+#include <cstring>        /* for memset */
 #include <unistd.h>        /* for memset */
 #include <sys/socket.h>
 #include <sys/types.h>

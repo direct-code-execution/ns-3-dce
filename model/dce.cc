@@ -18,7 +18,7 @@
 #include "dce-sched.h"
 #include "arpa/dce-inet.h"
 #include <stdlib.h>
-#include <string.h>
+#include <cstring>
 #include <getopt.h>
 #include <limits.h>
 #include <fcntl.h>

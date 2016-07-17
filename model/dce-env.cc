@@ -3,7 +3,7 @@
 #include "process.h"
 #include "ns3/log.h"
 #include "ns3/assert.h"
-#include <string.h>
+#include <cstring>
 
 NS_LOG_COMPONENT_DEFINE ("DceEnv");
 

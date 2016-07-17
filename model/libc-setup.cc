@@ -6,8 +6,8 @@
 #include "libc-globals.h"
 #include "dce-global-variables.h"
 
-#define DCE(rtype,name, args...)
-#define NATIVE(name)
+//#define DCE(rtype,name, args...)
+//#define NATIVE(name)
 
 #include "libc.h"
 

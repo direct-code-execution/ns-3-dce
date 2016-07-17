@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdint.h>
-#include <string.h>
+#include <cstring>
 #include <list>
 
 int main (int argc, char *argv[])

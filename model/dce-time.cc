@@ -138,22 +138,24 @@ int dce_timer_create(clockid_t clockid, struct sigevent *sevp, timer_t *timerid)
   return 0;
 }
 
-int dce_timer_settime (int fd, int flags,
+int dce_timer_settime (timer_t timerid, int flags,
                        const struct itimerspec *new_value,
                        struct itimerspec *old_value)
 {
-  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << fd << flags << new_value << old_value);
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << timerid << flags << new_value << old_value);
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
+  int fd = * (int *)timerid;
   OPENED_FD_METHOD (int, Settime (flags, new_value, old_value))
 }
 
-int dce_timer_gettime (int fd, struct itimerspec *cur_value)
+int dce_timer_gettime (timer_t timerid, struct itimerspec *cur_value)
 {
-  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << fd << cur_value);
+  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << timerid << cur_value);
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
 
+  int fd = * (int*)timerid;
   OPENED_FD_METHOD (int, Gettime (cur_value))
 }
 

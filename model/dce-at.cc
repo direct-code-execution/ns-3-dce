@@ -24,7 +24,7 @@
 #include "utils.h"
 #include "ns3/log.h"
 #include "errno.h"
-#include <string.h>
+#include <cstring>
 #include <fcntl.h>
 #include <unistd.h>
 

@@ -5,7 +5,7 @@
 #include "ns3/assert.h"
 #include "ns3/log.h"
 #include "ns3/ipv4-address.h"
-#include <string.h>
+#include <cstring>
 #include "process.h"
 #include "errno.h"
 #include <net/if.h>
@@ -126,7 +126,7 @@ const char * dce_gai_strerror (int errcode)
   return ::gai_strerror (errcode);
 }
 int dce_getnameinfo (const struct sockaddr *sa, socklen_t salen, char *host,
-                     socklen_t hostlen, char *serv, socklen_t servlen, unsigned int flags)
+                     socklen_t hostlen, char *serv, socklen_t servlen, int flags)
 {
   NS_LOG_FUNCTION (Current ());
 

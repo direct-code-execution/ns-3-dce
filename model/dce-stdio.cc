@@ -14,7 +14,7 @@
 #include <dlfcn.h>
 #include <sys/mman.h>
 #include <libio.h>
-#include <string.h>
+#include <cstring>
 
 NS_LOG_COMPONENT_DEFINE ("DceStdio");
 

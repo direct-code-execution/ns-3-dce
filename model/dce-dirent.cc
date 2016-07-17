@@ -30,7 +30,7 @@
 #include "ns3/log.h"
 #include "errno.h"
 #include "dce-stdlib.h"
-#include <string.h>
+#include <cstring>
 
 NS_LOG_COMPONENT_DEFINE ("DceDirent");
 

@@ -14,7 +14,7 @@ DCE(struct hostent * , gethostbyname2, (const char *name, int af));
 DCE(int , getaddrinfo, (const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res));
 DCE(void , freeaddrinfo, (struct addrinfo *res));
 DCE(const char * , gai_strerror, (int errcode));
-DCE(int , getnameinfo, (const struct sockaddr *sa, socklen_t salen, char *host, socklen_t hostlen, char *serv, socklen_t servlen, unsigned int flags));
+DCE(int , getnameinfo, (const struct sockaddr *sa, socklen_t salen, char *host, socklen_t hostlen, char *serv, socklen_t servlen, int flags));
 
 DCE(void , herror, (const char *string));
 DCE(int , getifaddrs, (struct ifaddrs **ifap));

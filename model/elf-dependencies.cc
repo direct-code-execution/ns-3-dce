@@ -2,7 +2,7 @@
 #include "elf-ldd.h"
 #include "ns3/log.h"
 #include "ns3/assert.h"
-#include <string.h>
+#include <cstring>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>

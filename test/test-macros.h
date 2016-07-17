@@ -2,7 +2,7 @@
 #define TEST_MACROS_H
 
 #include <stdlib.h>
-#include <string.h>
+#include <cstring>
 #include <string>
 #include <sstream>
 #include <iostream>
