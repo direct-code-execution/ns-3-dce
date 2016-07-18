@@ -18,11 +18,16 @@ public:
   {
     std::string cachedFilename;
     std::string basename;
-    long data_p_vaddr;
+    long data_p_vaddr;          /**!< Virtual address of data */
+    
     long data_p_memsz;
-    uint32_t id;
+    uint32_t id;                /**!< some random but unique number */
     std::vector<uint32_t> deps;
   };
+  
+  /**
+   * Adds program or library to the cache, fixing ELF values for DCE needs
+   */
   struct ElfCachedFile Add (std::string filename);
 
 private:
@@ -32,19 +37,44 @@ private:
     long p_memsz;
     std::vector<uint32_t> deps;
   };
+
+  /**
+   * Dictionary that maps a standard library SONAME to its DCE SONAME
+   * so that DT_NEEDED sections can later be rearranged accordingly
+   */
   struct Overriden
   {
-    std::string from;
-    std::string to;
+    std::string from; /**!< original DT_NEEDED/DT_SONAME */
+    std::string to;   /**!< new DT_NEEDED/DT_SONAME */
   };
   std::string GetBasename (std::string filename) const;
   void CopyFile (std::string source, std::string destination) const;
   void WriteString (char *str, uint32_t uid) const;
   uint8_t NumberToChar (uint8_t c) const;
   static uint32_t AllocateId (void);
+  
+  /**
+   * Filters DT_NEEDED 
+   * @param selfId uuid
+   */
   struct FileInfo EditBuffer (uint8_t *map, uint32_t selfId) const;
+
+  /**
+   * Loads file into memory, update DT_SONAME and DT_NEEDED with DCE (=per node) 
+   * values 
+   * 
+   * @param selfId uuid
+   */
   struct FileInfo EditFile (std::string filename, uint32_t selfId) const;
+
+  /**
+   * replace depname (usually
+   */
   uint32_t GetDepId (std::string depname) const;
+  
+  /**
+   * Create cache folder if necessary, along with node id
+   */
   std::string EnsureCacheDirectory (void) const;
   unsigned long GetBaseAddress (ElfW (Phdr) * phdr, long phnum) const;
   long GetDtStrTab (ElfW (Dyn) * dyn, long baseAddress) const;

@@ -7,6 +7,9 @@
 
 namespace ns3 {
 
+/**
+ * List dependancies of a library or program
+ */
 class ElfDependencies
 {
 public:
@@ -24,9 +27,19 @@ public:
 
 private:
   std::list<std::string> Split (std::string input, std::string sep) const;
+  /**
+   * Takes into account both PATH and LD_LIBRARY_PATH
+   */
   std::list<std::string> GetSearchDirectories (void) const;
   bool Exists (std::string filename) const;
+  /**
+   *
+   */
   bool SearchFile (std::string filename, std::string *dirname) const;
+  /*
+   * Lists dependancies of the file
+   * Current implementation parses output of "ldd"
+   */
   std::vector<struct Dependency> GatherDependencies (std::string fullname) const;
   std::vector<struct Dependency> NewGather (std::string sName, std::string fullname) const;
 

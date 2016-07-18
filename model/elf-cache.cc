@@ -296,6 +296,7 @@ ElfCache::AllocateId (void)
 uint32_t
 ElfCache::GetDepId (std::string depname) const
 {
+  // Maps dependancy library name to its final name (in case DCE overries that library
   for (std::vector<struct Overriden>::const_iterator i = m_overriden.begin (); i != m_overriden.end (); ++i)
     {
       struct Overriden overriden = *i;
@@ -305,6 +306,8 @@ ElfCache::GetDepId (std::string depname) const
         }
       NS_LOG_DEBUG ("from: " << overriden.from << ", to: " << overriden.to);
     }
+  
+  // TODO: use std::find
   for (std::vector<struct ElfCachedFile>::const_iterator i = m_files.begin (); i != m_files.end (); ++i)
     {
       NS_LOG_DEBUG ("cache: " << i->basename);

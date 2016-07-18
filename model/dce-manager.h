@@ -151,7 +151,14 @@ private:
   void CleanupThread (struct Thread *thread);
   std::vector<std::string> CopyArgs (char *const argv[]);
   int CopyEnv (char *const envp[], std::vector<std::pair<std::string,std::string> > &res);
+  /**
+   * loads all the DCE libraries: libc/libdl/libmath/libpthread/librt, then return
+   * pointer towards the "main" (literally) function
+   */
   static void* LoadMain (Loader *ld, std::string filename, Process *proc, int &err);
+  /**
+   * c = pointer to "main" function
+   */
   static void DoExecProcess (void *c);
   static void SetDefaultSigHandler (std::vector<SignalHandler> &signalHandlers);
 

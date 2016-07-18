@@ -2,4 +2,5 @@ NS3 {
 global:
 	libc_setup;
 	libc_global_setup;
+	__newlocale;
 };

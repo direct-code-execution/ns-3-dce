@@ -72,7 +72,7 @@ ElfDependencies::NewGather (std::string sName, std::string fullname) const
           || depname == "/usr/lib/debug/ld-linux-x86-64.so.2"
           || depname == "linux-vdso.so.1")
         {
-          // IGNORE
+          // IGNORE linker since DCE has its own
         }
       else
         {

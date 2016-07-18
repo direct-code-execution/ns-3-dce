@@ -1,5 +1,6 @@
 
 #include "libc.h"
+#include <utility>
 
 struct Libc g_libc;
 
@@ -43,6 +44,38 @@ struct Libc g_libc;
 
 #endif // if 0
 
+//#define c99_count(...)    sizeof...(__VA_ARGS__)) /* If only ## worked.*/
+template<class... Types>
+struct count {
+    static const std::size_t value = sizeof...(Types);
+};
+
+#define c99_count(...)    count< ## __VA_ARGS__ >::value
+//#define c99_count(...)    _c99_count1 (, ## __VA_ARGS__) /* If only ## worked.*/
+#define _c99_count1(...)  _c99_count2 (__VA_ARGS__,10,9,8,7,6,5,4,3,2,1,0)
+#define _c99_count2(_,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,n,...) n
+
+#define FULL_ARGS_0()
+#define FULL_ARGS_1(X0)  X0 a0
+#define FULL_ARGS_2(X0,X1)  X0 a0, X1 a1
+#define FULL_ARGS_3(X0,X1,X2)  X0 a0, X1 a1, X2 a2
+#define FULL_ARGS_4(X0,X1,X2,X3)  X0 a0, X1 a1, X2 a2, X3 a3
+#define FULL_ARGS_5(X0,X1,X2,X3,X4)  X0 a0, X1 a1, X2 a2, X3 a3, X4 a4
+
+#define _ARGS_0()
+#define _ARGS_1(X0)  a0
+#define _ARGS_2(X0,X1)   a0, a1
+#define _ARGS_3(X0,X1,X2)  a0, a1, a2
+#define _ARGS_4(X0,X1,X2,X3)  a0, a1, a2, a3
+#define _ARGS_5(X0,X1,X2,X3,X4) a0, a1, a2, a3, a4
+
+#define CAT(a, ...) PRIMITIVE_CAT (a, __VA_ARGS__)
+#define PRIMITIVE_CAT(a, ...) a ## __VA_ARGS__
+
+#define  FULL_ARGS(...) CAT (FULL_ARGS_,c99_count (__VA_ARGS__)) (__VA_ARGS__)
+#define  ARGS(...) CAT (_ARGS_,c99_count (__VA_ARGS__)) (__VA_ARGS__)
+
+
 
 
 //#define DCE_WITH_ALIAS(name)  weak_alias (__ ## name, name);
@@ -67,16 +100,30 @@ struct Libc g_libc;
 #define DCE(rtype,name, args...)  rtype  __attribute__((weak)) name args {};
 // TODO generate fake entry too ? mark it as weak ?
 //#define NATIVE(name) extern decltype(name) name;
-#define NATIVE(name) 
-//#define NATIVE(name) decltype(name) name __attribute__((weak)) {};
+//std::declval
+//#define NATIVE(name) 
+//#define NATIVE(name) decltype(name) name __attribute__((weak));
 #define NATIVE_EXPLICIT(name, type) 
 #define NATIVE_WITH_ALIAS(name) 
 #define NATIVE_WITH_ALIAS2(name, alias) 
 #define DCE_WITH_ALIAS2(name, internal)
 #define DCE_WITH_ALIAS(name)
 
-#define DCE_ALIAS(name, internal)  weak_alias (name, internal);
+//#define DCE_ALIAS(name, internal)  weak_alias (name, internal);
+#define DCE_ALIAS(name, internal) extern decltype(name) internal __attribute__((weak));
+//NATIVE
 
+#define NATIVE(name,...)                                    \
+  auto name (FULL_ARGS(__VA_ARGS__)) -> decltype ( name( ARGS(__VA_ARGS__)))   \
+  {                                                             \
+    return g_libc.name ## _fn (ARGS (__VA_ARGS__));              \
+  }
+
+//#define NATIVE(name) template <typename... Args> \
+//auto name (Args&&... args) -> decltype( name ( std::forward<Args>(args)...) ) \
+//{ \
+//  return g_libc. name ## _fn (std::forward<Args>(args)...); \
+//}
 
 extern "C" {
 //__locale_t __attribute((weak)) newlocale (int __category_mask, const char *__locale,__locale_t __base)
@@ -151,6 +198,13 @@ extern int __cxa_atexit (void (*func)(void *), void *arg, void *d);
 //int vsnprintf (char *s, size_t si, const char *f, va_list v)
 //{
 //  return g_libc.vsnprintf_fn (s, si, f, v);
+//}
+//std::forward ()
+
+// CA ca marche
+//__locale_t newlocale (int __category_mask, const char *__locale,__locale_t __base) {
+//
+//  return g_libc.newlocale_fn(__category_mask, __locale, __base);
 //}
 
 #include "libc-globals.h"

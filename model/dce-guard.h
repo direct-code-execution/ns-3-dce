@@ -5,7 +5,7 @@
 //#endif
 
 //#ifndef NATIVE
-	#define NATIVE(name) 
+	#define NATIVE(name,...) 
 	#define NATIVE_EXPLICIT(name, proto)
 
 //#endif

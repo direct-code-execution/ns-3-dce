@@ -41,7 +41,7 @@ DCE(void , rewinddir, (DIR *dirp));
 DCE(int , scandir, (const char *dirp, struct dirent ***namelist, int (*filter)(const struct dirent *), int (*compar)(const struct dirent **, const struct dirent **)));
 
 
-NATIVE (alphasort)
+NATIVE (alphasort, const struct dirent **, const struct dirent **)
 NATIVE (alphasort64)
 NATIVE (versionsort)
 
