@@ -19,9 +19,9 @@ extern "C" {
 NATIVE_EXPLICIT(strpbrk, const char* (*)(const char*, const char*) )
 NATIVE_EXPLICIT( strstr, const char* (*)(const char*, const char*) )
 
-DCE(char *, strdup, (const char *s));
-DCE(char *, strndup, (const char *s, size_t n));
-DCE(char *, __strcpy_chk, (char *__restrict __dest, const char *__restrict __src, size_t __destlen));
+DCE(char *, strdup, const char *s);
+DCE(char *, strndup, const char *s, size_t n);
+DCE(char *, __strcpy_chk, char *__restrict __dest, const char *__restrict __src, size_t __destlen);
 
 
 
@@ -32,7 +32,7 @@ NATIVE (bzero)
 NATIVE (strerror)
 NATIVE (strerror_r)
 NATIVE (strcoll)
-NATIVE (memset)
+NATIVE (memset, void *__s, int __c, size_t __n)
 NATIVE (memcpy)
 NATIVE (bcopy)
 NATIVE (memcmp)

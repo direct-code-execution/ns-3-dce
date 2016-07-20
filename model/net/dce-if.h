@@ -8,8 +8,8 @@
 extern "C" {
 #endif
 
-DCE(unsigned , if_nametoindex, (const char *ifname));
-DCE(char * , if_indextoname, (unsigned ifindex, char *ifname));
+DCE(unsigned , if_nametoindex, const char *ifname);
+DCE(char * , if_indextoname, unsigned ifindex, char *ifname);
 
 
 #ifdef __cplusplus

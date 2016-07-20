@@ -76,9 +76,9 @@
 //#define GENERATE_LIBC
 
 //on peut utiliser des templates pour recuperer les arguments 
-#define DCE(rtype, name, args...) rtype (*name ## _fn) args ;
+#define DCE(rtype, name, args...) rtype (*name ## _fn) (args) ;
 /* native => decltype(name) */
-#define NATIVE(name) decltype(&name) name ## _fn ;
+#define NATIVE(name, ...) decltype(&name) name ## _fn ;
 #define NATIVE_EXPLICIT(name, type) decltype( (type) &name) name ## _fn ;
 #define DCE_WITH_ALIAS(name)
 #define DCE_WITH_ALIAS2(name, alias) 

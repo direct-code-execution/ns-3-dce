@@ -33,34 +33,30 @@ struct Libc g_libc;
 //  }
 
 
-#if 0
 
-
-#define DCE_EXPLICIT(name,rtype,...)                                    \
-  rtype name (FULL_ARGS (__VA_ARGS__))    \
-  {                                                             \
-    return g_libc.name ## _fn (ARGS (__VA_ARGS__));              \
-  }
-
-#endif // if 0
 
 //#define c99_count(...)    sizeof...(__VA_ARGS__)) /* If only ## worked.*/
 template<class... Types>
-struct count {
+struct test {
     static const std::size_t value = sizeof...(Types);
 };
 
-#define c99_count(...)    count< ## __VA_ARGS__ >::value
-//#define c99_count(...)    _c99_count1 (, ## __VA_ARGS__) /* If only ## worked.*/
+template<typename T>
+struct test {
+    static const std::size_t value = sizeof...(Types);
+};
+
+//#define c99_count(...)    test<__VA_ARGS__>::value
+#define c99_count(...)    _c99_count1 (, ## __VA_ARGS__) /* If only ## worked.*/
 #define _c99_count1(...)  _c99_count2 (__VA_ARGS__,10,9,8,7,6,5,4,3,2,1,0)
 #define _c99_count2(_,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,n,...) n
 
 #define FULL_ARGS_0()
-#define FULL_ARGS_1(X0)  X0 a0
-#define FULL_ARGS_2(X0,X1)  X0 a0, X1 a1
-#define FULL_ARGS_3(X0,X1,X2)  X0 a0, X1 a1, X2 a2
-#define FULL_ARGS_4(X0,X1,X2,X3)  X0 a0, X1 a1, X2 a2, X3 a3
-#define FULL_ARGS_5(X0,X1,X2,X3,X4)  X0 a0, X1 a1, X2 a2, X3 a3, X4 a4
+#define FULL_ARGS_1(X0)  decltype(X0) a0
+#define FULL_ARGS_2(X0,X1)  decltype(X0) a0, decltype(X1) a1
+#define FULL_ARGS_3(X0,X1,X2)  decltype(X0) a0, decltype(X1) a1, decltype(X2) a2
+#define FULL_ARGS_4(X0,X1,X2,X3)  decltype(X0) a0, decltype(X1) a1, decltype(X2) a2, decltype(X3) a3
+#define FULL_ARGS_5(X0,X1,X2,X3,X4)  decltype(X0) a0, decltype(X1) a1, decltype(X2) a2, decltype(X3) a3, decltype(X4) a4
 
 #define _ARGS_0()
 #define _ARGS_1(X0)  a0
@@ -72,7 +68,10 @@ struct count {
 #define CAT(a, ...) PRIMITIVE_CAT (a, __VA_ARGS__)
 #define PRIMITIVE_CAT(a, ...) a ## __VA_ARGS__
 
-#define  FULL_ARGS(...) CAT (FULL_ARGS_,c99_count (__VA_ARGS__)) (__VA_ARGS__)
+/*
+ gives a name X0 a0
+ */
+#define  FULL_ARGS(...) CAT ( FULL_ARGS_, c99_count (__VA_ARGS__) ) (__VA_ARGS__)
 #define  ARGS(...) CAT (_ARGS_,c99_count (__VA_ARGS__)) (__VA_ARGS__)
 
 
@@ -94,10 +93,22 @@ struct count {
 //extern "C"
 // Implemente comme des stubs, qui ne retourne rien
 
+//#define NATIVE(name,...)       name MATT = test<__VA_ARGS__>::value;
+//int name (FULL_ARGS(__VA_ARGS__))   \
+//  auto name (FULL_ARGS(__VA_ARGS__)) -> decltype ( name( ARGS(__VA_ARGS__))) 
+#define NATIVE(name,...)                                    \
+  auto name (FULL_ARGS(__VA_ARGS__)) \
+  {                                                             \
+    return (*g_libc.name ## _fn) (ARGS (__VA_ARGS__));              \
+  }
+  
 //#define NATIVE(name) decltype(&name) name ## _fn ;
 //#define NATIVE_EXPLICIT(name, type) decltype( (type) &name) name ## _fn ;
 // return DCE
-#define DCE(rtype,name, args...)  rtype  __attribute__((weak)) name args {};
+// TODO pareil que native en fait
+#define DCE(rtype,name, args...)  NATIVE(name, args);
+//#define DCE(rtype,name, args...)  rtype  __attribute__((weak)) name (args) {};
+
 // TODO generate fake entry too ? mark it as weak ?
 //#define NATIVE(name) extern decltype(name) name;
 //std::declval
@@ -113,11 +124,7 @@ struct count {
 #define DCE_ALIAS(name, internal) extern decltype(name) internal __attribute__((weak));
 //NATIVE
 
-#define NATIVE(name,...)                                    \
-  auto name (FULL_ARGS(__VA_ARGS__)) -> decltype ( name( ARGS(__VA_ARGS__)))   \
-  {                                                             \
-    return g_libc.name ## _fn (ARGS (__VA_ARGS__));              \
-  }
+
 
 //#define NATIVE(name) template <typename... Args> \
 //auto name (Args&&... args) -> decltype( name ( std::forward<Args>(args)...) ) \

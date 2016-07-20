@@ -138,6 +138,11 @@ private:
   static void SigkillHandler (int signal);
   static void SigabrtHandler (int signal);
   bool ThreadExists (Thread *thread);
+  
+  /**
+   * Returns an allocated Libc struct
+   * 
+   */
   static struct ::Libc * GetLibc (void);
   void SetArgv (struct Process *process, std::string filename, std::vector<std::string> args);
   void SetEnvp (struct Process *process, std::vector<std::pair<std::string,std::string> > envp);
@@ -150,6 +155,10 @@ private:
   // Remove memory used by thread poll table and iowait, remove from wait queues
   void CleanupThread (struct Thread *thread);
   std::vector<std::string> CopyArgs (char *const argv[]);
+  
+  /**
+   *
+   */
   int CopyEnv (char *const envp[], std::vector<std::pair<std::string,std::string> > &res);
   /**
    * loads all the DCE libraries: libc/libdl/libmath/libpthread/librt, then return

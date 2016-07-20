@@ -31,19 +31,19 @@
 extern "C" {
 #endif
 
-DCE(DIR * , opendir, (const char *name));
-DCE(DIR * , fdopendir, (int fd));
-DCE(struct dirent * , readdir, (DIR *dirp));
-DCE(int , readdir_r, (DIR *dirp, struct dirent *entry, struct dirent **result));
-DCE(int , closedir, (DIR *dirp));
-DCE(int , dirfd, (DIR *dirp));
-DCE(void , rewinddir, (DIR *dirp));
-DCE(int , scandir, (const char *dirp, struct dirent ***namelist, int (*filter)(const struct dirent *), int (*compar)(const struct dirent **, const struct dirent **)));
+DCE(DIR * , opendir, const char *name);
+DCE(DIR * , fdopendir, int fd);
+DCE(struct dirent * , readdir, DIR *dirp);
+DCE(int , readdir_r, DIR *dirp, struct dirent *entry, struct dirent **result);
+DCE(int , closedir, DIR *dirp);
+DCE(int , dirfd, DIR *dirp);
+DCE(void , rewinddir, DIR *dirp);
+DCE(int , scandir, const char *dirp, struct dirent ***namelist, int (*filter)(const struct dirent *), int (*compar)(const struct dirent **, const struct dirent **));
 
 
 NATIVE (alphasort, const struct dirent **, const struct dirent **)
-NATIVE (alphasort64)
-NATIVE (versionsort)
+NATIVE (alphasort64, const struct dirent64 **, const struct dirent64 **)
+NATIVE (versionsort, const struct dirent **, const struct dirent **)
 
 #ifdef __cplusplus
 }

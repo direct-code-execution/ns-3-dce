@@ -11,8 +11,8 @@
 extern "C" {
 #endif
 
-DCE(int , uname, (struct utsname *buf));
-DCE(int , gethostname, (char *name, size_t len));
+DCE(int , uname, struct utsname *buf);
+DCE(int , gethostname, char *name, size_t len);
 
 // WCHAR.H
 NATIVE (wctob)

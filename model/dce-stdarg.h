@@ -9,7 +9,7 @@
 
 #include "dce-guard.h"
 
-DCE(int, vprintf, (const char* format, va_list ap));
+DCE(int, vprintf, const char* format, va_list ap);
 NATIVE (vfprintf)
 NATIVE (vsprintf)
 //#ifdef __cplusplus

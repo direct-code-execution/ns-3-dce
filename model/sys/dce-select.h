@@ -2,17 +2,17 @@
 #define DCE_SELECT_H
 
 #include <sys/select.h>
-
-//#ifdef __cplusplus
-//extern "C" {
-//#endif
 #include "../dce-guard.h"
 
-DCE(int, select , (int nfds, fd_set *readfds, fd_set *writefds,
-                fd_set *exceptfds, struct timeval *timeout));
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-//#ifdef __cplusplus
-//}
-//#endif
+DCE(int, select , int nfds, fd_set *readfds, fd_set *writefds,
+                fd_set *exceptfds, struct timeval *timeout);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* DCE_SELECT_H */

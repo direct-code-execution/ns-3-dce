@@ -10,11 +10,11 @@
 extern "C" {
 #endif
 
-DCE(struct passwd * , getpwnam, (const char *name));
+DCE(struct passwd * , getpwnam, const char *name);
 
-DCE(struct passwd * , getpwuid, (uid_t uid));
+DCE(struct passwd * , getpwuid, uid_t uid);
 
-DCE(void , endpwent, (void));
+DCE(void , endpwent, void);
 
 #ifdef __cplusplus
 }

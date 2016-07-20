@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-DCE(int, ioctl, (int d, long unsigned int request, ...));
+DCE(int, ioctl, int d, long unsigned int request, ...);
 
 #ifdef __cplusplus
 }

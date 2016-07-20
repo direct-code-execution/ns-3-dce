@@ -10,13 +10,12 @@
 extern "C" {
 #endif
 
-DCE(int, statfs, (const char *path, struct statfs *buf));
-DCE(int, fstatfs, (int fd, struct statfs *buf));
-DCE(int, statfs64, (const char *path, struct statfs64 *buf));
-DCE(int, fstatfs64, (int fd, struct statfs64 *buf));
-
-DCE(int, statvfs, (const char *path, struct statvfs *buf));
-DCE(int, fstatvfs, (int fd, struct statvfs *buf));
+DCE(int, statfs, const char *path, struct statfs *buf);
+DCE(int, fstatfs, int fd, struct statfs *buf);
+DCE(int, statfs64, const char *path, struct statfs64 *buf);
+DCE(int, fstatfs64, int fd, struct statfs64 *buf);
+DCE(int, statvfs, const char *path, struct statvfs *buf);
+DCE(int, fstatvfs, int fd, struct statvfs *buf);
 
 #ifdef __cplusplus
 }

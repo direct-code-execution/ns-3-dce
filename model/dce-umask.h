@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 
-DCE(mode_t, umask, (mode_t mask) );
+DCE(mode_t, umask, mode_t mask);
 
 #ifdef __cplusplus
 }

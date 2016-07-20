@@ -8,8 +8,8 @@
 extern "C" {
 #endif
 
-DCE(pid_t , wait, (void *status));
-DCE(pid_t , waitpid, (pid_t pid, int *status, int options));
+DCE(pid_t , wait, void *status);
+DCE(pid_t , waitpid, pid_t pid, int *status, int options);
 
 
 #ifdef __cplusplus

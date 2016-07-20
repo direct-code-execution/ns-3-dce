@@ -107,6 +107,10 @@ extern "C" {
 //  (*libc)->name ## _fn = ((type)name);
 
 
+/**
+ * Creates a structure
+ *
+ */
 void libc_dce (struct Libc **libc)
 {
   *libc = new Libc();
@@ -116,7 +120,7 @@ void libc_dce (struct Libc **libc)
 //#define DCET(rtype,name) DCE (name)
 //#define DCE_EXPLICIT(rtype,name,...) (*libc)->name ## _fn = dce_ ## name;
 
-#define NATIVE(name)  (*libc)->name ## _fn = name;
+#define NATIVE(name,...)  (*libc)->name ## _fn = name;
 // should be ignored
 // what happens to native explicit ?
 #define NATIVE_WITH_ALIAS(name) NATIVE(name)
