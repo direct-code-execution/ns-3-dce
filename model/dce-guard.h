@@ -16,14 +16,8 @@
 //be overridden in user code, though it can also be used with non-function declarations
 #define weak_alias(name, aliasname) \
   extern __typeof (name) aliasname __attribute__ ((weak, alias (# name)))
-  
-//#define DCE_WITH_ALIAS(name) weak_alias (__ ## name, name);
-#define DCE_WITH_ALIAS(name)
 
-#define NATIVE_WITH_ALIAS NATIVE
 
-//#define DCE_WITH_ALIAS2(name, internal) weak_alias (internal, name);
-#define DCE_WITH_ALIAS2(name, internal)
 #define DCE_ALIAS(name, internal)
 
 #define NATIVE_WITH_ALIAS2 DCE_WITH_ALIAS2

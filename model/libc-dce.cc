@@ -95,10 +95,6 @@ extern "C" {
 
 #undef DCE
 #undef NATIVE
-#undef NATIVE_WITH_ALIAS
-#undef DCE_WITH_ALIAS
-#undef DCE_WITH_ALIAS2
-#undef NATIVE_WITH_ALIAS2
 #undef DCE_ALIAS
 
 //#define NATIVET(rtype, name) NATIVE(name)
@@ -123,10 +119,7 @@ void libc_dce (struct Libc **libc)
 #define NATIVE(name,...)  (*libc)->name ## _fn = name;
 // should be ignored
 // what happens to native explicit ?
-#define NATIVE_WITH_ALIAS(name) NATIVE(name)
-#define DCE_WITH_ALIAS(name)
-#define DCE_WITH_ALIAS2(name, alias) 
-#define NATIVE_WITH_ALIAS2(name, alias)
+
 #define DCE_ALIAS(name, internal) 
 
 #include "libc-ns3.generated.h"
@@ -139,12 +132,6 @@ void libc_dce (struct Libc **libc)
 
 #undef DCE
 #undef NATIVE
-
-#undef NATIVE_WITH_ALIAS
-#undef NATIVE_WITH_ALIAS2
-
-#undef DCE_WITH_ALIAS
-#undef DCE_WITH_ALIAS2
 
 } // extern "C"
 

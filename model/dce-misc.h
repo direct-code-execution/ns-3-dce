@@ -54,9 +54,10 @@ NATIVE (catopen,const char *__cat_name, int __flag)
 NATIVE (catgets, nl_catd __catalog, int __set, int __number, const char *__string)
 
 // LIBGEN.H
-NATIVE (basename, char *__path)
-NATIVE (dirname, char *__path)
 // REGRESSION
+//NATIVE (basename, char *__path)
+NATIVE (dirname, char *__path)
+
 //NATIVE (__xpg_basename, char *__path)
 
 // GRP.H

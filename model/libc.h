@@ -81,9 +81,6 @@
 /* native => decltype(name) */
 #define NATIVE(name, ...) decltype(&name) name ## _fn ;
 #define NATIVE_EXPLICIT(name, type) decltype( (type) &name) name ## _fn ;
-#define DCE_WITH_ALIAS(name)
-#define DCE_WITH_ALIAS2(name, alias) 
-#define NATIVE_WITH_ALIAS2(name, alias)
 #define DCE_ALIAS(name, alias)
 
 // NATIVE_EXPLICIT
@@ -108,10 +105,8 @@ struct Libc
 #undef DCE
 #undef NATIVE
 #undef NATIVE_EXPLICIT
-#undef NATIVE_WITH_ALIAS
-#undef NATIVE_WITH_ALIAS2
-#undef DCE_WITH_ALIAS
-#undef DCE_WITH_ALIAS2
+//#undef DCE_WITH_ALIAS
+//#undef DCE_WITH_ALIAS2
 
 //#undef GENERATE_LIBC
 

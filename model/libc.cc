@@ -165,8 +165,8 @@ namespace detail_paramType {
 #define NATIVE_EXPLICIT(name, type) 
 #define NATIVE_WITH_ALIAS(name) 
 #define NATIVE_WITH_ALIAS2(name, alias) 
-#define DCE_WITH_ALIAS2(name, internal)
-#define DCE_WITH_ALIAS(name)
+//#define DCE_WITH_ALIAS2(name, internal)
+//#define DCE_WITH_ALIAS(name)
 
 //#define DCE_ALIAS(name, internal)  weak_alias (name, internal);
 #define DCE_ALIAS(name, internal) 
