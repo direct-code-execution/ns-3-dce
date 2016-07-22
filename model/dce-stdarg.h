@@ -3,17 +3,21 @@
 
 #include <stdarg.h>
 
-//#ifdef __cplusplus
-//extern "C" {
-//#endif
 
 #include "dce-guard.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 DCE(int, vprintf, const char* format, va_list ap);
-NATIVE (vfprintf)
-NATIVE (vsprintf)
-//#ifdef __cplusplus
-//}
-//#endif
+NATIVE (vfprintf, FILE *stream, const char *format, va_list ap)
+NATIVE (vsprintf, char *str, const char *format, va_list ap)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SIMU_STDARG_H */

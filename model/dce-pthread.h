@@ -14,7 +14,7 @@ DCE(void , pthread_exit, void *arg);
 DCE(int , pthread_join, pthread_t thread, void **value_ptr);
 DCE(int , pthread_detach, pthread_t thread);
 DCE(int , pthread_cancel, pthread_t thread);
-DCE(pthread_t , pthread_self, void);
+DCE(pthread_t , pthread_self);
 
 DCE(int , pthread_mutex_init, pthread_mutex_t *mutex, const pthread_mutexattr_t *attr);
 DCE(int , pthread_mutex_destroy, pthread_mutex_t *mutex);
@@ -40,18 +40,18 @@ DCE(int , pthread_cond_wait, pthread_cond_t * cond, pthread_mutex_t * mutex);
 DCE(int , pthread_condattr_destroy, pthread_condattr_t *attr);
 DCE(int , pthread_condattr_init, pthread_condattr_t *attr);
 
-NATIVE (pthread_rwlock_init)
-NATIVE (pthread_rwlock_unlock)
-NATIVE (pthread_rwlock_wrlock)
-NATIVE (pthread_rwlock_rdlock)
-NATIVE (pthread_rwlock_destroy)
-NATIVE (pthread_setcancelstate)
-NATIVE (pthread_sigmask)
-NATIVE (pthread_equal)
-NATIVE (pthread_spin_init)
-NATIVE (pthread_spin_lock)
-NATIVE (pthread_spin_unlock)
-NATIVE (pthread_spin_destroy)
+NATIVE (pthread_rwlock_init, pthread_rwlock_t *__restrict __rwlock, const pthread_rwlockattr_t *__restrict __attr)
+NATIVE (pthread_rwlock_unlock, pthread_rwlock_t *__rwlock)
+NATIVE (pthread_rwlock_wrlock, pthread_rwlock_t *__rwlock)
+NATIVE (pthread_rwlock_rdlock, pthread_rwlock_t *__rwlock)
+NATIVE (pthread_rwlock_destroy, pthread_rwlock_t *__rwlock)
+NATIVE (pthread_setcancelstate, int __state, int *__oldstate)
+NATIVE (pthread_sigmask, int __how,const __sigset_t *__restrict __newmask,__sigset_t *__restrict __oldmask)
+NATIVE (pthread_equal, pthread_t __thread1, pthread_t __thread2)
+NATIVE (pthread_spin_init, pthread_spinlock_t *__lock, int __pshared)
+NATIVE (pthread_spin_lock, pthread_spinlock_t *__lock)
+NATIVE (pthread_spin_unlock, pthread_spinlock_t *__lock)
+NATIVE (pthread_spin_destroy, pthread_spinlock_t *__lock)
 
 #ifdef __cplusplus
 }

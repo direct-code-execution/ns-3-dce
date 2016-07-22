@@ -19,22 +19,25 @@ DCE(char * , ctime, const time_t *timep);
 DCE(char * , asctime, const struct tm *tm);
 DCE(int , clock_gettime, clockid_t which_clock, struct timespec *tp);
 DCE(int , sysinfo, struct sysinfo *info);
-DCE(void , tzset, void);
+DCE(void , tzset);
 DCE(int , clock_getres, clockid_t c, struct timespec *r);
 DCE(int , utime, const char *filename, const struct utimbuf *times);
 DCE(int , timer_create,clockid_t clockid, struct sigevent *sevp, timer_t *timerid);
 DCE(int , timer_settime, timer_t timerid, int flags, const struct itimerspec *new_value, struct itimerspec *old_value);
 DCE(int , timer_gettime,timer_t timerid, struct itimerspec *cur_value);
 
-NATIVE (asctime_r)
-NATIVE (ctime_r)
-DCE_WITH_ALIAS2 (gmtime, localtime)
-NATIVE_WITH_ALIAS2 (gmtime_r, localtime_r)
-NATIVE (mktime)
-NATIVE (strftime)
-NATIVE (strptime)
-NATIVE (timegm)
-NATIVE (timelocal)
+NATIVE (asctime_r, const struct tm *tm, char *bug)
+NATIVE (ctime_r, const time_t *timep, char *buf)
+NATIVE(gmtime_r, const time_t *timep, struct tm *result)
+
+DCE_ALIAS (gmtime, localtime)
+DCE_ALIAS (gmtime_r, localtime_r)
+
+NATIVE (mktime, struct tm *tm)
+NATIVE (strftime, char *s, size_t max, const char *format, const struct tm *tm)
+NATIVE (strptime, const char *s, const char *format, struct tm *tm)
+NATIVE (timegm, struct tm *tm)
+NATIVE (timelocal, struct tm *tm)
 
 #ifdef __cplusplus
 }

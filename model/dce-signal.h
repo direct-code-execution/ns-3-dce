@@ -16,18 +16,18 @@ DCE(sighandler_t , signal, int signum, sighandler_t handler);
 DCE(int , sigaction, int signum, const struct sigaction *act, struct sigaction *oldact);
 DCE(int , kill, pid_t pid, int sig);
 DCE(int , pthread_kill, pthread_t thread, int sig);
-DCE(void , abort, void);
+DCE(void , abort);
 DCE(void , __assert_fail, const char *__assertion, const char *__file, unsigned int __line, const char *__function);
-DCE(void , __stack_chk_fail, void);
+DCE(void , __stack_chk_fail);
 DCE(int , sigprocmask, int how, const sigset_t *set, sigset_t *oldset);
 DCE(int , sigwait, const sigset_t *set, int *sig);
 
 
-NATIVE (sigemptyset)
-NATIVE (sigfillset)
-NATIVE (sigaddset)
-NATIVE (sigdelset)
-NATIVE (sigismember)
+NATIVE (sigemptyset, sigset_t *set)
+NATIVE (sigfillset, sigset_t *set)
+NATIVE (sigaddset, sigset_t *set, int)
+NATIVE (sigdelset, sigset_t *set, int signum)
+NATIVE (sigismember,const sigset_t *set, int signum)
 //exists only for compatibility, we should use strsignal instead
 //NATIVE (sys_siglist) // REGRESSION
 

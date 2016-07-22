@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-DCE(int, sched_yield, void);
+DCE(int, sched_yield);
 
 #ifdef __cplusplus
 }

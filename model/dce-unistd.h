@@ -18,13 +18,13 @@ DCE(ssize_t , readv, int fd, const struct iovec *iov, int iovcnt);
 DCE(void , exit, int status);
 DCE(unsigned int , sleep, unsigned int seconds);
 DCE(int , usleep, useconds_t usec);
-DCE(pid_t , getpid, void);
-DCE(pid_t , getppid, void);
-DCE(int , pause, void);
+DCE(pid_t , getpid);
+DCE(pid_t , getppid);
+DCE(int , pause);
 DCE(int , getopt, int argc, char * const argv[], const char *optstringt);
 DCE(int , getopt_long, int argc, char * const argv[], const char *optstring, const struct option *longopts, int *longindex);
-DCE(uid_t , getuid, void);
-DCE(uid_t , geteuid, void);
+DCE(uid_t , getuid);
+DCE(uid_t , geteuid);
 DCE(int , setuid, uid_t uid);
 DCE(int , setgid, gid_t gid);
 DCE(int , seteuid, uid_t euid);
@@ -37,7 +37,7 @@ DCE(int , isatty, int desc);
 DCE(char* , ttyname, int fd);
 DCE(char * , getcwd, char *buf, size_t size);
 DCE(char * , getwd, char *buf);
-DCE(char * , get_current_dir_name, void);
+DCE(char * , get_current_dir_name);
 DCE(int , chdir, const char *path);
 DCE(int , fchdir, int fd);
 DCE(int , dup, int oldfd);
@@ -48,7 +48,7 @@ DCE(off64_t , lseek64, int fildes, off64_t offset, int whence);
 DCE(int , unlink, const char *pathname);
 DCE(int , rmdir, const char *pathname);
 DCE(int , access, const char *pathname, int mode);
-DCE(pid_t , fork, void);
+DCE(pid_t , fork);
 DCE(int , execv, const char *path, char *const argv[]);
 DCE(int , execl, const char *path, const char *arg, ...);
 DCE(int , execve, const char *filename, char *const argv[], char *const envp[]);
@@ -59,10 +59,10 @@ DCE(int , truncate, const char *path, off_t length);
 DCE(int , ftruncate, int fd, off_t length);
 DCE(int , ftruncate64, int fd, off_t length);
 DCE(void * , sbrk, intptr_t increment);
-DCE(int , getpagesize, void);
-DCE(gid_t , getgid, void);
-DCE(gid_t , getegid, void);
-DCE(pid_t , getpgrp, void);
+DCE(int , getpagesize);
+DCE(gid_t , getgid);
+DCE(gid_t , getegid);
+DCE(pid_t , getpgrp);
 DCE(int , euidaccess, const char *pathname, int mode);
 DCE(int , eaccess, const char *pathname, int mode);
 DCE(int , pipe, int pipefd[2]);
@@ -76,10 +76,10 @@ DCE(ssize_t , readlink, const char *p, char *b, size_t bufsize);
 DCE(int , fsync,int fd);
 
 
-NATIVE (pathconf)
+NATIVE (pathconf, const char *__path, int __name)
 NATIVE (getdtablesize)
 
-NATIVE (sysconf)
+NATIVE (sysconf, int __name)
 
 #ifdef __cplusplus
 }

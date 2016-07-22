@@ -15,62 +15,64 @@ DCE(int , uname, struct utsname *buf);
 DCE(int , gethostname, char *name, size_t len);
 
 // WCHAR.H
-NATIVE (wctob)
-NATIVE(btowc)
-NATIVE(mbrlen)
+NATIVE (wctob, wint_t)
+NATIVE(btowc, wint_t)
+NATIVE(mbrlen, const char *__restrict __s, size_t __n, mbstate_t *__restrict __ps)
 
 // INTTYPES.H
-NATIVE (strtoimax)
-NATIVE (strtoumax)
+NATIVE (strtoimax, const char *nptr, char **endptr, int base)
+NATIVE (strtoumax, const char *nptr, char **endptr, int base)
 
 // NETINET/ETHER.H
-NATIVE (ether_aton_r)
-NATIVE (ether_aton)
+NATIVE (ether_aton_r, const char *__asc, struct ether_addr *__addr)
+NATIVE (ether_aton, const char *__asc)
 
 // SEARCH.H
-NATIVE (tsearch)
-NATIVE (tfind)
-NATIVE (tdelete)
-NATIVE (twalk)
-NATIVE (tdestroy)
+NATIVE (tsearch, const void *__key, void **__rootp, __compar_fn_t __compar)
+NATIVE (tfind, const void *__key, void *const *__rootp,__compar_fn_t __compar)
+NATIVE (tdelete, const void *__restrict __key, void **__restrict __rootp,__compar_fn_t __compar)
+NATIVE (twalk, const void *__root, __action_fn_t __action)
+NATIVE (tdestroy, void *__root, __free_fn_t __freefct)
 
 // FNMATCH.H
-NATIVE (fnmatch)
+NATIVE (fnmatch, const char *__pattern, const char *__name, int __flags)
 
 // LANGINFO.H
-NATIVE (nl_langinfo)
+NATIVE (nl_langinfo, nl_item __item)
 
 
 // SETJMP.H
-NATIVE (_setjmp)
-NATIVE (__sigsetjmp)
-NATIVE (siglongjmp)
+NATIVE (_setjmp, struct __jmp_buf_tag __env[1])
+NATIVE (__sigsetjmp, struct __jmp_buf_tag __env[1], int __savemask)
+NATIVE (siglongjmp, sigjmp_buf env, int val)
 
 // LIBINTL.H
-NATIVE (bindtextdomain)
-NATIVE (textdomain)
-NATIVE (gettext)
-NATIVE (catopen)
-NATIVE (catgets)
+NATIVE (bindtextdomain, const char *__domainname, const char *__dirname)
+NATIVE (textdomain, const char *__domainname)
+NATIVE (gettext, const char *__msgid)
+NATIVE (catopen,const char *__cat_name, int __flag)
+NATIVE (catgets, nl_catd __catalog, int __set, int __number, const char *__string)
+
 // LIBGEN.H
-NATIVE (basename)
-NATIVE (dirname)
-NATIVE (__xpg_basename)
+NATIVE (basename, char *__path)
+NATIVE (dirname, char *__path)
+// REGRESSION
+//NATIVE (__xpg_basename, char *__path)
 
 // GRP.H
-NATIVE (getgrnam)
+NATIVE (getgrnam, const char *__name)
 
 // SYS/RESOURCE.H
-NATIVE (getrusage) // not sure if native call will give stats about the requested process..
-NATIVE (getrlimit)
-NATIVE (setrlimit)
+NATIVE (getrusage, __rusage_who_t __who, struct rusage *__usage) // not sure if native call will give stats about the requested process..
+NATIVE (getrlimit,__rlimit_resource_t __resource, struct rlimit *__rlimits)
+NATIVE (setrlimit, __rlimit_resource_t __resource, const struct rlimit *__rlimits)
 
 // ctype.h
-NATIVE (toupper)
-NATIVE (tolower)
-NATIVE (isdigit)
-NATIVE (isxdigit)
-NATIVE (isalnum)
+NATIVE (toupper, int)
+NATIVE (tolower, int)
+NATIVE (isdigit, int)
+NATIVE (isxdigit, int)
+NATIVE (isalnum, int)
 NATIVE (__ctype_b_loc)
 
 // REGRESSION
@@ -79,7 +81,7 @@ NATIVE (__ctype_b_loc)
 
 
 // link.h
-NATIVE (dl_iterate_phdr)
+NATIVE (dl_iterate_phdr, int (*__callback) (struct dl_phdr_info *, size_t, void *), void *__data)
 
 
 #ifdef __cplusplus

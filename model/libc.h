@@ -72,6 +72,7 @@
 #include <wctype.h>
 #include <locale.h>
 
+
 // Generate struct
 //#define GENERATE_LIBC
 

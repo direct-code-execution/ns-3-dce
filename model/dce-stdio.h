@@ -14,7 +14,7 @@ DCE(FILE *, freopen , const char *path, const char *mode, FILE *stream);
 DCE(int, fclose , FILE *fp);
 DCE(int, fclose_unconditional , FILE *fp);
 DCE(int, fclose_onexec , FILE *file);
-DCE(int, fcloseall , void);
+DCE(int, fcloseall);
 DCE(int, fflush , FILE *stream);
 DCE(void, clearerr , FILE *stream);
 DCE(int, feof , FILE *stream);
@@ -42,7 +42,7 @@ DCE(int, ungetc , int c, FILE *stream);
 DCE(int, remove , const char *pathname);
 
 DCE(int, printf , const char *format, ...);
-DCE(int, getchar , void);
+DCE(int, getchar);
 DCE(int, _IO_getc , FILE *stream);
 DCE(int, putchar , int __c);
 DCE(int, _IO_putc , int __c, FILE *__stream);
@@ -63,30 +63,31 @@ DCE(int, __vsnprintf_chk , char *__restrict __s, size_t __n, int __flag, size_t 
 
 
 //DCE_WITH_ALIAS2 (clearerr,clearerr_unlocked) REGRESSION
-NATIVE (fprintf)
-NATIVE (sprintf)
-NATIVE (dprintf)
-NATIVE (vdprintf)
-DCE_WITH_ALIAS2 (fgetc,fgetc_unlocked)
-NATIVE (getc)
-NATIVE (getc_unlocked)
-DCE_WITH_ALIAS2 (getchar,getchar_unlocked)
-DCE_WITH_ALIAS2 (fputc,fputc_unlocked)
-NATIVE (putc)
-NATIVE (putc_unlocked)
-DCE_WITH_ALIAS2 (putchar, putchar_unlocked)
-DCE_WITH_ALIAS2 (fgets, fgets_unlocked)
-DCE_WITH_ALIAS2 (fputs, fputs_unlocked)
-DCE_WITH_ALIAS2 (fread, fread_unlocked)
-DCE_WITH_ALIAS2 (fwrite,fwrite_unlocked)
-DCE_WITH_ALIAS2 (fflush,fflush_unlocked)
-DCE_WITH_ALIAS2 (ferror,ferror_unlocked)
-DCE_WITH_ALIAS2 (feof,feof_unlocked)
-DCE_WITH_ALIAS2 (fileno,fileno_unlocked)
+NATIVE (fprintf, FILE *stream, const char *format, ...)
+NATIVE (sprintf, char *str, const char *format, ...)
+NATIVE (dprintf, int fd, const char *format, ...)
+NATIVE (vdprintf, int fd, const char *format, va_list ap)
+DCE_ALIAS (fgetc,fgetc_unlocked)
+NATIVE (getc, FILE *stream)
+NATIVE (getc_unlocked,FILE *stream )
+DCE_ALIAS (getchar,getchar_unlocked)
+DCE_ALIAS (fputc,fputc_unlocked)
+NATIVE (putc, int c, FILE *stream)
+NATIVE (putc_unlocked, int c, FILE *stream)
+DCE_ALIAS (putchar, putchar_unlocked)
+DCE_ALIAS (fgets, fgets_unlocked)
+DCE_ALIAS (fputs, fputs_unlocked)
+DCE_ALIAS (fread, fread_unlocked)
+DCE_ALIAS (fwrite,fwrite_unlocked)
+DCE_ALIAS (fflush,fflush_unlocked)
+DCE_ALIAS (ferror,ferror_unlocked)
+DCE_ALIAS (feof,feof_unlocked)
+DCE_ALIAS (fileno,fileno_unlocked)
 //NATIVE_WITH_ALIAS2 (sscanf, __isoc99_sscanf)
 
-NATIVE (__cmsg_nxthdr)
-NATIVE (flockfile)
-NATIVE (funlockfile)
+// REGRESSION
+//NATIVE (__cmsg_nxthdr, void *__ctl, __kernel_size_t __size, struct cmsghdr *__cmsg)
+NATIVE (flockfile, FILE *filehandle)
+NATIVE (funlockfile, FILE *filehandle)
 
 #endif /* SIMU_STDIO_H */

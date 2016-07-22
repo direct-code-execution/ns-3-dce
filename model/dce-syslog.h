@@ -6,7 +6,7 @@
 
 #include "dce-guard.h"
 
-DCE(void , closelog, void);
+DCE(void , closelog);
 DCE(void , openlog, const char *ident, int logopt, int facility);
 DCE(int , setlogmask, int maskpri);
 DCE(void , syslog, int priority, const char *message, ...);

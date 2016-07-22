@@ -1,7 +1,10 @@
 
 #include "libc.h"
 #include <utility>
-
+//extern "C"
+//{
+#include <p99_args.h>
+//}
 struct Libc g_libc;
 
 // macros stolen from glibc.
@@ -41,29 +44,51 @@ struct test {
     static const std::size_t value = sizeof...(Types);
 };
 
-template<typename T>
-struct test {
-    static const std::size_t value = sizeof...(Types);
-};
 
-//#define c99_count(...)    test<__VA_ARGS__>::value
-#define c99_count(...)    _c99_count1 (, ## __VA_ARGS__) /* If only ## worked.*/
-#define _c99_count1(...)  _c99_count2 (__VA_ARGS__,10,9,8,7,6,5,4,3,2,1,0)
-#define _c99_count2(_,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,n,...) n
+#define c99_count(...)    P99_NARG(__VA_ARGS__)
+//#define c99_count(...)    _c99_count1 (__VA_ARGS__) /* If only ## worked.*/
+//#define _c99_count1(...)  _c99_count2 (__VA_ARGS__,10,9,8,7,6,5,4,3,2,1,0)
+//#define _c99_count1(...)  _c99_count2 (__VA_ARGS__,10,9,8,7,6,5,4,3,2,1,0)
+//#define _c99_count2(_,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,n,...) n
+
+namespace detail_paramType {
+    template <class>
+    struct unpackType;
+
+    template <class T>
+    struct unpackType<void(T)> { using type = T; };
+
+    struct VariadicC {};
+
+    template <> 
+    struct unpackType<void(...)> { using type= VariadicC; };
+
+    template <> 
+    struct unpackType<void(void)> { using type= void; };
+}
+
+#define PARAM_TYPE(...) \
+    typename detail_paramType::unpackType<void(__VA_ARGS__)>::type
+
 
 #define FULL_ARGS_0()
-#define FULL_ARGS_1(X0)  decltype(X0) a0
-#define FULL_ARGS_2(X0,X1)  decltype(X0) a0, decltype(X1) a1
-#define FULL_ARGS_3(X0,X1,X2)  decltype(X0) a0, decltype(X1) a1, decltype(X2) a2
-#define FULL_ARGS_4(X0,X1,X2,X3)  decltype(X0) a0, decltype(X1) a1, decltype(X2) a2, decltype(X3) a3
-#define FULL_ARGS_5(X0,X1,X2,X3,X4)  decltype(X0) a0, decltype(X1) a1, decltype(X2) a2, decltype(X3) a3, decltype(X4) a4
+#define FULL_ARGS_1(X0)  PARAM_TYPE(X0) a0
+#define FULL_ARGS_2(X0,X1)  PARAM_TYPE(X0) a0, PARAM_TYPE(X1) a1
+#define FULL_ARGS_3(X0,X1,X2)  PARAM_TYPE(X0) a0, PARAM_TYPE(X1) a1, PARAM_TYPE(X2) a2
+#define FULL_ARGS_4(X0,X1,X2,X3)  PARAM_TYPE(X0) a0, PARAM_TYPE(X1) a1, PARAM_TYPE(X2) a2, PARAM_TYPE(X3) a3
+#define FULL_ARGS_5(X0,X1,X2,X3,X4)  PARAM_TYPE(X0) a0, PARAM_TYPE(X1) a1, PARAM_TYPE(X2) a2, PARAM_TYPE(X3) a3, PARAM_TYPE(X4) a4
+#define FULL_ARGS_6(X0,X1,X2,X3,X4,X5)  PARAM_TYPE(X0) a0, PARAM_TYPE(X1) a1, PARAM_TYPE(X2) a2, PARAM_TYPE(X3) a3, PARAM_TYPE(X4) a4, PARAM_TYPE(X5) a5
+#define FULL_ARGS_7(X0,X1,X2,X3,X4,X5, X6)  PARAM_TYPE(X0) a0, PARAM_TYPE(X1) a1, PARAM_TYPE(X2) a2, PARAM_TYPE(X3) a3, PARAM_TYPE(X4) a4, PARAM_TYPE(X5) a5, PARAM_TYPE(X6) a6
 
+// TODO use successive cats ?
 #define _ARGS_0()
 #define _ARGS_1(X0)  a0
 #define _ARGS_2(X0,X1)   a0, a1
 #define _ARGS_3(X0,X1,X2)  a0, a1, a2
 #define _ARGS_4(X0,X1,X2,X3)  a0, a1, a2, a3
 #define _ARGS_5(X0,X1,X2,X3,X4) a0, a1, a2, a3, a4
+#define _ARGS_6(X0,X1,X2,X3,X4,X5) a0, a1, a2, a3, a4, a5
+#define _ARGS_7(X0,X1,X2,X3,X4,X5,X6) a0, a1, a2, a3, a4, a5, a6
 
 #define CAT(a, ...) PRIMITIVE_CAT (a, __VA_ARGS__)
 #define PRIMITIVE_CAT(a, ...) a ## __VA_ARGS__
@@ -96,11 +121,34 @@ struct test {
 //#define NATIVE(name,...)       name MATT = test<__VA_ARGS__>::value;
 //int name (FULL_ARGS(__VA_ARGS__))   \
 //  auto name (FULL_ARGS(__VA_ARGS__)) -> decltype ( name( ARGS(__VA_ARGS__))) 
-#define NATIVE(name,...)                                    \
-  auto name (FULL_ARGS(__VA_ARGS__)) \
+
+
+/* old one with macros */
+//#define NATIVE(name,args...)                                    \
+//name =  c99_count(args),args|FULL_ARGS(args)
+
+#define NATIVE(name, args...)                                    \
+  auto name (FULL_ARGS(args)) \
+  -> decltype ( (*g_libc.name ## _fn) ( ARGS(args))) \
   {                                                             \
-    return (*g_libc.name ## _fn) (ARGS (__VA_ARGS__));              \
-  }
+    return (*g_libc.name ## _fn) (ARGS (args));              \
+  } \
+//  name =  c99_count(args),args|FULL_ARGS(args)|ARGS(args)
+
+
+//template <typename T, typename... Args> \
+// T wrapper (Args&&... args) -> decltype(  (*g_libc. name ## _fn) ( std::forward<Args>(args)...) ) \
+//{ \
+//  return g_libc. name ## _fn (std::forward<Args>(args)...); \
+//}
+
+/* C++ VARIADIC one */
+//#define NATIVE(name,...) extern "C++" \
+//template <typename... Args> \
+// auto name (Args&&... args) -> decltype(  (*g_libc. name ## _fn) ( std::forward<Args>(args)...) ) \
+//{ \
+//  return g_libc. name ## _fn (std::forward<Args>(args)...); \
+//}
   
 //#define NATIVE(name) decltype(&name) name ## _fn ;
 //#define NATIVE_EXPLICIT(name, type) decltype( (type) &name) name ## _fn ;
@@ -121,18 +169,15 @@ struct test {
 #define DCE_WITH_ALIAS(name)
 
 //#define DCE_ALIAS(name, internal)  weak_alias (name, internal);
-#define DCE_ALIAS(name, internal) extern decltype(name) internal __attribute__((weak));
+#define DCE_ALIAS(name, internal) 
+//#define DCE_ALIAS(name, internal) extern decltype(name) internal __attribute__((weak));
 //NATIVE
 
 
 
-//#define NATIVE(name) template <typename... Args> \
-//auto name (Args&&... args) -> decltype( name ( std::forward<Args>(args)...) ) \
-//{ \
-//  return g_libc. name ## _fn (std::forward<Args>(args)...); \
-//}
 
-extern "C" {
+//extern "C" {
+
 //__locale_t __attribute((weak)) newlocale (int __category_mask, const char *__locale,__locale_t __base)
 //{
 //}
@@ -255,4 +300,4 @@ const struct cpu_features * __get_cpu_features (void)
   return dce___get_cpu_features ();
 }
 #endif
-} // extern "C"
+//} // extern "C"

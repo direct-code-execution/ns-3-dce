@@ -14,7 +14,7 @@ DCE(struct passwd * , getpwnam, const char *name);
 
 DCE(struct passwd * , getpwuid, uid_t uid);
 
-DCE(void , endpwent, void);
+DCE(void , endpwent);
 
 #ifdef __cplusplus
 }

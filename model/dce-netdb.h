@@ -19,21 +19,21 @@ DCE(int , getnameinfo, const struct sockaddr *sa, socklen_t salen, char *host, s
 DCE(void , herror, const char *string);
 DCE(int , getifaddrs, struct ifaddrs **ifap);
 
-NATIVE (freeifaddrs)
-NATIVE (gethostent)
-NATIVE (sethostent)
-NATIVE (endhostent)
-NATIVE (hstrerror) // this could be replaced by DCE call
-NATIVE (getprotoent)
-NATIVE (getprotobyname)
-NATIVE (getprotobynumber)
-NATIVE (setprotoent)
+NATIVE (freeifaddrs, struct ifaddrs *__ifa)
+NATIVE (gethostent) // void
+NATIVE (sethostent, int __stay_open)
+NATIVE (endhostent) //void
+NATIVE (hstrerror, int __err_num) // this could be replaced by DCE call
+NATIVE (getprotoent) //void
+NATIVE (getprotobyname, const char *__name)
+NATIVE (getprotobynumber, int __proto)
+NATIVE (setprotoent, int __stay_open)
 NATIVE (endprotoent)
-NATIVE (getservent)
-NATIVE (getservbyname)
-NATIVE (getservbyport)
-NATIVE (setservent)
-NATIVE (endservent)
+NATIVE (getservent) // void
+NATIVE (getservbyname, const char *__name, const char *__proto)
+NATIVE (getservbyport, int __port, const char *__proto)
+NATIVE (setservent, int __stay_open)
+NATIVE (endservent) // void
 #ifdef __cplusplus
 }
 #endif
