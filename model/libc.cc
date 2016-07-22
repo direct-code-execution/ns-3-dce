@@ -176,7 +176,7 @@ namespace detail_paramType {
 
 
 
-//extern "C" {
+extern "C" {
 
 //__locale_t __attribute((weak)) newlocale (int __category_mask, const char *__locale,__locale_t __base)
 //{
@@ -300,4 +300,4 @@ const struct cpu_features * __get_cpu_features (void)
   return dce___get_cpu_features ();
 }
 #endif
-//} // extern "C"
+} // extern "C"
