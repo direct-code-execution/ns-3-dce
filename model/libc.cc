@@ -3,6 +3,7 @@
 #include <utility>
 //extern "C"
 //{
+// Don't need that anymore right ?
 #include <p99_args.h>
 //}
 struct Libc g_libc;
@@ -199,6 +200,7 @@ DCE(__cxa_finalize), it should generate a function with __cxa_finalize
 extern void __cxa_finalize (void *d);
 extern int __cxa_atexit (void (*func)(void *), void *arg, void *d);
 
+#include "libc-ns3.generated.cc"
 // weak_alias (strtol, __strtol_internal);
 // weak_alias (wctype_l, __wctype_l);
 // weak_alias (strdup, __strdup);
