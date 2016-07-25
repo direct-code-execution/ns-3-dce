@@ -71,17 +71,25 @@
 #include <unistd.h>
 #include <wctype.h>
 #include <locale.h>
+#include <utime.h>
+#include <sys/sysinfo.h>
+#include <sys/statvfs.h>
+#include <getopt.h>
+#include <utime.h>
 
 
 // Generate struct
 //#define GENERATE_LIBC
 
 //on peut utiliser des templates pour recuperer les arguments 
-#define DCE(rtype, name, args...) rtype (*name ## _fn) (args) ;
+//#define DCE(name, args...) rtype (*name ## _fn) (args) ;
 /* native => decltype(name) */
+#define DCE NATIVE
 #define NATIVE(name, ...) decltype(&name) name ## _fn ;
-#define NATIVE_EXPLICIT(name, type) decltype( (type) &name) name ## _fn ;
-#define DCE_ALIAS(name, alias)
+
+
+//#define NATIVE_EXPLICIT(name, type) decltype( (type) &name) name ## _fn ;
+#define ALIAS(name, ...)
 
 // NATIVE_EXPLICIT
 /**
@@ -95,7 +103,8 @@ struct Libc
 /* #define NATIVET(rtype, name) NATIVE (name) */
 
 /* #define DCE_EXPLICIT(name,rtype,...) rtype (*name ## _fn) (__VA_ARGS__); */
- #include "libc-ns3.generated.h"
+// #include "libc-ns3.generated.h"
+ #include "libc-ns3.h"
 
   void (*dce_global_variables_setup_fn)(struct DceGlobalVariables *variables);
 //  char* (*strstr_fn)(const char *a, const char *b);

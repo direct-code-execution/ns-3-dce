@@ -5,12 +5,34 @@
 #include <sys/utsname.h>
 #include <sys/types.h>
 
-#include "dce-guard.h"
+//#include "dce-guard.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/*
+Contains all functions not generated automatically.
+Why do they exist ? freebsd compatibility or ?
+Due to freeb
+*/
+
+
+
+int dce_creat (const char *path, mode_t mode);
+int dce_internalClosedir (DIR *dirp, struct Thread *cur);
+int dce__IO_putc (int __c, FILE *__stream);
+ssize_t dce_writev (int fd, const struct iovec *iov, int iovcnt);
+int dce__IO_getc (FILE *stream);
+ssize_t dce_readv (int fd, const struct iovec *iov, int iovcnt);
+int dce_fclose_unconditional (FILE *fp);
+int dce_fclose_onexec (FILE *file);
+int dce_fcloseall (void);
+int dce_chown(const char *path, uid_t owner, gid_t group);
+int dce_initgroups(const char *user, gid_t group);
+int dce_fsync (int fd);
+
+/*
 DCE(int , uname, struct utsname *buf);
 DCE(int , gethostname, char *name, size_t len);
 
@@ -83,7 +105,7 @@ NATIVE (__ctype_b_loc)
 
 // link.h
 NATIVE (dl_iterate_phdr, int (*__callback) (struct dl_phdr_info *, size_t, void *), void *__data)
-
+*/
 
 #ifdef __cplusplus
 }

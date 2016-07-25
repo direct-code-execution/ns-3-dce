@@ -1,6 +1,7 @@
 #include "dce-stdlib.h"
 #include "process.h"
 #include "dce-manager.h"
+#include "dce-stdio.h"
 #include "utils.h"
 #include "unix-fd.h"
 #include "unix-file-fd.h"

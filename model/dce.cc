@@ -32,6 +32,7 @@
 #include "ns3/names.h"
 #include "ns3/ipv4-l3-protocol.h"
 #include "socket-fd-factory.h"
+#include "dce-sysinfo.h"
 
 NS_LOG_COMPONENT_DEFINE ("Dce");
 

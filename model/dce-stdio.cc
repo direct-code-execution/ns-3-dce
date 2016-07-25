@@ -94,6 +94,7 @@ off64_t my_seek_unconditional (_IO_FILE *file, off64_t where, int whence)
 {
   return -1;
 }
+// weird ?
 int my_stat (_IO_FILE *file, void *buf)
 {
   int result = dce_fstat64 (file->_fileno, (struct stat64 *)buf);

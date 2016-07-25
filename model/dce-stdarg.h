@@ -12,9 +12,9 @@ extern "C" {
 #endif
 
 
-DCE(int, vprintf, const char* format, va_list ap);
-NATIVE (vfprintf, FILE *stream, const char *format, va_list ap)
-NATIVE (vsprintf, char *str, const char *format, va_list ap)
+//DCE(int, vprintf, const char* format, va_list ap);
+//NATIVE (vfprintf, FILE *stream, const char *format, va_list ap)
+//NATIVE (vsprintf, char *str, const char *format, va_list ap)
 
 #ifdef __cplusplus
 }

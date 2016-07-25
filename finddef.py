@@ -7,6 +7,9 @@ from pygccxml.declarations import declaration_utils
 import os
 import argparse
 import csv
+import subprocess
+import logging
+import sys
 
 
 """
@@ -16,6 +19,9 @@ Must be able to generate:
 todo do same for dl/pthread/rt
 """
 
+log = logging.getLogger("dce")
+# log.setLevel(logging.DEBUG)
+log.addHandler(logging.StreamHandler())
 
 
 
@@ -53,6 +59,7 @@ class Generator:
         """
         cache parsing
         """
+        utils.loggers.set_level(logging.DEBUG)
 
         # Find the location of the xml generator (castxml or gccxml)
         generator_path, generator_name = utils.find_xml_generator()
@@ -60,8 +67,13 @@ class Generator:
         # Configure the xml generator
         xml_generator_config = parser.xml_generator_configuration_t(
             xml_generator_path=generator_path,
-            xml_generator=generator_name)
+            xml_generator=generator_name,
+            cflags=" -nostdinc -I/usr/include",
 
+            # asked on tracker to generate va_list but not ok
+            # flags= ["f1"]
+            )
+        # config.flags = 
         # The c++ file we want to parse
         # printf is declared in stdio.h
         # filename = "/home/teto/glibc/libio/stdio.h"
@@ -69,7 +81,8 @@ class Generator:
 
         file_config = parser.file_configuration_t(
             data=filename,
-            content_type=parser.CONTENT_TYPE.CACHED_SOURCE_FILE)
+            content_type=parser.CONTENT_TYPE.CACHED_SOURCE_FILE
+            )
 
         self.project_reader = parser.project_reader_t(xml_generator_config)
         self.decls = self.project_reader.read_files(
@@ -106,7 +119,7 @@ class Generator:
                         continue
 
                     # look for a match
-                    print('row["name"]', row["name"])    
+                    print('row["name"]=', row["name"])    
                     # decl = global_namespace.free_function(name=row["name"])  
                    # Search for the function by name
                     criteria = declarations.calldef_matcher(name=row["name"])
@@ -118,7 +131,7 @@ class Generator:
                     name = declaration_utils.full_name(decl)
                     if name[:2] == "::":
                         name = name[2:]
-                    print(name)
+                    log.info("Parsing function %s" % name)
                     # Add the arguments...
                     # default_value', 'ellipsis', 'name', 'type'
                     # print(dir(decl.arguments[0]))
@@ -128,7 +141,42 @@ class Generator:
                     # proto = "{extern} {ret} {name} ({args})".format(
                     extern="extern" if decl.has_extern else ""
                     rtype = "%s" % (decl.return_type if decl.return_type is not None else "void")
-                    fullargs = " ".join([str(a) for a in decl.arguments])
+
+                    # for a in decl.arguments:
+                    #     print(dir(a ))
+                    #     print("a", a )
+                    #     print("a", a.name )
+                    #     print("a", a.decl_type )
+                    #     print("a", a.attributes )
+                    #     # print("a", a.type )
+
+                    # exit(1)
+                    # for now keep only types, but hopefully we should have everything
+                    # problems appear with function pointer declaration
+                    # fullargs = ",".join([str(a.decl_type) for a in decl.arguments])
+                    # for arg in decl.arguments:
+                    #     print("arg=[%s]"% arg)
+                    #     print("arg=[%s]"% dir(arg))
+
+                    # some hacks to workaround pygccxml/castxml flaws:
+                    # va_list is not_recognized and function pointer badly displayed
+
+                    temp = []
+                    for arg in decl.arguments:
+                        s = str(arg.decl_type)
+                        if s.startswith("?unknown?"):
+                            print("UNKNOWN")
+                            s = "va_list"
+                        elif "(" in s:
+                            print ("TOTO")
+                            s= s.rstrip("*")
+                        temp.append(s)
+
+                    for arg in temp:
+                        print("arg=%s"% arg)
+
+                    # temp = ["va_list" else str(a.decl_type) for a in decl.arguments]
+                    fullargs = ",".join(temp)
                     res = """
                      {extern} {ret} {name} ({fullargs}){{
                         {retstmt} g_libc.{name}_fn ({arg_names});
@@ -145,24 +193,26 @@ class Generator:
                     dst.write(res)
 
                     # now we generate dce-<FILE>.h content
-                    # 
-                    if row["type"] != "dce":
-                        continue
+                    #  
+                    # generate only the dce overrides
+                    content = ""
+                    if row["type"] == "dce":
 
-                    # declaration of dce_{libcfunc}
-                    content = "{extern} {ret} dce_{name} ({fullargs});\n".format(
-                            extern=extern,
-                            ret=rtype,
-                            fullargs=fullargs,
-                            name=name,
-                            )
+                        # declaration of dce_{libcfunc}
+                        content = "{extern} {ret} dce_{name} ({fullargs});\n".format(
+                                extern=extern,
+                                ret=rtype,
+                                fullargs=fullargs,
+                                name=name,
+                                )
 
-                    # then append aliases
+                    # then generate aliases for both natives and dce
                    #define weak_alias(name, aliasname) \
                     if hasattr(row, "extra"):
                         print("extra=", row["extra"])
                         for aliasname in row["extra"]:
                             print("alias=", aliasname)
+                            # TODO add the alias
                             # content += "__typeof ({name}) {aliasname} __attribute__ ((weak, alias (# {name})));\n".format(
                             #         aliasname=aliasname,
                             #         name=name
@@ -173,18 +223,49 @@ class Generator:
                     items.append(content)
 
             # Now we generate the header files
-            for filename, functions in locations.items():
-                filename = os.path.basename(filename)
-                header = "tmp/dce-" + filename
-                print("Header name=", header)
-                with open(header, "w+") as dst:
+            for path, functions in locations.items():
+                print("path=", path)
+                (head, tail) = os.path.split(path)
+                print("head/tail", head, "----" , tail)
+                # filename = os.path.basename()
+                # filename = "model"
+                header = ""
+                
+                sys = "sys" if head.endswith("sys") else ""
+                    # tail = os.path.join("sys", tail)
+                filename = os.path.join("model", sys, "dce-" + tail)
+                header=os.path.join(sys, tail)
+                print(filename)
+                # TODO 
+# + ".generated.h"
+                # header = "model/dce-" + filename
+                print("Header name=", filename)
+                with open(filename, "w+") as dst:
                     content = """
-                    /* GENERATED BY MATT */
-                    """
+                    /* DO NOT MODIFY - GENERATED BY script */
+                    #ifndef DCE_HEADER_{guard}
+                    #define DCE_HEADER_{guard}
+                    // TODO add extern "C" ?
+                    #include <{header}>
+// TODO temporary hack
+#define __restrict__
+
+#ifdef __cplusplus
+extern "C" {{
+#endif
+
+                    """.format(guard=header.upper().replace(".","_").replace("/","_"), header=header) #os.path.basename(tail))
 
                     for proto in functions:
                         print(proto)
                         content += proto + "\n"
+
+                    content += """
+                    #ifdef __cplusplus
+}
+#endif
+                    #endif
+                    """
 
                     # print("content=", content)
                     dst.write(content)
@@ -195,8 +276,16 @@ def main():
     g = Generator()
     g.parse("test.h")
 # TODO call that with subprocess.
-    subprocess.call( gcc "model/libc-ns3.h" -E -P -D'NATIVE(name,...)=native,name,__VA_ARGS__' -D'DCE(name,...)=dce,name,__VA_ARGS__' \
-    g.generate_wrappers("natives.h.txt2", "model/libc.generated.cc")
+    os.system("./gen_natives.sh")
+  # redirect output
+    output ="model/libc-ns3.h.tmp" 
+    with open(output, "w") as tmp:
+        subprocess.call( [
+            "gcc", "model/libc-ns3.h", "-E", "-P",  "-DNATIVE(name,...)=native,name,__VA_ARGS__",
+            "-DDCE(name,...)=dce,name,__VA_ARGS__",
+            ], stdout=tmp, stderr=sys.stdout)
+    # libc-ns3.generated.tmp
+    g.generate_wrappers(output, "model/libc.generated.cc")
 
 if __name__ == "__main__":
     main()

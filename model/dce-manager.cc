@@ -30,6 +30,7 @@
 #include "dce-pthread.h"
 #include "dce-fcntl.h"
 #include "dce-node-context.h"
+#include "dce-misc.h"
 #include "sys/dce-stat.h"
 #include "loader-factory.h"
 #include "ns3/node.h"
@@ -59,7 +60,7 @@
 #include <netdb.h>
 #include <signal.h>
 #include <fcntl.h>
-#include <stdlib.h>
+#include "dce-stdlib.h"
 
 NS_LOG_COMPONENT_DEFINE ("DceManager");
 

@@ -22,25 +22,6 @@
 #define NATIVE DCE
 #endif
 
-#ifndef NATIVE_WITH_ALIAS
-#define NATIVE_WITH_ALIAS NATIVE
-#endif
-
-#ifndef NATIVE_WITH_ALIAS2
-#define NATIVE_WITH_ALIAS2(name,internal) NATIVE_WITH_ALIAS (name)
-#endif
-
-#ifndef DCE_WITH_ALIAS
-#define DCE_WITH_ALIAS DCE
-#endif
-
-#ifndef DCE_WITH_ALIAS2
-#define DCE_WITH_ALIAS2(name,internal) DCE_WITH_ALIAS (name)
-#endif
-
-#ifndef NATIVE_EXPLICIT
-#define NATIVE_EXPLICIT(name,type) NATIVE (name)
-#endif
 
 // #ifndef ALIAS
 // #define ALIAS(base_function, alias_name)
@@ -84,15 +65,15 @@ NATIVE (seed48_r)
 NATIVE (lcong48_r)
 DCE (calloc)
 DCE (malloc, valloc)
-ALIAS (malloc, valloc)
+//ALIAS (malloc, valloc)
 DCE (free)
 DCE (realloc)
 NATIVE (atoi)
 NATIVE (atol)
 NATIVE (atoll)
 NATIVE (atof)
-DCE (strtol)
-ALIAS (strtol, __strtol_internal)
+//DCE (strtol)
+DCE (strtol, __strtol_internal)
 DCE (strtoll)
 DCE (strtoul)
 DCE (strtoull)
@@ -123,8 +104,10 @@ NATIVE (memcpy)
 NATIVE (bcopy)
 NATIVE (memcmp)
 NATIVE (memmove)
-NATIVE_EXPLICIT (memchr, void * (*)(void *, int, size_t))
-NATIVE_EXPLICIT (memrchr, void * (*)(void *, int, size_t))
+//NATIVE (memchr)
+//NATIVE_EXPLICIT (memchr, void * (*)(void *, int, size_t))
+//NATIVE_EXPLICIT (memrchr, void * (*)(void *, int, size_t))
+//NATIVE (memrchr)
 NATIVE (strcpy)
 NATIVE (strncpy)
 NATIVE (strcat)
@@ -135,8 +118,10 @@ NATIVE (strlen)
 NATIVE (strnlen)
 NATIVE (strcspn)
 NATIVE (strspn)
-NATIVE_EXPLICIT (strchr, char* (*)(char *, int))
-NATIVE_EXPLICIT (strrchr, const char * (*)(const char *, int))
+//NATIVE (strchr)
+//NATIVE_EXPLICIT (strchr, char* (*)(char *, int))
+//NATIVE_EXPLICIT (strrchr, const char * (*)(const char *, int))
+//NATIVE (strrchr)
 NATIVE (strcasecmp)
 NATIVE (strncasecmp)
 DCE (strdup) // because C++ defines both const and non-const functions
@@ -150,8 +135,8 @@ NATIVE (strsep)
 
 // LOCALE.H
 DCE    (setlocale)
-NATIVE_WITH_ALIAS (newlocale)
-NATIVE_WITH_ALIAS (uselocale)
+NATIVE (newlocale, __newlocale)
+NATIVE (uselocale, __uselocale)
 
 // WCHAR.H
 NATIVE (wctob)
@@ -268,8 +253,8 @@ DCE (readv)
 DCE (writev)
 
 // STDIO.H
-DCE (clearerr,clearerr_unlocked)
-ALIAS (clearerr, __clearerr_unlocked)
+DCE (clearerr,clearerr_unlocked, __clearerr_unlocked)
+//ALIAS (clearerr, __clearerr_unlocked)
 DCE (setvbuf)
 DCE (setbuf)
 DCE (setbuffer)
@@ -288,19 +273,15 @@ DCE (asprintf)
 DCE (vasprintf)
 NATIVE (dprintf)
 NATIVE (vdprintf)
-DCE (fgetc)
-ALIAS (fgetc,fgetc_unlocked)
+DCE (fgetc,fgetc_unlocked)
 NATIVE (getc)
 NATIVE (getc_unlocked)
-DCE (getchar)
-ALIAS (getchar,getchar_unlocked)
+DCE (getchar,getchar_unlocked)
 DCE (_IO_getc)
-DCE (fputc)
-ALIAS (fputc,fputc_unlocked)
+DCE (fputc,fputc_unlocked)
 NATIVE (putc)
 NATIVE (putc_unlocked)
-DCE (putchar)
-ALIAS (putchar, putchar_unlocked)
+DCE (putchar, putchar_unlocked)
 DCE (_IO_putc)
 DCE (fgets, fgets_unlocked)
 DCE (fputs, fputs_unlocked)
@@ -312,10 +293,9 @@ DCE (fopen)
 DCE (fopen64)
 DCE (freopen)
 DCE (fdopen)
-DCE (fread)
-ALIAS (fread, fread_unlocked)
-DCE (fwrite)
-ALIAS (fwrite,fwrite_unlocked)
+DCE (fread, fread_unlocked)
+
+DCE (fwrite,fwrite_unlocked)
 //DCE (fflush, fflush_unlocked)
 //DCE (fflush, fflush_unlocked)
 DCE (ferror,ferror_unlocked)
@@ -324,8 +304,7 @@ DCE (fileno,fileno_unlocked)
 DCE (perror)
 DCE (remove)
 //NATIVE (sscanf)
-NATIVE (sscanf)
-ALIAS (sscanf,__isoc99_sscanf)
+NATIVE (sscanf,__isoc99_sscanf)
 NATIVE (flockfile)
 NATIVE (funlockfile)
 
@@ -346,10 +325,8 @@ DCE (asctime)
 NATIVE (asctime_r)
 DCE (ctime)
 NATIVE (ctime_r)
-DCE (gmtime)
-ALIAS (gmtime, localtime)
-NATIVE (gmtime_r)
-ALIAS (gmtime_r, localtime_r)
+DCE (gmtime, localtime)
+NATIVE (gmtime_r, localtime_r)
 NATIVE (mktime)
 NATIVE (strftime)
 NATIVE (strptime)

@@ -19,6 +19,7 @@
 #include "dce-stdio.h"
 #include "dce-stdarg.h"
 #include "dce-errno.h"
+#include "dce-getopt.h"
 #include "dce-libc-private.h"
 #include "dce-fcntl.h"
 #include "dce-sched.h"
@@ -42,6 +43,11 @@
 #include "dce-vfs.h"
 #include "dce-termio.h"
 #include "dce-dl.h"
+#include "dce-utime.h"
+#include "dce-sysinfo.h"
+#include "dce-sigaction.h"
+#include "dce-ifaddrs.h"
+#include "dce-utsname.h"
 
 
 
@@ -112,7 +118,7 @@ void libc_dce (struct Libc **libc)
   *libc = new Libc();
 
 //#define DCE(name) (*libc)->name ## _fn = (func_t)(__typeof (&name))dce_ ## name;
-#define DCE(rtype,name, ...) (*libc)->name ## _fn = & dce_ ## name;
+#define DCE(name, ...) (*libc)->name ## _fn = & dce_ ## name;
 //#define DCET(rtype,name) DCE (name)
 //#define DCE_EXPLICIT(rtype,name,...) (*libc)->name ## _fn = dce_ ## name;
 
@@ -120,9 +126,10 @@ void libc_dce (struct Libc **libc)
 // should be ignored
 // what happens to native explicit ?
 
-#define DCE_ALIAS(name, internal) 
+//#define DCE_ALIAS(name, internal) 
 
-#include "libc-ns3.generated.h"
+#include "libc-ns3.h"
+//#include "libc-ns3.generated.h"
 
 //  (*libc)->strpbrk_fn = dce_strpbrk;
 //  (*libc)->strstr_fn = dce_strstr;
