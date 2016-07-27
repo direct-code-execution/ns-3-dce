@@ -1,5 +1,4 @@
 .. include:: replace.txt
-.. raw:: html
 
 How to add system calls ?
 =========================
@@ -10,7 +9,7 @@ If your applications running with DCE are not able to run due to missing functio
 
 More specifically, if you faced the following error when you executed, you need to add a function call to DCE. In the following case, a symbol **strfry** not defined in DCE is detected during the execution of the simulation.
 
-::
+.. code-block: console
   
   % ./waf --run dce-udp-perf
   'build' finished successfully (0.704s)

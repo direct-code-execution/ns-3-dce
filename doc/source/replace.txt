@@ -1,2 +1,12 @@
 .. |ns3| replace:: *ns-3*
+.. |ns3_tag| replace:: ns-3.25
 .. |dce_cradle| replace:: DCE Cradle
+
+
+.. |hg_ns3| replace:: http://code.nsnam.org/ns-3-dev
+.. |git_ns3| replace:: git@github.com:nsnam/ns-3-dev-git.git
+
+.. _hg_dce: http://code.nsnam.org/ns-3-dce
+.. _git_dce: git@github.com:direct-code-execution/ns-3-dce
+
+
