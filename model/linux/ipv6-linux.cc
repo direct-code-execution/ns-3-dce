@@ -26,6 +26,7 @@
 #include "ns3/ipv6-static-routing-helper.h"
 //#include "ns3/ipv6-global-routing-helper.h"
 #include "ns3/ipv6-interface.h"
+#include <ns3/object-factory.h>
 #include "linux-ipv6-raw-socket-factory-impl.h"
 #include "linux-udp6-socket-factory-impl.h"
 #include "linux-tcp6-socket-factory-impl.h"

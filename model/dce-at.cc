@@ -72,7 +72,12 @@ int dce___fxstatat (int ver, int fd, const char *pathname, struct stat *buf, int
     }
   return retval;
 }
+
 void unlink_notify (std::string fullpath);
+
+
+extern "C"
+{
 int dce_unlinkat (int fd, const char *pathname, int flags)
 {
   Thread *current = Current ();
@@ -123,4 +128,5 @@ int dce_unlinkat (int fd, const char *pathname, int flags)
     }
 
   return retval;
+}
 }

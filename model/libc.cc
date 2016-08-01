@@ -189,7 +189,7 @@ Assign final we should ha
 For instance if we have
 DCE(__cxa_finalize), it should generate a function with __cxa_finalize
 */
-#include "libc-ns3.generated.h" // do the work
+//#include "libc-ns3.generated.h" // do the work
 
 #undef DCE
 #undef NATIVE
@@ -200,7 +200,8 @@ DCE(__cxa_finalize), it should generate a function with __cxa_finalize
 extern void __cxa_finalize (void *d);
 extern int __cxa_atexit (void (*func)(void *), void *arg, void *d);
 
-#include "libc-ns3.generated.cc"
+// include wrappers functions
+#include "libc.generated.cc"
 // weak_alias (strtol, __strtol_internal);
 // weak_alias (wctype_l, __wctype_l);
 // weak_alias (strdup, __strdup);

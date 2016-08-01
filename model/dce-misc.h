@@ -4,12 +4,38 @@
 
 #include <sys/utsname.h>
 #include <sys/types.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <cstdio>
 
 //#include "dce-guard.h"
+
+namespace ns3 
+{
+  struct Thread;
+  extern int dce_internalClosedir (DIR *dirp, struct ns3::Thread *cur);
+}
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+// Temporary while fixing generation bugs
+#if 0
+// add to dce-sigaction.h
+int dce_sigaction(int signum, const struct sigaction *act, struct sigaction *oldact);
+
+// stdio.h
+int fflush(FILE *stream);
+ 
+// Add #include "dce-sigthread.h"
+
+#include <sys/sysinfo.h>
+
+int dce_sysinfo(struct sysinfo *info);
+#endif
+
 
 /*
 Contains all functions not generated automatically.
@@ -19,22 +45,19 @@ Due to freeb
 
 
 
-int dce_creat (const char *path, mode_t mode);
-int dce_internalClosedir (DIR *dirp, struct Thread *cur);
-int dce__IO_putc (int __c, FILE *__stream);
-ssize_t dce_writev (int fd, const struct iovec *iov, int iovcnt);
-int dce__IO_getc (FILE *stream);
-ssize_t dce_readv (int fd, const struct iovec *iov, int iovcnt);
-int dce_fclose_unconditional (FILE *fp);
-int dce_fclose_onexec (FILE *file);
+void
+CleanupPthreadKeys (void);
+
+//int dce_creat (const char *path, mode_t mode);
+
+
+// DCE Specific (not in libc)
+extern int dce_fclose_unconditional (FILE *fp);
+extern int dce_fclose_onexec (FILE *file);
 int dce_fcloseall (void);
-int dce_chown(const char *path, uid_t owner, gid_t group);
-int dce_initgroups(const char *user, gid_t group);
-int dce_fsync (int fd);
+
 
 /*
-DCE(int , uname, struct utsname *buf);
-DCE(int , gethostname, char *name, size_t len);
 
 // WCHAR.H
 NATIVE (wctob, wint_t)

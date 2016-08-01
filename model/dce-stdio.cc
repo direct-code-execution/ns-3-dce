@@ -3,6 +3,8 @@
 #include "dce-fcntl.h"
 #include "dce-unistd.h"
 #include "dce-stdlib.h"
+#include "dce-misc.h"
+#include "dce-libio.h"
 #include "sys/dce-stat.h"
 #include "process.h"
 #include "utils.h"
@@ -15,6 +17,8 @@
 #include <sys/mman.h>
 #include <libio.h>
 #include <cstring>
+#include <cstdio>
+#include <stdio_ext.h>
 
 NS_LOG_COMPONENT_DEFINE ("DceStdio");
 

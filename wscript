@@ -11,6 +11,13 @@ import wutils
 import subprocess
 import Logs
 from waflib.Errors import WafError
+from waflib import Logs
+
+# bld.logger = Logs.make_logger('test.log', 'build')
+# hdlr = logging.StreamHandler(sys.stdout)
+# formatter = logging.Formatter('%(message)s')
+# hdlr.setFormatter(formatter)
+# bld.logger.addHandler(hdlr)
 
 def options(opt):
     opt.tool_options('compiler_cc') 

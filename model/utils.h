@@ -37,7 +37,7 @@ std::string UtilsGetRealFilePath (std::string path);
 std::string UtilsGetAbsRealFilePath (uint32_t node, std::string path);
 std::string UtilsGetVirtualFilePath (std::string path);
 uint32_t UtilsGetNodeId (void);
-Thread * Current (void);
+ns3::Thread * Current (void);
 bool HasPendingSignal (void);
 Time UtilsTimeToSimulationTime (Time time);
 Time UtilsSimulationTimeToTime (Time time);

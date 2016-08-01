@@ -2,6 +2,9 @@
 #include "process.h"
 #include "dce-manager.h"
 #include "dce-stdio.h"
+#include "dce-misc.h"
+#include "dce-cxa.h"
+#include "loader-factory.h"
 #include "utils.h"
 #include "unix-fd.h"
 #include "unix-file-fd.h"
@@ -17,7 +20,7 @@ using namespace ns3;
 
 long int dce_strtol (const char *nptr, char **endptr, int base)
 {
-  Thread *current = Current ();
+  ns3::Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << nptr << endptr << base);
   NS_ASSERT (current != 0);
   long int retval = strtol (nptr, endptr, base);
@@ -29,7 +32,7 @@ long int dce_strtol (const char *nptr, char **endptr, int base)
 }
 long long int dce_strtoll (const char *nptr, char **endptr, int base)
 {
-  Thread *current = Current ();
+  ns3::Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << nptr << endptr << base);
   NS_ASSERT (current != 0);
   long long int retval = strtoll (nptr, endptr, base);
@@ -42,7 +45,7 @@ long long int dce_strtoll (const char *nptr, char **endptr, int base)
 
 unsigned long int dce_strtoul (const char *nptr, char **endptr, int base)
 {
-  Thread *current = Current ();
+  ns3::Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << nptr << endptr << base);
   NS_ASSERT (current != 0);
   unsigned long int retval = strtol (nptr, endptr, base);
@@ -54,7 +57,7 @@ unsigned long int dce_strtoul (const char *nptr, char **endptr, int base)
 }
 unsigned long long int dce_strtoull (const char *nptr, char **endptr, int base)
 {
-  Thread *current = Current ();
+  ns3::Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << nptr << endptr << base);
   NS_ASSERT (current != 0);
   unsigned long long int retval = strtoull (nptr, endptr, base);
@@ -66,7 +69,7 @@ unsigned long long int dce_strtoull (const char *nptr, char **endptr, int base)
 }
 double dce_strtod (const char *nptr, char **endptr)
 {
-  Thread *current = Current ();
+  ns3::Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << nptr << endptr);
   NS_ASSERT (current != 0);
   double retval = strtod (nptr, endptr);
@@ -81,7 +84,7 @@ int dce_atexit (void (*function)(void))
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << function);
   NS_ASSERT (Current () != 0);
-  Thread *current = Current ();
+  ns3::Thread *current = Current ();
   struct AtExitHandler handler;
   handler.type = AtExitHandler::NORMAL;
   handler.value.normal = function;
@@ -94,7 +97,7 @@ int dce_atexit (void (*function)(void))
  This suffix is then replaced with a string that makes the filename unique */
 int dce_mkstemp (char *temp)
 {
-  Thread *current = Current ();
+  ns3::Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId ());
   NS_ASSERT (current != 0);
 
@@ -139,7 +142,7 @@ FILE * dce_tmpfile (void)
 
 int dce_rename (const char *oldpath, const char *newpath)
 {
-  Thread *current = Current ();
+  ns3::Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId ());
   NS_ASSERT (current != 0);
 
@@ -154,3 +157,32 @@ int dce_rename (const char *oldpath, const char *newpath)
     }
   return 0;
 }
+
+
+void dce_exit (int status)
+{
+  ns3::Thread *current = Current ();
+  std::ostringstream oss;
+  std::string line;
+
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << status);
+  NS_ASSERT (current != 0);
+  CleanupPthreadKeys ();
+  dce___cxa_finalize (0);
+  dce_fflush (0);
+  current->process->timing.exitValue = __W_EXITCODE (status,  WTERMSIG (current->process->timing.exitValue));
+  current->process->timing.ns3End = Now ().GetNanoSeconds ();
+  current->process->timing.realEnd = time (0);
+
+  current->task->SetSwitchNotifier (0, 0);
+  current->process->loader->UnloadAll ();
+
+  oss << "Exit (" << status << ")";
+  line = oss.str ();
+  DceManager::AppendStatusFile (current->process->pid, current->process->nodeId, line);
+  DceManager::AppendProcFile (current->process);
+
+  current->process->manager->DeleteProcess (current->process, DceManager::PEC_EXIT);
+  TaskManager::Current ()->Exit ();
+}
+

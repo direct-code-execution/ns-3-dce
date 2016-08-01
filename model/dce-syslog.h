@@ -4,6 +4,7 @@
                     #define DCE_HEADER_SYSLOG_H
                     // TODO add extern "C" ?
                     #include <syslog.h>
+                    #include <cstdarg>
 // TODO temporary hack
 #define __restrict__
 

@@ -45,6 +45,7 @@
 #include <sys/stat.h>
 #include <sys/utsname.h>
 #include <sys/wait.h>
+#include <sys/uio.h>
 #include <pthread.h>
 #include <pwd.h>
 #include <time.h>

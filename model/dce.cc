@@ -15,6 +15,7 @@
 #include "dce-stdlib.h"
 #include "dce-locale.h"
 #include "sys/dce-ioctl.h"
+#include "sys/dce-time.h"
 #include "dce-sched.h"
 #include "arpa/dce-inet.h"
 #include <stdlib.h>
@@ -32,7 +33,7 @@
 #include "ns3/names.h"
 #include "ns3/ipv4-l3-protocol.h"
 #include "socket-fd-factory.h"
-#include "dce-sysinfo.h"
+#include "sys/dce-sysinfo.h"
 
 NS_LOG_COMPONENT_DEFINE ("Dce");
 
@@ -291,7 +292,7 @@ int dce_pause (void)
   return 0;
 }
 
-
+extern "C" {
 int dce_gettimeofday (struct timeval *tv, struct timezone *tz)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
@@ -300,6 +301,8 @@ int dce_gettimeofday (struct timeval *tv, struct timezone *tz)
   *tv = UtilsTimeToTimeval (UtilsSimulationTimeToTime (Now ()));
   return 0;
 }
+}
+
 int dce_nanosleep (const struct timespec *req, struct timespec *rem)
 {
   Thread *current = Current ();
@@ -447,6 +450,8 @@ const char * dce_inet_ntop (int af, const void *src,
     }
   return retval;
 }
+
+extern "C" {
 int dce_getopt (int argc, char * const argv[], const char *optstring)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << argc << argv << optstring);
@@ -507,6 +512,7 @@ int dce_getopt_long (int argc, char * const argv[], const char *optstring,
   optopt = optoptsaved;
   return retval;
 }
+}
 int dce_sched_yield (void)
 {
   Thread *current = Current ();
@@ -515,66 +521,7 @@ int dce_sched_yield (void)
   current->process->manager->Yield ();
   return 0;
 }
-static void Itimer (Process *process)
-{
-  if (!process->itimerInterval.IsZero ())
-    {
-      process->itimer = Simulator::Schedule (process->itimerInterval,
-                                             &Itimer, process);
-    }
-  // wakeup one thread
-  UtilsSendSignal (process, SIGALRM);
-}
-int dce_getitimer (int which, struct itimerval *value)
-{
 
-  Thread *current = Current ();
-  NS_LOG_FUNCTION (current << UtilsGetNodeId () << which << value);
-  NS_ASSERT (current != 0);
-  if (value == 0)
-    {
-      current->err = EFAULT;
-      return -1;
-    }
-  // We don't support other kinds of timers.
-  NS_ASSERT (which == ITIMER_REAL);
-  value->it_interval = UtilsTimeToTimeval (current->process->itimerInterval);
-  value->it_value = UtilsTimeToTimeval (Simulator::GetDelayLeft (current->process->itimer));
-  return 0;
-}
-int dce_setitimer (int which, const struct itimerval *value,
-                   struct itimerval *ovalue)
-{
-  Thread *current = Current ();
-  NS_LOG_FUNCTION (current << UtilsGetNodeId () << which << value << ovalue);
-  NS_ASSERT (current != 0);
-  if (value == 0)
-    {
-      current->err = EINVAL;
-      return -1;
-    }
-  // We don't support other kinds of timers.
-  NS_ASSERT (which == ITIMER_REAL);
-  if (ovalue != 0)
-    {
-      ovalue->it_interval = UtilsTimeToTimeval (current->process->itimerInterval);
-      ovalue->it_value = UtilsTimeToTimeval (Simulator::GetDelayLeft (current->process->itimer));
-    }
-
-  current->process->itimer.Cancel ();
-  current->process->itimerInterval = UtilsTimevalToTime (value->it_interval);
-  if (value->it_value.tv_sec == 0
-      && value->it_value.tv_usec == 0)
-    {
-      return 0;
-    }
-  TaskManager *manager = TaskManager::Current ();
-  current->process->itimer = manager->ScheduleMain (
-      UtilsTimevalToTime (value->it_value),
-      MakeEvent (&Itimer, current->process));
-
-  return 0;
-}
 char * dce_getcwd (char *buf, size_t size)
 {
   Thread *current = Current ();

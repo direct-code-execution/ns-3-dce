@@ -17,6 +17,7 @@
 #include "sys/dce-socket.h"
 #include "dce-unistd.h"
 #include "dce-signal.h"
+#include "dce-ifaddrs.h"
 
 NS_LOG_COMPONENT_DEFINE ("DceNetdb");
 

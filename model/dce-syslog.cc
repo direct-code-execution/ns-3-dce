@@ -1,7 +1,7 @@
-
+#include <ns3/log.h>  // put before <syslog.h> gets included else LOG_DEBUG gets redefined
 #include "dce-syslog.h"
 #include "dce-stdio.h"
-#include <ns3/log.h>
+
 #include <ns3/node.h>
 #include <ns3/simulator.h>
 

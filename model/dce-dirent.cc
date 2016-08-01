@@ -21,6 +21,7 @@
 #include "dce-dirent.h"
 #include "dce-fcntl.h"
 #include "dce-unistd.h"
+#include "dce-misc.h"
 #include "unix-fd.h"
 #include "unix-file-fd.h"
 #include "file-usage.h"
@@ -145,6 +146,7 @@ DIR * dce_fdopendir (int fd)
 
   return res;
 }
+
 
 struct dirent * dce_readdir (DIR *dirp)
 {

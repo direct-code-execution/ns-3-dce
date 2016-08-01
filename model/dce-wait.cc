@@ -1,4 +1,4 @@
-#include "dce-wait.h"
+#include "sys/dce-wait.h"
 #include "utils.h"
 #include "process.h"
 #include "dce-manager.h"

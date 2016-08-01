@@ -245,6 +245,8 @@ DCE (daemon)
 DCE (alarm)
 DCE (readlink)
 DCE (chown)
+
+// grp.h
 DCE (initgroups)
 DCE (fsync)
 
@@ -277,6 +279,8 @@ DCE (fgetc,fgetc_unlocked)
 NATIVE (getc)
 NATIVE (getc_unlocked)
 DCE (getchar,getchar_unlocked)
+
+// libio.h
 DCE (_IO_getc)
 DCE (fputc,fputc_unlocked)
 NATIVE (putc)
@@ -296,13 +300,13 @@ DCE (fdopen)
 DCE (fread, fread_unlocked)
 
 DCE (fwrite,fwrite_unlocked)
-//DCE (fflush, fflush_unlocked)
-//DCE (fflush, fflush_unlocked)
+DCE (fflush, fflush_unlocked)
 DCE (ferror,ferror_unlocked)
 DCE (feof,feof_unlocked)
 DCE (fileno,fileno_unlocked)
 DCE (perror)
 DCE (remove)
+
 //NATIVE (sscanf)
 NATIVE (sscanf,__isoc99_sscanf)
 NATIVE (flockfile)
@@ -394,8 +398,8 @@ DCE (pthread_key_create, __pthread_key_create)
 DCE (pthread_key_delete)
 DCE (pthread_mutex_destroy)
 DCE (pthread_mutex_init)
-//DCE_EXPLICIT (pthread_mutex_lock, int, pthread_mutex_t *)
-//DCE_EXPLICIT (pthread_mutex_unlock, int, pthread_mutex_t *)
+DCE (pthread_mutex_lock)
+DCE (pthread_mutex_unlock)
 DCE (pthread_mutex_trylock)
 DCE (pthread_mutexattr_init)
 DCE (pthread_mutexattr_destroy)
@@ -408,8 +412,8 @@ DCE (pthread_cond_destroy)
 DCE (pthread_cond_init)
 DCE (pthread_cond_broadcast)
 DCE (pthread_cond_signal)
-//DCE_EXPLICIT (pthread_cond_timedwait, int, pthread_cond_t*, pthread_mutex_t*, const struct timespec *)
-//DCE_EXPLICIT (pthread_cond_wait, int, pthread_cond_t*, pthread_mutex_t*)
+DCE (pthread_cond_timedwait)
+DCE (pthread_cond_wait)
 DCE (pthread_condattr_destroy)
 DCE (pthread_condattr_init)
 NATIVE (pthread_rwlock_init)
@@ -441,6 +445,8 @@ DCE (gethostbyname2)
 DCE (getaddrinfo)
 DCE (freeaddrinfo)
 DCE (gai_strerror)
+
+// ifaddrs.h
 DCE (getifaddrs)
 NATIVE (freeifaddrs)
 NATIVE (gethostent)
@@ -578,8 +584,12 @@ NATIVE (__ctype_tolower_loc)
 NATIVE (__ctype_get_mb_cur_max)
 
 // stdio.h
-DCE (__fpurge)
-DCE (__fpending)
+//DCE (__fpurge)
+//DCE (__fpending)
+
+NATIVE (__fpurge)
+NATIVE (__fpending)
+
 
 // REGRESSION
 ////DCE (__strcpy_chk)
@@ -599,6 +609,14 @@ DCE (__fpending)
 //DCE    (__fxstat64)
 //DCE    (__fxstatat)
 //NATIVE (__cmsg_nxthdr)
+
+// stat.h
+DCE (fstat64)
+
+
+// fnctl.h
+DCE (creat)
+
 
 // math.h
 NATIVE (lrintl)

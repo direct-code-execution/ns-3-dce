@@ -1,14 +1,14 @@
 #ifndef SIMU_CXA_H
 #define SIMU_CXA_H
 
-#include "dce-guard.h"
+//#include "dce-guard.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-DCE(int, __cxa_atexit , void (*func)(void *), void *arg, void *d);
-DCE(void, __cxa_finalize , void *d);
+int dce___cxa_atexit (void (*func)(void *), void *arg, void *d);
+void dce___cxa_finalize (void *d);
 
 #ifdef __cplusplus
 }

@@ -4,6 +4,7 @@
 #include "dce-manager.h"
 #include "ns3/log.h"
 #include "ns3/assert.h"
+#include "ns3/assert.h"
 #include <vector>
 #include <errno.h>
 

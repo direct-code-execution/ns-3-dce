@@ -15,6 +15,7 @@
 #include "sys/dce-stat.h"
 #include "sys/dce-mman.h"
 #include "sys/dce-select.h"
+#include "sys/dce-uio.h"
 #include "ns3/log.h"
 #include "ns3/event-id.h"
 #include "ns3/simulator.h"
@@ -31,6 +32,7 @@
 #include "file-usage.h"
 #include "dce-stdlib.h"
 #include "pipe-fd.h"
+#include <cstdarg>
 
 NS_LOG_COMPONENT_DEFINE ("DceFd");
 

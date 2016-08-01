@@ -1,4 +1,5 @@
 #include "dce-time.h"
+#include "sys/dce-time.h"
 #include "dce-manager.h"
 #include "process.h"
 #include "utils.h"
@@ -9,10 +10,76 @@
 #include "sys/dce-timerfd.h"
 #include "unix-timer-fd.h"
 #include "file-usage.h"
+#include "dce-utime.h"
 
 NS_LOG_COMPONENT_DEFINE ("DceTime");
 
 using namespace ns3;
+
+
+static void Itimer (Process *process)
+{
+  if (!process->itimerInterval.IsZero ())
+    {
+      process->itimer = Simulator::Schedule (process->itimerInterval,
+                                             &Itimer, process);
+    }
+  // wakeup one thread
+  UtilsSendSignal (process, SIGALRM);
+}
+
+int dce_setitimer (int which, const struct itimerval *value,
+                   struct itimerval *ovalue)
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << which << value << ovalue);
+  NS_ASSERT (current != 0);
+  if (value == 0)
+    {
+      current->err = EINVAL;
+      return -1;
+    }
+  // We don't support other kinds of timers.
+  NS_ASSERT (which == ITIMER_REAL);
+  if (ovalue != 0)
+    {
+      ovalue->it_interval = UtilsTimeToTimeval (current->process->itimerInterval);
+      ovalue->it_value = UtilsTimeToTimeval (Simulator::GetDelayLeft (current->process->itimer));
+    }
+
+  current->process->itimer.Cancel ();
+  current->process->itimerInterval = UtilsTimevalToTime (value->it_interval);
+  if (value->it_value.tv_sec == 0
+      && value->it_value.tv_usec == 0)
+    {
+      return 0;
+    }
+  TaskManager *manager = TaskManager::Current ();
+  current->process->itimer = manager->ScheduleMain (
+      UtilsTimevalToTime (value->it_value),
+      MakeEvent (&Itimer, current->process));
+
+  return 0;
+}
+
+int dce_getitimer (int which, struct itimerval *value)
+{
+
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << which << value);
+  NS_ASSERT (current != 0);
+  if (value == 0)
+    {
+      current->err = EFAULT;
+      return -1;
+    }
+  // We don't support other kinds of timers.
+  NS_ASSERT (which == ITIMER_REAL);
+  value->it_interval = UtilsTimeToTimeval (current->process->itimerInterval);
+  value->it_value = UtilsTimeToTimeval (Simulator::GetDelayLeft (current->process->itimer));
+  return 0;
+}
+
 
 time_t dce_time (time_t *t)
 {

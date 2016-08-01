@@ -4,6 +4,7 @@ from pygccxml import utils
 from pygccxml import declarations
 from pygccxml import parser
 from pygccxml.declarations import declaration_utils
+from collections import namedtuple
 import os
 import argparse
 import csv
@@ -20,7 +21,7 @@ todo do same for dl/pthread/rt
 """
 
 log = logging.getLogger("dce")
-# log.setLevel(logging.DEBUG)
+log.setLevel(logging.DEBUG)
 log.addHandler(logging.StreamHandler())
 
 
@@ -48,6 +49,19 @@ double_type = declarations.cpptypes.double_t()
 
 
 
+# list of exceptions for functions thatp ygccxml fail to identify correctly
+# hack around https://github.com/gccxml/pygccxml/issues/62
+ExplicitFn = namedtuple('ExplicitFn', ["rtype", "fullargs", "arg_names", "location"])
+exceptions = {
+    "sysinfo": ExplicitFn("int", "struct sysinfo *info", "info","/usr/include/x86_64-linux-gnu/sys/sysinfo.h"),
+    "sigaction": ExplicitFn("int", "int signum, const struct sigaction *act, struct sigaction *oldact", "signum, act, oldact","/usr/include/signal.h"),
+    "wait": ExplicitFn("pid_t", "void *stat_loc", "stat_loc", "/usr/include/x86_64-linux-gnu/sys/wait.h"),
+    "__fpurge": ExplicitFn("void", "FILE *fd", "fd", "/usr/include/stdio.h"),
+    "__fpending": ExplicitFn("size_t", "FILE *fd", "fd", "/usr/include/stdio.h"),
+    "fstat64": ExplicitFn("int", "int __fd, struct stat64 *__buf", "__fd, __buf", "/usr/include/x86_64-linux-gnu/sys/stat.h"),
+    "pthread_kill": ExplicitFn("int", "pthread_t thread, int sig", "thread, sig", "/usr/include/signal.h"),
+    "uname": ExplicitFn("int", "struct utsname *__name", "__name", "/usr/include/x86_64-linux-gnu/sys/utsname.h"),
+    }
 
 
 
@@ -96,20 +110,19 @@ class Generator:
   # extern __typeof (name) aliasname __attribute__ ((weak, alias (# name)));
         return ""
 
-    def generate_wrappers(self, input_filename, out_filename):
+    def generate_wrappers(self, input_filename, libc_filename, write_headers : bool):
         """
         Generate wrappers + headers
         """
 
         # input_filename = "natives.h.txt"
-        # out_filename = 
         global_namespace = declarations.get_global_namespace(self.decls)
 
         locations = {}
         with open(input_filename, "r") as src:
             # aliasnames = last columns ?
             reader = csv.DictReader(src, fieldnames=["type","name"], restkey="extra")
-            with open(out_filename, "w+") as dst:
+            with open(libc_filename, "w+") as libc_fd:
                 # for line in src:
                 for row in reader:
                     # function_name = line.rstrip()
@@ -122,6 +135,9 @@ class Generator:
                     print('row["name"]=', row["name"])    
                     # decl = global_namespace.free_function(name=row["name"])  
                    # Search for the function by name
+
+                   # if row["name"] in ["sigaction", "sysinfo"]
+
                     criteria = declarations.calldef_matcher(name=row["name"])
                     results = declarations.matcher.find(criteria, global_namespace) 
 
@@ -174,23 +190,40 @@ class Generator:
 
                     for arg in temp:
                         print("arg=%s"% arg)
-
                     # temp = ["va_list" else str(a.decl_type) for a in decl.arguments]
-                    fullargs = ",".join(temp)
-                    res = """
-                     {extern} {ret} {name} ({fullargs}){{
+                    fullargs = ",".join(temp) # only types
+                    location = decl.location.file_name
+                    arg_names = ",".join([arg.name for arg in decl.arguments])
+
+
+
+                # + " " + arg.name)
+                    template = """
+                    {extern} {ret} {name} ({fullargs}){{
                         {retstmt} g_libc.{name}_fn ({arg_names});
                     }}
-                    """.format(
-                            extern=extern,
+                    """
+                    res = ""
+                    # hack around https://github.com/gccxml/pygccxml/issues/62
+                    if row["name"] in exceptions.keys():
+                        name = row["name"]
+                        log.debug("Exception [%s] found " % name)
+                        extern=""
+                        rtype, fullargs , arg_names, location = exceptions[name]
+                        # **exceptions[name]
+                        print("Values:", rtype, fullargs, arg_names, location)
+
+                    res = template.format(
+                            extern="",
                             ret=rtype,
                             fullargs=fullargs,
                             name=name,
                             retstmt="return" if rtype is not "void" else "",
-                            arg_names=",".join([arg.name for arg in decl.arguments]),
-                    )
+                            arg_names=arg_names,
+                        )
 
-                    dst.write(res)
+
+                    libc_fd.write(res)
 
                     # now we generate dce-<FILE>.h content
                     #  
@@ -200,7 +233,7 @@ class Generator:
 
                         # declaration of dce_{libcfunc}
                         content = "{extern} {ret} dce_{name} ({fullargs});\n".format(
-                                extern=extern,
+                                extern="",
                                 ret=rtype,
                                 fullargs=fullargs,
                                 name=name,
@@ -219,7 +252,7 @@ class Generator:
                             #         )
     # # extern __typeof (name) aliasname __attribute__ ((weak, alias (# name)));
 
-                    items = locations.setdefault(decl.location.file_name, [])
+                    items = locations.setdefault(location, [])
                     items.append(content)
 
             # Now we generate the header files
@@ -240,43 +273,46 @@ class Generator:
 # + ".generated.h"
                 # header = "model/dce-" + filename
                 print("Header name=", filename)
-                with open(filename, "w+") as dst:
-                    content = """
-                    /* DO NOT MODIFY - GENERATED BY script */
-                    #ifndef DCE_HEADER_{guard}
-                    #define DCE_HEADER_{guard}
-                    // TODO add extern "C" ?
-                    #include <{header}>
+                content = """
+/* DO NOT MODIFY - GENERATED BY script */
+#ifndef DCE_HEADER_{guard}
+#define DCE_HEADER_{guard}
+// TODO add extern "C" ?
+#include <{header}>
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {{
 #endif
+                """.format(guard=header.upper().replace(".","_").replace("/","_"), header=header) #os.path.basename(tail))
 
-                    """.format(guard=header.upper().replace(".","_").replace("/","_"), header=header) #os.path.basename(tail))
+                for proto in functions:
+                    print(proto)
+                    content += proto + "\n"
 
-                    for proto in functions:
-                        print(proto)
-                        content += proto + "\n"
-
-                    content += """
-                    #ifdef __cplusplus
+                content += """
+#ifdef __cplusplus
 }
 #endif
-                    #endif
-                    """
+#endif
+"""
+                if write_headers:
+                    with open(filename, "w+") as dst:
 
-                    # print("content=", content)
-                    dst.write(content)
+                        # print("content=", content)
+                        dst.write(content)
 
 
 def main():
     parser  = argparse.ArgumentParser()
+    parser.add_argument('-w','--write', action="store_true", default=False, help="write output to files")
+    args = parser.parse_args ()
+    
     g = Generator()
     g.parse("test.h")
 # TODO call that with subprocess.
-    os.system("./gen_natives.sh")
+    # os.system("./gen_natives.sh")
   # redirect output
     output ="model/libc-ns3.h.tmp" 
     with open(output, "w") as tmp:
@@ -284,8 +320,9 @@ def main():
             "gcc", "model/libc-ns3.h", "-E", "-P",  "-DNATIVE(name,...)=native,name,__VA_ARGS__",
             "-DDCE(name,...)=dce,name,__VA_ARGS__",
             ], stdout=tmp, stderr=sys.stdout)
+
     # libc-ns3.generated.tmp
-    g.generate_wrappers(output, "model/libc.generated.cc")
+    g.generate_wrappers(output, "model/libc.generated.cc", args.write)
 
 if __name__ == "__main__":
     main()

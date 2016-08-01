@@ -32,9 +32,8 @@
 #include "dce-string.h"
 #include "dce-global-variables.h"
 #include "dce-random.h"
-#include "dce-umask.h"
 #include "dce-misc.h"
-#include "dce-wait.h"
+#include "sys/dce-wait.h"
 #include "dce-locale.h"
 #include "net/dce-if.h"
 #include "dce-syslog.h"
@@ -44,11 +43,13 @@
 #include "dce-termio.h"
 #include "dce-dl.h"
 #include "dce-utime.h"
-#include "dce-sysinfo.h"
-#include "dce-sigaction.h"
+#include "sys/dce-sysinfo.h"
+#include "sys/dce-wait.h"
+#include "sys/dce-uio.h"
 #include "dce-ifaddrs.h"
 #include "dce-utsname.h"
-
+#include "dce-grp.h"
+#include "dce-libio.h"
 
 
 
