@@ -14,31 +14,29 @@ extern "C" {
 
  long int dce_random ();
 
- void dce_srandom (unsigned int);
+ void dce_srandom (unsigned int __seed);
 
  int dce_rand ();
 
- void dce_srand (unsigned int);
+ void dce_srand (unsigned int __seed);
 
  double dce_drand48 ();
 
- double dce_erand48 (short unsigned int *);
+ double dce_erand48 (short unsigned int * __xsubi);
 
  long int dce_lrand48 ();
 
- long int dce_nrand48 (short unsigned int *);
+ long int dce_nrand48 (short unsigned int * __xsubi);
 
  long int dce_mrand48 ();
 
- long int dce_jrand48 (short unsigned int *);
+ long int dce_jrand48 (short unsigned int * __xsubi);
 
- void dce_srand48 (long int);
+ void dce_srand48 (long int __seedval);
 
- short unsigned int * dce_seed48 (short unsigned int *);
+ short unsigned int * dce_seed48 (short unsigned int * __seed16v);
 
- void dce_lcong48 (short unsigned int *);
-
-
+ void dce_lcong48 (short unsigned int * __param);
 
 
 
@@ -47,44 +45,46 @@ extern "C" {
 
 
 
- void * dce_calloc (size_t,size_t);
-
- void * dce_malloc (size_t);
-
- void dce_free (void *);
-
- void * dce_realloc (void *,size_t);
 
 
+ void * dce_calloc (size_t __nmemb,size_t __size);
+
+ void * dce_malloc (size_t __size);
+
+ void dce_free (void * __ptr);
+
+ void * dce_realloc (void * __ptr,size_t __size);
 
 
 
- long int dce_strtol (__restrict__ char const *,__restrict__ char * *,int);
 
- long long int dce_strtoll (__restrict__ char const *,__restrict__ char * *,int);
 
- long unsigned int dce_strtoul (__restrict__ char const *,__restrict__ char * *,int);
+ long int dce_strtol (__restrict__ char const * __nptr,__restrict__ char * * __endptr,int __base);
 
- long long unsigned int dce_strtoull (__restrict__ char const *,__restrict__ char * *,int);
+ long long int dce_strtoll (__restrict__ char const * __nptr,__restrict__ char * * __endptr,int __base);
 
- double dce_strtod (__restrict__ char const *,__restrict__ char * *);
+ long unsigned int dce_strtoul (__restrict__ char const * __nptr,__restrict__ char * * __endptr,int __base);
 
- char * dce_getenv (char const *);
+ long long unsigned int dce_strtoull (__restrict__ char const * __nptr,__restrict__ char * * __endptr,int __base);
 
- int dce_putenv (char *);
+ double dce_strtod (__restrict__ char const * __nptr,__restrict__ char * * __endptr);
 
- int dce_setenv (char const *,char const *,int);
+ char * dce_getenv (char const * __name);
 
- int dce_unsetenv (char const *);
+ int dce_putenv (char * __string);
+
+ int dce_setenv (char const * __name,char const * __value,int __replace);
+
+ int dce_unsetenv (char const * __name);
 
  int dce_clearenv ();
 
 
  void dce_abort ();
 
- int dce_mkstemp (char *);
+ int dce_mkstemp (char * __template);
 
- void dce_exit (int);
+ void dce_exit (int __status);
 
 
 

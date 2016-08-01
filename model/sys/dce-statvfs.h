@@ -10,7 +10,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_fstatvfs (int,statvfs *);
+                 int dce_fstatvfs (int __fildes,statvfs * __buf);
 
 
 #ifdef __cplusplus

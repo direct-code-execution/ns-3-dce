@@ -61,6 +61,8 @@ exceptions = {
     "fstat64": ExplicitFn("int", "int __fd, struct stat64 *__buf", "__fd, __buf", "/usr/include/x86_64-linux-gnu/sys/stat.h"),
     "pthread_kill": ExplicitFn("int", "pthread_t thread, int sig", "thread, sig", "/usr/include/signal.h"),
     "uname": ExplicitFn("int", "struct utsname *__name", "__name", "/usr/include/x86_64-linux-gnu/sys/utsname.h"),
+    "statvfs": ExplicitFn("int", "const char *path, struct statvfs *buf", "path, buf", "/usr/include/x86_64-linux-gnu/sys/statvfs.h"),
+    "statfs": ExplicitFn("int", "const char *path, struct statfs *buf", "path, buf", "/usr/include/x86_64-linux-gnu/sys/vfs.h"),
     }
 
 
@@ -186,6 +188,8 @@ class Generator:
                         elif "(" in s:
                             print ("TOTO")
                             s= s.rstrip("*")
+                        else:
+                            s += " " + arg.name
                         temp.append(s)
 
                     for arg in temp:
@@ -210,6 +214,7 @@ class Generator:
                         log.debug("Exception [%s] found " % name)
                         extern=""
                         rtype, fullargs , arg_names, location = exceptions[name]
+                        partialargs = fullargs
                         # **exceptions[name]
                         print("Values:", rtype, fullargs, arg_names, location)
 
@@ -235,7 +240,7 @@ class Generator:
                         content = "{extern} {ret} dce_{name} ({fullargs});\n".format(
                                 extern="",
                                 ret=rtype,
-                                fullargs=fullargs,
+                                fullargs=partialargs,
                                 name=name,
                                 )
 

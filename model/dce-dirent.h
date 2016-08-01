@@ -10,21 +10,21 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 DIR * dce_opendir (char const *);
+                 DIR * dce_opendir (char const * __name);
 
- DIR * dce_fdopendir (int);
+ DIR * dce_fdopendir (int __fd);
 
- dirent * dce_readdir (DIR *);
+ dirent * dce_readdir (DIR * __dirp);
 
- int dce_readdir_r (__restrict__ ::DIR *,__restrict__ ::dirent *,__restrict__ ::dirent * *);
+ int dce_readdir_r (__restrict__ ::DIR * __dirp,__restrict__ ::dirent * __entry,__restrict__ ::dirent * * __result);
 
- int dce_closedir (DIR *);
+ int dce_closedir (DIR * __dirp);
 
- int dce_dirfd (DIR *);
+ int dce_dirfd (DIR * __dirp);
 
- void dce_rewinddir (DIR *);
+ void dce_rewinddir (DIR * __dirp);
 
- int dce_scandir (__restrict__ char const *,__restrict__ ::dirent * * *,int (*)( ::dirent const * ) ,int (*)( ::dirent const * *,::dirent const * * ) );
+ int dce_scandir (__restrict__ char const * __dir,__restrict__ ::dirent * * * __namelist,int (*)( ::dirent const * ) ,int (*)( ::dirent const * *,::dirent const * * ) );
 
 
 

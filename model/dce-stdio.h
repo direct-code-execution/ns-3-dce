@@ -12,94 +12,94 @@ extern "C" {
 #endif
                  FILE * dce_tmpfile ();
 
- int dce_rename (char const *,char const *);
+ int dce_rename (char const * __old,char const * __new);
 
- void dce_clearerr (FILE *);
+ void dce_clearerr (FILE * __stream);
 
- int dce_setvbuf (__restrict__ ::FILE *,__restrict__ char *,int,size_t);
+ int dce_setvbuf (__restrict__ ::FILE * __stream,__restrict__ char * __buf,int __modes,size_t __n);
 
- void dce_setbuf (__restrict__ ::FILE *,__restrict__ char *);
+ void dce_setbuf (__restrict__ ::FILE * __stream,__restrict__ char * __buf);
 
- void dce_setbuffer (__restrict__ ::FILE *,__restrict__ char *,size_t);
+ void dce_setbuffer (__restrict__ ::FILE * __stream,__restrict__ char * __buf,size_t __size);
 
- void dce_setlinebuf (FILE *);
+ void dce_setlinebuf (FILE * __stream);
 
- int dce_fseek (FILE *,long int,int);
+ int dce_fseek (FILE * __stream,long int __off,int __whence);
 
- long int dce_ftell (FILE *);
+ long int dce_ftell (FILE * __stream);
 
- int dce_fseeko (FILE *,__off_t,int);
+ int dce_fseeko (FILE * __stream,__off_t __off,int __whence);
 
- __off_t dce_ftello (FILE *);
+ __off_t dce_ftello (FILE * __stream);
 
- void dce_rewind (FILE *);
+ void dce_rewind (FILE * __stream);
 
- int dce_fgetpos (__restrict__ ::FILE *,__restrict__ ::fpos_t *);
+ int dce_fgetpos (__restrict__ ::FILE * __stream,__restrict__ ::fpos_t * __pos);
 
- int dce_fsetpos (FILE *,fpos_t const *);
+ int dce_fsetpos (FILE * __stream,fpos_t const * __pos);
 
- int dce_printf (__restrict__ char const *,...);
-
-
-
- int dce_asprintf (__restrict__ char * *,__restrict__ char const *,...);
-
- int dce_vasprintf (__restrict__ char * *,__restrict__ char const *,va_list);
+ int dce_printf (__restrict__ char const * __format,... );
 
 
 
- int dce_fgetc (FILE *);
+ int dce_asprintf (__restrict__ char * * __ptr,__restrict__ char const * __fmt,... );
+
+ int dce_vasprintf (__restrict__ char * * __ptr,__restrict__ char const * __f,va_list);
+
+
+
+ int dce_fgetc (FILE * __stream);
 
 
 
  int dce_getchar ();
 
- int dce_fputc (int,FILE *);
+ int dce_fputc (int __c,FILE * __stream);
 
 
 
- int dce_putchar (int);
+ int dce_putchar (int __c);
 
- char * dce_fgets (__restrict__ char *,int,__restrict__ ::FILE *);
+ char * dce_fgets (__restrict__ char * __s,int __n,__restrict__ ::FILE * __stream);
 
- int dce_fputs (__restrict__ char const *,__restrict__ ::FILE *);
+ int dce_fputs (__restrict__ char const * __s,__restrict__ ::FILE * __stream);
 
- int dce_puts (char const *);
+ int dce_puts (char const * __s);
 
- int dce_ungetc (int,FILE *);
+ int dce_ungetc (int __c,FILE * __stream);
 
- int dce_fclose (FILE *);
+ int dce_fclose (FILE * __stream);
 
  int dce_fcloseall ();
 
- FILE * dce_fopen (__restrict__ char const *,__restrict__ char const *);
+ FILE * dce_fopen (__restrict__ char const * __filename,__restrict__ char const * __modes);
 
- FILE * dce_fopen64 (__restrict__ char const *,__restrict__ char const *);
+ FILE * dce_fopen64 (__restrict__ char const * __filename,__restrict__ char const * __modes);
 
- FILE * dce_freopen (__restrict__ char const *,__restrict__ char const *,__restrict__ ::FILE *);
+ FILE * dce_freopen (__restrict__ char const * __filename,__restrict__ char const * __modes,__restrict__ ::FILE * __stream);
 
- FILE * dce_fdopen (int,char const *);
+ FILE * dce_fdopen (int __fd,char const * __modes);
 
- size_t dce_fread (__restrict__ void *,size_t,size_t,__restrict__ ::FILE *);
+ size_t dce_fread (__restrict__ void * __ptr,size_t __size,size_t __n,__restrict__ ::FILE * __stream);
 
- size_t dce_fwrite (__restrict__ void const *,size_t,size_t,__restrict__ ::FILE *);
+ size_t dce_fwrite (__restrict__ void const * __ptr,size_t __size,size_t __n,__restrict__ ::FILE * __s);
 
- int dce_fflush (FILE *);
+ int dce_fflush (FILE * __stream);
 
- int dce_ferror (FILE *);
+ int dce_ferror (FILE * __stream);
 
- int dce_feof (FILE *);
+ int dce_feof (FILE * __stream);
 
- int dce_fileno (FILE *);
+ int dce_fileno (FILE * __stream);
 
- void dce_perror (char const *);
+ void dce_perror (char const * __s);
 
- int dce_remove (char const *);
-
-
+ int dce_remove (char const * __filename);
 
 
- int dce_vprintf (__restrict__ char const *,va_list);
+
+
+ int dce_vprintf (__restrict__ char const * __format,va_list);
 
 
 

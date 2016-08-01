@@ -12,7 +12,7 @@ extern "C" {
 #endif
                  pid_t dce_wait (void *stat_loc);
 
- __pid_t dce_waitpid (__pid_t,int *,int);
+ __pid_t dce_waitpid (__pid_t __pid,int * __stat_loc,int __options);
 
 
 #ifdef __cplusplus

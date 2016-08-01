@@ -201,7 +201,15 @@ extern void __cxa_finalize (void *d);
 extern int __cxa_atexit (void (*func)(void *), void *arg, void *d);
 
 // include wrappers functions
-#include "libc.generated.cc"
+// TODO to reestablish when pygcxxml pbs fixed
+//#include "libc.generated.cc"
+
+#include "libc.generated.tmp.cc"
+
+
+
+
+
 // weak_alias (strtol, __strtol_internal);
 // weak_alias (wctype_l, __wctype_l);
 // weak_alias (strdup, __strdup);

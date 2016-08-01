@@ -10,9 +10,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 unsigned int dce_if_nametoindex (char const *);
+                 unsigned int dce_if_nametoindex (char const * __ifname);
 
- char * dce_if_indextoname (unsigned int,char *);
+ char * dce_if_indextoname (unsigned int __ifindex,char * __ifname);
 
 
 #ifdef __cplusplus

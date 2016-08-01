@@ -10,31 +10,31 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_nanosleep (timespec const *,timespec *);
+                 int dce_nanosleep (timespec const * __requested_time,timespec * __remaining);
 
- char * dce_asctime (tm const *);
-
-
- char * dce_ctime (time_t const *);
+ char * dce_asctime (tm const * __tp);
 
 
- tm * dce_gmtime (time_t const *);
+ char * dce_ctime (time_t const * __timer);
 
 
+ tm * dce_gmtime (time_t const * __timer);
 
 
 
 
 
- int dce_timer_create (clockid_t,__restrict__ ::sigevent *,__restrict__ ::timer_t *);
 
- int dce_timer_settime (timer_t,int,__restrict__ ::itimerspec const *,__restrict__ ::itimerspec *);
 
- int dce_timer_gettime (timer_t,itimerspec *);
+ int dce_timer_create (clockid_t __clock_id,__restrict__ ::sigevent * __evp,__restrict__ ::timer_t * __timerid);
+
+ int dce_timer_settime (timer_t __timerid,int __flags,__restrict__ ::itimerspec const * __value,__restrict__ ::itimerspec * __ovalue);
+
+ int dce_timer_gettime (timer_t __timerid,itimerspec * __value);
 
  void dce_tzset ();
 
- time_t dce_time (time_t *);
+ time_t dce_time (time_t * __timer);
 
 
 #ifdef __cplusplus

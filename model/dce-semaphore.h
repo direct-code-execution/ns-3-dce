@@ -10,19 +10,19 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_sem_init (sem_t *,int,unsigned int);
+                 int dce_sem_init (sem_t * __sem,int __pshared,unsigned int __value);
 
- int dce_sem_destroy (sem_t *);
+ int dce_sem_destroy (sem_t * __sem);
 
- int dce_sem_post (sem_t *);
+ int dce_sem_post (sem_t * __sem);
 
- int dce_sem_wait (sem_t *);
+ int dce_sem_wait (sem_t * __sem);
 
- int dce_sem_timedwait (__restrict__ ::sem_t *,__restrict__ ::timespec const *);
+ int dce_sem_timedwait (__restrict__ ::sem_t * __sem,__restrict__ ::timespec const * __abstime);
 
- int dce_sem_trywait (sem_t *);
+ int dce_sem_trywait (sem_t * __sem);
 
- int dce_sem_getvalue (__restrict__ ::sem_t *,__restrict__ int *);
+ int dce_sem_getvalue (__restrict__ ::sem_t * __sem,__restrict__ int * __sval);
 
 
 #ifdef __cplusplus

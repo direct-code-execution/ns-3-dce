@@ -11,7 +11,7 @@
 extern "C" {
 #endif
                 
- passwd * dce_getpwuid (__uid_t);
+ passwd * dce_getpwuid (__uid_t __uid);
 
  void dce_endpwent ();
 

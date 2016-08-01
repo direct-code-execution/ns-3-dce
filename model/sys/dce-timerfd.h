@@ -10,11 +10,11 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_timerfd_create (clockid_t,int);
+                 int dce_timerfd_create (clockid_t __clock_id,int __flags);
 
- int dce_timerfd_settime (int,int,itimerspec const *,itimerspec *);
+ int dce_timerfd_settime (int __ufd,int __flags,itimerspec const * __utmr,itimerspec * __otmr);
 
- int dce_timerfd_gettime (int,itimerspec *);
+ int dce_timerfd_gettime (int __ufd,itimerspec * __otmr);
 
 
 #ifdef __cplusplus

@@ -31,9 +31,9 @@ extern "C" {
 
 
 
- char * dce_strdup (char const *);
+ char * dce_strdup (char const * __s);
 
- char * dce_strndup (char const *,size_t);
+ char * dce_strndup (char const * __string,size_t __n);
 
 
 

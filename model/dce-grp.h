@@ -10,7 +10,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_initgroups (char const *,__gid_t);
+                 int dce_initgroups (char const * __user,__gid_t __group);
 
 
 

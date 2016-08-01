@@ -11,13 +11,13 @@
 extern "C" {
 #endif
                 
- int dce_fcntl (int,int,...);
+ int dce_fcntl (int __fd,int __cmd,... );
 
- int dce_open (char const *,int,...);
+ int dce_open (char const * __file,int __oflag,... );
 
- int dce_open64 (char const *,int,...);
+ int dce_open64 (char const * __file,int __oflag,... );
 
- int dce_creat (char const *,mode_t);
+ int dce_creat (char const * __file,mode_t __mode);
 
 
 #ifdef __cplusplus

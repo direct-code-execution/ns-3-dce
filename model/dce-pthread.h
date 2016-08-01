@@ -10,59 +10,59 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_pthread_create (__restrict__ ::pthread_t *,__restrict__ ::pthread_attr_t const *,void * (*)( void * ) ,__restrict__ void *);
+                 int dce_pthread_create (__restrict__ ::pthread_t * __newthread,__restrict__ ::pthread_attr_t const * __attr,void * (*)( void * ) ,__restrict__ void * __arg);
 
- void dce_pthread_exit (void *);
+ void dce_pthread_exit (void * __retval);
 
  pthread_t dce_pthread_self ();
 
- int dce_pthread_once (pthread_once_t *,void (*)(  ) );
+ int dce_pthread_once (pthread_once_t * __once_control,void (*)(  ) );
 
- void * dce_pthread_getspecific (pthread_key_t);
+ void * dce_pthread_getspecific (pthread_key_t __key);
 
- int dce_pthread_setspecific (pthread_key_t,void const *);
+ int dce_pthread_setspecific (pthread_key_t __key,void const * __pointer);
 
- int dce_pthread_key_create (pthread_key_t *,void (*)( void * ) );
+ int dce_pthread_key_create (pthread_key_t * __key,void (*)( void * ) );
 
- int dce_pthread_key_delete (pthread_key_t);
+ int dce_pthread_key_delete (pthread_key_t __key);
 
- int dce_pthread_mutex_destroy (pthread_mutex_t *);
+ int dce_pthread_mutex_destroy (pthread_mutex_t * __mutex);
 
- int dce_pthread_mutex_init (pthread_mutex_t *,pthread_mutexattr_t const *);
+ int dce_pthread_mutex_init (pthread_mutex_t * __mutex,pthread_mutexattr_t const * __mutexattr);
 
- int dce_pthread_mutex_lock (pthread_mutex_t *);
+ int dce_pthread_mutex_lock (pthread_mutex_t * __mutex);
 
- int dce_pthread_mutex_unlock (pthread_mutex_t *);
+ int dce_pthread_mutex_unlock (pthread_mutex_t * __mutex);
 
- int dce_pthread_mutex_trylock (pthread_mutex_t *);
+ int dce_pthread_mutex_trylock (pthread_mutex_t * __mutex);
 
- int dce_pthread_mutexattr_init (pthread_mutexattr_t *);
+ int dce_pthread_mutexattr_init (pthread_mutexattr_t * __attr);
 
- int dce_pthread_mutexattr_destroy (pthread_mutexattr_t *);
+ int dce_pthread_mutexattr_destroy (pthread_mutexattr_t * __attr);
 
- int dce_pthread_mutexattr_settype (pthread_mutexattr_t *,int);
+ int dce_pthread_mutexattr_settype (pthread_mutexattr_t * __attr,int __kind);
 
- int dce_pthread_cancel (pthread_t);
+ int dce_pthread_cancel (pthread_t __th);
 
- int dce_pthread_join (pthread_t,void * *);
+ int dce_pthread_join (pthread_t __th,void * * __thread_return);
 
- int dce_pthread_detach (pthread_t);
+ int dce_pthread_detach (pthread_t __th);
 
- int dce_pthread_cond_destroy (pthread_cond_t *);
+ int dce_pthread_cond_destroy (pthread_cond_t * __cond);
 
- int dce_pthread_cond_init (__restrict__ ::pthread_cond_t *,__restrict__ ::pthread_condattr_t const *);
+ int dce_pthread_cond_init (__restrict__ ::pthread_cond_t * __cond,__restrict__ ::pthread_condattr_t const * __cond_attr);
 
- int dce_pthread_cond_broadcast (pthread_cond_t *);
+ int dce_pthread_cond_broadcast (pthread_cond_t * __cond);
 
- int dce_pthread_cond_signal (pthread_cond_t *);
+ int dce_pthread_cond_signal (pthread_cond_t * __cond);
 
- int dce_pthread_cond_timedwait (__restrict__ ::pthread_cond_t *,__restrict__ ::pthread_mutex_t *,__restrict__ ::timespec const *);
+ int dce_pthread_cond_timedwait (__restrict__ ::pthread_cond_t * __cond,__restrict__ ::pthread_mutex_t * __mutex,__restrict__ ::timespec const * __abstime);
 
- int dce_pthread_cond_wait (__restrict__ ::pthread_cond_t *,__restrict__ ::pthread_mutex_t *);
+ int dce_pthread_cond_wait (__restrict__ ::pthread_cond_t * __cond,__restrict__ ::pthread_mutex_t * __mutex);
 
- int dce_pthread_condattr_destroy (pthread_condattr_t *);
+ int dce_pthread_condattr_destroy (pthread_condattr_t * __attr);
 
- int dce_pthread_condattr_init (pthread_condattr_t *);
+ int dce_pthread_condattr_init (pthread_condattr_t * __attr);
 
 
 

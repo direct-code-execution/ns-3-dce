@@ -10,9 +10,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_getopt (int,char * const *,char const *);
+                 int dce_getopt (int ___argc,char * const * ___argv,char const * __shortopts);
 
- int dce_getopt_long (int,char * const *,char const *,option const *,int *);
+ int dce_getopt_long (int ___argc,char * const * ___argv,char const * __shortopts,option const * __longopts,int * __longind);
 
 
 #ifdef __cplusplus

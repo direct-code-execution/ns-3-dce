@@ -10,39 +10,39 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_socket (int,int,int);
+                 int dce_socket (int __domain,int __type,int __protocol);
 
- int dce_socketpair (int,int,int,int *);
+ int dce_socketpair (int __domain,int __type,int __protocol,int * __fds);
 
- int dce_getsockname (int,__restrict__ ::sockaddr *,__restrict__ ::socklen_t *);
+ int dce_getsockname (int __fd,__restrict__ ::sockaddr * __addr,__restrict__ ::socklen_t * __len);
 
- int dce_getpeername (int,__restrict__ ::sockaddr *,__restrict__ ::socklen_t *);
+ int dce_getpeername (int __fd,__restrict__ ::sockaddr * __addr,__restrict__ ::socklen_t * __len);
 
- int dce_bind (int,sockaddr const *,socklen_t);
+ int dce_bind (int __fd,sockaddr const * __addr,socklen_t __len);
 
- int dce_connect (int,sockaddr const *,socklen_t);
+ int dce_connect (int __fd,sockaddr const * __addr,socklen_t __len);
 
- int dce_setsockopt (int,int,int,void const *,socklen_t);
+ int dce_setsockopt (int __fd,int __level,int __optname,void const * __optval,socklen_t __optlen);
 
- int dce_getsockopt (int,int,int,__restrict__ void *,__restrict__ ::socklen_t *);
+ int dce_getsockopt (int __fd,int __level,int __optname,__restrict__ void * __optval,__restrict__ ::socklen_t * __optlen);
 
- int dce_listen (int,int);
+ int dce_listen (int __fd,int __n);
 
- int dce_accept (int,__restrict__ ::sockaddr *,__restrict__ ::socklen_t *);
+ int dce_accept (int __fd,__restrict__ ::sockaddr * __addr,__restrict__ ::socklen_t * __addr_len);
 
- int dce_shutdown (int,int);
+ int dce_shutdown (int __fd,int __how);
 
- ssize_t dce_send (int,void const *,size_t,int);
+ ssize_t dce_send (int __fd,void const * __buf,size_t __n,int __flags);
 
- ssize_t dce_sendto (int,void const *,size_t,int,sockaddr const *,socklen_t);
+ ssize_t dce_sendto (int __fd,void const * __buf,size_t __n,int __flags,sockaddr const * __addr,socklen_t __addr_len);
 
- ssize_t dce_sendmsg (int,msghdr const *,int);
+ ssize_t dce_sendmsg (int __fd,msghdr const * __message,int __flags);
 
- ssize_t dce_recv (int,void *,size_t,int);
+ ssize_t dce_recv (int __fd,void * __buf,size_t __n,int __flags);
 
- ssize_t dce_recvfrom (int,__restrict__ void *,size_t,int,__restrict__ ::sockaddr *,__restrict__ ::socklen_t *);
+ ssize_t dce_recvfrom (int __fd,__restrict__ void * __buf,size_t __n,int __flags,__restrict__ ::sockaddr * __addr,__restrict__ ::socklen_t * __addr_len);
 
- ssize_t dce_recvmsg (int,msghdr *,int);
+ ssize_t dce_recvmsg (int __fd,msghdr * __message,int __flags);
 
 
 #ifdef __cplusplus

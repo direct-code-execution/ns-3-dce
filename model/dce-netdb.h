@@ -10,22 +10,22 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_getnameinfo (__restrict__ ::sockaddr const *,socklen_t,__restrict__ char *,socklen_t,__restrict__ char *,socklen_t,int);
+                 int dce_getnameinfo (__restrict__ ::sockaddr const * __sa,socklen_t __salen,__restrict__ char * __host,socklen_t __hostlen,__restrict__ char * __serv,socklen_t __servlen,int __flags);
 
- hostent * dce_gethostbyname (char const *);
+ hostent * dce_gethostbyname (char const * __name);
 
- hostent * dce_gethostbyname2 (char const *,int);
+ hostent * dce_gethostbyname2 (char const * __name,int __af);
 
- int dce_getaddrinfo (__restrict__ char const *,__restrict__ char const *,__restrict__ ::addrinfo const *,__restrict__ ::addrinfo * *);
+ int dce_getaddrinfo (__restrict__ char const * __name,__restrict__ char const * __service,__restrict__ ::addrinfo const * __req,__restrict__ ::addrinfo * * __pai);
 
- void dce_freeaddrinfo (addrinfo *);
+ void dce_freeaddrinfo (addrinfo * __ai);
 
- char const * dce_gai_strerror (int);
-
-
+ char const * dce_gai_strerror (int __ecode);
 
 
- void dce_herror (char const *);
+
+
+ void dce_herror (char const * __str);
 
 
 

@@ -1,4 +1,4 @@
-#define __restrict__
+#define __restrict__ 
                      int atexit (void (*__func)(  ) ){
                         return g_libc.atexit_fn (__func);
                     }
@@ -567,8 +567,10 @@
                         return g_libc.execv_fn (__path,__argv);
                     }
                     
-                     int execl (char const * __path,char const * __arg,... ){
-                        return g_libc.execl_fn (__path,__arg,);
+                     int execl (char const * __path,char const * __arg, ... ){
+                        va_list vl;
+                        va_start (vl, __arg);
+                        return g_libc.execl_fn (__path,__arg, vl );
                     }
                     
                      int execve (char const * __path,char * const * __argv,char * const * __envp){
@@ -580,11 +582,15 @@
                     }
                     
                      int execlp (char const * __file,char const * __arg,... ){
-                        return g_libc.execlp_fn (__file,__arg,);
+                       va_list vl;
+  va_start (vl, __arg);
+                        return g_libc.execlp_fn (__file,__arg, vl);
                     }
                     
                      int execle (char const * __path,char const * __arg,... ){
-                        return g_libc.execle_fn (__path,__arg,);
+                       va_list vl;
+  va_start (vl, __arg);
+                        return g_libc.execle_fn (__path,__arg, vl);
                     }
                     
                      int truncate (char const * __file,__off_t __length){
@@ -752,30 +758,45 @@
                     }
                     
                      int printf (__restrict__ char const * __format,... ){
-                        return g_libc.printf_fn (__format,);
+                       va_list vl;
+                        va_start (vl, __format);                     
+
+                        return g_libc.printf_fn (__format, vl);
                     }
                     
                      int fprintf (__restrict__ ::FILE * __stream,__restrict__ char const * __format,... ){
-                        return g_libc.fprintf_fn (__stream,__format,);
+                                       va_list vl;
+                        va_start (vl, __format);                     
+
+                        return g_libc.fprintf_fn (__stream,__format, vl);
                     }
                     
                      int sprintf (__restrict__ char * __s,__restrict__ char const * __format,... ){
-                        return g_libc.sprintf_fn (__s,__format,);
+                                            va_list vl;
+                        va_start (vl, __format);                     
+
+                        return g_libc.sprintf_fn (__s,__format, vl);
                     }
                     
                      int asprintf (__restrict__ char * * __ptr,__restrict__ char const * __fmt,... ){
-                        return g_libc.asprintf_fn (__ptr,__fmt,);
+                        va_list vl;
+                        va_start (vl, __fmt);
+
+                        return g_libc.asprintf_fn (__ptr,__fmt, vl);
                     }
                     
-                     int vasprintf (__restrict__ char * * __ptr,__restrict__ char const * __f,va_list){
+                     int vasprintf (__restrict__ char * * __ptr,__restrict__ char const * __f,va_list __arg){
                         return g_libc.vasprintf_fn (__ptr,__f,__arg);
                     }
                     
                      int dprintf (int __fd,__restrict__ char const * __fmt,... ){
-                        return g_libc.dprintf_fn (__fd,__fmt,);
+                                            va_list vl;
+                        va_start (vl, __fmt);                     
+
+                        return g_libc.dprintf_fn (__fd,__fmt, vl);
                     }
                     
-                     int vdprintf (int __fd,__restrict__ char const * __fmt,va_list){
+                     int vdprintf (int __fd,__restrict__ char const * __fmt,va_list __arg){
                         return g_libc.vdprintf_fn (__fd,__fmt,__arg);
                     }
                     
@@ -892,7 +913,9 @@
                     }
                     
                      int sscanf (__restrict__ char const * __s,__restrict__ char const * __format,... ){
-                        return g_libc.sscanf_fn (__s,__format,);
+                        va_list vl;
+                        va_start (vl, __format);
+                        return g_libc.sscanf_fn (__s,__format,vl);
                     }
                     
                      void flockfile (FILE * __stream){
@@ -903,28 +926,34 @@
                          g_libc.funlockfile_fn (__stream);
                     }
                     
-                     int vprintf (__restrict__ char const * __format,va_list){
+                     int vprintf (__restrict__ char const * __format,va_list __arg){
                         return g_libc.vprintf_fn (__format,__arg);
                     }
                     
-                     int vfprintf (__restrict__ ::FILE * __s,__restrict__ char const * __format,va_list){
+                     int vfprintf (__restrict__ ::FILE * __s,__restrict__ char const * __format,va_list __arg){
                         return g_libc.vfprintf_fn (__s,__format,__arg);
                     }
                     
-                     int vsprintf (__restrict__ char * __s,__restrict__ char const * __format,va_list){
+                     int vsprintf (__restrict__ char * __s,__restrict__ char const * __format,va_list __arg){
                         return g_libc.vsprintf_fn (__s,__format,__arg);
                     }
                     
                      int fcntl (int __fd,int __cmd,... ){
-                        return g_libc.fcntl_fn (__fd,__cmd,);
+                                             va_list vl;
+                        va_start (vl, __cmd);
+                        return g_libc.fcntl_fn (__fd,__cmd, vl);
                     }
                     
                      int open (char const * __file,int __oflag,... ){
-                        return g_libc.open_fn (__file,__oflag,);
+                        va_list vl;
+                        va_start (vl, __oflag);
+                        return g_libc.open_fn (__file,__oflag, vl);
                     }
                     
                      int open64 (char const * __file,int __oflag,... ){
-                        return g_libc.open64_fn (__file,__oflag,);
+                        va_list vl;
+                        va_start (vl, __oflag);
+                        return g_libc.open64_fn (__file,__oflag, vl);
                     }
                     
                      int unlinkat (int __fd,char const * __name,int __flag){
@@ -1040,7 +1069,9 @@
                     }
                     
                      int ioctl (int __fd,long unsigned int __request,... ){
-                        return g_libc.ioctl_fn (__fd,__request,);
+                        va_list vl;
+                        va_start (vl, __request);
+                        return g_libc.ioctl_fn (__fd,__request, vl);
                     }
                     
                      int sched_yield (){
@@ -1091,7 +1122,7 @@
                         return g_libc.kill_fn (__pid,__sig);
                     }
                     
-                     int pthread_create (__restrict__ ::pthread_t * __newthread,__restrict__ ::pthread_attr_t const * __attr,void * (*)( void * ) ,__restrict__ void * __arg){
+                     int pthread_create (__restrict__ ::pthread_t * __newthread,__restrict__ ::pthread_attr_t const * __attr,void * (*__start_routine)( void * ) ,__restrict__ void * __arg){
                         return g_libc.pthread_create_fn (__newthread,__attr,__start_routine,__arg);
                     }
                     
@@ -1103,7 +1134,7 @@
                         return g_libc.pthread_self_fn ();
                     }
                     
-                     int pthread_once (pthread_once_t * __once_control,void (*)(  ) ){
+                     int pthread_once (pthread_once_t * __once_control,void (*__init_routine)(  ) ){
                         return g_libc.pthread_once_fn (__once_control,__init_routine);
                     }
                     
@@ -1115,7 +1146,7 @@
                         return g_libc.pthread_setspecific_fn (__key,__pointer);
                     }
                     
-                     int pthread_key_create (pthread_key_t * __key,void (*)( void * ) ){
+                     int pthread_key_create (pthread_key_t * __key,void (*__destr_function)( void * ) ){
                         return g_libc.pthread_key_create_fn (__key,__destr_function);
                     }
                     
@@ -1435,7 +1466,7 @@
                          g_libc.rewinddir_fn (__dirp);
                     }
                     
-                     int scandir (__restrict__ char const * __dir,__restrict__ ::dirent * * * __namelist,int (*)( ::dirent const * ) ,int (*)( ::dirent const * *,::dirent const * * ) ){
+                     int scandir (__restrict__ char const * __dir,__restrict__ ::dirent * * * __namelist,int (*__selector)( ::dirent const * ) ,int (*__cmp)( ::dirent const * *,::dirent const * * ) ){
                         return g_libc.scandir_fn (__dir,__namelist,__selector,__cmp);
                     }
                     
@@ -1500,10 +1531,12 @@
                     }
                     
                      void syslog (int __pri,char const * __fmt,... ){
-                         g_libc.syslog_fn (__pri,__fmt,);
+                        va_list vl;
+                        va_start (vl, __fmt);
+                         g_libc.syslog_fn (__pri,__fmt,vl);
                     }
                     
-                     void vsyslog (int __pri,char const * __fmt,va_list){
+                     void vsyslog (int __pri,char const * __fmt,va_list __ap){
                          g_libc.vsyslog_fn (__pri,__fmt,__ap);
                     }
                     
@@ -1606,23 +1639,24 @@
                      int statfs (const char *path, struct statfs *buf){
                          return g_libc.statfs_fn (path, buf);
                     }
+                    
                      int statfs64 (const char *path, struct statfs64 *buf){
-                         return g_libc.statfs64_fn (path, buf);
-                    }
-
-                     int statvfs (const char *path, struct statvfs *buf){
-                        return  g_libc.statvfs_fn (path, buf);
+                         g_libc.statfs64_fn (path, buf);
                     }
                     
-                     int fstatvfs (int __fildes,statvfs * __buf){
+                     int statvfs (const char *path, struct statvfs *buf){
+                         return g_libc.statvfs_fn (path, buf);
+                    }
+                    
+                     int fstatvfs (int __fildes, struct statvfs * __buf){
                         return g_libc.fstatvfs_fn (__fildes,__buf);
                     }
                     
-                     int tcgetattr (int __fd,termios * __termios_p){
+                     int tcgetattr (int __fd, struct termios * __termios_p){
                         return g_libc.tcgetattr_fn (__fd,__termios_p);
                     }
                     
-                     int tcsetattr (int __fd,int __optional_actions,termios const * __termios_p){
+                     int tcsetattr (int __fd,int __optional_actions, struct termios const * __termios_p){
                         return g_libc.tcsetattr_fn (__fd,__optional_actions,__termios_p);
                     }
                     
@@ -1682,7 +1716,7 @@
                         return g_libc.dlsym_fn (__handle,__name);
                     }
                     
-                     int dl_iterate_phdr (int (*)( ::dl_phdr_info *,::size_t,void * ) ,void * __data){
+                     int dl_iterate_phdr (int (*__callback)( ::dl_phdr_info *,::size_t,void * ) ,void * __data){
                         return g_libc.dl_iterate_phdr_fn (__callback,__data);
                     }
                     

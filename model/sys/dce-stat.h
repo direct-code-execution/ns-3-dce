@@ -10,9 +10,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_mkdir (char const *,__mode_t);
+                 int dce_mkdir (char const * __path,__mode_t __mode);
 
- __mode_t dce_umask (__mode_t);
+ __mode_t dce_umask (__mode_t __mask);
 
  int dce_fstat64 (int __fd, struct stat64 *__buf);
 
