@@ -207,7 +207,7 @@ int dce_closedir (DIR *dirp)
   Thread *current = Current ();
   return dce_internalClosedir (dirp, current);
 }
-int dce_dirfd (DIR *dirp)
+int dce_dirfd (DIR *dirp) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -215,7 +215,7 @@ int dce_dirfd (DIR *dirp)
   current->err = ENOTSUP;
   return -1;
 }
-void dce_rewinddir (DIR *dirp)
+void dce_rewinddir (DIR *dirp) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);

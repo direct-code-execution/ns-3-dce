@@ -2,14 +2,14 @@
 #include "dce-stdlib.h"
 #include <cstring>
 
-char * dce_strdup (const char *s)
+char * dce_strdup (const char *s) noexcept
 {
   size_t len = strlen (s);
   char *str = (char*)dce_malloc (len + 1);
   memcpy (str, s, len + 1);
   return str;
 }
-char * dce_strndup (const char *s, size_t n)
+char * dce_strndup (const char *s, size_t n) noexcept
 {
   size_t len = strlen (s);
   len = (len < n) ? len : n;

@@ -42,7 +42,7 @@ CleanupPthreadKeys (void)
 }
 
 
-int dce_uname (struct utsname *buf)
+int dce_uname (struct utsname *buf) noexcept
 {
   Ptr<DceNodeContext> nodeContext = DceNodeContext::GetNodeContext ();
   NS_ASSERT (0 != nodeContext);
@@ -50,7 +50,7 @@ int dce_uname (struct utsname *buf)
   return nodeContext->UName (buf);
 }
 
-int dce_gethostname (char *name, size_t len)
+int dce_gethostname (char *name, size_t len) noexcept
 {
   ns3::Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId ());

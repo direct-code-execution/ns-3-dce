@@ -104,7 +104,7 @@ int dce_getaddrinfo (const char *node, const char *service,
   ::freeaddrinfo (tmp);
   return status;
 }
-void dce_freeaddrinfo (struct addrinfo *res)
+void dce_freeaddrinfo (struct addrinfo *res) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << res);
   NS_ASSERT (Current () != 0);
@@ -120,7 +120,7 @@ void dce_freeaddrinfo (struct addrinfo *res)
       dce_free (cur);
     }
 }
-const char * dce_gai_strerror (int errcode)
+const char * dce_gai_strerror (int errcode) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << errcode);
   NS_ASSERT (Current () != 0);
@@ -191,7 +191,7 @@ int dce_getnameinfo (const struct sockaddr *sa, socklen_t salen, char *host,
   return 0; // XXX : cheater
 }
 
-void dce_herror (const char *string)
+void dce_herror (const char *string) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -435,7 +435,7 @@ __netlink_free_handle (struct netlink_handle *h)
  * linux stack.
  */
 int
-dce_getifaddrs (struct ifaddrs **ifap)
+dce_getifaddrs (struct ifaddrs **ifap) noexcept
 {
   struct netlink_handle nh =
   {

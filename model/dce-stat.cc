@@ -105,7 +105,7 @@ int dce_fstat (int fd, struct stat *buf)
 {
   return dce___fxstat (_STAT_VER, fd, buf);
 }
-int dce_fstat64 (int fd, struct stat64 *buf)
+int dce_fstat64 (int fd, struct stat64 *buf) noexcept
 {
 //  NS_FATAL_ERROR("Regression");
   return dce___fxstat64 (_STAT_VER, fd, buf);

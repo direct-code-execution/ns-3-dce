@@ -56,7 +56,7 @@ SearchSemaphore (const sem_t *sem)
   return 0;
 }
 
-int dce_sem_init (sem_t *sem, int pshared, unsigned int value)
+int dce_sem_init (sem_t *sem, int pshared, unsigned int value) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << sem << pshared << value);
@@ -75,7 +75,7 @@ int dce_sem_init (sem_t *sem, int pshared, unsigned int value)
   SidToSem (semaphore->sid, sem);
   return 0;
 }
-int dce_sem_destroy (sem_t *sem)
+int dce_sem_destroy (sem_t *sem) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << sem);
@@ -105,7 +105,7 @@ int dce_sem_destroy (sem_t *sem)
   SidToSem (2, sem);
   return 0;
 }
-int dce_sem_post (sem_t *sem)
+int dce_sem_post (sem_t *sem) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << sem);
@@ -152,7 +152,7 @@ int dce_sem_wait (sem_t *sem)
   semaphore->count--;
   return 0;
 }
-int dce_sem_trywait (sem_t *sem)
+int dce_sem_trywait (sem_t *sem) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << sem);
@@ -215,7 +215,7 @@ int dce_sem_timedwait (sem_t *sem, const struct timespec *abs_timeout)
   semaphore->count--;
   return 0;
 }
-int dce_sem_getvalue (sem_t *sem, int *sval)
+int dce_sem_getvalue (sem_t *sem, int *sval) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << sem);

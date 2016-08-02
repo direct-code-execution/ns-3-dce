@@ -1,4 +1,4 @@
-#include "dce-termio.h"
+#include "dce-termios.h"
 #include "utils.h"
 #include "process.h"
 #include "dce-manager.h"
@@ -12,7 +12,7 @@ NS_LOG_COMPONENT_DEFINE ("DceTermio");
 using namespace ns3;
 
 
-int dce_tcgetattr (int fd, struct termios *termios_p)
+int dce_tcgetattr (int fd, struct termios *termios_p) noexcept
 {
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
@@ -20,7 +20,7 @@ int dce_tcgetattr (int fd, struct termios *termios_p)
   current->err = ENOTTY;
   return -1;
 }
-int dce_tcsetattr (int fd, int optional_actions, const struct termios *termios_p)
+int dce_tcsetattr (int fd, int optional_actions, const struct termios *termios_p) noexcept
 {
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();

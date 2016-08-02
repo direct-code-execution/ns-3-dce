@@ -51,18 +51,20 @@ double_type = declarations.cpptypes.double_t()
 
 # list of exceptions for functions thatp ygccxml fail to identify correctly
 # hack around https://github.com/gccxml/pygccxml/issues/62
-ExplicitFn = namedtuple('ExplicitFn', ["rtype", "fullargs", "arg_names", "location"])
+# specifier = noexcept
+ExplicitFn = namedtuple('ExplicitFn', ["rtype", "fullargs", "arg_names", "location", "specifier"])
 exceptions = {
-    "sysinfo": ExplicitFn("int", "struct sysinfo *info", "info","/usr/include/x86_64-linux-gnu/sys/sysinfo.h"),
-    "sigaction": ExplicitFn("int", "int signum, const struct sigaction *act, struct sigaction *oldact", "signum, act, oldact","/usr/include/signal.h"),
-    "wait": ExplicitFn("pid_t", "void *stat_loc", "stat_loc", "/usr/include/x86_64-linux-gnu/sys/wait.h"),
-    "__fpurge": ExplicitFn("void", "FILE *fd", "fd", "/usr/include/stdio.h"),
-    "__fpending": ExplicitFn("size_t", "FILE *fd", "fd", "/usr/include/stdio.h"),
-    "fstat64": ExplicitFn("int", "int __fd, struct stat64 *__buf", "__fd, __buf", "/usr/include/x86_64-linux-gnu/sys/stat.h"),
-    "pthread_kill": ExplicitFn("int", "pthread_t thread, int sig", "thread, sig", "/usr/include/signal.h"),
-    "uname": ExplicitFn("int", "struct utsname *__name", "__name", "/usr/include/x86_64-linux-gnu/sys/utsname.h"),
-    "statvfs": ExplicitFn("int", "const char *path, struct statvfs *buf", "path, buf", "/usr/include/x86_64-linux-gnu/sys/statvfs.h"),
-    "statfs": ExplicitFn("int", "const char *path, struct statfs *buf", "path, buf", "/usr/include/x86_64-linux-gnu/sys/vfs.h"),
+    "sysinfo": ExplicitFn("int", "struct sysinfo *info", "info","/usr/include/x86_64-linux-gnu/sys/sysinfo.h", "noexcept"),
+    "sigaction": ExplicitFn("int", "int signum, const struct sigaction *act, struct sigaction *oldact", "signum, act, oldact","/usr/include/signal.h", "noexcept"),
+    "wait": ExplicitFn("pid_t", "void *stat_loc", "stat_loc", "/usr/include/x86_64-linux-gnu/sys/wait.h", ""),
+    "__fpurge": ExplicitFn("void", "FILE *fd", "fd", "/usr/include/stdio.h", ""),
+    "__fpending": ExplicitFn("size_t", "FILE *fd", "fd", "/usr/include/stdio.h", ""),
+    "fstat64": ExplicitFn("int", "int __fd, struct stat64 *__buf", "__fd, __buf", "/usr/include/x86_64-linux-gnu/sys/stat.h", "noexcept"),
+    "pthread_kill": ExplicitFn("int", "pthread_t thread, int sig", "thread, sig", "/usr/include/signal.h", ""),
+    "uname": ExplicitFn("int", "struct utsname *__name", "__name", "/usr/include/x86_64-linux-gnu/sys/utsname.h", ""),
+    "statvfs": ExplicitFn("int", "const char *path, struct statvfs *buf", "path, buf", "/usr/include/x86_64-linux-gnu/sys/statvfs.h", ""),
+    "statfs": ExplicitFn("int", "const char *path, struct statfs *buf", "path, buf", "/usr/include/x86_64-linux-gnu/sys/vfs.h", "noexcept"),
+    "statfs64": ExplicitFn("int", "const char *path, struct statfs64 *buf", "path, buf", "/usr/include/x86_64-linux-gnu/sys/vfs.h", "noexcept"),
     }
 
 
@@ -202,7 +204,7 @@ class Generator:
                     fullargs = ",".join(temp) # only types
                     location = decl.location.file_name
                     arg_names = ",".join([arg.name for arg in decl.arguments])
-
+                    specifier = "" if decl.does_throw else "noexcept"
 
 
                 # + " " + arg.name)
@@ -217,7 +219,7 @@ class Generator:
                         name = row["name"]
                         log.debug("Exception [%s] found " % name)
                         extern=""
-                        rtype, fullargs , arg_names, location = exceptions[name]
+                        rtype, fullargs , arg_names, location, specifier = exceptions[name]
                         # partialargs = fullargs
                         # **exceptions[name]
                         print("Values:", rtype, fullargs, arg_names, location)
@@ -246,7 +248,7 @@ class Generator:
                                 ret=rtype,
                                 fullargs=fullargs,
                                 name=name,
-                                throw="" if decl.does_throw else "noexcept",
+                                throw=specifier,
                                 )
 
                     # then generate aliases for both natives and dce
@@ -275,7 +277,7 @@ class Generator:
                 header = ""
                 
                 subfolder = ""
-                for folder in ["sys", "net"]:
+                for folder in ["sys", "net", "arpa"]:
                     if head.endswith(folder):
                         subfolder = folder
                         break

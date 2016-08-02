@@ -12,7 +12,7 @@ extern "C" {
 #endif
                  __sighandler_t dce_signal (int __sig,__sighandler_t __handler) noexcept;
 
- int dce_sigaction (int signum, const struct sigaction *act, struct sigaction *oldact) ;
+ int dce_sigaction (int signum, const struct sigaction *act, struct sigaction *oldact) noexcept;
 
 
 

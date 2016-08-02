@@ -9,7 +9,7 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("DceTimerFd");
 
-int dce_timerfd_create (int clockid, int flags)
+int dce_timerfd_create (int clockid, int flags) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << clockid << flags);
@@ -30,7 +30,7 @@ int dce_timerfd_create (int clockid, int flags)
 
 int dce_timerfd_settime (int fd, int flags,
                          const struct itimerspec *new_value,
-                         struct itimerspec *old_value)
+                         struct itimerspec *old_value) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << fd << flags << new_value << old_value);
   NS_ASSERT (Current () != 0);
@@ -39,7 +39,7 @@ int dce_timerfd_settime (int fd, int flags,
   OPENED_FD_METHOD (int, Settime (flags, new_value, old_value))
 }
 
-int dce_timerfd_gettime (int fd, struct itimerspec *cur_value)
+int dce_timerfd_gettime (int fd, struct itimerspec *cur_value) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << fd << cur_value);
   NS_ASSERT (Current () != 0);

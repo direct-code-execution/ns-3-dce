@@ -1,5 +1,5 @@
 #include <ns3/log.h>  // put before <syslog.h> gets included else LOG_DEBUG gets redefined
-#include "dce-syslog.h"
+#include "sys/dce-syslog.h"
 #include "dce-stdio.h"
 
 #include <ns3/node.h>
@@ -39,7 +39,7 @@ dce_closelog (void)
 }
 
 int
-dce_setlogmask (int maskpri)
+dce_setlogmask (int maskpri) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << maskpri);
   NS_ASSERT (Current () != 0);

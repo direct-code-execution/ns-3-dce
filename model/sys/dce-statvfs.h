@@ -10,9 +10,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_statvfs (const char *path, struct statvfs *buf) ;
+                 int dce_statvfs (const char *path, struct statvfs *buf) noexcept;
 
- int dce_fstatvfs (int __fildes,statvfs * __buf) noexcept;
+ int dce_fstatvfs (int __fildes, struct statvfs * __buf) noexcept;
 
 
 #ifdef __cplusplus

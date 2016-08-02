@@ -82,7 +82,7 @@ static void PthreadTaskSwitch (enum ns3::Task::SwitchType type, void *context)
 int dce_pthread_create (pthread_t *thread_handle,
                         const pthread_attr_t *attr,
                         void *(*start_routine)(void*),
-                        void *arg)
+                        void *arg) noexcept
 {
   ns3::Thread *current = Current ();
   NS_LOG_FUNCTION (current << ns3::UtilsGetNodeId () << arg);
@@ -174,7 +174,7 @@ int dce_pthread_join (pthread_t thread_handle, void **value_ptr)
   current->process->manager->DeleteThread (thread);
   return 0;
 }
-int dce_pthread_detach (pthread_t thread_handle)
+int dce_pthread_detach (pthread_t thread_handle) noexcept
 {
   ns3::Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << PthreadToPid (thread_handle) << PthreadToTid (thread_handle));
@@ -204,7 +204,7 @@ int dce_pthread_cancel (pthread_t thread)
   // XXX
   return 0;
 }
-pthread_t dce_pthread_self (void)
+pthread_t dce_pthread_self (void) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId ());
@@ -243,7 +243,7 @@ IsKeyValid (pthread_key_t key)
     }
   return false;
 }
-void * dce_pthread_getspecific (pthread_key_t key)
+void * dce_pthread_getspecific (pthread_key_t key) noexcept
 {
   ns3::Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << key);
@@ -258,7 +258,7 @@ void * dce_pthread_getspecific (pthread_key_t key)
     }
   return 0;
 }
-int dce_pthread_setspecific (pthread_key_t key, const void *value)
+int dce_pthread_setspecific (pthread_key_t key, const void *value) noexcept
 {
   ns3::Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << key << value);
@@ -275,7 +275,7 @@ int dce_pthread_setspecific (pthread_key_t key, const void *value)
   // invalid key
   return EINVAL;
 }
-int dce_pthread_key_create (pthread_key_t *key, void (*destructor)(void*))
+int dce_pthread_key_create (pthread_key_t *key, void (*destructor)(void*)) noexcept
 {
   ns3::Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << key << destructor);
@@ -305,7 +305,7 @@ int dce_pthread_key_create (pthread_key_t *key, void (*destructor)(void*))
     }
   return EAGAIN;
 }
-int dce_pthread_key_delete (pthread_key_t key)
+int dce_pthread_key_delete (pthread_key_t key) noexcept
 {
   ns3::Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << key);
@@ -334,7 +334,7 @@ int dce_pthread_key_delete (pthread_key_t key)
     }
   return 0;
 }
-int dce_pthread_kill (pthread_t th, int sig)
+int dce_pthread_kill (pthread_t th, int sig) noexcept
 {
   ns3::Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << PthreadToPid (th) << PthreadToTid (th) << sig);

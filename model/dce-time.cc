@@ -29,7 +29,7 @@ static void Itimer (Process *process)
 }
 
 int dce_setitimer (int which, const struct itimerval *value,
-                   struct itimerval *ovalue)
+                   struct itimerval *ovalue) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << which << value << ovalue);
@@ -62,7 +62,7 @@ int dce_setitimer (int which, const struct itimerval *value,
   return 0;
 }
 
-int dce_getitimer (int which, struct itimerval *value)
+int dce_getitimer (int which, struct itimerval *value) noexcept
 {
 
   Thread *current = Current ();
@@ -81,7 +81,7 @@ int dce_getitimer (int which, struct itimerval *value)
 }
 
 
-time_t dce_time (time_t *t)
+time_t dce_time (time_t *t) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -93,7 +93,7 @@ time_t dce_time (time_t *t)
   return time;
 }
 
-struct tm * dce_gmtime (const time_t *timep)
+struct tm * dce_gmtime (const time_t *timep) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -109,7 +109,7 @@ struct tm * dce_localtime (const time_t *timep)
   return localtime_r (timep, &Current ()->process->struct_tm);
 }
 
-char * dce_ctime (const time_t *timep)
+char * dce_ctime (const time_t *timep) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -117,7 +117,7 @@ char * dce_ctime (const time_t *timep)
   return ctime_r (timep, Current ()->process->asctime_result);
 }
 
-char * dce_asctime (const struct tm *tm)
+char * dce_asctime (const struct tm *tm) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -137,7 +137,7 @@ int dce_clock_gettime (clockid_t c, struct timespec *tp)
   *tp = UtilsTimeToTimespec (UtilsSimulationTimeToTime (Now ()));
   return 0;
 }
-void dce_tzset ()
+void dce_tzset () noexcept
 {
 
 }
@@ -172,7 +172,7 @@ int dce_clock_getres (clockid_t c, struct timespec *r)
   return 0;
 }
 
-int dce_utime (const char *filename, const struct utimbuf *times)
+int dce_utime (const char *filename, const struct utimbuf *times) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -183,7 +183,7 @@ int dce_utime (const char *filename, const struct utimbuf *times)
 }
 
 
-int dce_timer_create(clockid_t clockid, struct sigevent *sevp, timer_t *timerid)
+int dce_timer_create(clockid_t clockid, struct sigevent *sevp, timer_t *timerid) noexcept
 {
   int flags = 0;   // just required to set the parameter of class UnixTimerFd::UnixTimerFd(int clockid, int flags)
 
@@ -207,7 +207,7 @@ int dce_timer_create(clockid_t clockid, struct sigevent *sevp, timer_t *timerid)
 
 int dce_timer_settime (timer_t timerid, int flags,
                        const struct itimerspec *new_value,
-                       struct itimerspec *old_value)
+                       struct itimerspec *old_value) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << timerid << flags << new_value << old_value);
   NS_ASSERT (Current () != 0);
@@ -216,7 +216,7 @@ int dce_timer_settime (timer_t timerid, int flags,
   OPENED_FD_METHOD (int, Settime (flags, new_value, old_value))
 }
 
-int dce_timer_gettime (timer_t timerid, struct itimerspec *cur_value)
+int dce_timer_gettime (timer_t timerid, struct itimerspec *cur_value) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << timerid << cur_value);
   NS_ASSERT (Current () != 0);

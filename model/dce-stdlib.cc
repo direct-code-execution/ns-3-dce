@@ -18,7 +18,7 @@ NS_LOG_COMPONENT_DEFINE ("DceStdlib");
 
 using namespace ns3;
 
-long int dce_strtol (const char *nptr, char **endptr, int base)
+long int dce_strtol (const char *nptr, char **endptr, int base) noexcept
 {
   ns3::Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << nptr << endptr << base);
@@ -30,7 +30,7 @@ long int dce_strtol (const char *nptr, char **endptr, int base)
     }
   return retval;
 }
-long long int dce_strtoll (const char *nptr, char **endptr, int base)
+long long int dce_strtoll (const char *nptr, char **endptr, int base) noexcept
 {
   ns3::Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << nptr << endptr << base);
@@ -43,7 +43,7 @@ long long int dce_strtoll (const char *nptr, char **endptr, int base)
   return retval;
 }
 
-unsigned long int dce_strtoul (const char *nptr, char **endptr, int base)
+unsigned long int dce_strtoul (const char *nptr, char **endptr, int base) noexcept
 {
   ns3::Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << nptr << endptr << base);
@@ -55,7 +55,7 @@ unsigned long int dce_strtoul (const char *nptr, char **endptr, int base)
     }
   return retval;
 }
-unsigned long long int dce_strtoull (const char *nptr, char **endptr, int base)
+unsigned long long int dce_strtoull (const char *nptr, char **endptr, int base) noexcept
 {
   ns3::Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << nptr << endptr << base);
@@ -67,7 +67,7 @@ unsigned long long int dce_strtoull (const char *nptr, char **endptr, int base)
     }
   return retval;
 }
-double dce_strtod (const char *nptr, char **endptr)
+double dce_strtod (const char *nptr, char **endptr) noexcept
 {
   ns3::Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << nptr << endptr);
@@ -80,7 +80,7 @@ double dce_strtod (const char *nptr, char **endptr)
   return retval;
 }
 
-int dce_atexit (void (*function)(void))
+int dce_atexit (void (*function)(void)) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << function);
   NS_ASSERT (Current () != 0);
@@ -112,7 +112,7 @@ int dce_mkstemp (char *temp)
   if (realFd == -1)
     {
       current->err = errno;
-      delete c_fullpath;
+      delete[] c_fullpath;
       return -1;
     }
 
@@ -120,7 +120,7 @@ int dce_mkstemp (char *temp)
   if (fd == -1)
     {
       current->err = EMFILE;
-      delete c_fullpath;
+      delete[] c_fullpath;
       return -1;
     }
   UnixFd *unixFd = 0;
@@ -129,7 +129,7 @@ int dce_mkstemp (char *temp)
   current->process->openFiles[fd] = new FileUsage (fd, unixFd);
 
   strncpy (temp, &c_fullpath[strlen(c_fullpath)-strlen(temp)], strlen(temp));
-  delete c_fullpath;
+  delete[] c_fullpath;
   return fd;
 }
 
@@ -140,7 +140,7 @@ FILE * dce_tmpfile (void)
   return dce_fdopen (fd, "w+");
 }
 
-int dce_rename (const char *oldpath, const char *newpath)
+int dce_rename (const char *oldpath, const char *newpath) noexcept
 {
   ns3::Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId ());
@@ -159,7 +159,7 @@ int dce_rename (const char *oldpath, const char *newpath)
 }
 
 
-void dce_exit (int status)
+void dce_exit (int status) noexcept
 {
   ns3::Thread *current = Current ();
   std::ostringstream oss;

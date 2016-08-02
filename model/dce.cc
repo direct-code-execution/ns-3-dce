@@ -49,22 +49,22 @@ int * dce___errno_location (void)
   GET_CURRENT_NOLOG ();
   return &current->err;
 }
-pid_t dce_getpid (void)
+pid_t dce_getpid (void) noexcept
 {
   GET_CURRENT_NOLOG ();
   return current->process->pid;
 }
-pid_t dce_getppid (void)
+pid_t dce_getppid (void) noexcept
 {
   GET_CURRENT_NOLOG ();
   return current->process->ppid;
 }
-uid_t dce_getuid (void)
+uid_t dce_getuid (void) noexcept
 {
   GET_CURRENT_NOLOG ();
   return current->process->ruid;
 }
-uid_t dce_geteuid (void)
+uid_t dce_geteuid (void) noexcept
 {
   GET_CURRENT_NOLOG ();
   return current->process->euid;
@@ -96,7 +96,7 @@ static bool is_set_gcapable (gid_t gid)
          || current->process->sgid == gid;
 }
 
-int dce_setresuid (uid_t ruid, uid_t euid, uid_t suid)
+int dce_setresuid (uid_t ruid, uid_t euid, uid_t suid) noexcept
 {
   GET_CURRENT (ruid << euid << suid);
   if (ruid != (uid_t)-1
@@ -132,7 +132,7 @@ int dce_setresuid (uid_t ruid, uid_t euid, uid_t suid)
 
   return 0;
 }
-int dce_setresgid (gid_t rgid, gid_t egid, gid_t sgid)
+int dce_setresgid (gid_t rgid, gid_t egid, gid_t sgid) noexcept
 {
   GET_CURRENT (rgid << egid << sgid);
   if (rgid != (gid_t)-1
@@ -167,28 +167,28 @@ int dce_setresgid (gid_t rgid, gid_t egid, gid_t sgid)
     }
   return 0;
 }
-int dce_setreuid (uid_t ruid, uid_t euid)
+int dce_setreuid (uid_t ruid, uid_t euid) noexcept
 {
   GET_CURRENT (ruid << euid);
   return dce_setresuid (ruid,euid,-1);
 }
-int dce_setregid (gid_t rgid, gid_t egid)
+int dce_setregid (gid_t rgid, gid_t egid) noexcept
 {
   GET_CURRENT (rgid << egid);
   return dce_setresgid (rgid,egid,-1);
 }
 
-int dce_seteuid (uid_t euid)
+int dce_seteuid (uid_t euid) noexcept
 {
   GET_CURRENT (euid);
   return dce_setresuid (-1, euid, -1);
 }
-int dce_setegid (gid_t egid)
+int dce_setegid (gid_t egid) noexcept
 {
   GET_CURRENT (egid);
   return dce_setresgid (-1, egid, -1);
 }
-int dce_setuid (uid_t uid)
+int dce_setuid (uid_t uid) noexcept
 {
   GET_CURRENT (uid);
   if (is_set_ucapable (uid))
@@ -207,7 +207,7 @@ int dce_setuid (uid_t uid)
       return -1;
     }
 }
-int dce_setgid (gid_t gid)
+int dce_setgid (gid_t gid) noexcept
 {
   GET_CURRENT (gid);
   if (is_set_gcapable (gid))
@@ -244,7 +244,7 @@ int dce_usleep (useconds_t usec)
   return 0;
 }
 
-int dce_kill (pid_t pid, int sig)
+int dce_kill (pid_t pid, int sig) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << pid << sig);
@@ -261,7 +261,7 @@ int dce_kill (pid_t pid, int sig)
   return 0;
 }
 
-void dce_abort ()
+void dce_abort () noexcept
 {
   Thread *current = Current ();
   NS_LOG_WARN (current);
@@ -293,7 +293,7 @@ int dce_pause (void)
 }
 
 extern "C" {
-int dce_gettimeofday (struct timeval *tv, struct timezone *tz)
+int dce_gettimeofday (struct timeval *tv, struct timezone *tz) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -335,24 +335,24 @@ int dce_nanosleep (const struct timespec *req, struct timespec *rem)
     }
 }
 
-long int dce_random (void)
+long int dce_random (void) noexcept
 {
   Thread *current = Current ();
   return current->process->rndVariable->GetInteger ();
 }
-int dce_rand (void)
+int dce_rand (void) noexcept
 {
   Thread *current = Current ();
   return current->process->rndVariable->GetInteger ();
 }
-unsigned short int * dce_seed48 (unsigned short int seed16v[3])
+unsigned short int * dce_seed48 (unsigned short int seed16v[3]) noexcept
 {
   Thread *current = Current ();
   seed48_r (seed16v, &(current->process->seed48Current));
 
   return current->process->seed48Current.__old_x;
 }
-double dce_drand48 (void)
+double dce_drand48 (void) noexcept
 {
   Thread *current = Current ();
   double res;
@@ -361,7 +361,7 @@ double dce_drand48 (void)
 
   return res;
 }
-long int dce_nrand48 (unsigned short int xsubi[3])
+long int dce_nrand48 (unsigned short int xsubi[3]) noexcept
 {
   Thread *current = Current ();
 
@@ -371,7 +371,7 @@ long int dce_nrand48 (unsigned short int xsubi[3])
 
   return res;
 }
-long int dce_lrand48 (void)
+long int dce_lrand48 (void) noexcept
 {
   Thread *current = Current ();
 
@@ -382,7 +382,7 @@ long int dce_lrand48 (void)
   return res;
 }
 
-long int dce_mrand48 (void)
+long int dce_mrand48 (void) noexcept
 {
   Thread *current = Current ();
 
@@ -393,7 +393,7 @@ long int dce_mrand48 (void)
   return res;
 }
 
-double dce_erand48 (unsigned short xsubi[3])
+double dce_erand48 (unsigned short xsubi[3]) noexcept
 {
   Thread *current = Current ();
   double res;
@@ -402,7 +402,7 @@ double dce_erand48 (unsigned short xsubi[3])
 
   return res;
 }
-long int dce_jrand48 (unsigned short int xsubi[3])
+long int dce_jrand48 (unsigned short int xsubi[3]) noexcept
 {
   Thread *current = Current ();
 
@@ -413,14 +413,14 @@ long int dce_jrand48 (unsigned short int xsubi[3])
   return res;
 }
 
-void dce_srand48 (long int seedval)
+void dce_srand48 (long int seedval) noexcept
 {
   Thread *current = Current ();
 
   srand48_r (seedval, &(current->process->seed48Current));
 }
 
-void dce_lcong48 (unsigned short param[7])
+void dce_lcong48 (unsigned short param[7]) noexcept
 {
   Thread *current = Current ();
 
@@ -429,17 +429,17 @@ void dce_lcong48 (unsigned short param[7])
 
 //ignore seeds as RandomVariable implementation ensures that we take different random streams.
 //TODO: support getting the same rng stream for several processes
-void dce_srandom (unsigned int seed)
+void dce_srandom (unsigned int seed) noexcept
 {
   return;
 }
-void dce_srand (unsigned int seed)
+void dce_srand (unsigned int seed) noexcept
 {
   return;
 }
 
 const char * dce_inet_ntop (int af, const void *src,
-                            char *dst, socklen_t cnt)
+                            char *dst, socklen_t cnt) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << af << src << dst << cnt);
   Thread *current = Current ();
@@ -513,7 +513,7 @@ int dce_getopt_long (int argc, char * const argv[], const char *optstring,
   return retval;
 }
 }
-int dce_sched_yield (void)
+int dce_sched_yield (void) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId ());
@@ -522,7 +522,7 @@ int dce_sched_yield (void)
   return 0;
 }
 
-char * dce_getcwd (char *buf, size_t size)
+char * dce_getcwd (char *buf, size_t size) noexcept
 {
   Thread *current = Current ();
   NS_ASSERT (current != 0);
@@ -553,7 +553,7 @@ char * dce_getcwd (char *buf, size_t size)
   strcpy (buf, source);
   return buf;
 }
-char * dce_getwd (char *buf)
+char * dce_getwd (char *buf) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << buf);
   NS_ASSERT (Current () != 0);
@@ -568,14 +568,14 @@ char * dce_getwd (char *buf)
   strcpy (buf, source);
   return buf;
 }
-char * dce_get_current_dir_name (void)
+char * dce_get_current_dir_name (void) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
   return dce_getcwd (0, 0);
 }
 
-int dce_chdir (const char *path)
+int dce_chdir (const char *path) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId ());
@@ -594,7 +594,7 @@ int dce_chdir (const char *path)
   current->process->cwd = UtilsGetVirtualFilePath (path);
   return 0;
 }
-int dce_fchdir (int fd)
+int dce_fchdir (int fd) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId ());
@@ -617,7 +617,7 @@ int dce_fchdir (int fd)
   current->process->cwd =  UtilsGetVirtualFilePath (std::string (p, base.length () - 1));
   return 0;
 }
-unsigned dce_if_nametoindex (const char *ifname)
+unsigned dce_if_nametoindex (const char *ifname) noexcept
 {
   Thread *current = Current ();
   Ptr<SocketFdFactory> factory = 0;
@@ -658,7 +658,7 @@ unsigned dce_if_nametoindex (const char *ifname)
       return 0;
     }
 }
-char * dce_if_indextoname (unsigned ifindex, char *ifname)
+char * dce_if_indextoname (unsigned ifindex, char *ifname) noexcept
 {
   struct ifreq ifr;
   int fd = dce_socket (AF_INET, SOCK_DGRAM, 0);
@@ -674,7 +674,7 @@ char * dce_if_indextoname (unsigned ifindex, char *ifname)
     }
   return strncpy (ifname, ifr.ifr_name, IFNAMSIZ);
 }
-pid_t dce_fork (void)
+pid_t dce_fork (void) noexcept
 {
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread);
@@ -682,7 +682,7 @@ pid_t dce_fork (void)
   return manager->Clone (thread);
 }
 
-int dce_execv (const char *path, char *const argv[])
+int dce_execv (const char *path, char *const argv[]) noexcept
 {
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << path);
@@ -697,7 +697,7 @@ int dce_execv (const char *path, char *const argv[])
 
   return thread->process->manager->Execve (fileName.c_str (), path, argv, *(thread->process->penvp));
 }
-int dce_execl (const char *path, const char *arg, ...)
+int dce_execl (const char *path, const char *arg, ...) noexcept
 {
   va_list ap;
   va_start (ap, arg);
@@ -742,7 +742,7 @@ int dce_execl (const char *path, const char *arg, ...)
 
   return retval;
 }
-int dce_execve (const char *path, char *const argv[], char *const envp[])
+int dce_execve (const char *path, char *const argv[], char *const envp[]) noexcept
 {
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << path);
@@ -758,7 +758,7 @@ int dce_execve (const char *path, char *const argv[], char *const envp[])
   return thread->process->manager->Execve (fileName.c_str (), path, argv, envp);
 }
 
-int dce_execlp (const char *file, const char *arg, ...)
+int dce_execlp (const char *file, const char *arg, ...) noexcept
 {
   va_list ap;
   va_start (ap, arg);
@@ -810,7 +810,7 @@ int dce_execlp (const char *file, const char *arg, ...)
 
   return retval;
 }
-int dce_execvp (const char *file, char *const argv[])
+int dce_execvp (const char *file, char *const argv[]) noexcept
 {
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << file);
@@ -831,7 +831,7 @@ int dce_execvp (const char *file, char *const argv[])
 
   return thread->process->manager->Execve (fileName.c_str (), file, argv, *(thread->process->penvp));
 }
-int dce_execle (const char *path, const char *arg, ...)
+int dce_execle (const char *path, const char *arg, ...) noexcept
 {
   va_list ap;
   va_start (ap, arg);
@@ -876,12 +876,12 @@ int dce_execle (const char *path, const char *arg, ...)
   return retval;
 }
 
-char * dce_setlocale (int category, const char *locale)
+char * dce_setlocale (int category, const char *locale) noexcept
 {
   static char loc[] = "";
   return loc;
 }
-int dce_sysinfo (struct sysinfo *info)
+int dce_sysinfo (struct sysinfo *info) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId ());
@@ -896,11 +896,11 @@ int dce_sysinfo (struct sysinfo *info)
   // XXX
   return 0;
 }
-int dce_daemon (int nochdir, int noclose)
+int dce_daemon (int nochdir, int noclose) noexcept
 {
   return 0;
 }
-unsigned int dce_alarm (unsigned int s)
+unsigned int dce_alarm (unsigned int s) noexcept
 {
   struct itimerval it;
   memset (&it, 0, sizeof (it));
@@ -920,7 +920,7 @@ unsigned int dce_alarm (unsigned int s)
 
   return ret;
 }
-ssize_t dce_readlink (const char *path, char *buf, size_t bufsize)
+ssize_t dce_readlink (const char *path, char *buf, size_t bufsize) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId ());

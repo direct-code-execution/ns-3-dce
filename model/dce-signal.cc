@@ -35,7 +35,7 @@ sighandler_t dce_signal (int signum, sighandler_t handler) noexcept
     }
 }
 int dce_sigaction (int signum, const struct sigaction *act,
-                   struct sigaction *oldact)
+                   struct sigaction *oldact) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << signum << act << oldact);
@@ -115,7 +115,7 @@ int dce_sigwait (const sigset_t *set, int *sig)
 
   return ret;
 }
-int dce_sigprocmask (int how, const sigset_t *set, sigset_t *oldset) 
+int dce_sigprocmask (int how, const sigset_t *set, sigset_t *oldset) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << how);

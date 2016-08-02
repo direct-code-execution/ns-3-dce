@@ -167,7 +167,7 @@
                          g_libc.qsort_fn (__base,__nmemb,__size,__compar);
                     }
                     
-                     void abort (){
+                     void abort () noexcept {
                          g_libc.abort_fn ();
                     }
                     
@@ -351,7 +351,7 @@
                         return g_libc.inet_netof_fn (__in);
                     }
                     
-                     char const * inet_ntop (int __af,__restrict__ void const * __cp,__restrict__ char * __buf,socklen_t __len){
+                     char const * inet_ntop (int __af,__restrict__ void const * __cp,__restrict__ char * __buf,socklen_t __len) noexcept {
                         return g_libc.inet_ntop_fn (__af,__cp,__buf,__len);
                     }
                     
@@ -1044,7 +1044,7 @@
                         return g_libc.getitimer_fn (__which,__value);
                     }
                     
-                     int sysinfo (struct sysinfo *info){
+                     int sysinfo (struct sysinfo *info) noexcept {
                         return g_libc.sysinfo_fn (info);
                     }
                     
@@ -1086,7 +1086,7 @@
                         return g_libc.signal_fn (__sig,__handler);
                     }
                     
-                     int sigaction (int signum, const struct sigaction *act, struct sigaction *oldact){
+                     int sigaction (int signum, const struct sigaction *act, struct sigaction *oldact) noexcept {
                         return g_libc.sigaction_fn (signum, act, oldact);
                     }
                     
@@ -1190,7 +1190,7 @@
                         return g_libc.pthread_cancel_fn (__th);
                     }
                     
-                     int pthread_kill (pthread_t thread, int sig){
+                     int pthread_kill (pthread_t thread, int sig) noexcept {
                         return g_libc.pthread_kill_fn (thread, sig);
                     }
                     
@@ -1526,7 +1526,7 @@
                          g_libc.closelog_fn ();
                     }
                     
-                     int setlogmask (int __mask){
+                     int setlogmask (int __mask) noexcept {
                         return g_libc.setlogmask_fn (__mask);
                     }
                     
@@ -1628,11 +1628,11 @@
                         return g_libc.nl_langinfo_fn (__item);
                     }
                     
-                     int fstatfs (int __fildes, struct statfs * __buf){
+                     int fstatfs (int __fildes, struct statfs * __buf) noexcept {
                         return g_libc.fstatfs_fn (__fildes,__buf);
                     }
                     
-                     int fstatfs64 (int __fildes, struct statfs64 * __buf){
+                     int fstatfs64 (int __fildes, struct statfs64 * __buf) {
                         return g_libc.fstatfs64_fn (__fildes,__buf);
                     }
                     
@@ -1652,11 +1652,11 @@
                         return g_libc.fstatvfs_fn (__fildes,__buf);
                     }
                     
-                     int tcgetattr (int __fd, struct termios * __termios_p){
+                     int tcgetattr (int __fd, struct termios * __termios_p) noexcept {
                         return g_libc.tcgetattr_fn (__fd,__termios_p);
                     }
                     
-                     int tcsetattr (int __fd,int __optional_actions, struct termios const * __termios_p){
+                     int tcsetattr (int __fd,int __optional_actions, struct termios const * __termios_p) noexcept {
                         return g_libc.tcsetattr_fn (__fd,__optional_actions,__termios_p);
                     }
                     

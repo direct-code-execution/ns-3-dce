@@ -10,7 +10,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_sysinfo (struct sysinfo *info) ;
+                 int dce_sysinfo (struct sysinfo *info) noexcept;
 
 
 #ifdef __cplusplus

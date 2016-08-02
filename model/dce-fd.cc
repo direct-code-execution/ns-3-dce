@@ -164,7 +164,7 @@ void unlink_notify (std::string fullpath)
     }
 }
 
-int dce_unlink (const char *pathname)
+int dce_unlink (const char *pathname) noexcept
 {
   NS_LOG_FUNCTION (pathname);
   int ret = dce_unlink_real (pathname);
@@ -178,16 +178,16 @@ int dce_unlink (const char *pathname)
 
   return ret;
 }
-int dce_mkdir (const char *pathname, mode_t mode)
+int dce_mkdir (const char *pathname, mode_t mode) noexcept
 {
   mode_t m =  (mode & ~(Current ()->process->uMask));
   DEFINE_FORWARDER_PATH (mkdir, pathname, m);
 }
-int dce_rmdir (const char *pathname)
+int dce_rmdir (const char *pathname) noexcept
 {
   DEFINE_FORWARDER_PATH (rmdir, pathname);
 }
-int dce_access (const char *pathname, int mode)
+int dce_access (const char *pathname, int mode) noexcept
 {
   DEFINE_FORWARDER_PATH (access, pathname, mode);
 }
@@ -225,7 +225,7 @@ int dce_close (int fd)
   return retval;
 }
 
-int dce_isatty (int fd)
+int dce_isatty (int fd) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd);
@@ -233,7 +233,7 @@ int dce_isatty (int fd)
 
   OPENED_FD_METHOD (int, Isatty ());
 }
-char* dce_ttyname (int fd)
+char* dce_ttyname (int fd) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd);
@@ -274,7 +274,7 @@ ssize_t dce_sendmsg (int fd, const struct msghdr *msg, int flags)
   OPENED_FD_METHOD (ssize_t, Sendmsg (msg, flags))
 }
 
-int dce_ioctl (int fd, long unsigned int request, ...)
+int dce_ioctl (int fd, long unsigned int request, ...) noexcept
 {
   va_list vl;
   va_start (vl, request);
@@ -345,7 +345,7 @@ ssize_t dce_read (int fd, void *buf, size_t count)
 
   OPENED_FD_METHOD (int, Read (buf, count))
 }
-int dce_socket (int domain, int type, int protocol)
+int dce_socket (int domain, int type, int protocol) noexcept
 {
   Thread *current = Current ();
   DceManager *manager = current->process->manager;
@@ -426,7 +426,7 @@ ssize_t dce_readv (int fd, const struct iovec *iov, int iovcnt)
     }
   return ret;
 }
-int dce_socketpair (int domain, int type, int protocol, int sv[2])
+int dce_socketpair (int domain, int type, int protocol, int sv[2]) noexcept
 {
   sv[0] = dce_socket (domain, type, protocol);
   if (sv[0] < 0)
@@ -443,7 +443,7 @@ int dce_socketpair (int domain, int type, int protocol, int sv[2])
   return 0;
 }
 
-int dce_bind (int fd, const struct sockaddr *my_addr, socklen_t addrlen)
+int dce_bind (int fd, const struct sockaddr *my_addr, socklen_t addrlen) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << my_addr << addrlen);
@@ -459,7 +459,7 @@ int dce_connect (int fd, const struct sockaddr *my_addr, socklen_t addrlen)
 
   OPENED_FD_METHOD (int, Connect (my_addr, addrlen))
 }
-int dce_listen (int fd, int backlog)
+int dce_listen (int fd, int backlog) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << backlog);
@@ -475,7 +475,7 @@ int dce_accept (int fd, struct sockaddr *addr, socklen_t *addrlen)
 
   OPENED_FD_METHOD (int, Accept (addr, addrlen))
 }
-int dce_shutdown (int fd, int how)
+int dce_shutdown (int fd, int how) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << how);
@@ -529,7 +529,7 @@ ssize_t dce_recvmsg (int fd, struct msghdr *msg, int flags)
   OPENED_FD_METHOD (ssize_t, Recvmsg (msg, flags))
 }
 int dce_setsockopt (int fd, int level, int optname,
-                    const void *optval, socklen_t optlen)
+                    const void *optval, socklen_t optlen) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << level << optname << optval << optlen);
@@ -538,7 +538,7 @@ int dce_setsockopt (int fd, int level, int optname,
   OPENED_FD_METHOD (int, Setsockopt (level, optname, optval, optlen))
 }
 int dce_getsockopt (int fd, int level, int optname,
-                    void *optval, socklen_t *optlen)
+                    void *optval, socklen_t *optlen) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << level << optname << optval << optlen);
@@ -546,7 +546,7 @@ int dce_getsockopt (int fd, int level, int optname,
 
   OPENED_FD_METHOD (int, Getsockopt (level, optname, optval, optlen))
 }
-int dce_getsockname (int fd, struct sockaddr *name, socklen_t *namelen)
+int dce_getsockname (int fd, struct sockaddr *name, socklen_t *namelen) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << name << namelen);
@@ -554,7 +554,7 @@ int dce_getsockname (int fd, struct sockaddr *name, socklen_t *namelen)
 
   OPENED_FD_METHOD (int, Getsockname (name, namelen))
 }
-int dce_getpeername (int fd, struct sockaddr *name, socklen_t *namelen)
+int dce_getpeername (int fd, struct sockaddr *name, socklen_t *namelen) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << name << namelen);
@@ -562,7 +562,7 @@ int dce_getpeername (int fd, struct sockaddr *name, socklen_t *namelen)
 
   OPENED_FD_METHOD (int, Getpeername (name, namelen))
 }
-int dce_dup (int oldfd)
+int dce_dup (int oldfd) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << oldfd);
@@ -587,7 +587,7 @@ int dce_dup (int oldfd)
 
   return fd;
 }
-int dce_dup2 (int oldfd, int newfd)
+int dce_dup2 (int oldfd, int newfd) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << oldfd << newfd);
@@ -624,13 +624,13 @@ int dce_dup2 (int oldfd, int newfd)
   return newfd;
 }
 void * dce_mmap (void *addr, size_t length, int prot, int flags,
-                 int fd, off_t offset)
+                 int fd, off_t offset) noexcept
 {
   return dce_mmap64 (addr, length, prot, flags, fd, offset);
 }
 
 void * dce_mmap64 (void *start, size_t length, int prot, int flags,
-                   int fd, off64_t offset)
+                   int fd, off64_t offset) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << start << length << prot << flags << fd << offset);
@@ -638,7 +638,7 @@ void * dce_mmap64 (void *start, size_t length, int prot, int flags,
 
   OPENED_FD_METHOD_ERR (MAP_FAILED, void *, Mmap (start, length, prot, flags, offset))
 }
-int dce_munmap (void *start, size_t length)
+int dce_munmap (void *start, size_t length) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << start << length);
@@ -651,12 +651,12 @@ int dce_munmap (void *start, size_t length)
     }
   return 0;
 }
-off_t dce_lseek (int fildes, off_t offset, int whence)
+off_t dce_lseek (int fildes, off_t offset, int whence) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << fildes << offset << whence);
   return dce_lseek64 (fildes, offset, whence);
 }
-off64_t dce_lseek64 (int fd, off64_t offset, int whence)
+off64_t dce_lseek64 (int fd, off64_t offset, int whence) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << offset << whence);
@@ -689,7 +689,7 @@ int dce_fcntl (int fd, int cmd, ... /*unsigned long arg*/)
   OPENED_FD_METHOD (int, Fcntl (cmd, arg))
 }
 
-int dce_truncate (const char *path, off_t length)
+int dce_truncate (const char *path, off_t length) noexcept
 {
   Thread *current = Current ();
   NS_ASSERT (current != 0);
@@ -705,7 +705,7 @@ int dce_truncate (const char *path, off_t length)
   return dce_ftruncate (fd, length);
 }
 
-int dce_ftruncate (int fd, off_t length)
+int dce_ftruncate (int fd, off_t length) noexcept
 {
   Thread *current = Current ();
   NS_ASSERT (current != 0);
@@ -723,7 +723,7 @@ int dce_ftruncate (int fd, off_t length)
   */
   OPENED_FD_METHOD (int, Ftruncate (length))
 }
-int dce_ftruncate64 (int fd, off_t length)
+int dce_ftruncate64 (int fd, off_t length) noexcept
 {
   Thread *current = Current ();
   NS_ASSERT (current != 0);
@@ -731,7 +731,7 @@ int dce_ftruncate64 (int fd, off_t length)
   return dce_ftruncate (fd, length);
 }
 
-int dce_pipe (int pipefd[2])
+int dce_pipe (int pipefd[2]) noexcept
 {
   Thread *current = Current ();
   NS_ASSERT (current != 0);

@@ -9,7 +9,7 @@ NS_LOG_COMPONENT_DEFINE ("DceEnv");
 
 using namespace ns3;
 
-char * dce_getenv (const char *name)
+char * dce_getenv (const char *name) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << name);
   NS_ASSERT (Current () != 0);
@@ -27,7 +27,7 @@ char * dce__secure_getenv (const char *name)
   return dce_getenv (name);
 }
 
-int dce_putenv (char *string)
+int dce_putenv (char *string) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << string);
   NS_ASSERT (Current () != 0);
@@ -69,7 +69,7 @@ int dce_putenv (char *string)
   *penvp = newEnvp;
   return 0;
 }
-int dce_setenv (const char *name, const char *value, int overwrite)
+int dce_setenv (const char *name, const char *value, int overwrite) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << name << value << overwrite);
   NS_ASSERT (Current () != 0);
@@ -107,7 +107,7 @@ int dce_setenv (const char *name, const char *value, int overwrite)
   *penvp = newEnvp;
   return 0;
 }
-int dce_unsetenv (const char *name)
+int dce_unsetenv (const char *name) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << name);
   NS_ASSERT (Current () != 0);
@@ -136,7 +136,7 @@ int dce_unsetenv (const char *name)
     }
   return 0;
 }
-int dce_clearenv (void)
+int dce_clearenv (void) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);

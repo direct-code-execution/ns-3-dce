@@ -9,7 +9,7 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("DceUmask");
 
-mode_t dce_umask (mode_t mask)
+mode_t dce_umask (mode_t mask) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current);

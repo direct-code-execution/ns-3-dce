@@ -13,7 +13,7 @@ NS_LOG_COMPONENT_DEFINE ("DceCredentials");
 
 
 
-gid_t dce_getgid (void)
+gid_t dce_getgid (void) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current);
@@ -22,7 +22,7 @@ gid_t dce_getgid (void)
   return current->process->rgid;
 }
 
-gid_t dce_getegid (void)
+gid_t dce_getegid (void) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current);
@@ -31,7 +31,7 @@ gid_t dce_getegid (void)
   return current->process->egid;
 }
 
-pid_t dce_getpgrp (void)
+pid_t dce_getpgrp (void) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current);
@@ -40,27 +40,27 @@ pid_t dce_getpgrp (void)
   return current->process->pgid;
 }
 
-int dce_euidaccess (const char *pathname, int mode)
+int dce_euidaccess (const char *pathname, int mode) noexcept
 {
   NS_LOG_FUNCTION (pathname << mode);
   std::string rPath = UtilsGetRealFilePath (pathname);
   int ret = euidaccess (rPath.c_str (), mode);
   return ret;
 }
-int dce_eaccess (const char *pathname, int mode)
+int dce_eaccess (const char *pathname, int mode) noexcept
 {
   NS_LOG_FUNCTION (pathname << mode);
   std::string rPath = UtilsGetRealFilePath (pathname);
   int ret = eaccess (rPath.c_str (), mode);
   return ret;
 }
-int dce_chown(const char *path, uid_t owner, gid_t group)
+int dce_chown(const char *path, uid_t owner, gid_t group) noexcept
 {
   // XXX
   return 0;
 }
 
-int dce_initgroups(const char *user, gid_t group)
+int dce_initgroups(const char *user, gid_t group) 
 {
   // XXX
   return 0;

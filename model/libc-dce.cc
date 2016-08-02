@@ -11,6 +11,8 @@
 #include "sys/dce-ioctl.h"
 #include "sys/dce-mman.h"
 #include "sys/dce-stat.h"
+#include "sys/dce-statfs.h"
+#include "sys/dce-statvfs.h"
 #include "sys/dce-select.h"
 #include "sys/dce-timerfd.h"
 #include "dce-unistd.h"
@@ -35,19 +37,19 @@
 #include "dce-misc.h"
 #include "sys/dce-wait.h"
 #include "dce-locale.h"
-#include "dce-if.h"
-#include "dce-syslog.h"
+#include "net/dce-if.h"
+#include "sys/dce-syslog.h"
 #include "dce-pwd.h"
 #include "dce-dirent.h"
-#include "dce-vfs.h"
-#include "dce-termio.h"
-#include "dce-dl.h"
+#include "sys/dce-vfs.h"
+#include "dce-termios.h"
+#include "dce-dlfcn.h"
 #include "dce-utime.h"
 #include "sys/dce-sysinfo.h"
 #include "sys/dce-wait.h"
 #include "sys/dce-uio.h"
 #include "dce-ifaddrs.h"
-#include "dce-utsname.h"
+#include "sys/dce-utsname.h"
 #include "dce-grp.h"
 #include "dce-libio.h"
 
@@ -103,12 +105,6 @@ extern "C" {
 #undef DCE
 #undef NATIVE
 #undef DCE_ALIAS
-
-//#define NATIVET(rtype, name) NATIVE(name)
-
-//#define NATIVE_EXPLICIT(name, type)                             \
-//  (*libc)->name ## _fn = ((type)name);
-
 
 /**
  * Creates a structure

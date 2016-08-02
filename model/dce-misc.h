@@ -23,17 +23,10 @@ extern "C" {
 
 // Temporary while fixing generation bugs
 #if 0
-// add to dce-sigaction.h
-int dce_sigaction(int signum, const struct sigaction *act, struct sigaction *oldact);
 
 // stdio.h
 int fflush(FILE *stream);
  
-// Add #include "dce-sigthread.h"
-
-#include <sys/sysinfo.h>
-
-int dce_sysinfo(struct sysinfo *info);
 #endif
 
 

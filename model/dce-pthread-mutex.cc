@@ -88,7 +88,7 @@ SearchMutex (pthread_mutex_t *mutex)
 }
 
 int dce_pthread_mutex_init (pthread_mutex_t *mutex,
-                            const pthread_mutexattr_t *attribute)
+                            const pthread_mutexattr_t *attribute) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << mutex << attribute);
@@ -134,7 +134,7 @@ int dce_pthread_mutex_init (pthread_mutex_t *mutex,
 
   return 0;
 }
-int dce_pthread_mutex_destroy (pthread_mutex_t *mutex)
+int dce_pthread_mutex_destroy (pthread_mutex_t *mutex) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << mutex);
@@ -170,7 +170,7 @@ int dce_pthread_mutex_destroy (pthread_mutex_t *mutex)
 
   return 0;
 }
-int dce_pthread_mutex_lock (pthread_mutex_t *mutex)
+int dce_pthread_mutex_lock (pthread_mutex_t *mutex) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << mutex);
@@ -208,7 +208,7 @@ int dce_pthread_mutex_lock (pthread_mutex_t *mutex)
 
   return 0;
 }
-int dce_pthread_mutex_trylock (pthread_mutex_t *mutex)
+int dce_pthread_mutex_trylock (pthread_mutex_t *mutex) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << mutex);
@@ -258,7 +258,7 @@ int dce_pthread_mutex_trylock (pthread_mutex_t *mutex)
   // quiet compiler.
   return 0;
 }
-int dce_pthread_mutex_unlock (pthread_mutex_t *mutex)
+int dce_pthread_mutex_unlock (pthread_mutex_t *mutex) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << mutex);
@@ -299,7 +299,7 @@ int dce_pthread_mutex_unlock (pthread_mutex_t *mutex)
     }
   return 0;
 }
-int dce_pthread_mutexattr_init (pthread_mutexattr_t *attribute)
+int dce_pthread_mutexattr_init (pthread_mutexattr_t *attribute) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << attribute);
   NS_ASSERT (Current () != 0);
@@ -312,7 +312,7 @@ int dce_pthread_mutexattr_init (pthread_mutexattr_t *attribute)
   attr->type = PTHREAD_MUTEX_NORMAL;
   return 0;
 }
-int dce_pthread_mutexattr_destroy (pthread_mutexattr_t *attribute)
+int dce_pthread_mutexattr_destroy (pthread_mutexattr_t *attribute) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << attribute);
   NS_ASSERT (Current () != 0);
@@ -322,7 +322,7 @@ int dce_pthread_mutexattr_destroy (pthread_mutexattr_t *attribute)
     }
   return 0;
 }
-int dce_pthread_mutexattr_settype (pthread_mutexattr_t *attribute, int kind)
+int dce_pthread_mutexattr_settype (pthread_mutexattr_t *attribute, int kind) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << attribute << kind);
   NS_ASSERT (Current () != 0);

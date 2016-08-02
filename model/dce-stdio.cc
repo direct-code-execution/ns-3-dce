@@ -460,7 +460,7 @@ int dce_ferror (FILE *stream) noexcept
   int status = ferror (stream);
   return status;
 }
-int dce_fileno (FILE *stream)
+int dce_fileno (FILE *stream) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream);
   NS_ASSERT (Current () != 0);
@@ -662,7 +662,8 @@ void dce_rewind (FILE *stream)
   NS_ASSERT (Current () != 0);
   rewind (stream);
 }
-int dce_setvbuf (FILE *stream, char *buf, int mode, size_t size)
+
+int dce_setvbuf (FILE *stream, char *buf, int mode, size_t size) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream << ((void*)buf) << mode << size);
   NS_ASSERT (Current () != 0);
@@ -676,22 +677,22 @@ int dce_setvbuf (FILE *stream, char *buf, int mode, size_t size)
   return status;
 }
 
-void dce_setbuf (FILE *stream, char *buf)
+void dce_setbuf (FILE *stream, char *buf) noexcept
 {
   dce_setvbuf (stream, buf, buf ? _IOFBF : _IONBF, BUFSIZ);
 }
 
-void dce_setbuffer (FILE *stream, char *buf, size_t size)
+void dce_setbuffer (FILE *stream, char *buf, size_t size) noexcept
 {
   dce_setvbuf (stream, buf, buf ? _IOFBF : _IONBF, size);
 }
 
-void dce_setlinebuf (FILE *stream)
+void dce_setlinebuf (FILE *stream) noexcept
 {
   dce_setvbuf (stream, (char *) NULL, _IOLBF, 0);
 }
 
-int dce_remove (const char *pathname)
+int dce_remove (const char *pathname) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << pathname);
   NS_ASSERT (Current () != 0);
@@ -787,7 +788,7 @@ size_t dce___fpending (FILE *stream)
   size_t ret = __fpending (stream);
   return ret;
 }
-int dce_asprintf (char **strp, const char *fmt, ...)
+int dce_asprintf (char **strp, const char *fmt, ...) noexcept
 {
   va_list ap;
   va_start (ap, fmt);
@@ -795,7 +796,7 @@ int dce_asprintf (char **strp, const char *fmt, ...)
   return dce_vasprintf (strp, fmt, ap);
 }
 
-int dce_vasprintf (char **strp, const char *fmt, va_list ap)
+int dce_vasprintf (char **strp, const char *fmt, va_list ap) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
