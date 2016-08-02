@@ -17,7 +17,7 @@ extern "C" {
 
 
 
- char const * dce_inet_ntop (int __af,__restrict__ void const * __cp,__restrict__ char * __buf,socklen_t __len);
+ char const * dce_inet_ntop (int __af,__restrict__ void const * __cp,__restrict__ char * __buf,socklen_t __len) noexcept;
 
 
 

@@ -10,15 +10,15 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 void dce_openlog (char const * __ident,int __option,int __facility);
+                 void dce_openlog (char const * __ident,int __option,int __facility) ;
 
- void dce_closelog ();
+ void dce_closelog () ;
 
- int dce_setlogmask (int __mask);
+ int dce_setlogmask (int __mask) noexcept;
 
- void dce_syslog (int __pri,char const * __fmt,... );
+ void dce_syslog (int __pri,char const * __fmt,... ) ;
 
- void dce_vsyslog (int __pri,char const * __fmt,va_list);
+ void dce_vsyslog (int __pri,char const * __fmt,va_list) ;
 
 
 #ifdef __cplusplus

@@ -10,11 +10,11 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 void * dce_mmap (void * __addr,size_t __len,int __prot,int __flags,int __fd,__off_t __offset);
+                 void * dce_mmap (void * __addr,size_t __len,int __prot,int __flags,int __fd,__off_t __offset) noexcept;
 
- void * dce_mmap64 (void * __addr,size_t __len,int __prot,int __flags,int __fd,__off64_t __offset);
+ void * dce_mmap64 (void * __addr,size_t __len,int __prot,int __flags,int __fd,__off64_t __offset) noexcept;
 
- int dce_munmap (void * __addr,size_t __len);
+ int dce_munmap (void * __addr,size_t __len) noexcept;
 
 
 #ifdef __cplusplus

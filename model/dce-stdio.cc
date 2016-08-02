@@ -186,7 +186,7 @@ void mode_setup (FILE *file, int fd, const char *mode)
 
 } // namespace
 
-FILE * dce_fdopen (int fildes, const char *mode)
+FILE * dce_fdopen (int fildes, const char *mode) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << fildes << mode);
   NS_ASSERT (Current () != 0);
@@ -440,20 +440,20 @@ int dce_fflush (FILE *stream)
     }
   return 0;
 }
-void dce_clearerr (FILE *stream)
+void dce_clearerr (FILE *stream) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream);
   NS_ASSERT (Current () != 0);
   clearerr (stream);
 }
-int dce_feof (FILE *stream)
+int dce_feof (FILE *stream) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream);
   NS_ASSERT (Current () != 0);
   int status = feof (stream);
   return status;
 }
-int dce_ferror (FILE *stream)
+int dce_ferror (FILE *stream) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream);
   NS_ASSERT (Current () != 0);

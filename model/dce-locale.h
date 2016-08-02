@@ -10,7 +10,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 char * dce_setlocale (int __category,char const * __locale);
+                 char * dce_setlocale (int __category,char const * __locale) noexcept;
 
 
 

@@ -10,7 +10,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_poll (pollfd * __fds,nfds_t __nfds,int __timeout);
+                 int dce_poll (pollfd * __fds,nfds_t __nfds,int __timeout) ;
 
 
 #ifdef __cplusplus

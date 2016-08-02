@@ -10,7 +10,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_utime (char const * __file,utimbuf const * __file_times);
+                 int dce_utime (char const * __file,utimbuf const * __file_times) noexcept;
 
 
 #ifdef __cplusplus

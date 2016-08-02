@@ -10,11 +10,11 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_mkdir (char const * __path,__mode_t __mode);
+                 int dce_mkdir (char const * __path,__mode_t __mode) noexcept;
 
- __mode_t dce_umask (__mode_t __mask);
+ __mode_t dce_umask (__mode_t __mask) noexcept;
 
- int dce_fstat64 (int __fd, struct stat64 *__buf);
+ int dce_fstat64 (int __fd, struct stat64 *__buf) noexcept;
 
 
 #ifdef __cplusplus

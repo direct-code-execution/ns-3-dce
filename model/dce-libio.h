@@ -10,9 +10,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce__IO_getc (_IO_FILE * __fp);
+                 int dce__IO_getc (_IO_FILE * __fp) ;
 
- int dce__IO_putc (int __c,_IO_FILE * __fp);
+ int dce__IO_putc (int __c,_IO_FILE * __fp) ;
 
 
 #ifdef __cplusplus

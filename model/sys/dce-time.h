@@ -10,11 +10,11 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_gettimeofday (__restrict__ ::timeval * __tv,__timezone_ptr_t __tz);
+                 int dce_gettimeofday (__restrict__ ::timeval * __tv,__timezone_ptr_t __tz) noexcept;
 
- int dce_setitimer (__itimer_which_t __which,__restrict__ ::itimerval const * __new,__restrict__ ::itimerval * __old);
+ int dce_setitimer (__itimer_which_t __which,__restrict__ ::itimerval const * __new,__restrict__ ::itimerval * __old) noexcept;
 
- int dce_getitimer (__itimer_which_t __which,itimerval * __value);
+ int dce_getitimer (__itimer_which_t __which,itimerval * __value) noexcept;
 
 
 #ifdef __cplusplus

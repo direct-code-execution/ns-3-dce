@@ -10,7 +10,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_uname (struct utsname *__name);
+                 int dce_uname (struct utsname *__name) noexcept;
 
 
 #ifdef __cplusplus

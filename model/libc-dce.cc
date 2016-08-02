@@ -35,7 +35,7 @@
 #include "dce-misc.h"
 #include "sys/dce-wait.h"
 #include "dce-locale.h"
-#include "net/dce-if.h"
+#include "dce-if.h"
 #include "dce-syslog.h"
 #include "dce-pwd.h"
 #include "dce-dirent.h"

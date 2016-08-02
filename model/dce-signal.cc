@@ -12,7 +12,7 @@ NS_LOG_COMPONENT_DEFINE ("DceSignal");
 
 using namespace ns3;
 
-sighandler_t dce_signal (int signum, sighandler_t handler)
+sighandler_t dce_signal (int signum, sighandler_t handler) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << signum << handler);
   NS_ASSERT (Current () != 0);
@@ -115,7 +115,7 @@ int dce_sigwait (const sigset_t *set, int *sig)
 
   return ret;
 }
-int dce_sigprocmask (int how, const sigset_t *set, sigset_t *oldset)
+int dce_sigprocmask (int how, const sigset_t *set, sigset_t *oldset) 
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << how);

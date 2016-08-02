@@ -10,7 +10,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_select (int __nfds,__restrict__ ::fd_set * __readfds,__restrict__ ::fd_set * __writefds,__restrict__ ::fd_set * __exceptfds,__restrict__ ::timeval * __timeout);
+                 int dce_select (int __nfds,__restrict__ ::fd_set * __readfds,__restrict__ ::fd_set * __writefds,__restrict__ ::fd_set * __exceptfds,__restrict__ ::timeval * __timeout) ;
 
 
 #ifdef __cplusplus

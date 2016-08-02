@@ -10,9 +10,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_tcgetattr (int __fd,termios * __termios_p);
+                 int dce_tcgetattr (int __fd,termios * __termios_p) noexcept;
 
- int dce_tcsetattr (int __fd,int __optional_actions,termios const * __termios_p);
+ int dce_tcsetattr (int __fd,int __optional_actions,termios const * __termios_p) noexcept;
 
 
 #ifdef __cplusplus

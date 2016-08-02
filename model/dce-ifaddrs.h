@@ -10,7 +10,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_getifaddrs (ifaddrs * * __ifap);
+                 int dce_getifaddrs (ifaddrs * * __ifap) noexcept;
 
 
 

@@ -10,22 +10,22 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 __sighandler_t dce_signal (int __sig,__sighandler_t __handler);
+                 __sighandler_t dce_signal (int __sig,__sighandler_t __handler) noexcept;
 
- int dce_sigaction (int signum, const struct sigaction *act, struct sigaction *oldact);
-
-
+ int dce_sigaction (int signum, const struct sigaction *act, struct sigaction *oldact) ;
 
 
 
 
- int dce_sigprocmask (int __how,__restrict__ ::sigset_t const * __set,__restrict__ ::sigset_t * __oset);
 
- int dce_sigwait (__restrict__ ::sigset_t const * __set,__restrict__ int * __sig);
 
- int dce_kill (__pid_t __pid,int __sig);
+ int dce_sigprocmask (int __how,__restrict__ ::sigset_t const * __set,__restrict__ ::sigset_t * __oset) noexcept;
 
- int dce_pthread_kill (pthread_t thread, int sig);
+ int dce_sigwait (__restrict__ ::sigset_t const * __set,__restrict__ int * __sig) ;
+
+ int dce_kill (__pid_t __pid,int __sig) noexcept;
+
+ int dce_pthread_kill (pthread_t thread, int sig) noexcept;
 
 
 #ifdef __cplusplus

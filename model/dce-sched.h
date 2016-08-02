@@ -10,7 +10,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_sched_yield ();
+                 int dce_sched_yield () noexcept;
 
 
 #ifdef __cplusplus

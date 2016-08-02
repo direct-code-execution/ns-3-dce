@@ -10,9 +10,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 void dce_statfs::statfs ();
-
- void dce_statfs64::statfs64 ();
+                 void dce_statfs64::statfs64 () ;
 
 
 #ifdef __cplusplus

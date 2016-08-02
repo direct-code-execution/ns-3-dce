@@ -157,6 +157,7 @@ class Generator:
                     # locations.update ({ decl.location })
                     # {ret} {name} ({args}) 
                     # proto = "{extern} {ret} {name} ({args})".format(
+
                     extern="extern" if decl.has_extern else ""
                     rtype = "%s" % (decl.return_type if decl.return_type is not None else "void")
 
@@ -164,9 +165,12 @@ class Generator:
                     #     print(dir(a ))
                     #     print("a", a )
                     #     print("a", a.name )
-                    #     print("a", a.decl_type )
+                    # print("decl=", decl.create_decl_type )
+                    print("decl=", decl.calling_convention )
+                    print("decl=", decl.does_throw )
                     #     print("a", a.attributes )
                     #     # print("a", a.type )
+                    
 
                     # exit(1)
                     # for now keep only types, but hopefully we should have everything
@@ -203,7 +207,7 @@ class Generator:
 
                 # + " " + arg.name)
                     template = """
-                    {extern} {ret} {name} ({fullargs}){{
+                    {extern} {ret} {name} ({fullargs}) {{
                         {retstmt} g_libc.{name}_fn ({arg_names});
                     }}
                     """
@@ -214,7 +218,7 @@ class Generator:
                         log.debug("Exception [%s] found " % name)
                         extern=""
                         rtype, fullargs , arg_names, location = exceptions[name]
-                        partialargs = fullargs
+                        # partialargs = fullargs
                         # **exceptions[name]
                         print("Values:", rtype, fullargs, arg_names, location)
 
@@ -237,11 +241,12 @@ class Generator:
                     if row["type"] == "dce":
 
                         # declaration of dce_{libcfunc}
-                        content = "{extern} {ret} dce_{name} ({fullargs});\n".format(
+                        content = "{extern} {ret} dce_{name} ({fullargs}) {throw};\n".format(
                                 extern="",
                                 ret=rtype,
-                                fullargs=partialargs,
+                                fullargs=fullargs,
                                 name=name,
+                                throw="" if decl.does_throw else "noexcept",
                                 )
 
                     # then generate aliases for both natives and dce
@@ -269,10 +274,15 @@ class Generator:
                 # filename = "model"
                 header = ""
                 
-                sys = "sys" if head.endswith("sys") else ""
+                subfolder = ""
+                for folder in ["sys", "net"]:
+                    if head.endswith(folder):
+                        subfolder = folder
+                        break
+
                     # tail = os.path.join("sys", tail)
-                filename = os.path.join("model", sys, "dce-" + tail)
-                header=os.path.join(sys, tail)
+                filename = os.path.join("model", subfolder, "dce-" + tail)
+                header=os.path.join(subfolder, tail)
                 print(filename)
                 # TODO 
 # + ".generated.h"
@@ -303,7 +313,7 @@ extern "C" {{
 #endif
 """
                 if write_headers:
-                    with open(filename, "w+") as dst:
+                    with open(filename, 'w+') as dst:
 
                         # print("content=", content)
                         dst.write(content)

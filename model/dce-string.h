@@ -31,9 +31,9 @@ extern "C" {
 
 
 
- char * dce_strdup (char const * __s);
+ char * dce_strdup (char const * __s) noexcept;
 
- char * dce_strndup (char const * __string,size_t __n);
+ char * dce_strndup (char const * __string,size_t __n) noexcept;
 
 
 

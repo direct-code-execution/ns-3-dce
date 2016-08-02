@@ -10,7 +10,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_ioctl (int __fd,long unsigned int __request,... );
+                 int dce_ioctl (int __fd,long unsigned int __request,... ) noexcept;
 
 
 #ifdef __cplusplus
