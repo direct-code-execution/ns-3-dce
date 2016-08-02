@@ -65,6 +65,9 @@ exceptions = {
     "statvfs": ExplicitFn("int", "const char *path, struct statvfs *buf", "path, buf", "/usr/include/x86_64-linux-gnu/sys/statvfs.h", ""),
     "statfs": ExplicitFn("int", "const char *path, struct statfs *buf", "path, buf", "/usr/include/x86_64-linux-gnu/sys/vfs.h", "noexcept"),
     "statfs64": ExplicitFn("int", "const char *path, struct statfs64 *buf", "path, buf", "/usr/include/x86_64-linux-gnu/sys/vfs.h", "noexcept"),
+    "abort": ExplicitFn("int", "", "", "/usr/include/stdlib.h", "__attribute__ ((__noreturn__))"),
+    "exit": ExplicitFn("int", "", "", "/usr/include/stdlib.h", "__attribute__ ((__noreturn__))"),
+    "pthread_exit": ExplicitFn("int", "void *retval", "retval", "/usr/include/pthread.h", "__attribute__ ((__noreturn__))"),
     }
 
 

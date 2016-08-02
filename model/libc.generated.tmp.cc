@@ -1,5 +1,5 @@
 #define __restrict__ 
-                     int atexit (void (*__func)(  ) ){
+                     int atexit (void (*__func)(  ) ) noexcept __attribute__ ((__noreturn__)) {
                         return g_libc.atexit_fn (__func);
                     }
                     
@@ -167,7 +167,7 @@
                          g_libc.qsort_fn (__base,__nmemb,__size,__compar);
                     }
                     
-                     void abort () noexcept {
+                     void abort () noexcept __attribute__ ((__noreturn__)) {
                          g_libc.abort_fn ();
                     }
                     
@@ -535,7 +535,7 @@
                         return g_libc.isatty_fn (__fd);
                     }
                     
-                     void exit (int __status){
+                     void exit (int __status) noexcept __attribute__ ((__noreturn__)) {
                          g_libc.exit_fn (__status);
                     }
                     
@@ -1126,7 +1126,7 @@
                         return g_libc.pthread_create_fn (__newthread,__attr,__start_routine,__arg);
                     }
                     
-                     void pthread_exit (void * __retval){
+                     void pthread_exit (void * __retval) __attribute__ ((__noreturn__)) {
                          g_libc.pthread_exit_fn (__retval);
                     }
                     

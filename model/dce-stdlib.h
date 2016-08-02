@@ -80,11 +80,11 @@ extern "C" {
  int dce_clearenv () noexcept;
 
 
- void dce_abort () noexcept;
+ void dce_abort () noexcept __attribute__ ((__noreturn__));
 
  int dce_mkstemp (char * __template) ;
 
- void dce_exit (int __status) noexcept;
+ void dce_exit (int __status) noexcept __attribute__ ((__noreturn__));
 
 
 
