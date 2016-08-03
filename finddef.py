@@ -139,12 +139,13 @@ class Generator:
                 for row in reader:
                     # function_name = line.rstrip()
                     # print(line)
-                    if row["type"] == "alias":
+                    # if row["type"] == "alias":
 # or row["type"] == "dce":
-                        continue
+                        # continue
 
                     # look for a match
-                    print('row["name"]=', row["name"])    
+                    print('row["name"]=', row["name"], "extra=", row["extra"])    
+                    # print('row["name"]=', row["name"])    
                     # decl = global_namespace.free_function(name=row["name"])  
                    # Search for the function by name
 
