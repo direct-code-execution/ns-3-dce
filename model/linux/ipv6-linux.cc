@@ -21,6 +21,7 @@
 #include "ipv6-linux.h"
 #include "ns3/log.h"
 #include "ns3/node.h"
+#include "ns3/object-factory.h"
 #include "linux-stack-helper.h"
 #include "ns3/ipv6-list-routing-helper.h"
 #include "ns3/ipv6-static-routing-helper.h"
