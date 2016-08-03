@@ -1,4 +1,6 @@
 #include "sys/dce-vfs.h"
+#include "sys/dce-statfs.h"
+#include "sys/dce-statvfs.h"
 #include "utils.h"
 #include "dce-manager.h"
 #include "process.h"
@@ -20,7 +22,7 @@ int dce_statfs (const char *path, struct statfs *buf) noexcept
   return -1;
 }
 
-int dce_fstatfs (int fd, struct statfs *buf) 
+int dce_fstatfs (int fd, struct statfs *buf) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -38,7 +40,7 @@ int dce_statfs64 (const char *path, struct statfs64 *buf) noexcept
   return -1;
 }
 
-int dce_fstatfs64 (int fd, struct statfs64 *buf)
+int dce_fstatfs64 (int fd, struct statfs64 *buf) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -47,7 +49,7 @@ int dce_fstatfs64 (int fd, struct statfs64 *buf)
   return -1;
 }
 
-int dce_statvfs (const char *path, struct statvfs *buf)
+int dce_statvfs (const char *path, struct statvfs *buf) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -56,7 +58,7 @@ int dce_statvfs (const char *path, struct statvfs *buf)
   return -1;
 }
 
-int dce_fstatvfs (int fd, struct statvfs *buf)
+int dce_fstatvfs (int fd, struct statvfs *buf) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);

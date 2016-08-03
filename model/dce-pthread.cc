@@ -101,7 +101,7 @@ int dce_pthread_create (pthread_t *thread_handle,
   manager->Yield ();
   return 0;
 }
-void dce_pthread_exit (void *arg) __attribute__ ((__noreturn__))
+void dce_pthread_exit (void *arg)
 {
   ns3::Thread *current = ns3::Current ();
   NS_LOG_FUNCTION (current << ns3::UtilsGetNodeId () << arg);
@@ -133,6 +133,7 @@ void dce_pthread_exit (void *arg) __attribute__ ((__noreturn__))
     }
   ns3::TaskManager::Current ()->Exit ();
 }
+
 int dce_pthread_join (pthread_t thread_handle, void **value_ptr)
 {
   ns3::Thread *current = ns3::Current ();

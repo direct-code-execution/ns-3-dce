@@ -24,14 +24,15 @@
 #include "process.h"
 #include "ns3/log.h"
 #include "ns3/assert.h"
+#include "dce-dlfcn.h"
 #include <unistd.h>
-#include <dlfcn.h>
+//#include <dlfcn.h>
 
 NS_LOG_COMPONENT_DEFINE ("DceDlfcn");
 
 using namespace ns3;
 
-void *dce_dlopen(const char *filename, int flag)
+extern void *dce_dlopen(const char *filename, int flag) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << filename << flag);
   NS_ASSERT (Current () != 0);
@@ -50,7 +51,7 @@ void *dce_dlopen(const char *filename, int flag)
   return loader->Load (filename ? filename : exeFullPath, flag, true);
 }
 
-void *dce_dlsym(void *handle, const char *symbol)
+void *dce_dlsym(void *handle, const char *symbol) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << handle << symbol);
   NS_ASSERT (Current () != 0);

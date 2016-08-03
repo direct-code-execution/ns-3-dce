@@ -42,6 +42,7 @@ LinuxIpv4RawSocketFactoryImpl::CreateSocket (void)
   socket->CreateSocket ();
   return socket;
 #endif
+  return nullptr;
 }
 
 
