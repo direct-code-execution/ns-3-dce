@@ -33,7 +33,7 @@
 // Not sure where it is defined and implemented
 // NATIVE (__xpg_strerror_r)
 
-
+// Could be removed ?
 //DCE    (__cxa_finalize)
 //DCE    (__cxa_atexit)
 // Not sure where it is defined and implemented

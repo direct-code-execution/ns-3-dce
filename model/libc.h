@@ -79,34 +79,29 @@
 #include <utime.h>
 
 
-// Generate struct
-//#define GENERATE_LIBC
-
 //on peut utiliser des templates pour recuperer les arguments 
 //#define DCE(name, args...) rtype (*name ## _fn) (args) ;
 /* native => decltype(name) */
 #define DCE NATIVE
 #define NATIVE(name, ...) decltype(&name) name ## _fn ;
 
-
-//#define NATIVE_EXPLICIT(name, type) decltype( (type) &name) name ## _fn ;
 #define ALIAS(name, ...)
 
-// NATIVE_EXPLICIT
 /**
 TODO we could get rid of that ?!!!
+
+This structure holds function pointers that are then overriden
 **/
 struct Libc
 {
 
-
-/* #define DCET(rtype, name) DCE (name) */
-/* #define NATIVET(rtype, name) NATIVE (name) */
-
-/* #define DCE_EXPLICIT(name,rtype,...) rtype (*name ## _fn) (__VA_ARGS__); */
-// #include "libc-ns3.generated.h"
  #include "libc-ns3.h"
 
+  /* items that can't be found via libclang  (not exported etc...) */
+  void (*__cxa_finalize_fn) (void *d);
+  int (*__cxa_atexit_fn)(void (*func)(void *), void *arg, void *d) ;
+  
+ 
   void (*dce_global_variables_setup_fn)(struct DceGlobalVariables *variables);
 //  char* (*strstr_fn)(const char *a, const char *b);
 //  int (*vsnprintf_fn)(char *str, size_t size, const char *format, va_list v);
@@ -115,9 +110,6 @@ struct Libc
 #undef DCE
 #undef NATIVE
 #undef NATIVE_EXPLICIT
-//#undef DCE_WITH_ALIAS
-//#undef DCE_WITH_ALIAS2
 
-//#undef GENERATE_LIBC
 
 #endif /* LIBC_H */

@@ -10,6 +10,7 @@
 #include "utils.h"
 
 #include <sstream>
+#include <cstdarg>
 
 NS_LOG_COMPONENT_DEFINE ("DceSyslog");
 

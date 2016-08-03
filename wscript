@@ -806,9 +806,12 @@ def build(bld):
 #               linkflags=['-nostdlib', '-fno-profile-arcs',
 #                          '-Wl,--version-script=' + os.path.join('model', 'libc.version'),
 #                          '-Wl,-soname=libc.so.6'])
+#
+    lib_cxxflags = ['-g', '-fno-profile-arcs', '-fno-test-coverage']
+    lib_cxxflags = ['-g']
 
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc', 'model/libc-global-variables.cc'],
-              target='lib/c-ns3', cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage'],
+              target='lib/c-ns3', cxxflags=lib_cxxflags,
               defines=['LIBSETUP=libc_setup'],
               linkflags=['-nostdlib', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'libc.version'),
@@ -822,7 +825,7 @@ def build(bld):
     # The very small libpthread used to replace the glibc
     # and forward to the dce_* code
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc'],
-              target='lib/pthread-ns3', cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage'],
+              target='lib/pthread-ns3', cxxflags=lib_cxxflags,
               defines=['LIBSETUP=libpthread_setup'],
               linkflags=['-nostdlib', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'libpthread.version'),
@@ -831,7 +834,7 @@ def build(bld):
     # The very small librt used to replace the glibc
     # and forward to the dce_* code
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc'],
-              target='lib/rt-ns3', cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage'],
+              target='lib/rt-ns3', cxxflags=lib_cxxflags,
               defines=['LIBSETUP=librt_setup'],
               linkflags=['-nostdlib', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'librt.version'),
@@ -840,7 +843,7 @@ def build(bld):
     # The very small libm used to replace the glibc
     # and forward to the dce_* code
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc'],
-              target='lib/m-ns3', cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage'],
+              target='lib/m-ns3', cxxflags=lib_cxxflags,
               defines=['LIBSETUP=libm_setup'],
               linkflags=['-nostdlib', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'libm.version'),
@@ -849,7 +852,7 @@ def build(bld):
     # The very small libdl used to replace the glibc
     # and forward to the dce_* code
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc'],
-              target='lib/dl-ns3', cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage'],
+              target='lib/dl-ns3', cxxflags=lib_cxxflags,
               defines=['LIBSETUP=libdl_setup'],
               linkflags=['-nostdlib', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'libdl.version'),
