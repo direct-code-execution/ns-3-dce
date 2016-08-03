@@ -11,7 +11,8 @@
 extern "C" {
 #endif
                  int dce_statfs (const char *path, struct statfs *buf) noexcept;
-                 int dce_statfs64 (const char *path, struct statfs64 *buf) noexcept;
+
+ int dce_statfs64 (const char *path, struct statfs64 *buf) noexcept;
 
 
 #ifdef __cplusplus

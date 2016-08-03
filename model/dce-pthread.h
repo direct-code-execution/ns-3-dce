@@ -12,7 +12,7 @@ extern "C" {
 #endif
                  int dce_pthread_create (__restrict__ ::pthread_t * __newthread,__restrict__ ::pthread_attr_t const * __attr,void * (*)( void * ) ,__restrict__ void * __arg) noexcept;
 
- void dce_pthread_exit (void * __retval) __attribute__ ((__noreturn__));
+ void dce_pthread_exit (void *retval) __attribute__ ((__noreturn__));
 
  pthread_t dce_pthread_self () noexcept;
 

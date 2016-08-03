@@ -11,10 +11,11 @@
 #include "ns3/node-list.h"
 #include "dce-manager.h"
 #include "dce-stdio.h"
+#include "dce-stdlib.h"
 #include "process.h"
 #include "utils.h"
 #include "process-delay-model.h"
-#include "dce-cxa.h"
+//#include "dce-cxa.h"
 
 namespace ns3 {
 

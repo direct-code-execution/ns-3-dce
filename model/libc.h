@@ -87,6 +87,16 @@
 
 #define ALIAS(name, ...)
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+// In case it's not defined
+extern void __cxa_finalize (void *d);
+extern int __cxa_atexit (void (*func)(void *), void *arg, void *d);
+
+#ifdef __cplusplus
+}
+#endif
 /**
 TODO we could get rid of that ?!!!
 
@@ -98,8 +108,8 @@ struct Libc
  #include "libc-ns3.h"
 
   /* items that can't be found via libclang  (not exported etc...) */
-  void (*__cxa_finalize_fn) (void *d);
-  int (*__cxa_atexit_fn)(void (*func)(void *), void *arg, void *d) ;
+//  void (*__cxa_finalize_fn) (void *d);
+//  int (*__cxa_atexit_fn)(void (*func)(void *), void *arg, void *d) ;
   
  
   void (*dce_global_variables_setup_fn)(struct DceGlobalVariables *variables);

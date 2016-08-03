@@ -34,8 +34,8 @@
 // NATIVE (__xpg_strerror_r)
 
 // Could be removed ?
-//DCE    (__cxa_finalize)
-//DCE    (__cxa_atexit)
+DCE    (__cxa_finalize)
+DCE    (__cxa_atexit)
 // Not sure where it is defined and implemented
 //NATIVE (__gxx_personality_v0)
 

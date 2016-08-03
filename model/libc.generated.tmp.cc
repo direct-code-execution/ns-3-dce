@@ -1,4 +1,12 @@
 #define __restrict__ 
+                     void __cxa_finalize (void *d) {
+                         g_libc.__cxa_finalize_fn (d);
+                    }
+                    
+                     int __cxa_atexit (void (*func)(void *), void *arg, void *d) {
+                        return g_libc.__cxa_atexit_fn (func, arg, d);
+                    }
+                    
                      int atexit (void (*__func)(  ) ) noexcept __attribute__ ((__noreturn__)) {
                         return g_libc.atexit_fn (__func);
                     }

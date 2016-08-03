@@ -10,7 +10,11 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_atexit (void (*)(  ) ) noexcept;
+                 void dce___cxa_finalize (void *d) ;
+
+ int dce___cxa_atexit (void (*func)(void *), void *arg, void *d) ;
+
+ int dce_atexit (void (*)(  ) ) noexcept;
 
  long int dce_random () noexcept;
 
@@ -80,11 +84,11 @@ extern "C" {
  int dce_clearenv () noexcept;
 
 
- void dce_abort () noexcept __attribute__ ((__noreturn__));
+ void dce_abort (void) noexcept __attribute__ ((__noreturn__));
 
  int dce_mkstemp (char * __template) ;
 
- void dce_exit (int __status) noexcept __attribute__ ((__noreturn__));
+ void dce_exit (int status) noexcept __attribute__ ((__noreturn__));
 
 
 

@@ -47,7 +47,9 @@ double_type = declarations.cpptypes.double_t()
         # print("required args=", decl.required_args)
         # print("calling convention=", decl.calling_convention)
 
-
+# int dce___cxa_atexit (void (*func)(void *), void *arg, void *d);
+# void dce___cxa_finalize (void *d);
+# __newlocale
 
 # list of exceptions for functions thatp ygccxml fail to identify correctly
 # hack around https://github.com/gccxml/pygccxml/issues/62
@@ -59,15 +61,18 @@ exceptions = {
     "wait": ExplicitFn("pid_t", "void *stat_loc", "stat_loc", "/usr/include/x86_64-linux-gnu/sys/wait.h", ""),
     "__fpurge": ExplicitFn("void", "FILE *fd", "fd", "/usr/include/stdio.h", ""),
     "__fpending": ExplicitFn("size_t", "FILE *fd", "fd", "/usr/include/stdio.h", ""),
+    "__cxa_atexit": ExplicitFn("int", "void (*func)(void *), void *arg, void *d", "func, arg, d", "/usr/include/stdlib.h", ""),
+    "__cxa_finalize": ExplicitFn("void", "void *d", "d", "/usr/include/stdlib.h", ""),
     "fstat64": ExplicitFn("int", "int __fd, struct stat64 *__buf", "__fd, __buf", "/usr/include/x86_64-linux-gnu/sys/stat.h", "noexcept"),
-    "pthread_kill": ExplicitFn("int", "pthread_t thread, int sig", "thread, sig", "/usr/include/signal.h", ""),
-    "uname": ExplicitFn("int", "struct utsname *__name", "__name", "/usr/include/x86_64-linux-gnu/sys/utsname.h", ""),
-    "statvfs": ExplicitFn("int", "const char *path, struct statvfs *buf", "path, buf", "/usr/include/x86_64-linux-gnu/sys/statvfs.h", ""),
+    "pthread_kill": ExplicitFn("int", "pthread_t thread, int sig", "thread, sig", "/usr/include/signal.h", "noexcept"),
+    "uname": ExplicitFn("int", "struct utsname *__name", "__name", "/usr/include/x86_64-linux-gnu/sys/utsname.h", "noexcept"),
+    "statvfs": ExplicitFn("int", "const char *path, struct statvfs *buf", "path, buf", "/usr/include/x86_64-linux-gnu/sys/statvfs.h", "noexcept"),
     "statfs": ExplicitFn("int", "const char *path, struct statfs *buf", "path, buf", "/usr/include/x86_64-linux-gnu/sys/vfs.h", "noexcept"),
     "statfs64": ExplicitFn("int", "const char *path, struct statfs64 *buf", "path, buf", "/usr/include/x86_64-linux-gnu/sys/vfs.h", "noexcept"),
-    "abort": ExplicitFn("int", "", "", "/usr/include/stdlib.h", "__attribute__ ((__noreturn__))"),
-    "exit": ExplicitFn("int", "", "", "/usr/include/stdlib.h", "__attribute__ ((__noreturn__))"),
-    "pthread_exit": ExplicitFn("int", "void *retval", "retval", "/usr/include/pthread.h", "__attribute__ ((__noreturn__))"),
+    # TODO the attributes should not be in definition for GCC (except is part of the type)
+    "abort": ExplicitFn("void", "void", "", "/usr/include/stdlib.h", "noexcept __attribute__ ((__noreturn__))"),
+    "exit": ExplicitFn("void", "int status", "status", "/usr/include/stdlib.h", "noexcept __attribute__ ((__noreturn__))"),
+    "pthread_exit": ExplicitFn("void", "void *retval", "retval", "/usr/include/pthread.h", "__attribute__ ((__noreturn__))"),
     }
 
 
@@ -144,73 +149,6 @@ class Generator:
                    # Search for the function by name
 
                    # if row["name"] in ["sigaction", "sysinfo"]
-
-                    criteria = declarations.calldef_matcher(name=row["name"])
-                    results = declarations.matcher.find(criteria, global_namespace) 
-
-                    # print("decl", results)
-                    decl = results[0]
-                    # print( "islist ? len",len(func1))
-                    name = declaration_utils.full_name(decl)
-                    if name[:2] == "::":
-                        name = name[2:]
-                    log.info("Parsing function %s" % name)
-                    # Add the arguments...
-                    # default_value', 'ellipsis', 'name', 'type'
-                    # print(dir(decl.arguments[0]))
-                    # TODO we should record the location
-                    # locations.update ({ decl.location })
-                    # {ret} {name} ({args}) 
-                    # proto = "{extern} {ret} {name} ({args})".format(
-
-                    extern="extern" if decl.has_extern else ""
-                    rtype = "%s" % (decl.return_type if decl.return_type is not None else "void")
-
-                    # for a in decl.arguments:
-                    #     print(dir(a ))
-                    #     print("a", a )
-                    #     print("a", a.name )
-                    # print("decl=", decl.create_decl_type )
-                    print("decl=", decl.calling_convention )
-                    print("decl=", decl.does_throw )
-                    #     print("a", a.attributes )
-                    #     # print("a", a.type )
-                    
-
-                    # exit(1)
-                    # for now keep only types, but hopefully we should have everything
-                    # problems appear with function pointer declaration
-                    # fullargs = ",".join([str(a.decl_type) for a in decl.arguments])
-                    # for arg in decl.arguments:
-                    #     print("arg=[%s]"% arg)
-                    #     print("arg=[%s]"% dir(arg))
-
-                    # some hacks to workaround pygccxml/castxml flaws:
-                    # va_list is not_recognized and function pointer badly displayed
-
-                    temp = []
-                    for arg in decl.arguments:
-                        s = str(arg.decl_type)
-                        if s.startswith("?unknown?"):
-                            print("UNKNOWN")
-                            s = "va_list"
-                        elif "(" in s:
-                            print ("TOTO")
-                            s= s.rstrip("*")
-                        else:
-                            s += " " + arg.name
-                        temp.append(s)
-
-                    for arg in temp:
-                        print("arg=%s"% arg)
-                    # temp = ["va_list" else str(a.decl_type) for a in decl.arguments]
-                    fullargs = ",".join(temp) # only types
-                    location = decl.location.file_name
-                    arg_names = ",".join([arg.name for arg in decl.arguments])
-                    specifier = "" if decl.does_throw else "noexcept"
-
-
-                # + " " + arg.name)
                     template = """
                     {extern} {ret} {name} ({fullargs}) {{
                         {retstmt} g_libc.{name}_fn ({arg_names});
@@ -226,7 +164,74 @@ class Generator:
                         # partialargs = fullargs
                         # **exceptions[name]
                         print("Values:", rtype, fullargs, arg_names, location)
+                    else:
 
+                        criteria = declarations.calldef_matcher(name=row["name"])
+                        results = declarations.matcher.find(criteria, global_namespace) 
+
+                        # print("decl", results)
+                        decl = results[0]
+                        # print( "islist ? len",len(func1))
+                        name = declaration_utils.full_name(decl)
+                        if name[:2] == "::":
+                            name = name[2:]
+                        log.info("Parsing function %s" % name)
+                        # Add the arguments...
+                        # default_value', 'ellipsis', 'name', 'type'
+                        # print(dir(decl.arguments[0]))
+                        # TODO we should record the location
+                        # locations.update ({ decl.location })
+                        # {ret} {name} ({args}) 
+                        # proto = "{extern} {ret} {name} ({args})".format(
+
+                        extern="extern" if decl.has_extern else ""
+                        rtype = "%s" % (decl.return_type if decl.return_type is not None else "void")
+
+                        # for a in decl.arguments:
+                        #     print(dir(a ))
+                        #     print("a", a )
+                        #     print("a", a.name )
+                        # print("decl=", decl.create_decl_type )
+                        print("decl=", decl.calling_convention )
+                        print("decl=", decl.does_throw )
+                        #     print("a", a.attributes )
+                        #     # print("a", a.type )
+                        
+
+                        # exit(1)
+                        # for now keep only types, but hopefully we should have everything
+                        # problems appear with function pointer declaration
+                        # fullargs = ",".join([str(a.decl_type) for a in decl.arguments])
+                        # for arg in decl.arguments:
+                        #     print("arg=[%s]"% arg)
+                        #     print("arg=[%s]"% dir(arg))
+
+                        # some hacks to workaround pygccxml/castxml flaws:
+                        # va_list is not_recognized and function pointer badly displayed
+
+                        temp = []
+                        for arg in decl.arguments:
+                            s = str(arg.decl_type)
+                            if s.startswith("?unknown?"):
+                                print("UNKNOWN")
+                                s = "va_list"
+                            elif "(" in s:
+                                print ("TOTO")
+                                s= s.rstrip("*")
+                            else:
+                                s += " " + arg.name
+                            temp.append(s)
+
+                        for arg in temp:
+                            print("arg=%s"% arg)
+                        # temp = ["va_list" else str(a.decl_type) for a in decl.arguments]
+                        fullargs = ",".join(temp) # only types
+                        location = decl.location.file_name
+                        arg_names = ",".join([arg.name for arg in decl.arguments])
+                        specifier = "" if decl.does_throw else "noexcept"
+
+
+                # + " " + arg.name)
                     res = template.format(
                             extern="",
                             ret=rtype,

@@ -10,9 +10,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-void * dce_dlopen (char const * __file,int __mode) noexcept;
+                 void * dce_dlopen (char const * __file,int __mode) noexcept;
 
-void * dce_dlsym (__restrict__ void * __handle,__restrict__ char const * __name) noexcept;
+ void * dce_dlsym (__restrict__ void * __handle,__restrict__ char const * __name) noexcept;
 
 
 #ifdef __cplusplus
