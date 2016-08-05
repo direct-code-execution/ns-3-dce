@@ -1727,4 +1727,9 @@
                      int dl_iterate_phdr (int (*__callback)( ::dl_phdr_info *,::size_t,void * ) ,void * __data){
                         return g_libc.dl_iterate_phdr_fn (__callback,__data);
                     }
-                    
+
+//extern "C" {
+decltype (newlocale) __newlocale __attribute__ ((weak, alias ("newlocale")));
+//#pragma weak __newlocale = newlocale
+//#pragma weak __uselocale = uselocale
+//}

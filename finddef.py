@@ -122,7 +122,10 @@ class Generator:
   # extern __typeof (name) aliasname __attribute__ ((weak, alias (# name)));
         return ""
 
-    def generate_wrappers(self, input_filename, libc_filename, write_headers : bool):
+    def generate_wrappers(self, input_filename, libc_filename,
+            write_headers : bool,
+            write_impl : bool
+        ):
         """
         Generate wrappers + headers
         """
@@ -233,7 +236,7 @@ class Generator:
 
 
                 # + " " + arg.name)
-                    res = template.format(
+                    impl = template.format(
                             extern="",
                             ret=rtype,
                             fullargs=fullargs,
@@ -242,8 +245,28 @@ class Generator:
                             arg_names=arg_names,
                         )
 
+                    # then generate aliases for both natives and dce
+                   #define weak_alias(name, aliasname) \
+                    # if hasattr(row, "extra"):
+                    # if len(row['extra']) > 0:
+                        # print("EXTRA=", row["extra"])
+                    for aliasname in row["extra"]:
+                        print("alias=", aliasname)
+                        if len(aliasname):
+                        # TODO add the alias
+                        # this is ok if at the end
+                            # content += "decltype ({name}) {aliasname} __attribute__ ((weak, alias (\"{name}\")));\n".format(
+                            tpl = "#pragma weak {aliasname} = {name}"
+                            # tpl = "extern __typeof ({name}) {aliasname} __attribute__ ((weak, alias (\"{name}\")));\n"
+                            impl += tpl.format(
+                                    aliasname=aliasname,
+                                    name=name
+                                    )
 
-                    libc_fd.write(res)
+        # # # extern __typeof (name) aliasname __attribute__ ((weak, alias (# name)));
+
+                    if write_impl:
+                        libc_fd.write(impl)
 
                     # now we generate dce-<FILE>.h content
                     #  
@@ -260,18 +283,6 @@ class Generator:
                                 throw=specifier,
                                 )
 
-                    # then generate aliases for both natives and dce
-                   #define weak_alias(name, aliasname) \
-                    if hasattr(row, "extra"):
-                        print("extra=", row["extra"])
-                        for aliasname in row["extra"]:
-                            print("alias=", aliasname)
-                            # TODO add the alias
-                            # content += "__typeof ({name}) {aliasname} __attribute__ ((weak, alias (# {name})));\n".format(
-                            #         aliasname=aliasname,
-                            #         name=name
-                            #         )
-    # # extern __typeof (name) aliasname __attribute__ ((weak, alias (# name)));
 
                     items = locations.setdefault(location, [])
                     items.append(content)
@@ -331,8 +342,18 @@ extern "C" {{
 
 
 def main():
+
+
+    libc_filename = "model/libc.generated.cc"
+
     parser  = argparse.ArgumentParser()
-    parser.add_argument('-w','--write', action="store_true", default=False, help="write output to files")
+    parser.add_argument('-d','--write-headers', action="store_true", default=False, 
+            help="Write model/dce-* to files")
+    parser.add_argument('-i','--write-impl', action="store_true", default=False,
+            help="write %s" % libc_filename)
+    parser.add_argument('-a','--write-all', action="store_true", default=False,
+            help="Enables -i and -h")
+    
     args = parser.parse_args ()
     
     g = Generator()
@@ -348,7 +369,8 @@ def main():
             ], stdout=tmp, stderr=sys.stdout)
 
     # libc-ns3.generated.tmp
-    g.generate_wrappers(output, "model/libc.generated.cc", args.write)
+    g.generate_wrappers(output, libc_filename, write_headers=args.write_headers or args.write_all, 
+            write_impl=args.write_impl or args.write_all)
 
 if __name__ == "__main__":
     main()

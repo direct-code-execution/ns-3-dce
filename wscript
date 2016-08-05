@@ -266,9 +266,7 @@ def build_dce_tests(module, bld):
                            source=tests_source)
 
     module.add_test(features='cxx cxxshlib', source=['test/test-macros.cc'], 
-                    target='lib/test', linkflags=[
-						 '-Wl,-undefined=__newlocale',
-					'-Wl,-soname=libtest.so'])
+                    target='lib/test', linkflags=[ '-Wl,-soname=libtest.so'])
     bld.install_files('${PREFIX}/lib', 'lib/libtest.so', chmod=0755 )
 
     tests = [['test-empty', []],
@@ -818,7 +816,7 @@ def build(bld):
 # -Map=mapfile.map this records the symbols in a file
                          # '-Wl,-Map=' + os.path.join('libc.generated.map'),
 						 # '-Mmodel/libc.map',
-						 '-Wl,-undefined=__newlocale',
+						 # '-Wl,-undefined=__newlocale',
                          '-Wl,-soname=libc.so.6'])
 
 
