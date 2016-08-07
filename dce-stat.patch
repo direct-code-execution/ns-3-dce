@@ -1,0 +1,31 @@
+diff --git a/model/sys/dce-stat.h b/model/sys/dce-stat.h
+index 0a180ea..218f544 100644
+--- a/model/sys/dce-stat.h
++++ b/model/sys/dce-stat.h
+@@ -14,19 +14,19 @@ extern "C" {
+ 
+  __mode_t dce_umask (__mode_t __mask) noexcept;
+ 
+- int dce___xstat (int __ver,char const * __filename,stat * __stat_buf) noexcept;
++ int dce___xstat (int __ver,char const * __filename,struct stat * __stat_buf) noexcept;
+ 
+- int dce___lxstat (int __ver,char const * __filename,stat * __stat_buf) noexcept;
++ int dce___lxstat (int __ver,char const * __filename,struct stat * __stat_buf) noexcept;
+ 
+- int dce___fxstat (int __ver,int __fildes,stat * __stat_buf) noexcept;
++ int dce___fxstat (int __ver,int __fildes,struct stat * __stat_buf) noexcept;
+ 
+- int dce___xstat64 (int __ver,char const * __filename,stat64 * __stat_buf) noexcept;
++ int dce___xstat64 (int __ver,char const * __filename,struct stat64 * __stat_buf) noexcept;
+ 
+- int dce___lxstat64 (int __ver,char const * __filename,stat64 * __stat_buf) noexcept;
++ int dce___lxstat64 (int __ver,char const * __filename,struct stat64 * __stat_buf) noexcept;
+ 
+- int dce___fxstat64 (int __ver,int __fildes,stat64 * __stat_buf) noexcept;
++ int dce___fxstat64 (int __ver,int __fildes,struct stat64 * __stat_buf) noexcept;
+ 
+- int dce___fxstatat (int __ver,int __fildes,char const * __filename,stat * __stat_buf,int __flag) noexcept;
++ int dce___fxstatat (int __ver,int __fildes,char const * __filename,struct stat * __stat_buf,int __flag) noexcept;
+ 
+  int dce_fstat64 (int __fd, struct stat64 *__buf) noexcept;
+ 
