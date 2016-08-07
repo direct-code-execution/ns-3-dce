@@ -19,6 +19,7 @@
 #include "dce-netdb.h"
 #include "dce-pthread.h"
 #include "dce-stdio.h"
+#include "dce-stdio2.h"
 #include "dce-stdarg.h"
 #include "dce-errno.h"
 #include "dce-getopt.h"
@@ -74,7 +75,7 @@ extern int __xpg_strerror_r (int __errnum, char *__buf, size_t __buflen);
 extern char * __strcpy_chk (char *__restrict __dest,
                             const char *__restrict __src,
                             size_t __destlen);
-// from glibc's stdio.h
+/** from glibc's stdio.h, more exactly bits/stdio2.h */
 extern int __sprintf_chk (char *, int, size_t, const char *, ...) __THROW;
 extern int __snprintf_chk (char *, size_t, int, size_t, const char *, ...)
 __THROW;

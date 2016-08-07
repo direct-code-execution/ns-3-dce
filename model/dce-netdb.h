@@ -38,6 +38,8 @@ extern "C" {
 
 
 
+ int * dce___h_errno_location () noexcept;
+
 
 #ifdef __cplusplus
 }

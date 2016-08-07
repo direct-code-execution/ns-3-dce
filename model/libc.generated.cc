@@ -106,7 +106,8 @@
                      void * malloc (size_t __size) {
                         return g_libc.malloc_fn (__size);
                     }
-                    #pragma weak valloc = malloc
+                    decltype (malloc) valloc __attribute__ ((weak, alias ("malloc")));
+
                      void free (void * __ptr) {
                          g_libc.free_fn (__ptr);
                     }
@@ -134,7 +135,8 @@
                      long int strtol (__restrict__ char const * __nptr,__restrict__ char * * __endptr,int __base) {
                         return g_libc.strtol_fn (__nptr,__endptr,__base);
                     }
-                    #pragma weak __strtol_internal = strtol
+                    decltype (strtol) __strtol_internal __attribute__ ((weak, alias ("strtol")));
+
                      long long int strtoll (__restrict__ char const * __nptr,__restrict__ char * * __endptr,int __base) {
                         return g_libc.strtoll_fn (__nptr,__endptr,__base);
                     }
@@ -294,11 +296,13 @@
                      __locale_t newlocale (int __category_mask,char const * __locale,__locale_t __base) {
                         return g_libc.newlocale_fn (__category_mask,__locale,__base);
                     }
-                    #pragma weak __newlocale = newlocale
+                    decltype (newlocale) __newlocale __attribute__ ((weak, alias ("newlocale")));
+
                      __locale_t uselocale (__locale_t __dataset) {
                         return g_libc.uselocale_fn (__dataset);
                     }
-                    #pragma weak __uselocale = uselocale
+                    decltype (uselocale) __uselocale __attribute__ ((weak, alias ("uselocale")));
+
                      int wctob (wint_t __c) {
                         return g_libc.wctob_fn (__c);
                     }
@@ -714,7 +718,9 @@
                      void clearerr (FILE * __stream) {
                          g_libc.clearerr_fn (__stream);
                     }
-                    #pragma weak clearerr_unlocked = clearerr#pragma weak  __clearerr_unlocked = clearerr
+                    decltype (clearerr) clearerr_unlocked __attribute__ ((weak, alias ("clearerr")));
+decltype (clearerr)  __clearerr_unlocked __attribute__ ((weak, alias ("clearerr")));
+
                      int setvbuf (__restrict__ ::FILE * __stream,__restrict__ char * __buf,int __modes,size_t __n) {
                         return g_libc.setvbuf_fn (__stream,__buf,__modes,__n);
                     }
@@ -790,7 +796,8 @@
                      int fgetc (FILE * __stream) {
                         return g_libc.fgetc_fn (__stream);
                     }
-                    #pragma weak fgetc_unlocked = fgetc
+                    decltype (fgetc) fgetc_unlocked __attribute__ ((weak, alias ("fgetc")));
+
                      int getc (FILE * __stream) {
                         return g_libc.getc_fn (__stream);
                     }
@@ -802,7 +809,8 @@
                      int getchar () {
                         return g_libc.getchar_fn ();
                     }
-                    #pragma weak getchar_unlocked = getchar
+                    decltype (getchar) getchar_unlocked __attribute__ ((weak, alias ("getchar")));
+
                      int _IO_getc (_IO_FILE * __fp) {
                         return g_libc._IO_getc_fn (__fp);
                     }
@@ -810,7 +818,8 @@
                      int fputc (int __c,FILE * __stream) {
                         return g_libc.fputc_fn (__c,__stream);
                     }
-                    #pragma weak fputc_unlocked = fputc
+                    decltype (fputc) fputc_unlocked __attribute__ ((weak, alias ("fputc")));
+
                      int putc (int __c,FILE * __stream) {
                         return g_libc.putc_fn (__c,__stream);
                     }
@@ -822,7 +831,8 @@
                      int putchar (int __c) {
                         return g_libc.putchar_fn (__c);
                     }
-                    #pragma weak putchar_unlocked = putchar
+                    decltype (putchar) putchar_unlocked __attribute__ ((weak, alias ("putchar")));
+
                      int _IO_putc (int __c,_IO_FILE * __fp) {
                         return g_libc._IO_putc_fn (__c,__fp);
                     }
@@ -830,11 +840,13 @@
                      char * fgets (__restrict__ char * __s,int __n,__restrict__ ::FILE * __stream) {
                         return g_libc.fgets_fn (__s,__n,__stream);
                     }
-                    #pragma weak fgets_unlocked = fgets
+                    decltype (fgets) fgets_unlocked __attribute__ ((weak, alias ("fgets")));
+
                      int fputs (__restrict__ char const * __s,__restrict__ ::FILE * __stream) {
                         return g_libc.fputs_fn (__s,__stream);
                     }
-                    #pragma weak fputs_unlocked = fputs
+                    decltype (fputs) fputs_unlocked __attribute__ ((weak, alias ("fputs")));
+
                      int puts (char const * __s) {
                         return g_libc.puts_fn (__s);
                     }
@@ -870,27 +882,33 @@
                      size_t fread (__restrict__ void * __ptr,size_t __size,size_t __n,__restrict__ ::FILE * __stream) {
                         return g_libc.fread_fn (__ptr,__size,__n,__stream);
                     }
-                    #pragma weak fread_unlocked = fread
+                    decltype (fread) fread_unlocked __attribute__ ((weak, alias ("fread")));
+
                      size_t fwrite (__restrict__ void const * __ptr,size_t __size,size_t __n,__restrict__ ::FILE * __s) {
                         return g_libc.fwrite_fn (__ptr,__size,__n,__s);
                     }
-                    #pragma weak fwrite_unlocked = fwrite
+                    decltype (fwrite) fwrite_unlocked __attribute__ ((weak, alias ("fwrite")));
+
                      int fflush (FILE * __stream) {
                         return g_libc.fflush_fn (__stream);
                     }
-                    #pragma weak fflush_unlocked = fflush
+                    decltype (fflush) fflush_unlocked __attribute__ ((weak, alias ("fflush")));
+
                      int ferror (FILE * __stream) {
                         return g_libc.ferror_fn (__stream);
                     }
-                    #pragma weak ferror_unlocked = ferror
+                    decltype (ferror) ferror_unlocked __attribute__ ((weak, alias ("ferror")));
+
                      int feof (FILE * __stream) {
                         return g_libc.feof_fn (__stream);
                     }
-                    #pragma weak feof_unlocked = feof
+                    decltype (feof) feof_unlocked __attribute__ ((weak, alias ("feof")));
+
                      int fileno (FILE * __stream) {
                         return g_libc.fileno_fn (__stream);
                     }
-                    #pragma weak fileno_unlocked = fileno
+                    decltype (fileno) fileno_unlocked __attribute__ ((weak, alias ("fileno")));
+
                      void perror (char const * __s) {
                          g_libc.perror_fn (__s);
                     }
@@ -902,7 +920,8 @@
                      int sscanf (__restrict__ char const * __s,__restrict__ char const * __format,... ) {
                         return g_libc.sscanf_fn (__s,__format,);
                     }
-                    #pragma weak __isoc99_sscanf = sscanf
+                    decltype (sscanf) __isoc99_sscanf __attribute__ ((weak, alias ("sscanf")));
+
                      void flockfile (FILE * __stream) {
                          g_libc.flockfile_fn (__stream);
                     }
@@ -962,11 +981,13 @@
                      tm * gmtime (time_t const * __timer) {
                         return g_libc.gmtime_fn (__timer);
                     }
-                    #pragma weak localtime = gmtime
+                    decltype (gmtime) localtime __attribute__ ((weak, alias ("gmtime")));
+
                      tm * gmtime_r (__restrict__ ::time_t const * __timer,__restrict__ ::tm * __tp) {
                         return g_libc.gmtime_r_fn (__timer,__tp);
                     }
-                    #pragma weak localtime_r = gmtime_r
+                    decltype (gmtime_r) localtime_r __attribute__ ((weak, alias ("gmtime_r")));
+
                      time_t mktime (tm * __tp) {
                         return g_libc.mktime_fn (__tp);
                     }
@@ -1114,7 +1135,8 @@
                      int pthread_once (pthread_once_t * __once_control,void (*)(  ) ) {
                         return g_libc.pthread_once_fn (__once_control,__init_routine);
                     }
-                    #pragma weak __pthread_once = pthread_once
+                    decltype (pthread_once) __pthread_once __attribute__ ((weak, alias ("pthread_once")));
+
                      void * pthread_getspecific (pthread_key_t __key) {
                         return g_libc.pthread_getspecific_fn (__key);
                     }
@@ -1126,7 +1148,8 @@
                      int pthread_key_create (pthread_key_t * __key,void (*)( void * ) ) {
                         return g_libc.pthread_key_create_fn (__key,__destr_function);
                     }
-                    #pragma weak __pthread_key_create = pthread_key_create
+                    decltype (pthread_key_create) __pthread_key_create __attribute__ ((weak, alias ("pthread_key_create")));
+
                      int pthread_key_delete (pthread_key_t __key) {
                         return g_libc.pthread_key_delete_fn (__key);
                     }
@@ -1603,12 +1626,12 @@
                         return g_libc.nl_langinfo_fn (__item);
                     }
                     
-                     int fstatfs (int __fildes,statfs * __buf) {
-                        return g_libc.fstatfs_fn (__fildes,__buf);
+                     int fstatfs (int __fildes, struct statfs * __buf) {
+                        return g_libc.fstatfs_fn (__fildes, __buf);
                     }
                     
-                     int fstatfs64 (int __fildes,statfs64 * __buf) {
-                        return g_libc.fstatfs64_fn (__fildes,__buf);
+                     int fstatfs64 (int __fildes, struct statfs64 * __buf) {
+                        return g_libc.fstatfs64_fn (__fildes, __buf);
                     }
                     
                      int statfs (const char *path, struct statfs *buf) {
@@ -1623,8 +1646,8 @@
                         return g_libc.statvfs_fn (path, buf);
                     }
                     
-                     int fstatvfs (int __fildes,statvfs * __buf) {
-                        return g_libc.fstatvfs_fn (__fildes,__buf);
+                     int fstatvfs (int __fildes, struct statvfs * __buf) {
+                        return g_libc.fstatvfs_fn (__fildes, __buf);
                     }
                     
                      int tcgetattr (int __fd,termios * __termios_p) {
@@ -1642,7 +1665,8 @@
                      wctype_t wctype_l (char const * __property,__locale_t __locale) {
                         return g_libc.wctype_l_fn (__property,__locale);
                     }
-                    #pragma weak __wctype_l = wctype_l
+                    decltype (wctype_l) __wctype_l __attribute__ ((weak, alias ("wctype_l")));
+
                      __int32_t const * * __ctype_tolower_loc () {
                         return g_libc.__ctype_tolower_loc_fn ();
                     }
@@ -1657,6 +1681,66 @@
                     
                      size_t __fpending (FILE *fd) {
                         return g_libc.__fpending_fn (fd);
+                    }
+                    
+                     int __printf_chk (int __flag,__restrict__ char const * __format,... ) {
+                        return g_libc.__printf_chk_fn (__flag,__format,);
+                    }
+                    
+                     int __vfprintf_chk (__restrict__ ::FILE * __stream,int __flag,__restrict__ char const * __format,va_list) {
+                        return g_libc.__vfprintf_chk_fn (__stream,__flag,__format,__ap);
+                    }
+                    
+                     int __fprintf_chk (__restrict__ ::FILE * __stream,int __flag,__restrict__ char const * __format,... ) {
+                        return g_libc.__fprintf_chk_fn (__stream,__flag,__format,);
+                    }
+                    
+                     int __snprintf_chk (__restrict__ char * __s,size_t __n,int __flag,size_t __slen,__restrict__ char const * __format,... ) {
+                        return g_libc.__snprintf_chk_fn (__s,__n,__flag,__slen,__format,);
+                    }
+                    
+                     int * __errno_location () {
+                        return g_libc.__errno_location_fn ();
+                    }
+                    
+                     int * __h_errno_location () {
+                        return g_libc.__h_errno_location_fn ();
+                    }
+                    
+                     int __vsnprintf_chk (__restrict__ char * __s,size_t __n,int __flag,size_t __slen,__restrict__ char const * __format,va_list) {
+                        return g_libc.__vsnprintf_chk_fn (__s,__n,__flag,__slen,__format,__ap);
+                    }
+                    
+                     int __xstat (int __ver,char const * __filename,stat * __stat_buf) {
+                        return g_libc.__xstat_fn (__ver,__filename,__stat_buf);
+                    }
+                    
+                     int __lxstat (int __ver,char const * __filename,stat * __stat_buf) {
+                        return g_libc.__lxstat_fn (__ver,__filename,__stat_buf);
+                    }
+                    
+                     int __fxstat (int __ver,int __fildes,stat * __stat_buf) {
+                        return g_libc.__fxstat_fn (__ver,__fildes,__stat_buf);
+                    }
+                    
+                     int __xstat64 (int __ver,char const * __filename,stat64 * __stat_buf) {
+                        return g_libc.__xstat64_fn (__ver,__filename,__stat_buf);
+                    }
+                    
+                     int __lxstat64 (int __ver,char const * __filename,stat64 * __stat_buf) {
+                        return g_libc.__lxstat64_fn (__ver,__filename,__stat_buf);
+                    }
+                    
+                     int __fxstat64 (int __ver,int __fildes,stat64 * __stat_buf) {
+                        return g_libc.__fxstat64_fn (__ver,__fildes,__stat_buf);
+                    }
+                    
+                     int __fxstatat (int __ver,int __fildes,char const * __filename,stat * __stat_buf,int __flag) {
+                        return g_libc.__fxstatat_fn (__ver,__fildes,__filename,__stat_buf,__flag);
+                    }
+                    
+                     cmsghdr * __cmsg_nxthdr (msghdr * __mhdr,cmsghdr * __cmsg) {
+                        return g_libc.__cmsg_nxthdr_fn (__mhdr,__cmsg);
                     }
                     
                      int fstat64 (int __fd, struct stat64 *__buf) {
@@ -1686,7 +1770,8 @@
                      void * dlopen (char const * __file,int __mode) {
                         return g_libc.dlopen_fn (__file,__mode);
                     }
-                    #pragma weak __dlopen = dlopen
+                    decltype (dlopen) __dlopen __attribute__ ((weak, alias ("dlopen")));
+
                      void * dlsym (__restrict__ void * __handle,__restrict__ char const * __name) {
                         return g_libc.dlsym_fn (__handle,__name);
                     }

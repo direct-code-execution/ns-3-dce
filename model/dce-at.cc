@@ -32,7 +32,7 @@ NS_LOG_COMPONENT_DEFINE ("DceAt");
 
 using namespace ns3;
 
-int dce___fxstatat (int ver, int fd, const char *pathname, struct stat *buf, int flag)
+int dce___fxstatat (int ver, int fd, const char *pathname, struct stat *buf, int flag) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << pathname << buf);

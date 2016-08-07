@@ -164,14 +164,14 @@ namespace detail_paramType {
 //std::declval
 //#define NATIVE(name) 
 //#define NATIVE(name) decltype(name) name __attribute__((weak));
-#define NATIVE_EXPLICIT(name, type) 
-#define NATIVE_WITH_ALIAS(name) 
-#define NATIVE_WITH_ALIAS2(name, alias) 
+//#define NATIVE_EXPLICIT(name, type) 
+//#define NATIVE_WITH_ALIAS(name) 
+//#define NATIVE_WITH_ALIAS2(name, alias) 
 //#define DCE_WITH_ALIAS2(name, internal)
 //#define DCE_WITH_ALIAS(name)
 
 //#define DCE_ALIAS(name, internal)  weak_alias (name, internal);
-#define DCE_ALIAS(name, internal) 
+//#define DCE_ALIAS(name, internal) 
 //#define DCE_ALIAS(name, internal) extern decltype(name) internal __attribute__((weak));
 //NATIVE
 

@@ -1,4 +1,5 @@
 #include "dce-stdio.h"
+#include "dce-stdio2.h"
 #include "dce-stdarg.h"
 #include "dce-fcntl.h"
 #include "dce-unistd.h"
@@ -754,7 +755,7 @@ int dce___fprintf_chk (FILE *__restrict __stream, int __flag,
 }
 
 int dce___snprintf_chk (char *__restrict __s, size_t __n, int __flag,
-                        size_t __slen, __const char *__restrict __format, ...)
+                        size_t __slen, __const char *__restrict __format, ...) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -767,7 +768,7 @@ int dce___snprintf_chk (char *__restrict __s, size_t __n, int __flag,
 }
 int dce___vsnprintf_chk (char *__restrict __s, size_t __n, int __flag,
 						size_t __slen,
-						__const char *__restrict __format, _G_va_list __ap)
+						__const char *__restrict __format, _G_va_list __ap) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);

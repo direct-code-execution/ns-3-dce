@@ -298,7 +298,13 @@
                      __locale_t uselocale (__locale_t __dataset){
                         return g_libc.uselocale_fn (__dataset);
                     }
+                     int * __errno_location () {
+                        return g_libc.__errno_location_fn ();
+                    }
                     
+                     int * __h_errno_location () {
+                        return g_libc.__h_errno_location_fn ();
+                    }
                      int wctob (wint_t __c){
                         return g_libc.wctob_fn (__c);
                     }
@@ -1728,8 +1734,30 @@
                         return g_libc.dl_iterate_phdr_fn (__callback,__data);
                     }
 
-//extern "C" {
-decltype (newlocale) __newlocale __attribute__ ((weak, alias ("newlocale")));
-//#pragma weak __newlocale = newlocale
-//#pragma weak __uselocale = uselocale
-//}
+//decltype (newlocale) newlocale __attribute__ ((weak, alias ("__newlocale")));
+                    decltype (malloc) valloc __attribute__ ((weak, alias ("malloc")));
+                    decltype (strtol) __strtol_internal __attribute__ ((weak, alias ("strtol")));
+                    decltype (newlocale) __newlocale __attribute__ ((weak, alias ("newlocale")));
+                    decltype (uselocale) __uselocale __attribute__ ((weak, alias ("uselocale")));
+                    decltype (clearerr) clearerr_unlocked __attribute__ ((weak, alias ("clearerr")));
+decltype (clearerr)  __clearerr_unlocked __attribute__ ((weak, alias ("clearerr")));
+                    decltype (fgetc) fgetc_unlocked __attribute__ ((weak, alias ("fgetc")));
+                    decltype (getchar) getchar_unlocked __attribute__ ((weak, alias ("getchar")));
+                    decltype (fputc) fputc_unlocked __attribute__ ((weak, alias ("fputc")));
+                    decltype (putchar) putchar_unlocked __attribute__ ((weak, alias ("putchar")));
+                    decltype (fgets) fgets_unlocked __attribute__ ((weak, alias ("fgets")));
+                    decltype (fputs) fputs_unlocked __attribute__ ((weak, alias ("fputs")));
+                    decltype (fread) fread_unlocked __attribute__ ((weak, alias ("fread")));
+                    decltype (fwrite) fwrite_unlocked __attribute__ ((weak, alias ("fwrite")));
+                    decltype (fflush) fflush_unlocked __attribute__ ((weak, alias ("fflush")));
+                    decltype (ferror) ferror_unlocked __attribute__ ((weak, alias ("ferror")));
+                    decltype (feof) feof_unlocked __attribute__ ((weak, alias ("feof")));
+                    decltype (fileno) fileno_unlocked __attribute__ ((weak, alias ("fileno")));
+                    decltype (sscanf) __isoc99_sscanf __attribute__ ((weak, alias ("sscanf")));
+                    decltype (gmtime) localtime __attribute__ ((weak, alias ("gmtime")));
+                    decltype (gmtime_r) localtime_r __attribute__ ((weak, alias ("gmtime_r")));
+                    decltype (pthread_once) __pthread_once __attribute__ ((weak, alias ("pthread_once")));
+                    decltype (pthread_key_create) __pthread_key_create __attribute__ ((weak, alias ("pthread_key_create")));
+                    decltype (wctype_l) __wctype_l __attribute__ ((weak, alias ("wctype_l")));
+                    decltype (dlopen) __dlopen __attribute__ ((weak, alias ("dlopen")));
+

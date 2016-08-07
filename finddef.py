@@ -30,22 +30,10 @@ log.addHandler(logging.StreamHandler())
 # decls = parser.parse([filename], xml_generator_config)
 
 
-# ns_namespace = global_namespace.namespace("ns")
 
 int_type = declarations.cpptypes.int_t()
 double_type = declarations.cpptypes.double_t()
 
-# for decl in global_namespace.declarations:
-#     # print(dir(decl))
-#     # print(decl)
-#     if isinstance(decl, declarations.free_function_t):
-#         print(decl)
-#         print("DECL_STRING=", decl.decl_string)
-#         print("function_type=", decl.function_type)
-#         print("PARTIAL_NAME=", decl.partial_name)
-#         print("NAME=", decl.name)
-        # print("required args=", decl.required_args)
-        # print("calling convention=", decl.calling_convention)
 
 # int dce___cxa_atexit (void (*func)(void *), void *arg, void *d);
 # void dce___cxa_finalize (void *d);
@@ -73,6 +61,10 @@ exceptions = {
     "abort": ExplicitFn("void", "void", "", "/usr/include/stdlib.h", "noexcept __attribute__ ((__noreturn__))"),
     "exit": ExplicitFn("void", "int status", "status", "/usr/include/stdlib.h", "noexcept __attribute__ ((__noreturn__))"),
     "pthread_exit": ExplicitFn("void", "void *retval", "retval", "/usr/include/pthread.h", "__attribute__ ((__noreturn__))"),
+    "fstatfs": ExplicitFn("int", "int __fildes, struct statfs * __buf", "__fildes, __buf", "/usr/include/x86_64-linux-gnu/sys/vfs.h", "noexcept"),
+    "fstatvfs": ExplicitFn("int", "int __fildes, struct statvfs * __buf", "__fildes, __buf", "/usr/include/x86_64-linux-gnu/sys/statvfs.h", "noexcept"),
+    "fstatfs64": ExplicitFn("int", "int __fildes, struct statfs64 * __buf", "__fildes, __buf", "/usr/include/x86_64-linux-gnu/sys/vfs.h", "noexcept"),
+# int dce_fstatfs (int __fildes, struct statfs * __buf) noexcept;
     }
 
 
@@ -107,7 +99,7 @@ class Generator:
 
         file_config = parser.file_configuration_t(
             data=filename,
-            content_type=parser.CONTENT_TYPE.CACHED_SOURCE_FILE
+            # content_type=parser.CONTENT_TYPE.CACHED_SOURCE_FILE
             )
 
         self.project_reader = parser.project_reader_t(xml_generator_config)
@@ -122,6 +114,17 @@ class Generator:
   # extern __typeof (name) aliasname __attribute__ ((weak, alias (# name)));
         return ""
 
+
+    def lookup(self, toto):
+        
+        log.info("Looking for %s" % toto)
+
+        global_namespace = declarations.get_global_namespace(self.decls)
+        criteria = declarations.calldef_matcher(name=toto)
+        results = declarations.matcher.find(criteria, global_namespace) 
+        print("resultats=", results)
+        return results[0]
+
     def generate_wrappers(self, input_filename, libc_filename,
             write_headers : bool,
             write_impl : bool
@@ -131,7 +134,6 @@ class Generator:
         """
 
         # input_filename = "natives.h.txt"
-        global_namespace = declarations.get_global_namespace(self.decls)
 
         locations = {}
         with open(input_filename, "r") as src:
@@ -170,11 +172,10 @@ class Generator:
                         print("Values:", rtype, fullargs, arg_names, location)
                     else:
 
-                        criteria = declarations.calldef_matcher(name=row["name"])
-                        results = declarations.matcher.find(criteria, global_namespace) 
+                        decl= self.lookup(row["name"])
 
                         # print("decl", results)
-                        decl = results[0]
+                        # decl = results[0]
                         # print( "islist ? len",len(func1))
                         name = declaration_utils.full_name(decl)
                         if name[:2] == "::":
@@ -255,8 +256,9 @@ class Generator:
                         if len(aliasname):
                         # TODO add the alias
                         # this is ok if at the end
-                            # content += "decltype ({name}) {aliasname} __attribute__ ((weak, alias (\"{name}\")));\n".format(
-                            tpl = "#pragma weak {aliasname} = {name}"
+                            tpl = "decltype ({name}) {aliasname} __attribute__ ((weak, alias (\"{name}\")));\n"
+                            # the pragam requires the alias to be previously declared in clang ?!
+                            # tpl = "#pragma weak {aliasname} = {name}"
                             # tpl = "extern __typeof ({name}) {aliasname} __attribute__ ((weak, alias (\"{name}\")));\n"
                             impl += tpl.format(
                                     aliasname=aliasname,
@@ -354,7 +356,7 @@ def main():
     parser.add_argument('-a','--write-all', action="store_true", default=False,
             help="Enables -i and -h")
     
-    args = parser.parse_args ()
+    args, unknown = parser.parse_known_args ()
     
     g = Generator()
     g.parse("test.h")
@@ -362,6 +364,14 @@ def main():
     # os.system("./gen_natives.sh")
   # redirect output
     output ="model/libc-ns3.h.tmp" 
+
+
+    print(unknown)
+    if len(unknown) > 0:
+        for func in unknown:
+            g.lookup(func)
+        exit(0)
+
     with open(output, "w") as tmp:
         subprocess.call( [
             "gcc", "model/libc-ns3.h", "-E", "-P",  "-DNATIVE(name,...)=native,name,__VA_ARGS__",

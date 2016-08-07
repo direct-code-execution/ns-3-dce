@@ -234,7 +234,8 @@ CoojaLoader::LoadModule (std::string filename, int flag, bool failsafe)
           /* RTLD_LOCAL => Symbols defined in this shared object are not made available
               to resolve references in subsequently loaded shared objects 
               DEEPBIND => This means that a self-contained object will use its own
-              symbols in preference to global symbols with the same name contained in objects that have already been loaded
+              symbols in preference to global symbols with the same name contained 
+              in objects that have already been loaded
           */
           void *handle = dlopen (cached.cachedFilename.c_str (),
                                  RTLD_LAZY | RTLD_DEEPBIND | RTLD_LOCAL);

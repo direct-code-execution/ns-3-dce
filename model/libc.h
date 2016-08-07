@@ -26,6 +26,13 @@
 #include <semaphore.h>
 #include <signal.h>
 #include <stdio.h>
+// TEST
+//#undef __USE_FORTIFY_LEVEL 
+//#define __USE_FORTIFY_LEVEL 2
+//
+//#include <bits/stdio2.h>
+//#undef __USE_FORTIFY_LEVEL
+
 #include <stdio_ext.h>
 #include <stddef.h>
 #include <stdarg.h>

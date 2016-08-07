@@ -12,7 +12,7 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("DceStat");
 
-int dce___xstat (int ver, const char *path, struct stat *buf)
+int dce___xstat (int ver, const char *path, struct stat *buf) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << path << buf);
@@ -30,7 +30,7 @@ int dce___xstat (int ver, const char *path, struct stat *buf)
     }
   return retval;
 }
-int dce___xstat64 (int ver, const char *path, struct stat64 *buf)
+int dce___xstat64 (int ver, const char *path, struct stat64 *buf) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << path << buf);
@@ -48,7 +48,7 @@ int dce___xstat64 (int ver, const char *path, struct stat64 *buf)
     }
   return retval;
 }
-int dce___fxstat (int ver, int fd, struct stat *buf)
+int dce___fxstat (int ver, int fd, struct stat *buf) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd);
@@ -56,7 +56,7 @@ int dce___fxstat (int ver, int fd, struct stat *buf)
 
   OPENED_FD_METHOD (int, Fxstat (ver, buf))
 }
-int dce___fxstat64 (int ver, int fd, struct stat64 *buf)
+int dce___fxstat64 (int ver, int fd, struct stat64 *buf) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd);
@@ -64,7 +64,7 @@ int dce___fxstat64 (int ver, int fd, struct stat64 *buf)
 
   OPENED_FD_METHOD (int, Fxstat64 (ver, buf))
 }
-int dce___lxstat (int ver, const char *pathname, struct stat *buf)
+int dce___lxstat (int ver, const char *pathname, struct stat *buf) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << pathname << buf);
@@ -82,7 +82,7 @@ int dce___lxstat (int ver, const char *pathname, struct stat *buf)
     }
   return retval;
 }
-int dce___lxstat64 (int ver, const char *pathname, struct stat64 *buf)
+int dce___lxstat64 (int ver, const char *pathname, struct stat64 *buf) noexcept
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << pathname << buf);
