@@ -336,6 +336,8 @@ NATIVE (strftime)
 NATIVE (strptime)
 NATIVE (timegm)
 NATIVE (timelocal)
+DCE (clock_gettime)
+DCE (clock_getres)
 //DCE_EXPLICIT (clock_gettime, int, clockid_t, struct timespec *)
 //DCE_EXPLICIT (clock_getres, int, clockid_t, struct timespec *)
 
@@ -593,10 +595,10 @@ NATIVE (__fpending)
 
 // REGRESSION
 //DCE (__strcpy_chk)
-DCE ("__printf_chk")
-DCE    ("__vfprintf_chk")
-DCE    ("__fprintf_chk")
-DCE    ("__snprintf_chk")
+DCE (__printf_chk)
+DCE    (__vfprintf_chk)
+DCE    (__fprintf_chk)
+DCE    (__snprintf_chk)
 DCE    (__errno_location)
 DCE    (__h_errno_location)
 DCE    (__vsnprintf_chk)
@@ -621,8 +623,9 @@ DCE (creat)
 // math.h
 NATIVE (lrintl)
 NATIVE (llrintl)
-NATIVE (ceil)
-NATIVE (floor)
+// These have overload, TODO
+//NATIVE (ceil)
+//NATIVE ( floor)
 
 // dlfcn.h
 DCE (dlopen, __dlopen)

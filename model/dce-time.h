@@ -26,6 +26,10 @@ extern "C" {
 
 
 
+ int dce_clock_gettime (clockid_t __clock_id,timespec * __tp) noexcept;
+
+ int dce_clock_getres (clockid_t __clock_id,timespec * __res) noexcept;
+
  int dce_timer_create (clockid_t __clock_id,__restrict__ ::sigevent * __evp,__restrict__ ::timer_t * __timerid) noexcept;
 
  int dce_timer_settime (timer_t __timerid,int __flags,__restrict__ ::itimerspec const * __value,__restrict__ ::itimerspec * __ovalue) noexcept;

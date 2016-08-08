@@ -7,7 +7,7 @@
                         return g_libc.__cxa_atexit_fn (func, arg, d);
                     }
                     
-                     int atexit (void (*__func)(  ) ) noexcept __attribute__ ((__noreturn__)) {
+                     int atexit (void (*__func)(  ) ) noexcept  {
                         return g_libc.atexit_fn (__func);
                     }
                     
@@ -175,7 +175,7 @@
                          g_libc.qsort_fn (__base,__nmemb,__size,__compar);
                     }
                     
-                     void abort () noexcept __attribute__ ((__noreturn__)) {
+                     void abort () noexcept  {
                          g_libc.abort_fn ();
                     }
                     
@@ -549,7 +549,7 @@
                         return g_libc.isatty_fn (__fd);
                     }
                     
-                     void exit (int __status) noexcept __attribute__ ((__noreturn__)) {
+                     void exit (int __status) noexcept {
                          g_libc.exit_fn (__status);
                     }
                     
@@ -1111,6 +1111,37 @@
                      int sigfillset (sigset_t * __set){
                         return g_libc.sigfillset_fn (__set);
                     }
+                     int __vsnprintf_chk (__restrict__ char * __s,size_t __n,int __flag,size_t __slen,__restrict__ char const * __format,va_list __ap) noexcept {
+                        return g_libc.__vsnprintf_chk_fn (__s,__n,__flag,__slen,__format,__ap);
+                    }
+                    
+                     int __xstat (int __ver,char const * __filename,struct stat * __stat_buf) {
+                        return g_libc.__xstat_fn (__ver,__filename,__stat_buf);
+                    }
+                    
+                     int __lxstat (int __ver,char const * __filename,struct stat * __stat_buf) {
+                        return g_libc.__lxstat_fn (__ver,__filename,__stat_buf);
+                    }
+                    
+                     int __fxstat (int __ver,int __fildes,struct stat * __stat_buf) {
+                        return g_libc.__fxstat_fn (__ver,__fildes,__stat_buf);
+                    }
+                    
+                     int __xstat64 (int __ver,char const * __filename,struct stat64 * __stat_buf) {
+                        return g_libc.__xstat64_fn (__ver,__filename,__stat_buf);
+                    }
+                    
+                     int __lxstat64 (int __ver,char const * __filename,struct stat64 * __stat_buf) {
+                        return g_libc.__lxstat64_fn (__ver,__filename,__stat_buf);
+                    }
+                    
+                     int __fxstat64 (int __ver,int __fildes,struct stat64 * __stat_buf) {
+                        return g_libc.__fxstat64_fn (__ver,__fildes,__stat_buf);
+                    }
+                    
+                     int __fxstatat (int __ver,int __fildes,char const * __filename,struct stat * __stat_buf,int __flag) {
+                        return g_libc.__fxstatat_fn (__ver,__fildes,__filename,__stat_buf,__flag);
+                    }
                     
                      int sigaddset (sigset_t * __set,int __signo){
                         return g_libc.sigaddset_fn (__set,__signo);
@@ -1118,6 +1149,14 @@
                     
                      int sigdelset (sigset_t * __set,int __signo){
                         return g_libc.sigdelset_fn (__set,__signo);
+                    }
+                    
+                     int clock_gettime (clockid_t __clock_id,timespec * __tp) {
+                        return g_libc.clock_gettime_fn (__clock_id,__tp);
+                    }
+                    
+                     int clock_getres (clockid_t __clock_id,timespec * __res) {
+                        return g_libc.clock_getres_fn (__clock_id,__res);
                     }
                     
                      int sigismember (sigset_t const * __set,int __signo){
@@ -1140,7 +1179,7 @@
                         return g_libc.pthread_create_fn (__newthread,__attr,__start_routine,__arg);
                     }
                     
-                     void pthread_exit (void * __retval) __attribute__ ((__noreturn__)) {
+                     void pthread_exit (void * __retval) {
                          g_libc.pthread_exit_fn (__retval);
                     }
                     

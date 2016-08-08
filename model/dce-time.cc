@@ -125,7 +125,7 @@ char * dce_asctime (const struct tm *tm) noexcept
   return asctime_r (tm, Current ()->process->asctime_result);
 }
 
-int dce_clock_gettime (clockid_t c, struct timespec *tp)
+int dce_clock_gettime (clockid_t c, struct timespec *tp) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -142,7 +142,7 @@ void dce_tzset () noexcept
 
 }
 
-int dce_clock_getres (clockid_t c, struct timespec *r)
+int dce_clock_getres (clockid_t c, struct timespec *r) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);

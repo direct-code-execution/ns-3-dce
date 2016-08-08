@@ -1008,6 +1008,14 @@ decltype (clearerr)  __clearerr_unlocked __attribute__ ((weak, alias ("clearerr"
                         return g_libc.timelocal_fn (__tp);
                     }
                     
+                     int clock_gettime (clockid_t __clock_id,timespec * __tp) {
+                        return g_libc.clock_gettime_fn (__clock_id,__tp);
+                    }
+                    
+                     int clock_getres (clockid_t __clock_id,timespec * __res) {
+                        return g_libc.clock_getres_fn (__clock_id,__res);
+                    }
+                    
                      int timer_create (clockid_t __clock_id,__restrict__ ::sigevent * __evp,__restrict__ ::timer_t * __timerid) {
                         return g_libc.timer_create_fn (__clock_id,__evp,__timerid);
                     }
@@ -1757,14 +1765,6 @@ decltype (clearerr)  __clearerr_unlocked __attribute__ ((weak, alias ("clearerr"
                     
                      long long int llrintl (long double __x) {
                         return g_libc.llrintl_fn (__x);
-                    }
-                    
-                     double ceil (double __x) {
-                        return g_libc.ceil_fn (__x);
-                    }
-                    
-                     double floor (double __x) {
-                        return g_libc.floor_fn (__x);
                     }
                     
                      void * dlopen (char const * __file,int __mode) {

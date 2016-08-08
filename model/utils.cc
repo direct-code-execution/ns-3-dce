@@ -113,7 +113,8 @@ std::string UtilsGetVirtualFilePath (std::string path)
       NS_ASSERT (Current () != 0);
       Thread *current = Current ();
       // path relative to cwd in node
-      return current->process->cwd + "/" + path;
+//      return current->process->cwd + "/" + path;
+      return current->process->cwd + path;
     }
 }
 Thread *gDisposingThreadContext = 0;
