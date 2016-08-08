@@ -48,7 +48,7 @@ int test3 ()
   TEST_ASSERT_EQUAL (ret, -1);
   TEST_ASSERT_EQUAL (errno,  ENOENT);
 
-  ret = execl ("/bin_dce/test-exec", "/bin_dce/test-exec", "4", (char *)NULL);
+  ret = execl ("/bin_dce/test-exec", "/bin_dce/test-exec", "4", (char *)0);
   TEST_ASSERT (false); // Must not be reached
 
   return ret;

@@ -582,9 +582,9 @@
                     }
                     
                      int execl (char const * __path,char const * __arg, ... ){
-                        va_list vl;
-                        va_start (vl, __arg);
-                        return g_libc.execl_fn (__path,__arg, vl );
+//                        va_list vl;
+//                        va_start (vl, __arg);
+                        return g_libc.execl_fn (__path,__arg, ...);
                     }
                     
                      int execve (char const * __path,char * const * __argv,char * const * __envp){

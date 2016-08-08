@@ -171,7 +171,7 @@ struct Process
   Callback<void,uint16_t,int> finished; /**!< */
   // the values specified by the user
   char **originalEnvp;  /** original */
-  char **originalArgv;
+  char **originalArgv;  /** \todo why  not save it as vector<string> ? */
   int originalArgc;     /**!< Argument count */
   char *originalProgname; // some programs use it instead argv[0]
 

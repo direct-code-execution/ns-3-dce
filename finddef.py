@@ -155,8 +155,11 @@ class Generator:
                    # Search for the function by name
 
                    # if row["name"] in ["sigaction", "sysinfo"]
+                    # TODO if there is an ellipsis then it should be forwarded as 
+                    # va_list
                     template = """
                     {extern} {ret} {name} ({fullargs}) {{
+                        {handle_va_list}
                         {retstmt} g_libc.{name}_fn ({arg_names});
                     }}
                     """
@@ -166,10 +169,10 @@ class Generator:
                         name = row["name"]
                         log.debug("Exception [%s] found " % name)
                         extern=""
-                        rtype, fullargs , arg_names, location, specifier = exceptions[name]
+                        rtype, libc_fullargs , arg_names, location, specifier = exceptions[name]
                         # partialargs = fullargs
                         # **exceptions[name]
-                        print("Values:", rtype, fullargs, arg_names, location)
+                        print("Values:", rtype, libc_fullargs, arg_names, location)
                     else:
 
                         decl= self.lookup(row["name"])
@@ -230,20 +233,24 @@ class Generator:
                         for arg in temp:
                             print("arg=%s"% arg)
                         # temp = ["va_list" else str(a.decl_type) for a in decl.arguments]
-                        fullargs = ",".join(temp) # only types
+                        libc_fullargs = ",".join(temp) # only types
                         location = decl.location.file_name
                         arg_names = ",".join([arg.name for arg in decl.arguments])
                         specifier = "" if decl.does_throw else "noexcept"
+
+
+                if "..." in libc_fullargs:
 
 
                 # + " " + arg.name)
                     impl = template.format(
                             extern="",
                             ret=rtype,
-                            fullargs=fullargs,
+                            fullargs=libc_fullargs,
                             name=name,
                             retstmt="return" if rtype is not "void" else "",
                             arg_names=arg_names,
+                            handle_va_list=,
                         )
 
                     # then generate aliases for both natives and dce
@@ -277,6 +284,7 @@ class Generator:
                     if row["type"] == "dce":
 
                         # declaration of dce_{libcfunc}
+                        # TODO 
                         content = "{extern} {ret} dce_{name} ({fullargs}) {throw};\n".format(
                                 extern="",
                                 ret=rtype,

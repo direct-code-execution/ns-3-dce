@@ -697,6 +697,13 @@ int dce_execv (const char *path, char *const argv[]) noexcept
 
   return thread->process->manager->Execve (fileName.c_str (), path, argv, *(thread->process->penvp));
 }
+/*
+       The const char *arg and subsequent ellipses in the execl(), execlp(), and execle() functions can be thought of as arg0, arg1,
+       ..., argn.  Together they describe a list of one or more pointers to null-terminated strings that represent the argument list
+       available  to the executed program.  The first argument, by convention, should point to the filename associated with the file
+       being executed.  The list of arguments must be terminated by a null pointer, and, since these are  variadic  functions,  this
+       pointer must be cast (char *) NULL
+*/
 int dce_execl (const char *path, const char *arg, ...) noexcept
 {
   va_list ap;
@@ -714,18 +721,24 @@ int dce_execl (const char *path, const char *arg, ...) noexcept
     }
 
   int nb = 1;
+  NS_LOG_UNCOND ("execl " << path << "== "<< arg);
 
+  // Count the number of arguments
   va_list cp;
   va_copy (cp, ap);
   char *p =  0;
   do
     {
       p = va_arg (cp, char *);
+      NS_LOG_UNCOND ("execl arg #" << nb << p);
       nb++;
     }
   while (p);
-
-  char const** argv = (char const **) dce_malloc (nb * sizeof (char *)); // Use dce_malloc to be sure it will be freed when exec is successfull
+  
+  NS_LOG_UNCOND ("Found " << nb << " (variadic) arguments");
+  
+  // Use dce_malloc to be sure it will be freed when exec is successful
+  char const** argv = (char const **) dce_malloc (nb * sizeof (char *));
 
   argv[0] = arg;
   nb = 1;
