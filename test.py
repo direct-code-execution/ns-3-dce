@@ -973,6 +973,7 @@ class worker_thread(threading.Thread):
             else:
                 if options.verbose:
                     print "Launch %s" % job.shell_command
+                    print "from cwnd %s" % job.cwd
 
                 if job.is_example or job.is_pyexample:
                     #

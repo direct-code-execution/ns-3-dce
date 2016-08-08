@@ -44,11 +44,11 @@ int test3 ()
 {
   TEST_ASSERT_EQUAL (strcmp ("TEST2", getenv ("CALLER")), 0);
   setenv ("CALLER", "TEST3", 1);
-  int ret = execl ("test-exec-not-existing", "4", NULL);
+  int ret = execl ("test-exec-not-existing", "4", (char *)0);
   TEST_ASSERT_EQUAL (ret, -1);
   TEST_ASSERT_EQUAL (errno,  ENOENT);
 
-  ret = execl ("/bin_dce/test-exec", "/bin_dce/test-exec", "4", NULL);
+  ret = execl ("/bin_dce/test-exec", "/bin_dce/test-exec", "4", (char *)NULL);
   TEST_ASSERT (false); // Must not be reached
 
   return ret;

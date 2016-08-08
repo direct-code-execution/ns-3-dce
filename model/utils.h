@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include "ns3/nstime.h"
 
+// TODO use inline 
 #define GET_CURRENT(x)                                  \
   Thread * current;                                      \
   current = Current ();                                 \
@@ -33,9 +34,23 @@ extern Thread *gDisposingThreadContext;
 
 void UtilsEnsureDirectoryExists (std::string realPath);
 void UtilsEnsureAllDirectoriesExist (std::string realPath);
+
+/**
+ * Gets fullpath to the node file starting with "files-X/".
+ * Creates it if non existing
+ */
 std::string UtilsGetRealFilePath (std::string path);
+/**
+ *
+ */
 std::string UtilsGetAbsRealFilePath (uint32_t node, std::string path);
-std::string UtilsGetVirtualFilePath (std::string path);
+
+/**
+ * Gets Abs file path within the virtual filesystem
+ 
+ * Example: 
+ */
+ std::string UtilsGetVirtualFilePath (std::string path);
 uint32_t UtilsGetNodeId (void);
 ns3::Thread * Current (void);
 bool HasPendingSignal (void);

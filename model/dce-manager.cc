@@ -194,6 +194,7 @@ int (*DceManager::PrepareDoStartProcess (Thread * current)) (int, char **, char 
   if (current->process->stdinFilename.length () > 0)
     {
       std::string fullpath = UtilsGetRealFilePath (current->process->stdinFilename);
+      NS_LOG_UNCOND("cwd=" << get_current_dir_name());
       int realFd = ::open (fullpath.c_str (), O_RDONLY, 0);
 
       if (-1 == realFd)
@@ -1166,6 +1167,7 @@ DceManager::CopyArgs (char *const argv[])
   // Copy argv
   if (0 != argv)
     {
+//      std::copy(argv + 1, argv + argc, std::back_inserter(args));
       char **v = (char **) argv;
       if (*v)
         {
@@ -1173,8 +1175,9 @@ DceManager::CopyArgs (char *const argv[])
         }
       while (*v)
         {
-          char *s = *v++;
+          char *s = *v;
           args.push_back (s);
+          v++;
         }
     }
   return args;

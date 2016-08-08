@@ -114,26 +114,34 @@ struct AtExitHandler
   } value;
 };
 
+/**
+ * \todo change ns3 times by Time variables 
+ */
 struct ProcessActivity
 {
-  int64_t ns3Start;
+  int64_t ns3Start;     /**!< Host time at which started the process */
   time_t realStart;
-  int64_t ns3End;
-  time_t realEnd;
-  int exitValue;
-  std::string cmdLine;
+  int64_t ns3End;       /**!< Simulator end time TODO use TIME ? */
+  time_t realEnd;       /**!< Host time at which ended the process */
+  int exitValue;        /**!< Value returned by the program */
+  std::string cmdLine;  /**!< */
 };
 
+
+/**
+ * @todo move parts of DceManager::Clone and CreateProcess in a constructor &&
+ * operator=
+ */
 struct Process
 {
-  uid_t euid;
+  uid_t euid;   /**!< Effective user id */
   uid_t ruid;
   uid_t suid;
-  gid_t egid;
+  gid_t egid;   /**!< Effective group id */
   gid_t rgid;
   gid_t sgid;
-  uint16_t ppid;
-  uint16_t pid;
+  uint16_t ppid;  /**!< Parent process id */
+  uint16_t pid;   /**!< Process id */
   uint16_t pgid;
   std::string name;
   std::string stdinFilename;
@@ -157,14 +165,14 @@ struct Process
   pthread_key_t nextThreadKey;
   DceManager *manager;
   Loader *loader;
-  void *mainHandle;
-  std::string cwd;
+  void *mainHandle;     /**!< Pointer towards the "main" symbol */
+  std::string cwd;      /**!< Current Working directory */
   KingsleyAlloc *alloc;
-  Callback<void,uint16_t,int> finished;
+  Callback<void,uint16_t,int> finished; /**!< */
   // the values specified by the user
-  char **originalEnvp;
+  char **originalEnvp;  /** original */
   char **originalArgv;
-  int originalArgc;
+  int originalArgc;     /**!< Argument count */
   char *originalProgname; // some programs use it instead argv[0]
 
   // pointers to the global variables present in the libc loader
@@ -177,11 +185,14 @@ struct Process
   int *poptind;
   int *popterr;
   int *poptopt;
-  FILE *syslog; // instead of real syslog, everything is written to a file /var/log/<pid>/syslog
+  /** instead of real syslog, everything is written to a file /var/log/<pid>/syslog */
+  FILE *syslog;
   struct tm struct_tm;
   char asctime_result[ 3 + 1 + 3 + 1 + 20 + 1 + 20 + 1 + 20 + 1 + 20 + 1 + 20 + 1 + 1]; // definition is stolen from glibc
   uint32_t nodeId; // NS3 NODE ID
-  uint8_t minimizeFiles; // If true close stderr and stdout between writes .
+  /** If true close stderr and stdout between writes .
+   */
+  uint8_t minimizeFiles; 
   // an array of memory buffers which must be freed upon process
   // termination to avoid memory leaks. We stick in there a bunch
   // of buffers we allocate but for which we cannot control the

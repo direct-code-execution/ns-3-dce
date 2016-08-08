@@ -94,7 +94,15 @@ public:
                   std::vector<std::pair<std::string,std::string> > envs,
                   uid_t uid, uid_t euid, uid_t gid, uid_t egid);
   uint16_t StartInternalTask ();
+  
+  /** Looks for a process with pid
+   * @param cb
+   */
   void SetFinishedCallback (uint16_t pid, Callback<void,uint16_t,int> cb);
+  
+  /**
+   * @param pid 
+   */
   void Stop (uint16_t pid);
 
   // internal methods
@@ -104,6 +112,10 @@ public:
 
   Thread * SearchThread (uint16_t pid, uint16_t tid);
   Process * SearchProcess (uint16_t pid);
+  
+  /** 
+   * Looks for Process and delete it
+   */
   void FinishChild (uint16_t pid); // A wait success on this proc
 
   void Exit (void);
@@ -114,6 +126,9 @@ public:
   uint16_t Clone (Thread *thread);
   std::map<uint16_t, Process *> GetProcs ();
   static void AppendStatusFile (uint16_t pid, uint32_t nodeId, std::string &line);
+  /**
+   *
+   */
   int Execve (const char *path, const char *argv0, char *const argv[], char *const envp[]);
   // Path used by simulated methods 'execvp' and 'execlp'
   void SetVirtualPath (std::string p);
@@ -123,6 +138,10 @@ public:
   void StopTemporaryTask (uint16_t pid);
   void ResumeTemporaryTask (uint16_t pid);
   void SuspendTemporaryTask (uint16_t pid);
+  
+  /**
+   * Allocates/initialize struct Process* 
+   */
   struct Process* CreateProcess (std::string name, std::string stdinfilename, std::vector<std::string> args,
                                  std::vector<std::pair<std::string,std::string> > envs, int pid);
 
@@ -146,7 +165,13 @@ private:
   static struct ::Libc * GetLibc (void);
   void SetArgv (struct Process *process, std::string filename, std::vector<std::string> args);
   void SetEnvp (struct Process *process, std::vector<std::pair<std::string,std::string> > envp);
+  /**
+   * Creates directory if non-existing
+   */
   static void EnsureDirectoryExists (struct Thread *current, std::string dirName);
+  /**
+   * Creates /var/log/<PID> directory
+   */
   static int CreatePidFile (struct Thread *current, std::string prefix);
   static void TaskSwitch (enum Task::SwitchType type, void *context);
   static void StartProcessDebugHook (void);
@@ -154,6 +179,10 @@ private:
   bool WakeupChildWaiters (struct Process *p);
   // Remove memory used by thread poll table and iowait, remove from wait queues
   void CleanupThread (struct Thread *thread);
+  
+  /**
+   * Converts C-strings into an array of C++ strings
+   */
   std::vector<std::string> CopyArgs (char *const argv[]);
   
   /**
@@ -173,7 +202,7 @@ private:
 
   std::map<uint16_t, Process *> m_processes; // Key is the pid
   uint16_t m_nextPid;
-  TracedCallback<uint16_t, int> m_processExit;
+  TracedCallback<uint16_t, int> m_processExit;  /**!< Process id and exit value */
   // If true close stderr and stdout between writes .
   bool m_minimizeFiles;
   std::string m_virtualPath;

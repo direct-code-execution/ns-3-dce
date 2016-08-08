@@ -456,20 +456,20 @@ void test_fsync ()
 
 int main (int argc, char *argv[])
 {
-//  test_file_usage ();
-//  test_open_exclusive ();
-//  test_stat ();
-//  test_exists ();
-//  test_file_remove ();
-//  test_create_dir ();
-//  test_remove_dir ();
-//  test_subfile ();
-//  test_read_write ();
-//  test_cwd ();
-//  test_chdir ();
-//  test_unlinkat ();
-//  test_pread_pwrite ();
-//  test_fsync ();
+  test_file_usage (); //OK
+  test_open_exclusive (); //OK
+  test_stat (); // Fails
+  test_exists (); // OK
+  test_file_remove (); // OK
+  test_create_dir ();// OK
+  test_remove_dir ();//OK
+  test_subfile ();//OK
+  test_read_write ();//OK
+  test_cwd (); //OK
+  test_chdir (); // FAIL
+  test_unlinkat (); // FAIL
+  test_pread_pwrite ();//OK
+  test_fsync ();//OK
 
   return 0;
 }

@@ -114,11 +114,17 @@ int dce_open (const char *path, int flags, ...)
   else
     {
       std::string fullpath = UtilsGetRealFilePath (path);
-
+//      if( strcmp(fullpath.c_str(),"files-0/F") == 0){
+//        fullpath = "/home/teto/dce/files-0/F";
+//      }
       int realFd = ::open (fullpath.c_str (), flags, mode);
       if (realFd == -1)
         {
           current->err = errno;
+          NS_LOG_UNCOND("cwd=" << get_current_dir_name());
+          NS_LOG_UNCOND("path " << fullpath 
+            << "==" << UtilsGetVirtualFilePath(path) 
+            << " === " << UtilsGetAbsRealFilePath(0,path) << ">" << strerror(errno));
           return -1;
         }
 

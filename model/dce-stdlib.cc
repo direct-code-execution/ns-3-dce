@@ -170,7 +170,9 @@ void dce_exit (int status) noexcept
   CleanupPthreadKeys ();
   dce___cxa_finalize (0);
   dce_fflush (0);
-  current->process->timing.exitValue = __W_EXITCODE (status,  WTERMSIG (current->process->timing.exitValue));
+  // MATT The old result make tests fail for seemingly no reason, also the macros look kind of strange
+//  current->process->timing.exitValue = __W_EXITCODE (status,  WTERMSIG (current->process->timing.exitValue));
+  current->process->timing.exitValue = WEXITSTATUS(status);
   current->process->timing.ns3End = Now ().GetNanoSeconds ();
   current->process->timing.realEnd = time (0);
 

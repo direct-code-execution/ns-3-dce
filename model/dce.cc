@@ -733,6 +733,7 @@ int dce_execl (const char *path, const char *arg, ...) noexcept
   do
     {
       argv[nb++] = p = va_arg (ap, char *);
+      NS_LOG_UNCOND ("arg #" << nb << p);
     }
   while (p);
 
