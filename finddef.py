@@ -134,7 +134,6 @@ class Generator:
         """
 
         # input_filename = "natives.h.txt"
-
         locations = {}
         with open(input_filename, "r") as src:
             # aliasnames = last columns ?
@@ -148,6 +147,7 @@ class Generator:
 # or row["type"] == "dce":
                         # continue
 
+                    has_ellipsis = False
                     # look for a match
                     print('row["name"]=', row["name"], "extra=", row["extra"])    
                     # print('row["name"]=', row["name"])    
@@ -202,6 +202,9 @@ class Generator:
                         # print("decl=", decl.create_decl_type )
                         print("decl=", decl.calling_convention )
                         print("decl=", decl.does_throw )
+                        if decl.has_ellipsis:
+                            print("HAS ELLIPSIS")
+
                         #     print("a", a.attributes )
                         #     # print("a", a.type )
                         
@@ -237,12 +240,19 @@ class Generator:
                         location = decl.location.file_name
                         arg_names = ",".join([arg.name for arg in decl.arguments])
                         specifier = "" if decl.does_throw else "noexcept"
+                        has_ellipsis = decl.has_ellipsis
 
-
-                if "..." in libc_fullargs:
-
+                # if "..." in libc_fullargs:
+                    if has_ellipsis:
+                        handle_va_list = """
+                        va_list __dce_va_list;
+                        va_start (__dce_va_list, {justbeforelastarg});
+                        """.format(justbeforelastarg= decl.arguments[-2].name)
+                        # also we need to change arg names
+                        arg_names = ",".join([arg.name for arg in decl.arguments] + ["__dce_va_list"]) 
 
                 # + " " + arg.name)
+                    # here we generate the code
                     impl = template.format(
                             extern="",
                             ret=rtype,
@@ -250,7 +260,7 @@ class Generator:
                             name=name,
                             retstmt="return" if rtype is not "void" else "",
                             arg_names=arg_names,
-                            handle_va_list=,
+                            handle_va_list="",
                         )
 
                     # then generate aliases for both natives and dce
@@ -288,7 +298,7 @@ class Generator:
                         content = "{extern} {ret} dce_{name} ({fullargs}) {throw};\n".format(
                                 extern="",
                                 ret=rtype,
-                                fullargs=fullargs,
+                                fullargs=libc_fullargs,
                                 name=name,
                                 throw=specifier,
                                 )
@@ -363,6 +373,8 @@ def main():
             help="write %s" % libc_filename)
     parser.add_argument('-a','--write-all', action="store_true", default=False,
             help="Enables -i and -h")
+    parser.add_argument('-r','--regen', action="store_true", default=False,
+            help="TODO: Disable the cache")
     
     args, unknown = parser.parse_known_args ()
     
