@@ -4,15 +4,16 @@
 #define DCE_HEADER_SYS_STATVFS_H
 // TODO add extern "C" ?
 #include <sys/statvfs.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_statvfs (const char *path, struct statvfs *buf) noexcept;
+                 int dce_statvfs (const char *path, struct statvfs *buf) noexcept ;
 
- int dce_fstatvfs (int __fildes, struct statvfs * __buf) noexcept;
+ int dce_fstatvfs (int __fildes, struct statvfs * __buf) noexcept ;
 
 
 #ifdef __cplusplus

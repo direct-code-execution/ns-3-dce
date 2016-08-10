@@ -4,6 +4,7 @@
 #define DCE_HEADER_PWD_H
 // TODO add extern "C" ?
 #include <pwd.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
@@ -11,9 +12,9 @@
 extern "C" {
 #endif
                 
- passwd * dce_getpwuid (__uid_t __uid) ;
+ passwd * dce_getpwuid (__uid_t __uid)  ;
 
- void dce_endpwent () ;
+ void dce_endpwent ()  ;
 
 
 #ifdef __cplusplus

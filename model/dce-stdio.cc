@@ -476,15 +476,15 @@ int dce_fileno (FILE *stream) noexcept
 }
 
 // stdio.h
-int dce_printf (const char *format, ...)
+int dce_printf_v (const char *format, va_list vl)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << format);
   NS_ASSERT (Current () != 0);
-
-  va_list vl;
-  va_start (vl, format);
+//
+//  va_list vl;
+//  va_start (vl, format);
   int status = vfprintf (*Current ()->process->pstdout, format, vl);
-  va_end (vl);
+//  va_end (vl);
   return status;
 }
 // stdarg.h
@@ -720,16 +720,12 @@ void dce_perror (const char *s)
   fprintf (*Current ()->process->pstderr, "%s: %s\n", s, strerror (*__errno_location ()));
 }
 
-int dce___printf_chk (int __flag, __const char *__restrict __format, ...)
+int dce___printf_chk_v (int __flag, __const char *__restrict __format, va_list ap)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
 
-  va_list ap;
-  va_start (ap, __format);
-  int retval = vfprintf (*Current ()->process->pstdout, __format, ap);
-  va_end (ap);
-  return retval;
+  return vfprintf (*Current ()->process->pstdout, __format, ap);
 }
 
 int dce___vfprintf_chk (FILE *__restrict __stream, int __flag,
@@ -741,30 +737,23 @@ int dce___vfprintf_chk (FILE *__restrict __stream, int __flag,
   return vfprintf (__stream, __format, __ap);
 }
 
-int dce___fprintf_chk (FILE *__restrict __stream, int __flag,
-                       __const char *__restrict __format, ...)
+int dce___fprintf_chk_v (FILE *__restrict __stream, int __flag,
+                       __const char *__restrict __format, va_list ap)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
 
-  va_list ap;
-  va_start (ap, __format);
-  int retval = vfprintf (__stream, __format, ap);
-  va_end (ap);
-  return retval;
+  return vfprintf (__stream, __format, ap);
 }
 
-int dce___snprintf_chk (char *__restrict __s, size_t __n, int __flag,
-                        size_t __slen, __const char *__restrict __format, ...) noexcept
+int dce___snprintf_chk_v (char *__restrict __s, size_t __n, int __flag,
+                        size_t __slen, __const char *__restrict __format, va_list ap) noexcept
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
 
-  va_list ap;
-  va_start (ap, __format);
-  int retval = vsnprintf (__s, __n, __format, ap);
-  va_end (ap);
-  return retval;
+  return vsnprintf (__s, __n, __format, ap);
+
 }
 int dce___vsnprintf_chk (char *__restrict __s, size_t __n, int __flag,
 						size_t __slen,
@@ -789,11 +778,8 @@ size_t dce___fpending (FILE *stream)
   size_t ret = __fpending (stream);
   return ret;
 }
-int dce_asprintf (char **strp, const char *fmt, ...) noexcept
+int dce_asprintf_v (char **strp, const char *fmt, va_list ap) noexcept
 {
-  va_list ap;
-  va_start (ap, fmt);
-
   return dce_vasprintf (strp, fmt, ap);
 }
 

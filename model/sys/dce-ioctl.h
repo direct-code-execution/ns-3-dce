@@ -4,14 +4,23 @@
 #define DCE_HEADER_SYS_IOCTL_H
 // TODO add extern "C" ?
 #include <sys/ioctl.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_ioctl (int __fd,long unsigned int __request,... ) noexcept;
+                 int dce_ioctl_v (int __fd,long unsigned int __request,va_list) noexcept ;
+inline  int dce_ioctl (int __fd,long unsigned int __request,... ) noexcept  {
+        va_list __dce_va_list;
+        va_start (__dce_va_list, __request);
+        auto ret = dce_ioctl_v ( __fd,__request, __dce_va_list);
+        va_end (__dce_va_list);
+        return ret;
+            };
 
+            
 
 #ifdef __cplusplus
 }

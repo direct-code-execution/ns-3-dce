@@ -4,13 +4,14 @@
 #define DCE_HEADER_SYS_UTSNAME_H
 // TODO add extern "C" ?
 #include <sys/utsname.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_uname (struct utsname *__name) noexcept;
+                 int dce_uname (struct utsname *__name) noexcept ;
 
 
 #ifdef __cplusplus

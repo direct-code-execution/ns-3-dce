@@ -4,13 +4,14 @@
 #define DCE_HEADER_ERRNO_H
 // TODO add extern "C" ?
 #include <errno.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int * dce___errno_location () noexcept;
+                 int * dce___errno_location () noexcept ;
 
 
 #ifdef __cplusplus

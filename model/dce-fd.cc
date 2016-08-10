@@ -66,21 +66,17 @@ NS_LOG_COMPONENT_DEFINE ("DceFd");
 
 
 using namespace ns3;
-int dce_open64 (const char *path, int flags, ...)
+int dce_open64_v (const char *path, int flags, va_list vl)
 {
-  va_list vl;
-  va_start (vl, flags);
   // hope this trick actually works...
-  int status = dce_open (path, flags, vl);
-  va_end (vl);
+  // matt this shouldn't work ! BUG !
+  return dce_open (path, flags, vl);
 
-  return status;
+
 }
 
-int dce_open (const char *path, int flags, ...)
+int dce_open_v (const char *path, int flags, va_list vl)
 {
-  va_list vl;
-  va_start (vl, flags);
 
   mode_t mode = 0;
   if (flags & O_CREAT)
@@ -280,12 +276,9 @@ ssize_t dce_sendmsg (int fd, const struct msghdr *msg, int flags)
   OPENED_FD_METHOD (ssize_t, Sendmsg (msg, flags))
 }
 
-int dce_ioctl (int fd, long unsigned int request, ...) noexcept
+int dce_ioctl_v (int fd, long unsigned int request, va_list vl) noexcept
 {
-  va_list vl;
-  va_start (vl, request);
   char *argp = va_arg (vl, char*);
-  va_end (vl);
 
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << request << argp);
@@ -670,12 +663,9 @@ off64_t dce_lseek64 (int fd, off64_t offset, int whence) noexcept
 
   OPENED_FD_METHOD (int, Lseek (offset, whence))
 }
-int dce_fcntl (int fd, int cmd, ... /*unsigned long arg*/)
+int dce_fcntl_v (int fd, int cmd, va_list vl /*unsigned long arg*/)
 {
-  va_list vl;
-  va_start (vl, cmd);
   unsigned long arg = va_arg (vl, unsigned long);
-  va_end (vl);
 
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << fd << cmd << arg);
   NS_ASSERT (Current () != 0);

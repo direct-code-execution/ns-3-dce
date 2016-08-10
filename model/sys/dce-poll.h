@@ -4,13 +4,14 @@
 #define DCE_HEADER_SYS_POLL_H
 // TODO add extern "C" ?
 #include <sys/poll.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_poll (pollfd * __fds,nfds_t __nfds,int __timeout) ;
+                 int dce_poll (pollfd * __fds,nfds_t __nfds,int __timeout)  ;
 
 
 #ifdef __cplusplus

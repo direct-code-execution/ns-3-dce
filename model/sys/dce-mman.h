@@ -4,17 +4,18 @@
 #define DCE_HEADER_SYS_MMAN_H
 // TODO add extern "C" ?
 #include <sys/mman.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 void * dce_mmap (void * __addr,size_t __len,int __prot,int __flags,int __fd,__off_t __offset) noexcept;
+                 void * dce_mmap (void * __addr,size_t __len,int __prot,int __flags,int __fd,__off_t __offset) noexcept ;
 
- void * dce_mmap64 (void * __addr,size_t __len,int __prot,int __flags,int __fd,__off64_t __offset) noexcept;
+ void * dce_mmap64 (void * __addr,size_t __len,int __prot,int __flags,int __fd,__off64_t __offset) noexcept ;
 
- int dce_munmap (void * __addr,size_t __len) noexcept;
+ int dce_munmap (void * __addr,size_t __len) noexcept ;
 
 
 #ifdef __cplusplus

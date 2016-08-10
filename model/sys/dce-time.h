@@ -4,17 +4,18 @@
 #define DCE_HEADER_SYS_TIME_H
 // TODO add extern "C" ?
 #include <sys/time.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_gettimeofday (__restrict__ ::timeval * __tv,__timezone_ptr_t __tz) noexcept;
+                 int dce_gettimeofday (__restrict__ ::timeval * __tv,__timezone_ptr_t __tz) noexcept ;
 
- int dce_setitimer (__itimer_which_t __which,__restrict__ ::itimerval const * __new,__restrict__ ::itimerval * __old) noexcept;
+ int dce_setitimer (__itimer_which_t __which,__restrict__ ::itimerval const * __new,__restrict__ ::itimerval * __old) noexcept ;
 
- int dce_getitimer (__itimer_which_t __which,itimerval * __value) noexcept;
+ int dce_getitimer (__itimer_which_t __which,itimerval * __value) noexcept ;
 
 
 #ifdef __cplusplus

@@ -4,6 +4,7 @@
 #define DCE_HEADER_SYS_RESOURCE_H
 // TODO add extern "C" ?
 #include <sys/resource.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 

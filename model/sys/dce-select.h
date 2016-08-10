@@ -4,13 +4,14 @@
 #define DCE_HEADER_SYS_SELECT_H
 // TODO add extern "C" ?
 #include <sys/select.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_select (int __nfds,__restrict__ ::fd_set * __readfds,__restrict__ ::fd_set * __writefds,__restrict__ ::fd_set * __exceptfds,__restrict__ ::timeval * __timeout) ;
+                 int dce_select (int __nfds,__restrict__ ::fd_set * __readfds,__restrict__ ::fd_set * __writefds,__restrict__ ::fd_set * __exceptfds,__restrict__ ::timeval * __timeout)  ;
 
 
 #ifdef __cplusplus

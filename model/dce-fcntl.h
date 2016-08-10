@@ -4,6 +4,7 @@
 #define DCE_HEADER_FCNTL_H
 // TODO add extern "C" ?
 #include <fcntl.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
@@ -11,13 +12,37 @@
 extern "C" {
 #endif
                 
- int dce_fcntl (int __fd,int __cmd,... ) ;
+ int dce_fcntl_v (int __fd,int __cmd,va_list)  ;
+inline  int dce_fcntl (int __fd,int __cmd,... )   {
+        va_list __dce_va_list;
+        va_start (__dce_va_list, __cmd);
+        auto ret = dce_fcntl_v ( __fd,__cmd, __dce_va_list);
+        va_end (__dce_va_list);
+        return ret;
+            };
 
- int dce_open (char const * __file,int __oflag,... ) ;
+            
+ int dce_open_v (char const * __file,int __oflag,va_list)  ;
+inline  int dce_open (char const * __file,int __oflag,... )   {
+        va_list __dce_va_list;
+        va_start (__dce_va_list, __oflag);
+        auto ret = dce_open_v ( __file,__oflag, __dce_va_list);
+        va_end (__dce_va_list);
+        return ret;
+            };
 
- int dce_open64 (char const * __file,int __oflag,... ) ;
+            
+ int dce_open64_v (char const * __file,int __oflag,va_list)  ;
+inline  int dce_open64 (char const * __file,int __oflag,... )   {
+        va_list __dce_va_list;
+        va_start (__dce_va_list, __oflag);
+        auto ret = dce_open64_v ( __file,__oflag, __dce_va_list);
+        va_end (__dce_va_list);
+        return ret;
+            };
 
- int dce_creat (char const * __file,mode_t __mode) ;
+            
+ int dce_creat (char const * __file,mode_t __mode)  ;
 
 
 #ifdef __cplusplus

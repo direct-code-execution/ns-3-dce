@@ -1,5 +1,48 @@
 
 #include "libc.h"
+#include "dce-unistd.h"
+#include "dce-errno.h"
+#include "dce-libc-private.h"
+#include "dce-signal.h"
+#include "dce-netdb.h"
+#include "dce-unistd.h"
+#include "dce-time.h"
+#include "sys/dce-socket.h"
+#include "dce-pthread.h"
+#include "dce-stdio.h"
+#include "dce-stdarg.h"
+#include "dce-stdlib.h"
+#include "dce-string.h"
+#include "dce-locale.h"
+#include "dce-getopt.h"
+#include "sys/dce-select.h"
+#include "arpa/dce-inet.h"
+#include "sys/dce-ioctl.h"
+#include "sys/dce-time.h"
+#include "sys/dce-sysinfo.h"
+#include "sys/dce-uio.h"
+#include "dce-stdio2.h"
+#include "dce-sched.h"
+#include "dce-fcntl.h"
+#include "dce-utime.h"
+#include "dce-grp.h"
+#include "dce-pwd.h"
+#include "dce-libio.h"
+#include "dce-termios.h"
+#include "dce-dlfcn.h"
+#include "sys/dce-stat.h"
+#include "sys/dce-vfs.h"
+#include "sys/dce-statvfs.h"
+#include "sys/dce-utsname.h"
+#include "sys/dce-wait.h"
+#include "dce-poll.h"
+#include "dce-dirent.h"
+#include "dce-semaphore.h"
+#include "dce-ifaddrs.h"
+#include "sys/dce-mman.h"
+#include "sys/dce-timerfd.h"
+#include "sys/dce-syslog.h"
+#include "net/dce-if.h"
 #include <utility>
 #include <stdlib.h>
 //extern "C"
@@ -152,11 +195,11 @@ namespace detail_paramType {
 //  return g_libc. name ## _fn (std::forward<Args>(args)...); \
 //}
   
-//#define NATIVE(name) decltype(&name) name ## _fn ;
+#define NATIVE(name) decltype(&name) name ## _fn ;
 //#define NATIVE_EXPLICIT(name, type) decltype( (type) &name) name ## _fn ;
 // return DCE
-// TODO pareil que native en fait
-#define DCE(rtype,name, args...)  NATIVE(name, args);
+// TODO do nothing, the function is called straightaway
+#define DCE(rtype,name, args...) 
 //#define DCE(rtype,name, args...)  rtype  __attribute__((weak)) name (args) {};
 
 // TODO generate fake entry too ? mark it as weak ?

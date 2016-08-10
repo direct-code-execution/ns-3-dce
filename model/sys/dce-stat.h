@@ -4,31 +4,32 @@
 #define DCE_HEADER_SYS_STAT_H
 // TODO add extern "C" ?
 #include <sys/stat.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_mkdir (char const * __path,__mode_t __mode) noexcept;
+                 int dce_mkdir (char const * __path,__mode_t __mode) noexcept ;
 
- __mode_t dce_umask (__mode_t __mask) noexcept;
+ __mode_t dce_umask (__mode_t __mask) noexcept ;
 
- int dce___xstat (int __ver,char const * __filename,struct stat * __stat_buf) noexcept;
+ int dce___xstat (int __ver,char const * __filename,struct stat * __stat_buf) noexcept ;
 
- int dce___lxstat (int __ver,char const * __filename,struct stat * __stat_buf) noexcept;
+ int dce___lxstat (int __ver,char const * __filename,struct stat * __stat_buf) noexcept ;
 
- int dce___fxstat (int __ver,int __fildes,struct stat * __stat_buf) noexcept;
+ int dce___fxstat (int __ver,int __fildes,struct stat * __stat_buf) noexcept ;
 
- int dce___xstat64 (int __ver,char const * __filename,struct stat64 * __stat_buf) noexcept;
+ int dce___xstat64 (int __ver,char const * __filename,struct stat64 * __stat_buf) noexcept ;
 
- int dce___lxstat64 (int __ver,char const * __filename,struct stat64 * __stat_buf) noexcept;
+ int dce___lxstat64 (int __ver,char const * __filename,struct stat64 * __stat_buf) noexcept ;
 
- int dce___fxstat64 (int __ver,int __fildes,struct stat64 * __stat_buf) noexcept;
+ int dce___fxstat64 (int __ver,int __fildes,struct stat64 * __stat_buf) noexcept ;
 
- int dce___fxstatat (int __ver,int __fildes,char const * __filename,struct stat * __stat_buf,int __flag) noexcept;
+ int dce___fxstatat (int __ver,int __fildes,char const * __filename,struct stat * __stat_buf,int __flag) noexcept ;
 
- int dce_fstat64 (int __fd, struct stat64 *__buf) noexcept;
+ int dce_fstat64 (int __fd, struct stat64 *__buf) noexcept ;
 
 
 #ifdef __cplusplus

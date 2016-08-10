@@ -4,41 +4,42 @@
 #define DCE_HEADER_TIME_H
 // TODO add extern "C" ?
 #include <time.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_nanosleep (timespec const * __requested_time,timespec * __remaining) ;
+                 int dce_nanosleep (timespec const * __requested_time,timespec * __remaining)  ;
 
- char * dce_asctime (tm const * __tp) noexcept;
-
-
- char * dce_ctime (time_t const * __timer) noexcept;
+ char * dce_asctime (tm const * __tp) noexcept ;
 
 
- tm * dce_gmtime (time_t const * __timer) noexcept;
+ char * dce_ctime (time_t const * __timer) noexcept ;
 
 
+ tm * dce_gmtime (time_t const * __timer) noexcept ;
 
 
 
 
 
- int dce_clock_gettime (clockid_t __clock_id,timespec * __tp) noexcept;
 
- int dce_clock_getres (clockid_t __clock_id,timespec * __res) noexcept;
 
- int dce_timer_create (clockid_t __clock_id,__restrict__ ::sigevent * __evp,__restrict__ ::timer_t * __timerid) noexcept;
+ int dce_clock_gettime (clockid_t __clock_id,timespec * __tp) noexcept ;
 
- int dce_timer_settime (timer_t __timerid,int __flags,__restrict__ ::itimerspec const * __value,__restrict__ ::itimerspec * __ovalue) noexcept;
+ int dce_clock_getres (clockid_t __clock_id,timespec * __res) noexcept ;
 
- int dce_timer_gettime (timer_t __timerid,itimerspec * __value) noexcept;
+ int dce_timer_create (clockid_t __clock_id,__restrict__ ::sigevent * __evp,__restrict__ ::timer_t * __timerid) noexcept ;
 
- void dce_tzset () noexcept;
+ int dce_timer_settime (timer_t __timerid,int __flags,__restrict__ ::itimerspec const * __value,__restrict__ ::itimerspec * __ovalue) noexcept ;
 
- time_t dce_time (time_t * __timer) noexcept;
+ int dce_timer_gettime (timer_t __timerid,itimerspec * __value) noexcept ;
+
+ void dce_tzset () noexcept ;
+
+ time_t dce_time (time_t * __timer) noexcept ;
 
 
 #ifdef __cplusplus

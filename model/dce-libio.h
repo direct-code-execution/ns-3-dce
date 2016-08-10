@@ -4,15 +4,16 @@
 #define DCE_HEADER_LIBIO_H
 // TODO add extern "C" ?
 #include <libio.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce__IO_getc (_IO_FILE * __fp) ;
+                 int dce__IO_getc (_IO_FILE * __fp)  ;
 
- int dce__IO_putc (int __c,_IO_FILE * __fp) ;
+ int dce__IO_putc (int __c,_IO_FILE * __fp)  ;
 
 
 #ifdef __cplusplus

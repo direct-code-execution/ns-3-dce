@@ -4,13 +4,14 @@
 #define DCE_HEADER_GRP_H
 // TODO add extern "C" ?
 #include <grp.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_initgroups (char const * __user,__gid_t __group) ;
+                 int dce_initgroups (char const * __user,__gid_t __group)  ;
 
 
 

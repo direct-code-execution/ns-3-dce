@@ -4,130 +4,155 @@
 #define DCE_HEADER_UNISTD_H
 // TODO add extern "C" ?
 #include <unistd.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 ssize_t dce_read (int __fd,void * __buf,size_t __nbytes) ;
+                 ssize_t dce_read (int __fd,void * __buf,size_t __nbytes)  ;
 
- ssize_t dce_write (int __fd,void const * __buf,size_t __n) ;
+ ssize_t dce_write (int __fd,void const * __buf,size_t __n)  ;
 
- unsigned int dce_sleep (unsigned int __seconds) ;
+ unsigned int dce_sleep (unsigned int __seconds)  ;
 
- int dce_usleep (__useconds_t __useconds) ;
+ int dce_usleep (__useconds_t __useconds)  ;
 
- __pid_t dce_getpid () noexcept;
+ __pid_t dce_getpid () noexcept ;
 
- __pid_t dce_getppid () noexcept;
+ __pid_t dce_getppid () noexcept ;
 
- __uid_t dce_getuid () noexcept;
+ __uid_t dce_getuid () noexcept ;
 
- __uid_t dce_geteuid () noexcept;
+ __uid_t dce_geteuid () noexcept ;
 
- int dce_setuid (__uid_t __uid) noexcept;
+ int dce_setuid (__uid_t __uid) noexcept ;
 
- int dce_setgid (__gid_t __gid) noexcept;
+ int dce_setgid (__gid_t __gid) noexcept ;
 
- int dce_seteuid (__uid_t __uid) noexcept;
+ int dce_seteuid (__uid_t __uid) noexcept ;
 
- int dce_setegid (__gid_t __gid) noexcept;
+ int dce_setegid (__gid_t __gid) noexcept ;
 
- int dce_setreuid (__uid_t __ruid,__uid_t __euid) noexcept;
+ int dce_setreuid (__uid_t __ruid,__uid_t __euid) noexcept ;
 
- int dce_setregid (__gid_t __rgid,__gid_t __egid) noexcept;
+ int dce_setregid (__gid_t __rgid,__gid_t __egid) noexcept ;
 
- int dce_setresuid (__uid_t __ruid,__uid_t __euid,__uid_t __suid) noexcept;
+ int dce_setresuid (__uid_t __ruid,__uid_t __euid,__uid_t __suid) noexcept ;
 
- int dce_setresgid (__gid_t __rgid,__gid_t __egid,__gid_t __sgid) noexcept;
+ int dce_setresgid (__gid_t __rgid,__gid_t __egid,__gid_t __sgid) noexcept ;
 
- int dce_dup (int __fd) noexcept;
+ int dce_dup (int __fd) noexcept ;
 
- int dce_dup2 (int __fd,int __fd2) noexcept;
+ int dce_dup2 (int __fd,int __fd2) noexcept ;
 
- int dce_close (int __fd) ;
+ int dce_close (int __fd)  ;
 
- int dce_unlink (char const * __name) noexcept;
+ int dce_unlink (char const * __name) noexcept ;
 
- int dce_rmdir (char const * __path) noexcept;
+ int dce_rmdir (char const * __path) noexcept ;
 
- int dce_isatty (int __fd) noexcept;
+ int dce_isatty (int __fd) noexcept ;
 
- char * dce_getcwd (char * __buf,size_t __size) noexcept;
+ char * dce_getcwd (char * __buf,size_t __size) noexcept ;
 
- char * dce_getwd (char * __buf) noexcept;
+ char * dce_getwd (char * __buf) noexcept ;
 
- char * dce_get_current_dir_name () noexcept;
+ char * dce_get_current_dir_name () noexcept ;
 
- int dce_chdir (char const * __path) noexcept;
+ int dce_chdir (char const * __path) noexcept ;
 
- int dce_fchdir (int __fd) noexcept;
+ int dce_fchdir (int __fd) noexcept ;
 
- __pid_t dce_fork () noexcept;
+ __pid_t dce_fork () noexcept ;
 
- int dce_execv (char const * __path,char * const * __argv) noexcept;
+ int dce_execv (char const * __path,char * const * __argv) noexcept ;
 
- int dce_execl (char const * __path,char const * __arg,... ) noexcept;
+ int dce_execl_v (char const * __path,char const * __arg,va_list) noexcept ;
+inline  int dce_execl (char const * __path,char const * __arg,... ) noexcept  {
+        va_list __dce_va_list;
+        va_start (__dce_va_list, __arg);
+        auto ret = dce_execl_v ( __path,__arg, __dce_va_list);
+        va_end (__dce_va_list);
+        return ret;
+            };
 
- int dce_execve (char const * __path,char * const * __argv,char * const * __envp) noexcept;
+            
+ int dce_execve (char const * __path,char * const * __argv,char * const * __envp) noexcept ;
 
- int dce_execvp (char const * __file,char * const * __argv) noexcept;
+ int dce_execvp (char const * __file,char * const * __argv) noexcept ;
 
- int dce_execlp (char const * __file,char const * __arg,... ) noexcept;
+ int dce_execlp_v (char const * __file,char const * __arg,va_list) noexcept ;
+inline  int dce_execlp (char const * __file,char const * __arg,... ) noexcept  {
+        va_list __dce_va_list;
+        va_start (__dce_va_list, __arg);
+        auto ret = dce_execlp_v ( __file,__arg, __dce_va_list);
+        va_end (__dce_va_list);
+        return ret;
+            };
 
- int dce_execle (char const * __path,char const * __arg,... ) noexcept;
+            
+ int dce_execle_v (char const * __path,char const * __arg,va_list) noexcept ;
+inline  int dce_execle (char const * __path,char const * __arg,... ) noexcept  {
+        va_list __dce_va_list;
+        va_start (__dce_va_list, __arg);
+        auto ret = dce_execle_v ( __path,__arg, __dce_va_list);
+        va_end (__dce_va_list);
+        return ret;
+            };
 
- int dce_truncate (char const * __file,__off_t __length) noexcept;
+            
+ int dce_truncate (char const * __file,__off_t __length) noexcept ;
 
- int dce_ftruncate (int __fd,__off_t __length) noexcept;
+ int dce_ftruncate (int __fd,__off_t __length) noexcept ;
 
- int dce_ftruncate64 (int __fd,__off64_t __length) noexcept;
-
-
- char * dce_ttyname (int __fd) noexcept;
-
- void * dce_sbrk (intptr_t __delta) noexcept;
-
- int dce_getpagesize () noexcept;
-
- __gid_t dce_getgid () noexcept;
-
- __gid_t dce_getegid () noexcept;
-
- int dce_gethostname (char * __name,size_t __len) noexcept;
-
- __pid_t dce_getpgrp () noexcept;
-
- __off_t dce_lseek (int __fd,__off_t __offset,int __whence) noexcept;
-
- __off64_t dce_lseek64 (int __fd,__off64_t __offset,int __whence) noexcept;
-
- int dce_euidaccess (char const * __name,int __type) noexcept;
-
- int dce_eaccess (char const * __name,int __type) noexcept;
-
- int dce_access (char const * __name,int __type) noexcept;
-
- int dce_pipe (int * __pipedes) noexcept;
+ int dce_ftruncate64 (int __fd,__off64_t __length) noexcept ;
 
 
+ char * dce_ttyname (int __fd) noexcept ;
 
- ssize_t dce_pread (int __fd,void * __buf,size_t __nbytes,__off_t __offset) ;
+ void * dce_sbrk (intptr_t __delta) noexcept ;
 
- ssize_t dce_pwrite (int __fd,void const * __buf,size_t __n,__off_t __offset) ;
+ int dce_getpagesize () noexcept ;
 
- int dce_daemon (int __nochdir,int __noclose) noexcept;
+ __gid_t dce_getgid () noexcept ;
 
- unsigned int dce_alarm (unsigned int __seconds) noexcept;
+ __gid_t dce_getegid () noexcept ;
 
- ssize_t dce_readlink (__restrict__ char const * __path,__restrict__ char * __buf,size_t __len) noexcept;
+ int dce_gethostname (char * __name,size_t __len) noexcept ;
 
- int dce_chown (char const * __file,__uid_t __owner,__gid_t __group) noexcept;
+ __pid_t dce_getpgrp () noexcept ;
 
- int dce_fsync (int __fd) ;
+ __off_t dce_lseek (int __fd,__off_t __offset,int __whence) noexcept ;
 
- int dce_unlinkat (int __fd,char const * __name,int __flag) noexcept;
+ __off64_t dce_lseek64 (int __fd,__off64_t __offset,int __whence) noexcept ;
+
+ int dce_euidaccess (char const * __name,int __type) noexcept ;
+
+ int dce_eaccess (char const * __name,int __type) noexcept ;
+
+ int dce_access (char const * __name,int __type) noexcept ;
+
+ int dce_pipe (int * __pipedes) noexcept ;
+
+
+
+ ssize_t dce_pread (int __fd,void * __buf,size_t __nbytes,__off_t __offset)  ;
+
+ ssize_t dce_pwrite (int __fd,void const * __buf,size_t __n,__off_t __offset)  ;
+
+ int dce_daemon (int __nochdir,int __noclose) noexcept ;
+
+ unsigned int dce_alarm (unsigned int __seconds) noexcept ;
+
+ ssize_t dce_readlink (__restrict__ char const * __path,__restrict__ char * __buf,size_t __len) noexcept ;
+
+ int dce_chown (char const * __file,__uid_t __owner,__gid_t __group) noexcept ;
+
+ int dce_fsync (int __fd)  ;
+
+ int dce_unlinkat (int __fd,char const * __name,int __flag) noexcept ;
 
 
 #ifdef __cplusplus

@@ -4,17 +4,18 @@
 #define DCE_HEADER_SYS_TIMERFD_H
 // TODO add extern "C" ?
 #include <sys/timerfd.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_timerfd_create (clockid_t __clock_id,int __flags) noexcept;
+                 int dce_timerfd_create (clockid_t __clock_id,int __flags) noexcept ;
 
- int dce_timerfd_settime (int __ufd,int __flags,itimerspec const * __utmr,itimerspec * __otmr) noexcept;
+ int dce_timerfd_settime (int __ufd,int __flags,itimerspec const * __utmr,itimerspec * __otmr) noexcept ;
 
- int dce_timerfd_gettime (int __ufd,itimerspec * __otmr) noexcept;
+ int dce_timerfd_gettime (int __ufd,itimerspec * __otmr) noexcept ;
 
 
 #ifdef __cplusplus

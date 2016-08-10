@@ -4,6 +4,7 @@
 #define DCE_HEADER_STRING_H
 // TODO add extern "C" ?
 #include <string.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
@@ -31,9 +32,9 @@ extern "C" {
 
 
 
- char * dce_strdup (char const * __s) noexcept;
+ char * dce_strdup (char const * __s) noexcept ;
 
- char * dce_strndup (char const * __string,size_t __n) noexcept;
+ char * dce_strndup (char const * __string,size_t __n) noexcept ;
 
 
 

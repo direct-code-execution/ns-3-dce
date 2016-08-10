@@ -4,30 +4,29 @@
 #define DCE_HEADER_NETDB_H
 // TODO add extern "C" ?
 #include <netdb.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_getnameinfo (__restrict__ ::sockaddr const * __sa,socklen_t __salen,__restrict__ char * __host,socklen_t __hostlen,__restrict__ char * __serv,socklen_t __servlen,int __flags) ;
+                 int dce_getnameinfo (__restrict__ ::sockaddr const * __sa,socklen_t __salen,__restrict__ char * __host,socklen_t __hostlen,__restrict__ char * __serv,socklen_t __servlen,int __flags)  ;
 
- hostent * dce_gethostbyname (char const * __name) ;
+ hostent * dce_gethostbyname (char const * __name)  ;
 
- hostent * dce_gethostbyname2 (char const * __name,int __af) ;
+ hostent * dce_gethostbyname2 (char const * __name,int __af)  ;
 
- int dce_getaddrinfo (__restrict__ char const * __name,__restrict__ char const * __service,__restrict__ ::addrinfo const * __req,__restrict__ ::addrinfo * * __pai) ;
+ int dce_getaddrinfo (__restrict__ char const * __name,__restrict__ char const * __service,__restrict__ ::addrinfo const * __req,__restrict__ ::addrinfo * * __pai)  ;
 
- void dce_freeaddrinfo (addrinfo * __ai) noexcept;
+ void dce_freeaddrinfo (addrinfo * __ai) noexcept ;
 
- char const * dce_gai_strerror (int __ecode) noexcept;
-
-
+ char const * dce_gai_strerror (int __ecode) noexcept ;
 
 
- void dce_herror (char const * __str) noexcept;
 
 
+ void dce_herror (char const * __str) noexcept ;
 
 
 
@@ -38,7 +37,9 @@ extern "C" {
 
 
 
- int * dce___h_errno_location () noexcept;
+
+
+ int * dce___h_errno_location () noexcept ;
 
 
 #ifdef __cplusplus

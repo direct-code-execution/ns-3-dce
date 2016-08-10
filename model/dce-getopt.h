@@ -4,15 +4,16 @@
 #define DCE_HEADER_GETOPT_H
 // TODO add extern "C" ?
 #include <getopt.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_getopt (int ___argc,char * const * ___argv,char const * __shortopts) noexcept;
+                 int dce_getopt (int ___argc,char * const * ___argv,char const * __shortopts) noexcept ;
 
- int dce_getopt_long (int ___argc,char * const * ___argv,char const * __shortopts,option const * __longopts,int * __longind) noexcept;
+ int dce_getopt_long (int ___argc,char * const * ___argv,char const * __shortopts,option const * __longopts,int * __longind) noexcept ;
 
 
 #ifdef __cplusplus

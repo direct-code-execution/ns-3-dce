@@ -49,15 +49,12 @@ dce_setlogmask (int maskpri) noexcept
 }
 
 void
-dce_syslog (int priority, const char *message, ...)
+dce_syslog_v (int priority, const char *message, va_list ap)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << priority << message);
   NS_ASSERT (Current () != 0);
 
-  va_list ap;
-  va_start (ap, message);
   dce_vsyslog (priority, message, ap);
-  va_end (ap);
 }
 
 void

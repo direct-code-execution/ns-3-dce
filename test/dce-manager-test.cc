@@ -190,50 +190,50 @@ DceManagerTestSuite::DceManagerTestSuite ()
 
   const testPair tests[] = {
     // OK
-//    { "test-empty", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-sleep", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-pthread", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-mutex", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-once", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-pthread-key", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-sem", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-malloc", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-malloc-2", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    { "test-empty", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-sleep", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-pthread", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-mutex", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-once", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-pthread-key", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-sem", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-malloc", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-malloc-2", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
     
-//    {  "test-fd-simple", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK}, // ok
-//    {  "test-strerror", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},  //OK 
-//    {  "test-stdio", 0, "/etc/passwd",false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},  // OK
+    {  "test-fd-simple", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK}, // ok
+    {  "test-strerror", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},  //OK 
+    {  "test-stdio", 0, "/etc/passwd",false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},  // OK
 
     // OK
-//    {  "test-string", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-netdb", 3600, "", true, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-env", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-cond", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-timer-fd", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-stdlib", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-fork", 0, "", false, true, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-select", 3600, "", true, false, LINUX_STACK},
-//    {  "test-nanosleep", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-random", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-string", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-netdb", 3600, "", true, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-env", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-cond", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-timer-fd", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-stdlib", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-fork", 0, "", false, true, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-select", 3600, "", true, false, LINUX_STACK},
+    {  "test-nanosleep", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-random", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
 
-//    {  "test-local-socket", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},  // OK
+    {  "test-local-socket", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},  // OK
 
-//    {  "test-poll", 3200, "", true, false, NS3_STACK|LINUX_STACK},  // OK
-//    {  "test-tcp-socket", 320, "", true, false, LINUX_STACK}, // OK
-    {  "test-exec", 0, "", false, true, NS3_STACK|LINUX_STACK|FREEBSD_STACK}, // FOIRE
+    {  "test-poll", 3200, "", true, false, NS3_STACK|LINUX_STACK},  // OK
+    {  "test-tcp-socket", 320, "", true, false, LINUX_STACK}, // OK
+//    {  "test-exec", 0, "", false, true, NS3_STACK|LINUX_STACK|FREEBSD_STACK}, // FOIRE
 
     // OK
-//    {  "test-raw-socket", 320, "", true, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-iperf", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-name", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-pipe", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-dirent", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-socket", 30, "", true, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-bug-multi-select", 30, "", true, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-tsearch", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    {  "test-clock-gettime", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-//    // TODO rename test-math ?
-//    {  "test-gcc-builtin-apply", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-raw-socket", 320, "", true, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-iperf", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-name", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-pipe", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-dirent", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-socket", 30, "", true, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-bug-multi-select", 30, "", true, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-tsearch", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-clock-gettime", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    // TODO rename test-math ?
+    {  "test-gcc-builtin-apply", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
     // XXX: not completely tested      {  "test-signal", 30, "" , false},
   };
 

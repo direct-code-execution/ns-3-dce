@@ -4,6 +4,7 @@
 #define DCE_HEADER_NET_ETHER_H
 // TODO add extern "C" ?
 #include <net/ether.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 

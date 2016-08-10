@@ -4,13 +4,14 @@
 #define DCE_HEADER_SYS_SYSINFO_H
 // TODO add extern "C" ?
 #include <sys/sysinfo.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_sysinfo (struct sysinfo *info) noexcept;
+                 int dce_sysinfo (struct sysinfo *info) noexcept ;
 
 
 #ifdef __cplusplus

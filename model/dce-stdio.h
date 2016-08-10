@@ -4,102 +4,119 @@
 #define DCE_HEADER_STDIO_H
 // TODO add extern "C" ?
 #include <stdio.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 FILE * dce_tmpfile () ;
+                 FILE * dce_tmpfile ()  ;
 
- int dce_rename (char const * __old,char const * __new) noexcept;
+ int dce_rename (char const * __old,char const * __new) noexcept ;
 
- void dce_clearerr (FILE * __stream) noexcept;
+ void dce_clearerr (FILE * __stream) noexcept ;
 
- int dce_setvbuf (__restrict__ ::FILE * __stream,__restrict__ char * __buf,int __modes,size_t __n) noexcept;
+ int dce_setvbuf (__restrict__ ::FILE * __stream,__restrict__ char * __buf,int __modes,size_t __n) noexcept ;
 
- void dce_setbuf (__restrict__ ::FILE * __stream,__restrict__ char * __buf) noexcept;
+ void dce_setbuf (__restrict__ ::FILE * __stream,__restrict__ char * __buf) noexcept ;
 
- void dce_setbuffer (__restrict__ ::FILE * __stream,__restrict__ char * __buf,size_t __size) noexcept;
+ void dce_setbuffer (__restrict__ ::FILE * __stream,__restrict__ char * __buf,size_t __size) noexcept ;
 
- void dce_setlinebuf (FILE * __stream) noexcept;
+ void dce_setlinebuf (FILE * __stream) noexcept ;
 
- int dce_fseek (FILE * __stream,long int __off,int __whence) ;
+ int dce_fseek (FILE * __stream,long int __off,int __whence)  ;
 
- long int dce_ftell (FILE * __stream) ;
+ long int dce_ftell (FILE * __stream)  ;
 
- int dce_fseeko (FILE * __stream,__off_t __off,int __whence) ;
+ int dce_fseeko (FILE * __stream,__off_t __off,int __whence)  ;
 
- __off_t dce_ftello (FILE * __stream) ;
+ __off_t dce_ftello (FILE * __stream)  ;
 
- void dce_rewind (FILE * __stream) ;
+ void dce_rewind (FILE * __stream)  ;
 
- int dce_fgetpos (__restrict__ ::FILE * __stream,__restrict__ ::fpos_t * __pos) ;
+ int dce_fgetpos (__restrict__ ::FILE * __stream,__restrict__ ::fpos_t * __pos)  ;
 
- int dce_fsetpos (FILE * __stream,fpos_t const * __pos) ;
+ int dce_fsetpos (FILE * __stream,fpos_t const * __pos)  ;
 
- int dce_printf (__restrict__ char const * __format,... ) ;
+ int dce_printf_v (__restrict__ char const * __format,va_list)  ;
+inline  int dce_printf (__restrict__ char const * __format,... )   {
+        va_list __dce_va_list;
+        va_start (__dce_va_list, __format);
+        auto ret = dce_printf_v ( __format, __dce_va_list);
+        va_end (__dce_va_list);
+        return ret;
+            };
 
-
-
- int dce_asprintf (__restrict__ char * * __ptr,__restrict__ char const * __fmt,... ) noexcept;
-
- int dce_vasprintf (__restrict__ char * * __ptr,__restrict__ char const * __f,va_list) noexcept;
-
-
-
- int dce_fgetc (FILE * __stream) ;
-
+            
 
 
- int dce_getchar () ;
+ int dce_asprintf_v (__restrict__ char * * __ptr,__restrict__ char const * __fmt,va_list) noexcept ;
+inline  int dce_asprintf (__restrict__ char * * __ptr,__restrict__ char const * __fmt,... ) noexcept  {
+        va_list __dce_va_list;
+        va_start (__dce_va_list, __fmt);
+        auto ret = dce_asprintf_v ( __ptr,__fmt, __dce_va_list);
+        va_end (__dce_va_list);
+        return ret;
+            };
 
- int dce_fputc (int __c,FILE * __stream) ;
-
-
-
- int dce_putchar (int __c) ;
-
- char * dce_fgets (__restrict__ char * __s,int __n,__restrict__ ::FILE * __stream) ;
-
- int dce_fputs (__restrict__ char const * __s,__restrict__ ::FILE * __stream) ;
-
- int dce_puts (char const * __s) ;
-
- int dce_ungetc (int __c,FILE * __stream) ;
-
- int dce_fclose (FILE * __stream) ;
-
- int dce_fcloseall () ;
-
- FILE * dce_fopen (__restrict__ char const * __filename,__restrict__ char const * __modes) ;
-
- FILE * dce_fopen64 (__restrict__ char const * __filename,__restrict__ char const * __modes) ;
-
- FILE * dce_freopen (__restrict__ char const * __filename,__restrict__ char const * __modes,__restrict__ ::FILE * __stream) ;
-
- FILE * dce_fdopen (int __fd,char const * __modes) noexcept;
-
- size_t dce_fread (__restrict__ void * __ptr,size_t __size,size_t __n,__restrict__ ::FILE * __stream) ;
-
- size_t dce_fwrite (__restrict__ void const * __ptr,size_t __size,size_t __n,__restrict__ ::FILE * __s) ;
-
- int dce_fflush (FILE * __stream) ;
-
- int dce_ferror (FILE * __stream) noexcept;
-
- int dce_feof (FILE * __stream) noexcept;
-
- int dce_fileno (FILE * __stream) noexcept;
-
- void dce_perror (char const * __s) ;
-
- int dce_remove (char const * __filename) noexcept;
+            
+ int dce_vasprintf (__restrict__ char * * __ptr,__restrict__ char const * __f,va_list) noexcept ;
 
 
 
+ int dce_fgetc (FILE * __stream)  ;
 
- int dce_vprintf (__restrict__ char const * __format,va_list) ;
+
+
+ int dce_getchar ()  ;
+
+ int dce_fputc (int __c,FILE * __stream)  ;
+
+
+
+ int dce_putchar (int __c)  ;
+
+ char * dce_fgets (__restrict__ char * __s,int __n,__restrict__ ::FILE * __stream)  ;
+
+ int dce_fputs (__restrict__ char const * __s,__restrict__ ::FILE * __stream)  ;
+
+ int dce_puts (char const * __s)  ;
+
+ int dce_ungetc (int __c,FILE * __stream)  ;
+
+ int dce_fclose (FILE * __stream)  ;
+
+ int dce_fcloseall ()  ;
+
+ FILE * dce_fopen (__restrict__ char const * __filename,__restrict__ char const * __modes)  ;
+
+ FILE * dce_fopen64 (__restrict__ char const * __filename,__restrict__ char const * __modes)  ;
+
+ FILE * dce_freopen (__restrict__ char const * __filename,__restrict__ char const * __modes,__restrict__ ::FILE * __stream)  ;
+
+ FILE * dce_fdopen (int __fd,char const * __modes) noexcept ;
+
+ size_t dce_fread (__restrict__ void * __ptr,size_t __size,size_t __n,__restrict__ ::FILE * __stream)  ;
+
+ size_t dce_fwrite (__restrict__ void const * __ptr,size_t __size,size_t __n,__restrict__ ::FILE * __s)  ;
+
+ int dce_fflush (FILE * __stream)  ;
+
+ int dce_ferror (FILE * __stream) noexcept ;
+
+ int dce_feof (FILE * __stream) noexcept ;
+
+ int dce_fileno (FILE * __stream) noexcept ;
+
+ void dce_perror (char const * __s)  ;
+
+ int dce_remove (char const * __filename) noexcept ;
+
+
+
+
+ int dce_vprintf (__restrict__ char const * __format,va_list)  ;
 
 
 

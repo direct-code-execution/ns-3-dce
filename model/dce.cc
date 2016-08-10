@@ -704,10 +704,19 @@ int dce_execv (const char *path, char *const argv[]) noexcept
        being executed.  The list of arguments must be terminated by a null pointer, and, since these are  variadic  functions,  this
        pointer must be cast (char *) NULL
 */
-int dce_execl (const char *path, const char *arg, ...) noexcept
+//int dce_execl (const char *path, const char *arg, ...) noexcept
+//{
+//  va_list ap;
+//  va_start(ap, arg);
+//  int ret = dce_execl_v (path, arg, ap );
+//  va_end(ap);
+//  return ret;
+//}
+
+int dce_execl_v (const char *path, const char *arg, va_list ap) noexcept
 {
-  va_list ap;
-  va_start (ap, arg);
+//  va_list ap;
+//  va_start (ap, arg);
 
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << path);
@@ -772,10 +781,8 @@ int dce_execve (const char *path, char *const argv[], char *const envp[]) noexce
   return thread->process->manager->Execve (fileName.c_str (), path, argv, envp);
 }
 
-int dce_execlp (const char *file, const char *arg, ...) noexcept
+int dce_execlp_v (const char *file, const char *arg, va_list ap) noexcept
 {
-  va_list ap;
-  va_start (ap, arg);
 
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << file);
@@ -845,10 +852,8 @@ int dce_execvp (const char *file, char *const argv[]) noexcept
 
   return thread->process->manager->Execve (fileName.c_str (), file, argv, *(thread->process->penvp));
 }
-int dce_execle (const char *path, const char *arg, ...) noexcept
+int dce_execle_v (const char *path, const char *arg, va_list ap) noexcept
 {
-  va_list ap;
-  va_start (ap, arg);
 
   Thread *thread = Current ();
   NS_LOG_FUNCTION (thread << UtilsGetNodeId () << path);

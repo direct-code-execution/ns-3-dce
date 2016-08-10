@@ -4,65 +4,66 @@
 #define DCE_HEADER_PTHREAD_H
 // TODO add extern "C" ?
 #include <pthread.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_pthread_create (__restrict__ ::pthread_t * __newthread,__restrict__ ::pthread_attr_t const * __attr,void * (*)( void * ) ,__restrict__ void * __arg) noexcept;
+                 int dce_pthread_create (__restrict__ ::pthread_t * __newthread,__restrict__ ::pthread_attr_t const * __attr,void * (*)( void * ) ,__restrict__ void * __arg) noexcept ;
 
- void dce_pthread_exit (void *retval) __attribute__ ((__noreturn__));
+ void dce_pthread_exit (void *retval) __attribute__ ((__noreturn__)) ;
 
- pthread_t dce_pthread_self () noexcept;
+ pthread_t dce_pthread_self () noexcept ;
 
- int dce_pthread_once (pthread_once_t * __once_control,void (*)(  ) ) ;
+ int dce_pthread_once (pthread_once_t * __once_control,void (*)(  ) )  ;
 
- void * dce_pthread_getspecific (pthread_key_t __key) noexcept;
+ void * dce_pthread_getspecific (pthread_key_t __key) noexcept ;
 
- int dce_pthread_setspecific (pthread_key_t __key,void const * __pointer) noexcept;
+ int dce_pthread_setspecific (pthread_key_t __key,void const * __pointer) noexcept ;
 
- int dce_pthread_key_create (pthread_key_t * __key,void (*)( void * ) ) noexcept;
+ int dce_pthread_key_create (pthread_key_t * __key,void (*)( void * ) ) noexcept ;
 
- int dce_pthread_key_delete (pthread_key_t __key) noexcept;
+ int dce_pthread_key_delete (pthread_key_t __key) noexcept ;
 
- int dce_pthread_mutex_destroy (pthread_mutex_t * __mutex) noexcept;
+ int dce_pthread_mutex_destroy (pthread_mutex_t * __mutex) noexcept ;
 
- int dce_pthread_mutex_init (pthread_mutex_t * __mutex,pthread_mutexattr_t const * __mutexattr) noexcept;
+ int dce_pthread_mutex_init (pthread_mutex_t * __mutex,pthread_mutexattr_t const * __mutexattr) noexcept ;
 
- int dce_pthread_mutex_lock (pthread_mutex_t * __mutex) noexcept;
+ int dce_pthread_mutex_lock (pthread_mutex_t * __mutex) noexcept ;
 
- int dce_pthread_mutex_unlock (pthread_mutex_t * __mutex) noexcept;
+ int dce_pthread_mutex_unlock (pthread_mutex_t * __mutex) noexcept ;
 
- int dce_pthread_mutex_trylock (pthread_mutex_t * __mutex) noexcept;
+ int dce_pthread_mutex_trylock (pthread_mutex_t * __mutex) noexcept ;
 
- int dce_pthread_mutexattr_init (pthread_mutexattr_t * __attr) noexcept;
+ int dce_pthread_mutexattr_init (pthread_mutexattr_t * __attr) noexcept ;
 
- int dce_pthread_mutexattr_destroy (pthread_mutexattr_t * __attr) noexcept;
+ int dce_pthread_mutexattr_destroy (pthread_mutexattr_t * __attr) noexcept ;
 
- int dce_pthread_mutexattr_settype (pthread_mutexattr_t * __attr,int __kind) noexcept;
+ int dce_pthread_mutexattr_settype (pthread_mutexattr_t * __attr,int __kind) noexcept ;
 
- int dce_pthread_cancel (pthread_t __th) ;
+ int dce_pthread_cancel (pthread_t __th)  ;
 
- int dce_pthread_join (pthread_t __th,void * * __thread_return) ;
+ int dce_pthread_join (pthread_t __th,void * * __thread_return)  ;
 
- int dce_pthread_detach (pthread_t __th) noexcept;
+ int dce_pthread_detach (pthread_t __th) noexcept ;
 
- int dce_pthread_cond_destroy (pthread_cond_t * __cond) noexcept;
+ int dce_pthread_cond_destroy (pthread_cond_t * __cond) noexcept ;
 
- int dce_pthread_cond_init (__restrict__ ::pthread_cond_t * __cond,__restrict__ ::pthread_condattr_t const * __cond_attr) noexcept;
+ int dce_pthread_cond_init (__restrict__ ::pthread_cond_t * __cond,__restrict__ ::pthread_condattr_t const * __cond_attr) noexcept ;
 
- int dce_pthread_cond_broadcast (pthread_cond_t * __cond) noexcept;
+ int dce_pthread_cond_broadcast (pthread_cond_t * __cond) noexcept ;
 
- int dce_pthread_cond_signal (pthread_cond_t * __cond) noexcept;
+ int dce_pthread_cond_signal (pthread_cond_t * __cond) noexcept ;
 
- int dce_pthread_cond_timedwait (__restrict__ ::pthread_cond_t * __cond,__restrict__ ::pthread_mutex_t * __mutex,__restrict__ ::timespec const * __abstime) ;
+ int dce_pthread_cond_timedwait (__restrict__ ::pthread_cond_t * __cond,__restrict__ ::pthread_mutex_t * __mutex,__restrict__ ::timespec const * __abstime)  ;
 
- int dce_pthread_cond_wait (__restrict__ ::pthread_cond_t * __cond,__restrict__ ::pthread_mutex_t * __mutex) ;
+ int dce_pthread_cond_wait (__restrict__ ::pthread_cond_t * __cond,__restrict__ ::pthread_mutex_t * __mutex)  ;
 
- int dce_pthread_condattr_destroy (pthread_condattr_t * __attr) noexcept;
+ int dce_pthread_condattr_destroy (pthread_condattr_t * __attr) noexcept ;
 
- int dce_pthread_condattr_init (pthread_condattr_t * __attr) noexcept;
+ int dce_pthread_condattr_init (pthread_condattr_t * __attr) noexcept ;
 
 
 

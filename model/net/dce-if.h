@@ -4,15 +4,16 @@
 #define DCE_HEADER_NET_IF_H
 // TODO add extern "C" ?
 #include <net/if.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 unsigned int dce_if_nametoindex (char const * __ifname) noexcept;
+                 unsigned int dce_if_nametoindex (char const * __ifname) noexcept ;
 
- char * dce_if_indextoname (unsigned int __ifindex,char * __ifname) noexcept;
+ char * dce_if_indextoname (unsigned int __ifindex,char * __ifname) noexcept ;
 
 
 #ifdef __cplusplus

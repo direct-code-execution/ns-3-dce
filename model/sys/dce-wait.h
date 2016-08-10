@@ -4,15 +4,16 @@
 #define DCE_HEADER_SYS_WAIT_H
 // TODO add extern "C" ?
 #include <sys/wait.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 pid_t dce_wait (void *stat_loc) ;
+                 pid_t dce_wait (void *stat_loc)  ;
 
- __pid_t dce_waitpid (__pid_t __pid,int * __stat_loc,int __options) ;
+ __pid_t dce_waitpid (__pid_t __pid,int * __stat_loc,int __options)  ;
 
 
 #ifdef __cplusplus

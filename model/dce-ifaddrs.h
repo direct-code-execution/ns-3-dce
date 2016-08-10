@@ -4,13 +4,14 @@
 #define DCE_HEADER_IFADDRS_H
 // TODO add extern "C" ?
 #include <ifaddrs.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_getifaddrs (ifaddrs * * __ifap) noexcept;
+                 int dce_getifaddrs (ifaddrs * * __ifap) noexcept ;
 
 
 

@@ -4,13 +4,14 @@
 #define DCE_HEADER_UTIME_H
 // TODO add extern "C" ?
 #include <utime.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_utime (char const * __file,utimbuf const * __file_times) noexcept;
+                 int dce_utime (char const * __file,utimbuf const * __file_times) noexcept ;
 
 
 #ifdef __cplusplus

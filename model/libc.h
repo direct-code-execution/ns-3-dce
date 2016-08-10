@@ -133,9 +133,14 @@ extern void __stack_chk_fail (void);
 }
 //on peut utiliser des templates pour recuperer les arguments 
 //#define DCE(name, args...) rtype (*name ## _fn) (args) ;
-/* native => decltype(name) */
+/* 
+native => decltype(name) 
+not always decltype,
+*/
 #define DCE NATIVE
-#define NATIVE(name, ...) decltype(&name) name ## _fn ;
+#define NATIVE(name, ...) decltype(&name) name ## _fn;
+//#define NATIVE(name, ...) NATIVE_EXPLICIT(decltype(&name), name, __VA_ARGS__;
+//#define NATIVE_EXPLICIT(type,name, ...) type name ## _fn ;
 
 #define ALIAS(name, ...)
 
@@ -166,6 +171,7 @@ struct Libc
   // temporary fix for gcc6
   double (*floor_fn) (double __x);
   double (*ceil_fn) (double __x);
+//  int (*execl_fn) (const char *path, const char *arg, va_list ap) noexcept;
  
   void (*dce_global_variables_setup_fn)(struct DceGlobalVariables *variables);
 //  char* (*strstr_fn)(const char *a, const char *b);

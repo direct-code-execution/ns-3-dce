@@ -4,28 +4,29 @@
 #define DCE_HEADER_SIGNAL_H
 // TODO add extern "C" ?
 #include <signal.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 __sighandler_t dce_signal (int __sig,__sighandler_t __handler) noexcept;
+                 __sighandler_t dce_signal (int __sig,__sighandler_t __handler) noexcept ;
 
- int dce_sigaction (int signum, const struct sigaction *act, struct sigaction *oldact) noexcept;
-
-
+ int dce_sigaction (int signum, const struct sigaction *act, struct sigaction *oldact) noexcept ;
 
 
 
 
- int dce_sigprocmask (int __how,__restrict__ ::sigset_t const * __set,__restrict__ ::sigset_t * __oset) noexcept;
 
- int dce_sigwait (__restrict__ ::sigset_t const * __set,__restrict__ int * __sig) ;
 
- int dce_kill (__pid_t __pid,int __sig) noexcept;
+ int dce_sigprocmask (int __how,__restrict__ ::sigset_t const * __set,__restrict__ ::sigset_t * __oset) noexcept ;
 
- int dce_pthread_kill (pthread_t thread, int sig) noexcept;
+ int dce_sigwait (__restrict__ ::sigset_t const * __set,__restrict__ int * __sig)  ;
+
+ int dce_kill (__pid_t __pid,int __sig) noexcept ;
+
+ int dce_pthread_kill (pthread_t thread, int sig) noexcept ;
 
 
 #ifdef __cplusplus

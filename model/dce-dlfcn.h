@@ -4,15 +4,16 @@
 #define DCE_HEADER_DLFCN_H
 // TODO add extern "C" ?
 #include <dlfcn.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 void * dce_dlopen (char const * __file,int __mode) noexcept;
+                 void * dce_dlopen (char const * __file,int __mode) noexcept ;
 
- void * dce_dlsym (__restrict__ void * __handle,__restrict__ char const * __name) noexcept;
+ void * dce_dlsym (__restrict__ void * __handle,__restrict__ char const * __name) noexcept ;
 
 
 #ifdef __cplusplus

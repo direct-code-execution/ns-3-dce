@@ -4,13 +4,14 @@
 #define DCE_HEADER_SCHED_H
 // TODO add extern "C" ?
 #include <sched.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_sched_yield () noexcept;
+                 int dce_sched_yield () noexcept ;
 
 
 #ifdef __cplusplus

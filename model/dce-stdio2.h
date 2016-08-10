@@ -4,21 +4,46 @@
 #define DCE_HEADER_STDIO2_H
 // TODO add extern "C" ?
 //#include <stdio2.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce___printf_chk (int __flag,__restrict__ char const * __format,... ) ;
+                 int dce___printf_chk_v (int __flag,__restrict__ char const * __format,va_list)  ;
+inline  int dce___printf_chk (int __flag,__restrict__ char const * __format,... )   {
+        va_list __dce_va_list;
+        va_start (__dce_va_list, __format);
+        auto ret = dce___printf_chk_v ( __flag,__format, __dce_va_list);
+        va_end (__dce_va_list);
+        return ret;
+            };
 
- int dce___vfprintf_chk (__restrict__ ::FILE * __stream,int __flag,__restrict__ char const * __format,va_list) ;
+            
+ int dce___vfprintf_chk (__restrict__ ::FILE * __stream,int __flag,__restrict__ char const * __format,va_list)  ;
 
- int dce___fprintf_chk (__restrict__ ::FILE * __stream,int __flag,__restrict__ char const * __format,... ) ;
+ int dce___fprintf_chk_v (__restrict__ ::FILE * __stream,int __flag,__restrict__ char const * __format,va_list)  ;
+inline  int dce___fprintf_chk (__restrict__ ::FILE * __stream,int __flag,__restrict__ char const * __format,... )   {
+        va_list __dce_va_list;
+        va_start (__dce_va_list, __format);
+        auto ret = dce___fprintf_chk_v ( __stream,__flag,__format, __dce_va_list);
+        va_end (__dce_va_list);
+        return ret;
+            };
 
- int dce___snprintf_chk (__restrict__ char * __s,size_t __n,int __flag,size_t __slen,__restrict__ char const * __format,... ) noexcept;
+            
+ int dce___snprintf_chk_v (__restrict__ char * __s,size_t __n,int __flag,size_t __slen,__restrict__ char const * __format,va_list) noexcept ;
+inline  int dce___snprintf_chk (__restrict__ char * __s,size_t __n,int __flag,size_t __slen,__restrict__ char const * __format,... ) noexcept  {
+        va_list __dce_va_list;
+        va_start (__dce_va_list, __format);
+        auto ret = dce___snprintf_chk_v ( __s,__n,__flag,__slen,__format, __dce_va_list);
+        va_end (__dce_va_list);
+        return ret;
+            };
 
- int dce___vsnprintf_chk (__restrict__ char * __s,size_t __n,int __flag,size_t __slen,__restrict__ char const * __format,va_list) noexcept;
+            
+ int dce___vsnprintf_chk (__restrict__ char * __s,size_t __n,int __flag,size_t __slen,__restrict__ char const * __format,va_list) noexcept ;
 
 
 #ifdef __cplusplus

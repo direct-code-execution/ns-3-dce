@@ -4,25 +4,26 @@
 #define DCE_HEADER_SEMAPHORE_H
 // TODO add extern "C" ?
 #include <semaphore.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-                 int dce_sem_init (sem_t * __sem,int __pshared,unsigned int __value) noexcept;
+                 int dce_sem_init (sem_t * __sem,int __pshared,unsigned int __value) noexcept ;
 
- int dce_sem_destroy (sem_t * __sem) noexcept;
+ int dce_sem_destroy (sem_t * __sem) noexcept ;
 
- int dce_sem_post (sem_t * __sem) noexcept;
+ int dce_sem_post (sem_t * __sem) noexcept ;
 
- int dce_sem_wait (sem_t * __sem) ;
+ int dce_sem_wait (sem_t * __sem)  ;
 
- int dce_sem_timedwait (__restrict__ ::sem_t * __sem,__restrict__ ::timespec const * __abstime) ;
+ int dce_sem_timedwait (__restrict__ ::sem_t * __sem,__restrict__ ::timespec const * __abstime)  ;
 
- int dce_sem_trywait (sem_t * __sem) noexcept;
+ int dce_sem_trywait (sem_t * __sem) noexcept ;
 
- int dce_sem_getvalue (__restrict__ ::sem_t * __sem,__restrict__ int * __sval) noexcept;
+ int dce_sem_getvalue (__restrict__ ::sem_t * __sem,__restrict__ int * __sval) noexcept ;
 
 
 #ifdef __cplusplus

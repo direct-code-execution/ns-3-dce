@@ -4,6 +4,7 @@
 #define DCE_HEADER_FNMATCH_H
 // TODO add extern "C" ?
 #include <fnmatch.h>
+#include <stdarg.h> // just in case there is an ellipsis
 // TODO temporary hack
 #define __restrict__
 
