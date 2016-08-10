@@ -1,0 +1,3 @@
+# copy to you dce basefolder and rename to .lldbinit
+# cp utils/lldbinit .lldbinit
+process handle -p true -s false SIGUSR1
