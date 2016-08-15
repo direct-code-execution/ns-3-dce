@@ -1,7 +1,6 @@
 ## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
 
 import ns3waf
-import Options
 
 def configure(conf):
     ns3waf.check_modules(conf, ['core', 'internet', 'point-to-point', 'mpi'], mandatory = True)

@@ -5,9 +5,9 @@ import glob
 import os
 import re
 
+from waflib import Utils, Scripting, Configure, Build, Options, TaskGen, Context, Task, Logs, Errors
+
 def options(opt):
-    opt.tool_options('compiler_cc')
-    opt.tool_options('compiler_cxx')
     opt.add_option('--enable-static',
                    help=('Compile module statically: works only on linux, without python'),
                    dest='enable_static', action='store_true',
@@ -70,10 +70,9 @@ def _print_optional_features(conf):
             status = 'enabled'
         else:
             status = 'not enabled (%s)' % reason_not_enabled
-        print "%-30s: %s" % (caption, status)
+        print("%-30s: %s" % (caption, status))
 
 def _check_static(conf):
-    import Options
     import sys
     import re
     import os
@@ -121,7 +120,6 @@ def _check_static(conf):
 
 
 def _check_win32(conf):
-    import Options
     import sys
     import subprocess
     import os
@@ -149,6 +147,7 @@ ns3_versions = ['3-dev', '3.26', '3.25', '3.24', '3.23', '3.22', '3.21', '3.20',
 def _check_dependencies(conf, required, mandatory):
     found = []
     match_pkg = None
+
     for module in required:
         if module in conf.env['NS3_MODULES_FOUND']:
             continue
@@ -206,13 +205,10 @@ def _c_libname(bld, name):
         return bld.env['cshlib_PATTERN'] % libname
 
 def check_modules(conf, modules, mandatory = True):
-    import Options
     import os
 
     if not 'NS3_CHECK_MODULE_ONCE' in conf.env:
         conf.env['NS3_CHECK_MODULE_ONCE'] = ''
-        conf.check_tool('compiler_cc')
-        conf.check_tool('compiler_cxx')
         conf.check_cfg(atleast_pkgconfig_version='0.0.0')
         _check_win32(conf)
         _check_static(conf)
@@ -297,7 +293,8 @@ def _build_library(bld, name, *k, **kw):
     ccdefines = ['NS3_MODULE_COMPILATION']
     cxxdefines = ['NS3_MODULE_COMPILATION']
     includes = _dirs(source)
-    out_relpath = os.path.relpath(bld.out_dir, str(bld.out_dir) + "/" + bld.path.relpath_gen(bld.srcnode))
+    # out_relpath = os.path.relpath(bld.out_dir, str(bld.out_dir) + "/" + bld.path.path_from(bld.srcnode))
+    out_relpath = os.path.relpath(bld.out_dir, str(bld.out_dir) + "/" + bld.path.path_from(bld.srcnode))
     target = os.path.join(out_relpath, 'lib', 'ns3-%s' % name)
     if not bld.env['NS3_ENABLE_STATIC']:
         if bld.env['CXX_NAME'] in ['gcc', 'icc'] and bld.env['WL_SONAME_SUPPORTED']:
@@ -343,7 +340,7 @@ def _build_headers(bld, name, headers):
 
         outfile = file(task.outputs[0].abspath(), "w")
 
-        print >> outfile, """
+        print(outfile, """
 #ifdef NS3_MODULE_COMPILATION
 # error "Do not include ns3 module aggregator headers from other modules; these are meant only for end user scripts."
 #endif
@@ -359,7 +356,7 @@ def _build_headers(bld, name, headers):
         print >> outfile, "#endif"
 
         outfile.close()
-    out_relpath = os.path.relpath(bld.out_dir, str(bld.out_dir) + "/" + bld.path.relpath_gen(bld.srcnode))
+    out_relpath = os.path.relpath(bld.out_dir, str(bld.out_dir) + "/" + bld.path.path_from(bld.srcnode))
     target = os.path.join(out_relpath, 'include', 'ns3', '%s-module.h' % name)
     bld(rule=run, source=headers, target=target)
     bld(use=[target], target='NS3_HEADERS_%s' % name.upper(),
@@ -500,7 +497,7 @@ class Module:
         kw['use'] = kw.get('use', []) + modules_uselib(self._bld, needed)
         _build_library(self._bld, target, **kw)
 
-        out_relpath = os.path.relpath(self._bld.out_dir, str(self._bld.out_dir) + "/" + self._bld.path.relpath_gen(self._bld.srcnode))
+        out_relpath = os.path.relpath(self._bld.out_dir, str(self._bld.out_dir) + "/" + self._bld.path.path_from(self._bld.srcnode))
         self._bld.env.append_value('NS3_ENABLED_MODULE_TEST_LIBRARIES', out_relpath + "/lib/ns3-"+target)
 
         if kw['target'].find("bin_dce") == -1:
@@ -523,7 +520,7 @@ class Module:
 
         kw['includes'] = kw.get('includes', []) + self._source_dirs
 
-        tmp = self._bld.path.relpath_gen(self._bld.srcnode)
+        tmp = self._bld.path.path_from(self._bld.srcnode)
         objects = []
         for src in kw['source'][0:-1]:
             src_target = '%s_object' % src

@@ -1,7 +1,6 @@
 ## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
 
 import os
-import Options
 import os.path
 import ns3waf
 import sys
@@ -9,11 +8,12 @@ import types
 # local modules
 import wutils
 import subprocess
-import Logs
+from waflib import Utils, Scripting, Configure, Build, Options, TaskGen, Context, Task, Logs, Errors
 from waflib.Errors import WafError
 
 def options(opt):
-    opt.tool_options('compiler_cc') 
+    opt.load('compiler_c')
+    opt.load('compiler_cxx')
     ns3waf.options(opt)
     opt.add_option('--enable-kernel-stack',
                    help=('Path to the prefix where the kernel wrapper headers are installed'),
@@ -77,6 +77,15 @@ def search_file(files):
     return None
 
 def configure(conf):
+
+    conf.load('relocation', tooldir=['waf-tools'])
+    conf.load('compiler_c')
+    cc_string = '.'.join(conf.env['CC_VERSION'])
+    conf.msg('Checking for cc version',cc_string,'GREEN')
+    conf.load('compiler_cxx')
+
+    conf.load('clang_compilation_database', tooldir=['waf-tools'])
+
     if Options.options.with_ns3 is not None and os.path.isdir(Options.options.with_ns3):
         conf.env['NS3_DIR']= os.path.abspath(Options.options.with_ns3)
         if not 'PKG_CONFIG_PATH' in os.environ:
@@ -96,7 +105,6 @@ def configure(conf):
     ns3waf.check_modules(conf, ['visualizer'], mandatory = False)
     ns3waf.check_modules(conf, ['applications'], mandatory = False)
     ns3waf.check_modules(conf, ['fd-net-device'], mandatory = False)
-    conf.check_tool('compiler_cc')
     conf.check(header_name='stdint.h', define_name='HAVE_STDINT_H', mandatory=False)
     conf.check(header_name='inttypes.h', define_name='HAVE_INTTYPES_H', mandatory=False)
     conf.check(header_name='sys/inttypes.h', define_name='HAVE_SYS_INT_TYPES_H', mandatory=False)
@@ -544,11 +552,11 @@ def add_myscripts(bld):
             scratches.append(dir)
 
     for dir in submodules:
-        bld.add_subdirs(os.path.join('myscripts', dir))
+        bld.recurse(os.path.join('myscripts', dir))
 
     for dir in scratches:
         if os.path.isdir(os.path.join('myscripts', dir)):
-            bld.add_subdirs(os.path.join('myscripts', dir))
+            bld.recurse(os.path.join('myscripts', dir))
         elif dir.endswith(".cc"):
             bld.build_a_script('dce',
                                needed = bld.env['NS3_MODULES_FOUND'] + ['dce'],
@@ -834,7 +842,7 @@ def build(bld):
                          '-Wl,--version-script=' + os.path.join('model', 'libdl.version'),
                          '-Wl,-soname=libdl.so.2'])
 
-    bld.add_subdirs(['utils'])
+    bld.recurse(['utils'])
     bld.recurse('bindings/python')
 
     # Write the build status file.
