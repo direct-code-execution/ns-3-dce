@@ -123,9 +123,9 @@ FreeBSDStackHelper::SysctlGet (Ptr<Node> node, Time at, std::string path,
                      "You may need to do it via DceManagerHelper::Install ()");
       return;
     }
-  Simulator::ScheduleWithContext (node->GetId (), at,
+  ns3::Simulator::ScheduleWithContext (node->GetId (), at,
                                   &FreeBSDSocketFdFactory::ScheduleTask, sock,
-                                  MakeEvent (&FreeBSDStackHelper::SysctlGetCallback,
+                                  ns3::MakeEvent (&FreeBSDStackHelper::SysctlGetCallback,
                                              node, path, callback));
   return;
 #endif
@@ -143,8 +143,8 @@ FreeBSDStackHelper::SysctlSet (NodeContainer c, std::string path, std::string va
           NS_ASSERT_MSG (0, "No FreeBSDSocketFdFactory is installed. "
                          "You may need to do it via DceManagerHelper::Install ()");
         }
-      Simulator::ScheduleWithContext (node->GetId (), Seconds (0.1),
-                                      MakeEvent (&FreeBSDSocketFdFactory::Set, sock,
+	  ns3::Simulator::ScheduleWithContext (node->GetId (), Seconds (0.1),
+                                      ns3::MakeEvent (&FreeBSDSocketFdFactory::Set, sock,
                                                  path, value));
     }
 #endif
