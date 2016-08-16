@@ -32,7 +32,7 @@
 #include <poll.h>
 #include <unistd.h>
 #include "wait-queue.h"
-#include "ns3/simulator.h"
+#include <ns3/simulator.h>
 #include "file-usage.h"
 
 NS_LOG_COMPONENT_DEFINE ("DceLocalStreamSocketFd");
