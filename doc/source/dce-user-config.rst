@@ -43,8 +43,8 @@ DCE is configurable with NS3 Attributes. Refer to the following table:
 |                      |                                                                  |more efficient. To use it  |                                                                    |
 |                      |                                                                  |you have two ways:         |``$ my-dce-ns3-script --ns3::DceManagerHelper::LoaderFactory=ns3::Dl|
 |                      |                                                                  |                           |mLoaderFactory[]``                                                  |
-|                      |                                                                  |- use ``dce-runner``       |                                                                    |
-|                      |                                                                  |- link using ``ldso`` as   |``dceManager.SetLoader("ns3::DlmLoaderFactory");``                  |
+|                      |                                                                  |1/ use ``dce-runner``      |                                                                    |
+|                      |                                                                  |2/ link using ``ldso`` as  |``dceManager.SetLoader("ns3::DlmLoaderFactory");``                  |
 |                      |                                                                  |default interpreter.       |                                                                    |
 |                      |                                                                  |                           |                                                                    |
 |                      |                                                                  |                           |                                                                    |

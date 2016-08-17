@@ -19,7 +19,7 @@ For more detail document, see :doc:`dce-ccnx`.
 Quagga
 ======
 `Quagga <http://www.quagga.net/about.php>`_ is a routing software suite, providing implementations of OSPFv2, OSPFv3, RIP v1 and v2, RIPng and BGP-4 for Unix platforms, particularly FreeBSD, Linux, Solaris and NetBSD.
-For more information, see the latest support `document <../../manual-quagga/html/index.html>`_.
+`More information <../../manual-quagga/html/index.html>`_.
 
 iperf
 =====
@@ -45,18 +45,16 @@ The `umip <http://umip.org>`_ (Usagi-Patched Mobile IPv6 stack) support on DCE e
 For more information, see the latest support `document <../../manual-umip/html/index.html>`_.
 
 Linux kernel (from 2.6.36 to 3.14 version)
-=========================================
-Linux kernel support is built with 'dce-linux' module, downloading
-separate module available at `github
+============================================
+Linux kernel support is built with a separate 'dce-linux' module, 
+available on `github
 <https://github.com/direct-code-execution/net-next-sim>`_. Many
 protocols implemented in kernel space such as TCP, IPv4/IPv6, Mobile
 IPv6, Multipath-TCP, SCTP, DCCP, etc, are available with ns-3.
 
 FreeBSD kernel (10.0.0 version)
 =========================================
-FreeBSD kernel support is based on Linux kernel module of DCE. The
-code is also maintained at `github
-<https://github.com/direct-code-execution/freebsd-sim>`_. A few
+`FreeBSD kernel support <https://github.com/direct-code-execution/freebsd-sim>`_ is based on Linux kernel module of DCE. A few
 protocols implemented in kernel space such as TCP, IPv4, etc, are
 available with ns-3.
 

@@ -21,8 +21,7 @@ more efficient (cpu/bandwidth-wise) download instructions.
 
 Anyway, now, you can build:
 
-.. highlight:: sh
-::
+.. code-block:: sh
 
   cd gdb
   ./configure
@@ -95,8 +94,7 @@ DCE gives an easy interface to debug distributed applications/protocols by the s
 
 The following is an example of debugging Mobile IPv6 stack (of Linux) in a specific node (i.e., home agent). A special function *dce_debug_nodeid()* is useful if you put a break condition in a gdb session.
 
-.. highlight:: none
-::
+.. code-block:: console
 
   (gdb) b mip6_mh_filter if dce_debug_nodeid()==0
   Breakpoint 1 at 0x7ffff287c569: file net/ipv6/mip6.c, line 88.

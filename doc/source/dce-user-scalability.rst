@@ -78,8 +78,7 @@ a value passed to a function changes without apparent reason when the program en
 that function.
 The value of the stack size can be changed with the SetStackSize instruction:
 
-.. highlight:: c++
-::
+.. code-block:: c++
 
   DceApplicationHelper dce;
   dce.SetStackSize (1<<20);

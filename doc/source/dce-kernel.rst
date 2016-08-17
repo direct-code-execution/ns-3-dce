@@ -441,7 +441,7 @@ Assert
 
 Later we meet again the function **kern_mount_data**, thanks to the presence of the sim_assert:
 
-::
+.. code-block:: console
   
   0x00007ffff5c8c572 in kern_mount_data (fs=<optimized out>, data=<optimized out>) at sim/fs.c:52
   52	  sim_assert (false);
@@ -461,10 +461,9 @@ Later we meet again the function **kern_mount_data**, thanks to the presence of 
   
 So this function is called by the initialisation, we must provide an implementation for it:
 
-.. highlight:: c++
-::
+.. code-block:: c
+  :caption: Implementation taken from vfs_kern_mount from linux/namespace.c
 
-  // Implementation taken from vfs_kern_mount from linux/namespace.c
   struct vfsmount *kern_mount_data(struct file_system_type *type, void *data)
   {
   	static struct mount local_mnt;
