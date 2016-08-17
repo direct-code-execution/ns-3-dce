@@ -24,6 +24,8 @@
 #include "ns3/node.h"
 #include "ns3/node-container.h"
 #include "ns3/names.h"
+#include "ns3/simulator.h"
+#include "ns3/make-event.h"
 
 namespace ns3 {
 void
