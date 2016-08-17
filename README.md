@@ -1,3 +1,6 @@
+![Build status](https://circleci.com/gh/direct-code-execution/ns-3-dce.svg?style=shield&circle-token=a9cf0c7e5e7a1d1a7ff2e2e5b341706fba3ccfb2)
+![License](https://img.shields.io/badge/license-GPL-brightgreen.svg)
+
 What is Direct Code Execution (DCE) ?
 ===
 
@@ -27,3 +30,10 @@ The mailing list used to discuss internals is the same as ns3's: *ns-developers 
 License
 ===
 DCE is available under the GPLv2 license. A copy is available in the repository.
+
+
+# Similar projects:
+
+- [Network Simulation Cradle](https://www.nsnam.org/wiki/Network_Simulation_Cradle_Integration) (Not maintained anymore)
+- [VMSimInt](http://eudl.eu/doi/10.4108/icst.simutools.2014.254623)
+
