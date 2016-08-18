@@ -5,9 +5,9 @@ import glob
 import os
 import re
 
-from waflib import Utils, Scripting, Configure, Build, Options, TaskGen, Context, Task, Logs, Errors
-
 def options(opt):
+    opt.tool_options('compiler_cc')
+    opt.tool_options('compiler_cxx')
     opt.add_option('--enable-static',
                    help=('Compile module statically: works only on linux, without python'),
                    dest='enable_static', action='store_true',
@@ -73,6 +73,7 @@ def _print_optional_features(conf):
         print "%-30s: %s" % (caption, status)
 
 def _check_static(conf):
+    import Options
     import sys
     import re
     import os
@@ -120,6 +121,7 @@ def _check_static(conf):
 
 
 def _check_win32(conf):
+    import Options
     import sys
     import subprocess
     import os
@@ -147,7 +149,6 @@ ns3_versions = ['3-dev', '3.25', '3.24', '3.23', '3.22', '3.21', '3.20', '3.19',
 def _check_dependencies(conf, required, mandatory):
     found = []
     match_pkg = None
-
     for module in required:
         if module in conf.env['NS3_MODULES_FOUND']:
             continue
@@ -205,10 +206,13 @@ def _c_libname(bld, name):
         return bld.env['cshlib_PATTERN'] % libname
 
 def check_modules(conf, modules, mandatory = True):
+    import Options
     import os
 
     if not 'NS3_CHECK_MODULE_ONCE' in conf.env:
         conf.env['NS3_CHECK_MODULE_ONCE'] = ''
+        conf.check_tool('compiler_cc')
+        conf.check_tool('compiler_cxx')
         conf.check_cfg(atleast_pkgconfig_version='0.0.0')
         _check_win32(conf)
         _check_static(conf)
