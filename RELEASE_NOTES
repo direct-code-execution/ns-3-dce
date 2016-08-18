@@ -5,6 +5,27 @@ This file contains Direct Code Execution release notes (most recent releases fir
 
 Please refer the page http://www.nsnam.org/projects/direct-code-execution/ for detailed instructions
 
+
+Release dce-dev
+===============
+
+Tested platforms
+-------------------
+- Ubuntu 12.04 32bit/64bit
+- Ubuntu 13.04 64bit
+- Ubuntu 14.04 64bit
+- Ubuntu 15.04 64bit
+- Fedora 18 32bit
+- CentOS 6.2 64bit
+
+New user-visible features
+-------------------------
+- waf got updated to 1.8, now generating a build/compile_commands.json (to use with clang completion engines)
+
+Bugs fixed
+----------
+
+
 Release dce-1.8
 ===============
 Availability

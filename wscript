@@ -548,11 +548,11 @@ def add_myscripts(bld):
             scratches.append(dir)
 
     for dir in submodules:
-        bld.add_subdirs(os.path.join('myscripts', dir))
+        bld.recurse(os.path.join('myscripts', dir))
 
     for dir in scratches:
         if os.path.isdir(os.path.join('myscripts', dir)):
-            bld.add_subdirs(os.path.join('myscripts', dir))
+            bld.recurse(os.path.join('myscripts', dir))
         elif dir.endswith(".cc"):
             bld.build_a_script('dce',
                                needed = bld.env['NS3_MODULES_FOUND'] + ['dce'],
@@ -838,7 +838,7 @@ def build(bld):
                          '-Wl,--version-script=' + os.path.join('model', 'libdl.version'),
                          '-Wl,-soname=libdl.so.2'])
 
-    bld.add_subdirs(['utils'])
+    bld.recurse(['utils'])
     bld.recurse('bindings/python')
 
     # Write the build status file.
