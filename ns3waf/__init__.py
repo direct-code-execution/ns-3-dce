@@ -293,8 +293,7 @@ def _build_library(bld, name, *k, **kw):
     ccdefines = ['NS3_MODULE_COMPILATION']
     cxxdefines = ['NS3_MODULE_COMPILATION']
     includes = _dirs(source)
-    # out_relpath = os.path.relpath(bld.out_dir, str(bld.out_dir) + "/" + bld.path.path_from(bld.srcnode))
-    out_relpath = os.path.relpath(bld.out_dir, str(bld.out_dir) + "/" + bld.path.path_from(bld.srcnode))
+    out_relpath = os.path.relpath(bld.out_dir, str(bld.out_dir) + "/" + bld.path.relpath_gen(bld.srcnode))
     target = os.path.join(out_relpath, 'lib', 'ns3-%s' % name)
     if not bld.env['NS3_ENABLE_STATIC']:
         if bld.env['CXX_NAME'] in ['gcc', 'icc'] and bld.env['WL_SONAME_SUPPORTED']:
@@ -356,7 +355,7 @@ def _build_headers(bld, name, headers):
         print >> outfile, "#endif"
 
         outfile.close()
-    out_relpath = os.path.relpath(bld.out_dir, str(bld.out_dir) + "/" + bld.path.path_from(bld.srcnode))
+    out_relpath = os.path.relpath(bld.out_dir, str(bld.out_dir) + "/" + bld.path.relpath_gen(bld.srcnode))
     target = os.path.join(out_relpath, 'include', 'ns3', '%s-module.h' % name)
     bld(rule=run, source=headers, target=target)
     bld(use=[target], target='NS3_HEADERS_%s' % name.upper(),
@@ -497,7 +496,7 @@ class Module:
         kw['use'] = kw.get('use', []) + modules_uselib(self._bld, needed)
         _build_library(self._bld, target, **kw)
 
-        out_relpath = os.path.relpath(self._bld.out_dir, str(self._bld.out_dir) + "/" + self._bld.path.path_from(self._bld.srcnode))
+        out_relpath = os.path.relpath(self._bld.out_dir, str(self._bld.out_dir) + "/" + self._bld.path.relpath_gen(self._bld.srcnode))
         self._bld.env.append_value('NS3_ENABLED_MODULE_TEST_LIBRARIES', out_relpath + "/lib/ns3-"+target)
 
         if kw['target'].find("bin_dce") == -1:
@@ -520,7 +519,7 @@ class Module:
 
         kw['includes'] = kw.get('includes', []) + self._source_dirs
 
-        tmp = self._bld.path.path_from(self._bld.srcnode)
+        tmp = self._bld.path.relpath_gen(self._bld.srcnode)
         objects = []
         for src in kw['source'][0:-1]:
             src_target = '%s_object' % src
