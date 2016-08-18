@@ -29,6 +29,10 @@ Tested platforms
 New user-visible features
 -------------------------
 - update docker base image from ubuntu12.04 to ubuntu14.04
+- enabled c++11 following ns3 move to c++11 in commit d5650a8D.  This implies new minimal
+requirements for your compiler:
+- g++-4.8 or later
+- clang-3.3 or later
 
 Bugs fixed
 ----------

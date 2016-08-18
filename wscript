@@ -119,6 +119,10 @@ def configure(conf):
     if vg_h and vg_memcheck_h:
         conf.env.append_value('CXXDEFINES', 'HAVE_VALGRIND_H')
 
+
+    # Enable C++-11 support
+    conf.env.append_value('CXXFLAGS', '-std=c++11')
+
     if Options.options.kernel_stack:
         if not os.path.isdir(Options.options.kernel_stack):
             Logs.error( "\"%s\" is not a directory: please fix your --enable-kernel-stack parameter." % (Options.options.kernel_stack))
