@@ -1,0 +1,37 @@
+machine:
+    environment:
+        # hopefully in the future, we should be able to use nix and CE_PATH instead of bake
+        # LDFLAGS: -pie LDFLAGS+=-rdynamic
+        DCE_PATH: $HOME/iperf2
+
+    hosts:
+
+#   artifacts: # save files after tests
+dependencies:
+    pre: 
+        - sudo apt-get update
+        - sudo apt-get install -y mercurial libexpat1-dev git-core build-essential bison flex libssl-dev libdb-dev libpcap-dev libc6-dbg libsysfs-dev gawk indent pkg-config autoconf automake bc libsaxonb-java curl libc6-dev libboost-dev
+    post: 
+        # we clone a fork of bake
+        - git clone -b dce_testing --single-branch git@github.com:teto/bake.git ../bake
+        - ../bake/bake.py configure -e dce-umip-dev -e dce-linux-dev
+        - ../bake/bake.py download
+
+        # bake installs the master branch hence DCE will be install $CIRCLE_BRANCH
+        - git checkout $CIRCLE_BRANCH:
+            pwd: source/ns-3-dce
+        - ../bake/bake.py build -j1 -vvv
+
+    cache_directories:
+
+test:
+    override: 
+        # -r retains test files
+        - ./test.py -r :
+            pwd: source/ns-3-dce
+
+    post:
+        - mkdir -p $CIRCLE_TEST_REPORTS/junit/
+        - find ./ -type f -name results.xml -exec cp {} $CIRCLE_TEST_REPORTS/ \;
+        - find ./ -type f -name xml2junit.xsl -exec cp {} $CIRCLE_TEST_REPORTS/ \;
+        - saxonb-xslt $CIRCLE_TEST_REPORTS/results.xml $CIRCLE_TEST_REPORTS/xml2junit.xsl  > $CIRCLE_TEST_REPORTS/junit/junit-results.xml
