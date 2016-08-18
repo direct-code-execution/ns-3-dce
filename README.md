@@ -1,5 +1,5 @@
-![Build status](https://circleci.com/gh/direct-code-execution/ns-3-dce.svg?style=shield&circle-token=a9cf0c7e5e7a1d1a7ff2e2e5b341706fba3ccfb2)
-![License](https://img.shields.io/badge/license-GPL-brightgreen.svg)
+[![Build status](https://circleci.com/gh/direct-code-execution/ns-3-dce.svg?style=shield&circle-token=a9cf0c7e5e7a1d1a7ff2e2e5b341706fba3ccfb2)](https://circleci.com/gh/direct-code-execution/ns-3-dce)
+[![License](https://img.shields.io/badge/license-GPL-brightgreen.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 
 What is Direct Code Execution (DCE) ?
 ===
