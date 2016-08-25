@@ -23,7 +23,7 @@ cpp_examples = [
     ("dce-dccp", "True", "True"), 
     ("dce-iperf", "True", "True"), 
 #    ("dce-ccnd-udp-2-nodes", "True", "True"), 
-    ("dce-ccnd-linear-multiple", "True", "True"), 
+#    ("dce-ccnd-linear-multiple", "True", "True"),
     ("dce-cradle-simple", "True", "True"),  
     ("dce-cradle-simple --rate=10kbps --proto=icmp", "True", "True"),
     ("dce-cradle-simple --rate=10kbps --proto=udp", "True", "True"),
@@ -85,7 +85,7 @@ cpp_examples = [
     ("dce-mptcp-handoff-v4v6 --v6Primary=1 --errRate=0.8", "True", "True"),
 #    ("dce-mptcp-lte-wifi", "True", "True"),
     ("dce-httpd", "True", "True"),
-    ("dce-wifi-ccnx", "True", "True"),
+#    ("dce-wifi-ccnx", "True", "True"),
     ("dce-sctp-simple", "True", "True"),
     ("dce-freebsd", "True", "True"),
 ]
