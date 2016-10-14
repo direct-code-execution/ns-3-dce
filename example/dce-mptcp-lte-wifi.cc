@@ -107,7 +107,7 @@ int main (int argc, char *argv[])
   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("2Mbps"));
   pointToPoint.SetChannelAttribute ("Delay", StringValue (p2pdelay));
   Ptr<RateErrorModel> em1 =
-    CreateObjectWithAttributes<RateErrorModel> ("RanVar", StringValue ("ns3::UniformRandomVariable[Min=0.0,Max=1.0]"),
+    CreateObjectWithAttributes<RateErrorModel> ("RanVar", StringValue ("ns3::UniformRandomVariable[Min=0.0|Max=1.0]"),
                                                 "ErrorRate", DoubleValue (0.01),
                                                 "ErrorUnit", EnumValue (RateErrorModel::ERROR_UNIT_PACKET)
                                                 );

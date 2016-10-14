@@ -95,7 +95,7 @@ int main (int argc, char *argv[])
   // backend
   PointToPointHelper p2p;
   Ptr<RateErrorModel> em1 =
-    CreateObjectWithAttributes<RateErrorModel> ("RanVar", StringValue ("ns3::UniformRandomVariable[Min=0.0,Max=1.0]"),
+    CreateObjectWithAttributes<RateErrorModel> ("RanVar", StringValue ("ns3::UniformRandomVariable[Min=0.0|Max=1.0]"),
                                                 "ErrorRate", DoubleValue (errRate),
                                                 "ErrorUnit", EnumValue (RateErrorModel::ERROR_UNIT_PACKET)
                                                 );
