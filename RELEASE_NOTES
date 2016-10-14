@@ -5,6 +5,36 @@ This file contains Direct Code Execution release notes (most recent releases fir
 
 Please refer the page http://www.nsnam.org/projects/direct-code-execution/ for detailed instructions
 
+Release dce-1.9
+===============
+Availability
+------------
+In order to use DCE, please use bake tool to install DCE.
+The followings are the basic steps to use DCE.
+
+ % bake.py configure -e dce-ns3-1.9
+   or
+ % bake.py configure -e dce-linux-1.9
+ % bake.py download
+ % bake.py build
+
+For more information, please refer the document.
+
+Tested platforms
+-------------------
+- Ubuntu 14.04 64bit
+- Ubuntu 15.04 64bit
+- Ubuntu 16.04 64bit
+
+New user-visible features
+-------------------------
+- update docker base image from ubuntu12.04 to ubuntu14.04
+
+Bugs fixed
+----------
+- Bug 2516 - Test dce-tcp-ns3-nsc-comparison fails
+
+
 Release dce-1.8
 ===============
 Availability
@@ -40,6 +70,7 @@ Bugs fixed
 - github #5  Allow to override values returned by DceNodeContext::UName #5
 - github issue#2 - dce_getifaddrs() now returns a correct result
 - github #28 - waf incorrectly detects present modules
+
 
 Release dce-1.7
 ===============
