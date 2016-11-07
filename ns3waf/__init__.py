@@ -293,7 +293,6 @@ def _build_library(bld, name, *k, **kw):
     ccdefines = ['NS3_MODULE_COMPILATION']
     cxxdefines = ['NS3_MODULE_COMPILATION']
     includes = _dirs(source)
-    # out_relpath = os.path.relpath(bld.out_dir, str(bld.out_dir) + "/" + bld.path.path_from(bld.srcnode))
     out_relpath = os.path.relpath(bld.out_dir, str(bld.out_dir) + "/" + bld.path.path_from(bld.srcnode))
     target = os.path.join(out_relpath, 'lib', 'ns3-%s' % name)
     if not bld.env['NS3_ENABLE_STATIC']:
@@ -340,14 +339,15 @@ def _build_headers(bld, name, headers):
 
         outfile = file(task.outputs[0].abspath(), "w")
 
-        print(outfile, """
+        print("""
 #ifdef NS3_MODULE_COMPILATION
 # error "Do not include ns3 module aggregator headers from other modules; these are meant only for end user scripts."
 #endif
 
 #ifndef NS3_MODULE_%s
-    """ % (name.upper().replace('-', '_'),)
+    """ % (name.upper().replace('-', '_'),), file=outfile)
 
+        # this is not python3 compatible but doesn't seem to be called so leave it likethis
         print >> outfile
         print >> outfile, "// Module headers:"
         for header in [src.abspath() for src in task.inputs]:
