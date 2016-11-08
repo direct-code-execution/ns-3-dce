@@ -10,6 +10,7 @@
 #include <sstream>
 #include <string.h>
 #include <sys/mman.h>
+#include <gnu/lib-names.h>
 
 namespace ns3 {
 
@@ -20,19 +21,19 @@ ElfCache::ElfCache (std::string directory, uint32_t uid)
     m_uid (uid)
 {
   struct Overriden overriden;
-  overriden.from = "libc.so.6";
+  overriden.from = LIBC_SO;
   overriden.to = "libc-ns3.so";
   m_overriden.push_back (overriden);
-  overriden.from = "libpthread.so.0";
+  overriden.from = LIBPTHREAD_SO;
   overriden.to = "libpthread-ns3.so";
   m_overriden.push_back (overriden);
-  overriden.from = "librt.so.1";
+  overriden.from = LIBRT_SO;
   overriden.to = "librt-ns3.so";
   m_overriden.push_back (overriden);
-  overriden.from = "libm.so.6";
+  overriden.from = LIBM_SO;
   overriden.to = "libm-ns3.so";
   m_overriden.push_back (overriden);
-  overriden.from = "libdl.so.2";
+  overriden.from = LIBDL_SO;
   overriden.to = "libdl-ns3.so";
   m_overriden.push_back (overriden);
 }
