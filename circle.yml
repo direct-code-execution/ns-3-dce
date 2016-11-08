@@ -18,7 +18,9 @@ dependencies:
         - ../bake/bake.py download
 
         # bake installs the master branch hence DCE will be install $CIRCLE_BRANCH
-        - git pull origin $CIRCLE_BRANCH/head:
+        - git fetch origin $CIRCLE_BRANCH/head:test
+            pwd: source/ns-3-dce
+        - git checkout test
             pwd: source/ns-3-dce
         - ../bake/bake.py build -j1 -vvv
 
