@@ -18,7 +18,7 @@ dependencies:
         - ../bake/bake.py download
 
         # bake installs the master branch hence DCE will be install $CIRCLE_BRANCH
-        - git pull origin $CIRCLE_BRANCH/head:
+        - git remote add local "$HOME/${CIRCLE_PROJECT_REPONAME}" && git fetch local -a && git reset --hard "local/$CIRCLE_BRANCH" :
             pwd: source/ns-3-dce
         - ../bake/bake.py build -j1 -vvv
 
