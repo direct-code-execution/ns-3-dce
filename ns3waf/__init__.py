@@ -339,13 +339,14 @@ def _build_headers(bld, name, headers):
 
         outfile = file(task.outputs[0].abspath(), "w")
 
-        print("""
+        guard = """
 #ifdef NS3_MODULE_COMPILATION
 # error "Do not include ns3 module aggregator headers from other modules; these are meant only for end user scripts."
 #endif
 
-#ifndef NS3_MODULE_%s
-    """ % (name.upper().replace('-', '_'),), file=outfile)
+#ifndef NS3_MODULE_{module}
+    """.format(module=name.upper().replace('-', '_'))
+        print >>  outfile, guard
 
         # this is not python3 compatible but doesn't seem to be called so leave it likethis
         print >> outfile
