@@ -3,15 +3,11 @@ import os.path
 import sys
 import subprocess
 import shlex
+import re
 
 # WAF modules
-import Options
-import Utils
-import Logs
-import TaskGen
-import Build
-import re
 from waflib.Errors import WafError
+from waflib import Utils, Scripting, Configure, Build, Options, TaskGen, Context, Task, Logs, Errors
 
 # these are set from the main wscript file
 APPNAME=None
