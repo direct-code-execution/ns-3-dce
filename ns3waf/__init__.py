@@ -64,7 +64,7 @@ def _check_compilation_flag(conf, flag, mode='cxx'):
 
 def _print_optional_features(conf):
     # Write a summary of optional features status
-    print "---- Summary of optional NS-3 features:"
+    print("---- Summary of optional NS-3 features:")
     for (name, caption, was_enabled, reason_not_enabled) in conf.env['NS3_OPTIONAL_FEATURES']:
         if was_enabled:
             status = 'enabled'
@@ -79,9 +79,9 @@ def _check_static(conf):
     env = conf.env
     env['NS3_ENABLE_STATIC'] = False
     if Options.options.enable_opt:
-    	env['LIB_SUFFIX'] = 'optimized'
+        env['LIB_SUFFIX'] = 'optimized'
     else:
-    	env['LIB_SUFFIX'] = 'debug'
+       env['LIB_SUFFIX'] = 'debug'
     if Options.options.enable_static:
         if sys.platform.startswith('linux') and \
                 env['CXX_NAME'] in ['gcc', 'icc']:
@@ -98,7 +98,7 @@ def _check_static(conf):
                                                  "compiler to at least gcc 4.3.x.")
                 else:
                     _report_optional_feature(conf, "static", "Static build", True, '')
-                    env['NS3_ENABLE_STATIC'] = True                    
+                    env['NS3_ENABLE_STATIC'] = True
         elif env['CXX_NAME'] == 'gcc' and \
                 (sys.platform.startswith('darwin') or \
                      sys.platform.startswith('cygwin')):
@@ -143,42 +143,44 @@ def _check_win32(conf):
                 env['WL_SONAME_SUPPORTED'] = True
 
 
-ns3_versions = ['3-dev', '3.26', '3.25', '3.24', '3.23', '3.22', '3.21', '3.20', '3.19', '3.18', '3.17']
+ns3_versions = ['3-dev', '3.27', '3.26', '3.25', '3.24', '3.23', '3.22', '3.21', '3.20', '3.19', '3.18', '3.17']
 def _check_dependencies(conf, required, mandatory):
     found = []
-    match_pkg = None
+    # match_pkg = None
 
+    # XXX need better way to find .pc files
+    # TODO set PKG_CONFIGPATH
+    # for ver in ns3_versions:
+    #     match_pkg = 'None'
+    #     pcfiles = glob.glob(conf.env['NS3_DIR'] + '/lib*/pkgconfig/' + 'libns%s*-%s-%s*'
+    #                         % (ver, module.lower(), conf.env['LIB_SUFFIX']))
+    #     if not len(pcfiles) is 0:
+    #         match_pkg = os.path.basename(pcfiles[0])
+    #         if match_pkg:
+    #             match_pkg = os.path.splitext(match_pkg)[0]
+    #         break
+
+    #     lib = re.search("(ns[0-9][\.\-][dev0-9\.]+)", match_pkg)
+    #     lib = lib.group(0) if lib else 'None'
+
+    print('looking into PKG_CONFIG_PATH=', os.environ['PKG_CONFIG_PATH'])
     for module in required:
         if module in conf.env['NS3_MODULES_FOUND']:
             continue
-        # XXX need better way to find .pc files
-        for ver in ns3_versions:
-            match_pkg = 'None'
-            pcfiles = glob.glob(conf.env['NS3_DIR'] + '/lib*/pkgconfig/' + 'libns%s*-%s-%s*'
-                                % (ver, module.lower(), conf.env['LIB_SUFFIX']))
-            if not len(pcfiles) is 0:
-                match_pkg = os.path.basename(pcfiles[0])
-                if match_pkg:
-                    match_pkg = os.path.splitext(match_pkg)[0]
-                break
-
-        lib = re.search("(ns[0-9][\.\-][dev0-9\.]+)", match_pkg)
-        lib = lib.group(0) if lib else 'None'
-
-        retval = conf.check_cfg(package = match_pkg or 'None',
+        retval = conf.check_cfg(package = module,
                                 args='--cflags --libs', mandatory=mandatory,
-                                msg="Checking for ns3-%s (%s)" % (module.lower(), lib),
+                                msg="Checking for ns3-%s" % (module.lower(),),
                                 uselib_store='NS3_%s' % module.upper())
-        if not retval is None:
+        # if retval is not None:
             # XXX pkg-config doesn't give the proper order of whole-archive option..
-            if conf.env['NS3_ENABLE_STATIC']:
-                libname = 'STLIB_ST_NS3_%s' % module.upper()
-                conf.env[libname] = '-l%s' % (match_pkg.replace('libns3', 'ns3'))
-                for lib in conf.env['LIB_NS3_%s' % module.upper()]:
-                    if 'ns3' in lib:
-                        conf.env.append_value(libname, '-l%s' % lib)
+            # if conf.env['NS3_ENABLE_STATIC']:
+            #     libname = 'STLIB_ST_NS3_%s' % module.upper()
+            #     conf.env[libname] = '-l%s' % (match_pkg.replace('libns3', 'ns3'))
+            #     for lib in conf.env['LIB_NS3_%s' % module.upper()]:
+            #         if 'ns3' in lib:
+            #             conf.env.append_value(libname, '-l%s' % lib)
 
-        if not retval is None:
+        if retval is not None:
             found.append(module)
 
     import copy
@@ -216,13 +218,13 @@ def check_modules(conf, modules, mandatory = True):
             _report_optional_feature(conf, "log", "Logging", True, '')
             conf.env.append_value('DEFINES', 'NS3_LOG_ENABLE')
         else:
-            _report_optional_feature(conf, "log", "Logging", False, 
+            _report_optional_feature(conf, "log", "Logging", False,
                                      'option --disable-log selected')
         if Options.options.enable_assert:
             _report_optional_feature(conf, "assert", "Assert checks", True, '')
             conf.env.append_value('DEFINES', 'NS3_ASSERT_ENABLE')
         else:
-            _report_optional_feature(conf, "assert", "Assert checks", False, 
+            _report_optional_feature(conf, "assert", "Assert checks", False,
                                      'option --disable-assert selected')
         if Options.options.enable_gcov:
             _report_optional_feature(conf, "coverage", "Code coverage", True, '')
@@ -232,13 +234,13 @@ def check_modules(conf, modules, mandatory = True):
             conf.env.append_value('CXXFLAGS', '-ftest-coverage')
             conf.env.append_value('LINKFLAGS', '-fprofile-arcs')
         else:
-            _report_optional_feature(conf, "coverage", "Code coverage", False, 
+            _report_optional_feature(conf, "coverage", "Code coverage", False,
                                      'option --enable-gcov not selected')
         if Options.options.enable_examples:
             _report_optional_feature(conf, "examples", "Example programs", True, '')
             conf.env['NS3_ENABLE_EXAMPLES'] = True
         else:
-            _report_optional_feature(conf, "examples", "Example programs", False, 
+            _report_optional_feature(conf, "examples", "Example programs", False,
                                      'option --disable-examples selected')
             conf.env['NS3_ENABLE_EXAMPLES'] = False
 
@@ -246,9 +248,9 @@ def check_modules(conf, modules, mandatory = True):
             _report_optional_feature(conf, "tests", "Test programs", True, '')
             conf.env['NS3_ENABLE_TESTS'] = True
         else:
-            _report_optional_feature(conf, "tests", "Test programs", False, 
+            _report_optional_feature(conf, "tests", "Test programs", False,
                                      'option --disable-tests selected')
-            conf.env['NS3_ENABLE_TESTS'] = False            
+            conf.env['NS3_ENABLE_TESTS'] = False
 
         if Options.options.enable_debug:
             if 'CXXFLAGS' in conf.env:
@@ -263,7 +265,7 @@ def check_modules(conf, modules, mandatory = True):
             conf.env['CFLAGS'] = tmp + ['-g']
             _report_optional_feature(conf, "debug", "Debug Symbols", True, '')
         else:
-            _report_optional_feature(conf, "debug", "Debug Symbols", False, 
+            _report_optional_feature(conf, "debug", "Debug Symbols", False,
                                      'option --disable-debug selected')
 
     _check_dependencies(conf, modules, mandatory)
@@ -278,7 +280,7 @@ def _dirs(source):
         d = dict()
         for i in l:
             d[i] = True
-        return d.keys()
+        return list(d.keys())
     return uniq(dirs)
 
 def _build_library(bld, name, *k, **kw):
@@ -337,27 +339,25 @@ def _build_headers(bld, name, headers):
             src = header.abspath()
             shutil.copyfile(src, dst)
 
-        outfile = file(task.outputs[0].abspath(), "w")
+        with open(task.outputs[0].abspath(), "w") as outfile:
 
-        guard = """
-#ifdef NS3_MODULE_COMPILATION
-# error "Do not include ns3 module aggregator headers from other modules; these are meant only for end user scripts."
-#endif
+            print("hello world")
+            guard = """
+            #ifdef NS3_MODULE_COMPILATION
+            # error "Do not include ns3 module aggregator headers from other modules; these are meant only for end user scripts."
+            #endif
+            #ifndef NS3_MODULE_%s
+            """ % (name.upper().replace('-', '_'))
+            print(guard, file=outfile)
 
-#ifndef NS3_MODULE_{module}
-    """.format(module=name.upper().replace('-', '_'))
-        print >>  outfile, guard
+            print(file=outfile)
+            print(" Module headers:", file=outfile)
+            for header in [src.abspath() for src in task.inputs]:
+                print("#include \"%s\"" % (os.path.basename(header),), file=outfile)
 
-        # this is not python3 compatible but doesn't seem to be called so leave it likethis
-        print >> outfile
-        print >> outfile, "// Module headers:"
-        for header in [src.abspath() for src in task.inputs]:
-            print >> outfile, "#include \"%s\"" % (os.path.basename(header),)
+            print("#endif", file=outfile)
 
-        print >> outfile, "#endif"
-
-        outfile.close()
-    out_relpath = os.path.relpath(bld.out_dir, str(bld.out_dir) + "/" + bld.path.path_from(bld.srcnode))
+    out_relpath = os.path.relpath(bld.out_dir, str(bld.out_dir) + "/" + bld.path.relpath_gen(bld.srcnode))
     target = os.path.join(out_relpath, 'include', 'ns3', '%s-module.h' % name)
     bld(rule=run, source=headers, target=target)
     bld(use=[target], target='NS3_HEADERS_%s' % name.upper(),
@@ -413,7 +413,7 @@ def _generate_pcfile(bld, name, use, prefix, outfilename):
     for dep in use:
         cflags = cflags + _cflags(bld, dep) + _cxxflags(bld, dep) + \
             _defines(bld, dep) + _includes(bld, dep)
-    print >> outfile, """
+    print("""
 prefix=%s
 libdir=%s
 includedir=%s
@@ -424,7 +424,7 @@ Version: devel
 Libs: %s
 Cflags: %s
 """ % (prefix, libdir, includedir,
-       name, name, ' '.join(libs), ' '.join(cflags))
+       name, name, ' '.join(libs), ' '.join(cflags)), file=outfile)
     outfile.close()
 
 def _build_pkgconfig(bld, name, use):

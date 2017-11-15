@@ -101,19 +101,19 @@ def configure(conf):
 
     try:
         conf.load('python')
-    except Errors.ConfigurationError, ex:
+    except Errors.ConfigurationError as ex:
         ns3waf._report_optional_feature(conf, "python", "Python Bindings", False,
                                      "The python interpreter was not found")
         return
     try:
         conf.check_python_version((2,3))
-    except Errors.ConfigurationError, ex:
+    except Errors.ConfigurationError as ex:
         ns3waf._report_optional_feature(conf, "python", "Python Bindings", False,
                                      "The python found version is too low (2.3 required)")
         return
     try:
         conf.check_python_headers()
-    except Errors.ConfigurationError, ex:
+    except Errors.ConfigurationError as ex:
         ns3waf._report_optional_feature(conf, "python", "Python Bindings", False,
                                      "Python library or headers missing")
         return
@@ -448,12 +448,12 @@ class gen_ns3_compat_pymod_task(Task.Task):
     def run(self):
         assert len(self.outputs) == 1
         outfile = file(self.outputs[0].abspath(), "w")
-        print >> outfile, "import warnings"
-        print >> outfile, 'warnings.warn("the ns3 module is a compatibility layer '\
-            'and should not be used in newly written code", DeprecationWarning, stacklevel=2)'
-        print >> outfile
+        print("import warnings", file=outfile)
+        print('warnings.warn("the ns3 module is a compatibility layer '\
+            'and should not be used in newly written code", DeprecationWarning, stacklevel=2)', file=outfile)
+        print(file=outfile)
         for module in self.bld.env['PYTHON_MODULES_BUILT']:
-            print >> outfile, "from ns.%s import *" % (module.replace('-', '_'))
+            print("from ns.%s import *" % (module.replace('-', '_')), file=outfile)
         outfile.close()
         return 0
 
@@ -510,9 +510,9 @@ def build(bld):
 
 
 def genbind(bld):
-    print "\n--------------------------------------------------------------------"
-    print " Python bindings generation"
-    print "--------------------------------------------------------------------"
+    print("\n--------------------------------------------------------------------")
+    print(" Python bindings generation")
+    print("--------------------------------------------------------------------")
     sys.path.append( bld.env['WITH_PYBINDGEN'] )
     sys.path.append( bld.path.abspath() )
     from genbinds import dcepy_module_gen
@@ -525,19 +525,19 @@ def genbind(bld):
 def printInfo(bld):
     sys.stdout.flush()
     sys.stderr.flush()
-    print "--------------------------------------------------------------------"
-    print "| pybindgen Options.options.with_pybindgen: " + str(Options.options.with_pybindgen)
-    print "| bld.env['ENABLE_PYTHON_BINDINGS']:        " + str(  bld.env['ENABLE_PYTHON_BINDINGS'] );
-    print "| bld.env['WITH_PYBINDGEN']:   "+str(bld.env['WITH_PYBINDGEN'])
-    print "| bld.env['NS3_DIR']:          "+str(bld.env['NS3_DIR'])
-    print "| bld.env['INCLUDES_NS3_CORE']: "+str(bld.env['INCLUDES_NS3_CORE'])
-    print "| Current dir: os.getcwd():    " + str(os.getcwd())
-    print "| bld.path.abspath():          " + bld.path.abspath()
-    print "--------------------------------------------------------------------"
-    print "| bld.env: " + str( bld.env )
-    print "| PYTHONARCHDIR: " + str( bld.env['PYTHONARCHDIR'] )
-    print "| PYTHONPATH:          " + str(os.environ['PYTHONPATH'].split(os.pathsep))
-    print "--------------------------------------------------------------------"
+    print("--------------------------------------------------------------------")
+    print("| pybindgen Options.options.with_pybindgen: " + str(Options.options.with_pybindgen))
+    print("| bld.env['ENABLE_PYTHON_BINDINGS']:        " + str(  bld.env['ENABLE_PYTHON_BINDINGS'] ));
+    print("| bld.env['WITH_PYBINDGEN']:   "+str(bld.env['WITH_PYBINDGEN']))
+    print("| bld.env['NS3_DIR']:          "+str(bld.env['NS3_DIR']))
+    print("| bld.env['INCLUDES_NS3_CORE']: "+str(bld.env['INCLUDES_NS3_CORE']))
+    print("| Current dir: os.getcwd():    " + str(os.getcwd()))
+    print("| bld.path.abspath():          " + bld.path.abspath())
+    print("--------------------------------------------------------------------")
+    print("| bld.env: " + str( bld.env ))
+    print("| PYTHONARCHDIR: " + str( bld.env['PYTHONARCHDIR'] ))
+    print("| PYTHONPATH:          " + str(os.environ['PYTHONPATH'].split(os.pathsep)))
+    print("--------------------------------------------------------------------")
     sys.stdout.flush()
     sys.stderr.flush()
     
@@ -553,9 +553,9 @@ def gencpp(bld):
     ns3_module_dce.main
 
 def compileBindings(bld):
-    print "\n--------------------------------------------------------------------"
-    print " Python bindings compilation "
-    print "--------------------------------------------------------------------"
+    print("\n--------------------------------------------------------------------")
+    print(" Python bindings compilation ")
+    print("--------------------------------------------------------------------")
     ns3inc=bld.env['INCLUDES_NS3_CORE'][0]
     dceinc = os.path.abspath('build/include')
     
