@@ -104,7 +104,7 @@ def configure(conf):
     ns3waf.check_modules(conf, ['mpi', 'lte'], mandatory = False)
     ns3waf.check_modules(conf, ['visualizer'], mandatory = False)
     ns3waf.check_modules(conf, ['applications'], mandatory = False)
-    ns3waf.check_modules(conf, ['fd-net-device'], mandatory = False)
+    # ns3waf.check_modules(conf, ['fd-net-device'], mandatory = False)
     conf.check(header_name='stdint.h', define_name='HAVE_STDINT_H', mandatory=False)
     conf.check(header_name='inttypes.h', define_name='HAVE_INTTYPES_H', mandatory=False)
     conf.check(header_name='sys/inttypes.h', define_name='HAVE_SYS_INT_TYPES_H', mandatory=False)

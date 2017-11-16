@@ -167,9 +167,13 @@ def _check_dependencies(conf, required, mandatory):
     for module in required:
         if module in conf.env['NS3_MODULES_FOUND']:
             continue
-        retval = conf.check_cfg(package = module,
+        # retval = conf.check_cfg(package = module,
+        # ca ca marche
+        # libns3-dev-core-debug
+        libname= "libns3-dev-" +module + "-debug"
+        retval = conf.check_cfg(package = libname,
                                 args='--cflags --libs', mandatory=mandatory,
-                                msg="Checking for ns3-%s" % (module.lower(),),
+                                msg="Checking for ns3-%s" % (libname, ), # module.lower(),),
                                 uselib_store='NS3_%s' % module.upper())
         # if retval is not None:
             # XXX pkg-config doesn't give the proper order of whole-archive option..
@@ -453,6 +457,7 @@ class Module:
         _build_headers(bld, name, kw.get('headers'))
         _build_pkgconfig(bld, name, kw.get('use', []))
         bld.env['NS3_MODULES_FOUND'] = bld.env['NS3_MODULES_FOUND'] + [name]
+
     def add_example(self, needed = [], **kw):
         import os
         if not self._needed_ok:

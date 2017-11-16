@@ -7,7 +7,6 @@ def configure(conf):
 
 def build(bld):
     bld.build_a_script('dce', needed = ['core', 'internet', 'point-to-point', 'fd-net-device', 'dce', 'netanim' ],
-				  target='bin/dce-emu-ping',
-				  source=['dce-emu-ping.cc', 'misc-tools.cc']
-				  )
-
+                                  target='bin/dce-emu-ping',
+                                  source=['dce-emu-ping.cc', 'misc-tools.cc']
+                                  )
