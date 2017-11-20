@@ -7,6 +7,27 @@ import re
 
 from waflib import Utils, Scripting, Configure, Build, Options, TaskGen, Context, Task, Logs, Errors
 
+
+def dce_kw(**kw):
+    d = dict(**kw)
+    if os.uname()[4] == 'x86_64':
+        mcmodel = ['-mcmodel=large']
+    else:
+        mcmodel = []
+    nofortify = ['-U_FORTIFY_SOURCE']
+    #debug_dl = ['-Wl,--dynamic-linker=/usr/lib/debug/ld-linux-x86-64.so.2']
+    debug_dl = []  # type: ignore
+    d['cxxflags'] = d.get('cxxflags', []) + ['-fpie'] + mcmodel + nofortify
+    d['cflags'] = d.get('cflags', []) + ['-fpie'] + mcmodel + nofortify
+    d['linkflags'] = d.get('linkflags', []) + ['-pie'] + ['-lrt'] + ['-rdynamic'] + debug_dl
+    return d
+
+# from waflib.Build import BuildContext
+# class DceBuildContext(waflib.BuildContext):
+    # TODO pass a module
+        # cmd = 'foo'
+        # fun = 'foo'
+
 def options(opt):
     opt.add_option('--enable-static',
                    help=('Compile module statically: works only on linux, without python'),
@@ -24,12 +45,6 @@ def options(opt):
                    help='Enable code coverage collection.',
                    dest='enable_gcov', action='store_true',
                    default=False)
-    opt.add_option('--disable-examples', help='Disable compilation of examples',
-                   dest='enable_examples', action='store_false',
-                   default=True)
-    opt.add_option('--disable-tests', help='Disable compilation of tests',
-                   dest='enable_tests', action='store_false',
-                   default=True)
     opt.add_option('--disable-debug', help='Disable generation of debug information',
                    dest='enable_debug', action='store_false',
                    default=True)
@@ -163,7 +178,7 @@ def _check_dependencies(conf, required, mandatory):
     #     lib = re.search("(ns[0-9][\.\-][dev0-9\.]+)", match_pkg)
     #     lib = lib.group(0) if lib else 'None'
 
-    print('looking into PKG_CONFIG_PATH=', os.environ['PKG_CONFIG_PATH'])
+    # print('looking into PKG_CONFIG_PATH=', os.environ['PKG_CONFIG_PATH'])
     for module in required:
         if module in conf.env['NS3_MODULES_FOUND']:
             continue
@@ -173,7 +188,7 @@ def _check_dependencies(conf, required, mandatory):
         libname= "libns3-dev-" +module + "-debug"
         retval = conf.check_cfg(package = libname,
                                 args='--cflags --libs', mandatory=mandatory,
-                                msg="Checking for ns3-%s" % (libname, ), # module.lower(),),
+                                msg="Checking for %s (%s)" % (libname, "mandatory" if mandatory else "optional"), # module.lower(),),
                                 uselib_store='NS3_%s' % module.upper())
         # if retval is not None:
             # XXX pkg-config doesn't give the proper order of whole-archive option..
@@ -361,7 +376,7 @@ def _build_headers(bld, name, headers):
 
             print("#endif", file=outfile)
 
-    out_relpath = os.path.relpath(bld.out_dir, str(bld.out_dir) + "/" + bld.path.relpath_gen(bld.srcnode))
+    out_relpath = os.path.relpath(bld.out_dir, str(bld.out_dir) + "/" + bld.path.path_from(bld.srcnode))
     target = os.path.join(out_relpath, 'include', 'ns3', '%s-module.h' % name)
     bld(rule=run, source=headers, target=target)
     bld(use=[target], target='NS3_HEADERS_%s' % name.upper(),
@@ -458,15 +473,15 @@ class Module:
         _build_pkgconfig(bld, name, kw.get('use', []))
         bld.env['NS3_MODULES_FOUND'] = bld.env['NS3_MODULES_FOUND'] + [name]
 
-    def add_example(self, needed = [], **kw):
+    def build_example(self, needed = [], **kw):
         import os
         if not self._needed_ok:
-            return
-        if not self._bld.env['NS3_ENABLE_EXAMPLES']:
             return
         external = [i for i in needed if not i == self._name]
         if not modules_found(self._bld, external):
             return
+        # TODO check
+        kw = dce_kw(**kw)
         kw['use'] = kw.get('use', []) + modules_uselib(self._bld, needed)
         if self._bld.env['NS3_ENABLE_STATIC']:
             for module in kw['use']:

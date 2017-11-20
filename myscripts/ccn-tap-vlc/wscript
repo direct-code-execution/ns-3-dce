@@ -7,7 +7,6 @@ def configure(conf):
 
 def build(bld):
     bld.build_a_script('dce', needed = ['core', 'internet', 'dce',  'tap-bridge', 'point-to-point', 'csma' ],
-				  target='bin/dce-ccn-vlc',
-				  source=['dce-ccn-vlc.cc'],
-				  )
-
+            target='bin/dce-ccn-vlc',
+            source=['dce-ccn-vlc.cc'],
+            )

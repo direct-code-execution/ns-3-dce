@@ -3,7 +3,12 @@ def new_test(bld,name,libs):
     obj.source = [name + '.cc']
     obj.uselib = libs
     obj.uselib_local = 'test'
-    
+
+
+def options(opt):
+    opt.add_option('--disable-tests', help='Disable compilation of tests',
+                   dest='enable_tests', action='store_false',
+                   default=True)
 
 def build(bld):
     test = bld.new_task_gen('cc', 'shlib')
@@ -42,4 +47,3 @@ def build(bld):
     new_test(bld, 'test-local-socket', 'PTHREAD')
     new_test(bld, 'test-tcp-socket', 'PTHREAD')
     new_test(bld, 'test-pipe', 'PTHREAD')
-    
