@@ -40,7 +40,7 @@ def build(bld):
     module = bld.env.MODULE
     for name,lib in dce_simple_examples:
         module.build_example(needed=[], target = 'bin_dce/' + name,
-                                    source = ['example/' + name + '.cc'],
+                                    source = [ name + '.cc'],
                                     lib = lib)
         bld.install_files('${PREFIX}/bin_dce', 'bin_dce/' + name , chmod=0o755 )
 

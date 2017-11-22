@@ -11,6 +11,20 @@ import subprocess
 from waflib import Utils, Scripting, Configure, Build, Options, TaskGen, Context, Task, Logs, Errors
 from waflib.Errors import WafError
 
+def dce_kw(**kw):
+    d = dict(**kw)
+    if os.uname()[4] == 'x86_64':
+        mcmodel = ['-mcmodel=large']
+    else:
+        mcmodel = []
+    nofortify = ['-U_FORTIFY_SOURCE']
+    #debug_dl = ['-Wl,--dynamic-linker=/usr/lib/debug/ld-linux-x86-64.so.2']
+    debug_dl = []  # type: ignore
+    d['cxxflags'] = d.get('cxxflags', []) + ['-fpie'] + mcmodel + nofortify
+    d['cflags'] = d.get('cflags', []) + ['-fpie'] + mcmodel + nofortify
+    d['linkflags'] = d.get('linkflags', []) + ['-pie'] + ['-lrt'] + ['-rdynamic'] + debug_dl
+    return d
+
 def options(opt):
     opt.load('compiler_c')
     opt.load('compiler_cxx')
@@ -672,11 +686,12 @@ def build(bld):
         build_dce_kernel_examples(module, bld)
 
     # build test-runner
-    module.add_example(target='bin/test-runner',
+    module.build_example(target='bin/test-runner',
                        source = ['utils/test-runner.cc'],
                        use = bld.env['NS3_ENABLED_MODULE_TEST_LIBRARIES'],
                        linkflags = [],
                        needed = bld.env['NS3_MODULES_FOUND'] + ['dce'])
+
     bld.env.append_value('NS3_RUNNABLE_PROGRAMS', 'bin/test-runner')
     if bld.env['ELF_LOADER_PATH']:
         module.add_example(target='bin/test-runner-vdl',

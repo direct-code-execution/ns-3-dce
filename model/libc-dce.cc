@@ -84,7 +84,7 @@
 #include <unistd.h>
 #include <wchar.h>
 #include <wctype.h>
-#include <xlocale.h>
+/* #include <xlocale.h> got rmoved in xlocale.h header is no longer existing in glibc version 2.26 */
 #include <errno.h>
 #include <setjmp.h>
 #include <libintl.h>
