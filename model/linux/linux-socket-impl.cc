@@ -255,20 +255,14 @@ int
 LinuxSocketImpl::Bind (void)
 {
   NS_LOG_FUNCTION_NOARGS ();
-  uint16_t pid = EnterFakeTask ();
-  int ret = this->m_kernsock->Bind (NULL, 0);
-  LeaveFakeTask (pid);
-  return ret;
+  return Bind (InetSocketAddress (Ipv4Address::GetAny (), 0));
 }
 
 int
 LinuxSocketImpl::Bind6 (void)
 {
   NS_LOG_FUNCTION_NOARGS ();
-  uint16_t pid = EnterFakeTask ();
-  int ret = this->m_kernsock->Bind (NULL, 0);
-  LeaveFakeTask (pid);
-  return ret;
+  return Bind (Inet6SocketAddress (Ipv6Address::GetAny (), 0));
 }
 
 int
