@@ -84,7 +84,6 @@
 #include <unistd.h>
 #include <wchar.h>
 #include <wctype.h>
-#include <xlocale.h>
 #include <errno.h>
 #include <setjmp.h>
 #include <libintl.h>
