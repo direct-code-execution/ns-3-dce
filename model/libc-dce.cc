@@ -100,6 +100,14 @@
 #include <assert.h>
 #include <dlfcn.h>
 #include <link.h>
+#include <execinfo.h>
+#include <sched.h>
+#include <sys/mount.h>
+#include <sys/inotify.h>
+#include <regex.h>
+#include <iconv.h>
+#include <glob.h>
+#include <malloc.h>
 
 extern void __cxa_finalize (void *d);
 extern int __cxa_atexit (void (*func)(void *), void *arg, void *d);
@@ -118,6 +126,10 @@ extern int __xpg_strerror_r (int __errnum, char *__buf, size_t __buflen);
 extern char * __strcpy_chk (char *__restrict __dest,
                             const char *__restrict __src,
                             size_t __destlen);
+extern void *__memcpy_chk (void *__restrict __dest,
+                           const void *__restrict __src, size_t __len,
+                           size_t __destlen) __THROW;
+
 // from glibc's stdio.h
 extern int __sprintf_chk (char *, int, size_t, const char *, ...) __THROW;
 extern int __snprintf_chk (char *, size_t, int, size_t, const char *, ...)
