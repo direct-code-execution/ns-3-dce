@@ -247,7 +247,7 @@ def dce_kw(**kw):
     nofortify = ['-U_FORTIFY_SOURCE']
     #debug_dl = ['-Wl,--dynamic-linker=/usr/lib/debug/ld-linux-x86-64.so.2']
     debug_dl = []
-    d['cxxflags'] = d.get('cxxflags', []) + ['-fpie'] + mcmodel + nofortify
+    d['cxxflags'] = d.get('cxxflags', []) + ['-fpie'] + mcmodel + nofortify + ['-Wno-deprecated-declarations']
     d['cflags'] = d.get('cflags', []) + ['-fpie'] + mcmodel + nofortify
     d['linkflags'] = d.get('linkflags', []) + ['-pie'] + ['-lrt'] + ['-rdynamic'] + debug_dl
     return d
@@ -751,6 +751,7 @@ def build(bld):
                                   headers=module_headers,
                                   use=uselib,
                                   includes=kernel_includes,
+                                  cxxflags= ['-Wno-deprecated-declarations'],
                                   lib=['dl'])
 #                                  lib=['dl','efence'])
 
@@ -802,7 +803,8 @@ def build(bld):
     # The very small libc used to replace the glibc
     # and forward to the dce_* code
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc', 'model/libc-global-variables.cc'],
-              target='lib/c-ns3', cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage'],
+              target='lib/c-ns3',
+              cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage', '-Wno-builtin-declaration-mismatch'],
               defines=['LIBSETUP=libc_setup'],
               linkflags=['-nostdlib', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'libc.version'),
@@ -810,7 +812,8 @@ def build(bld):
     # The very small libpthread used to replace the glibc
     # and forward to the dce_* code
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc'],
-              target='lib/pthread-ns3', cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage'],
+              target='lib/pthread-ns3',
+              cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage', '-Wno-builtin-declaration-mismatch'],
               defines=['LIBSETUP=libpthread_setup'],
               linkflags=['-nostdlib', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'libpthread.version'),
@@ -819,7 +822,8 @@ def build(bld):
     # The very small librt used to replace the glibc
     # and forward to the dce_* code
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc'],
-              target='lib/rt-ns3', cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage'],
+              target='lib/rt-ns3',
+              cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage', '-Wno-builtin-declaration-mismatch'],
               defines=['LIBSETUP=librt_setup'],
               linkflags=['-nostdlib', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'librt.version'),
@@ -828,7 +832,8 @@ def build(bld):
     # The very small libm used to replace the glibc
     # and forward to the dce_* code
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc'],
-              target='lib/m-ns3', cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage'],
+              target='lib/m-ns3',
+              cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage', '-Wno-builtin-declaration-mismatch'],
               defines=['LIBSETUP=libm_setup'],
               linkflags=['-nostdlib', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'libm.version'),
@@ -837,7 +842,8 @@ def build(bld):
     # The very small libdl used to replace the glibc
     # and forward to the dce_* code
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc'],
-              target='lib/dl-ns3', cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage'],
+              target='lib/dl-ns3',
+              cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage', '-Wno-builtin-declaration-mismatch'],
               defines=['LIBSETUP=libdl_setup'],
               linkflags=['-nostdlib', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'libdl.version'),
