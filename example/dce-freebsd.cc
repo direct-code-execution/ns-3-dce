@@ -85,7 +85,7 @@ int main (int argc, char *argv[])
         mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
         mobility.Install (nodes);
 
-        WifiHelper wifi = WifiHelper::Default ();
+        WifiHelper wifi;
         YansWifiPhyHelper phy = YansWifiPhyHelper::Default ();
         YansWifiChannelHelper phyChannel = YansWifiChannelHelper::Default ();
         NqosWifiMacHelper mac;
