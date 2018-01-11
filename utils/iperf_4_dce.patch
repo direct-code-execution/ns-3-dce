@@ -1,61 +1,8 @@
-diff -r e6a6b9c61d5c Makefile
---- a/Makefile	Tue Nov 20 10:38:26 2012 +0100
-+++ b/Makefile	Tue Nov 20 10:41:10 2012 +0100
-@@ -83,12 +83,12 @@
- AWK = gawk
- CC = gcc
- CCDEPMODE = depmode=gcc3
--CFLAGS =  -O2 
-+CFLAGS =  -g -fpic
- CPP = gcc -E
- CPPFLAGS = 
- CXX = g++
- CXXDEPMODE = depmode=gcc3
--CXXFLAGS =  -O2 
-+CXXFLAGS =  -g -fpic
- CYGPATH_W = echo
- DEFS = -DHAVE_CONFIG_H
- DEPDIR = .deps
-@@ -102,7 +102,7 @@
- INSTALL_PROGRAM = ${INSTALL}
- INSTALL_SCRIPT = ${INSTALL}
- INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
--LDFLAGS = 
-+LDFLAGS = -pie
- LIBOBJS = 
- LIBS = 
- LTLIBOBJS = 
-diff -r e6a6b9c61d5c compat/Makefile
---- a/compat/Makefile	Tue Nov 20 10:38:26 2012 +0100
-+++ b/compat/Makefile	Tue Nov 20 10:41:10 2012 +0100
-@@ -84,12 +84,12 @@
- AWK = gawk
- CC = gcc
- CCDEPMODE = depmode=gcc3
--CFLAGS =  -O2 
-+CFLAGS =  -g -fpic
- CPP = gcc -E
- CPPFLAGS = 
- CXX = g++
- CXXDEPMODE = depmode=gcc3
--CXXFLAGS =  -O2 
-+CXXFLAGS =  -g -fpic
- CYGPATH_W = echo
- DEFS = -DHAVE_CONFIG_H
- DEPDIR = .deps
-@@ -103,7 +103,7 @@
- INSTALL_PROGRAM = ${INSTALL}
- INSTALL_SCRIPT = ${INSTALL}
- INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
--LDFLAGS = 
-+LDFLAGS = -pie
- LIBOBJS = 
- LIBS = 
- LTLIBOBJS = 
-diff -r e6a6b9c61d5c compat/Thread.c
---- a/compat/Thread.c	Tue Nov 20 10:38:26 2012 +0100
-+++ b/compat/Thread.c	Tue Nov 20 10:41:10 2012 +0100
-@@ -409,6 +409,7 @@
+diff --git a/compat/Thread.c b/compat/Thread.c
+index e0fe4f8951c0..e286f35e7d06 100644
+--- a/compat/Thread.c
++++ b/compat/Thread.c
+@@ -409,6 +409,7 @@ void thread_rest ( void ) {
      SwitchToThread( );
  #endif
  #endif
@@ -63,111 +10,23 @@ diff -r e6a6b9c61d5c compat/Thread.c
  }
  
  #ifdef __cplusplus
-diff -r e6a6b9c61d5c doc/Makefile
---- a/doc/Makefile	Tue Nov 20 10:38:26 2012 +0100
-+++ b/doc/Makefile	Tue Nov 20 10:41:10 2012 +0100
-@@ -59,12 +59,12 @@
- AWK = gawk
- CC = gcc
- CCDEPMODE = depmode=gcc3
--CFLAGS =  -O2 
-+CFLAGS =  -g -fpic
- CPP = gcc -E
- CPPFLAGS = 
- CXX = g++
- CXXDEPMODE = depmode=gcc3
--CXXFLAGS =  -O2 
-+CXXFLAGS =  -g -fpic
- CYGPATH_W = echo
- DEFS = -DHAVE_CONFIG_H
- DEPDIR = .deps
-@@ -78,7 +78,7 @@
- INSTALL_PROGRAM = ${INSTALL}
- INSTALL_SCRIPT = ${INSTALL}
- INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
--LDFLAGS = 
-+LDFLAGS = -pie
- LIBOBJS = 
- LIBS = 
- LTLIBOBJS = 
-diff -r e6a6b9c61d5c include/Makefile
---- a/include/Makefile	Tue Nov 20 10:38:26 2012 +0100
-+++ b/include/Makefile	Tue Nov 20 10:41:10 2012 +0100
-@@ -59,12 +59,12 @@
- AWK = gawk
- CC = gcc
- CCDEPMODE = depmode=gcc3
--CFLAGS =  -O2 
-+CFLAGS =  -g -fpic
- CPP = gcc -E
- CPPFLAGS = 
- CXX = g++
- CXXDEPMODE = depmode=gcc3
--CXXFLAGS =  -O2 
-+CXXFLAGS =  -g -fpic
- CYGPATH_W = echo
- DEFS = -DHAVE_CONFIG_H
- DEPDIR = .deps
-@@ -78,7 +78,7 @@
- INSTALL_PROGRAM = ${INSTALL}
- INSTALL_SCRIPT = ${INSTALL}
- INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
--LDFLAGS = 
-+LDFLAGS = -pie
- LIBOBJS = 
- LIBS = 
- LTLIBOBJS = 
-diff -r e6a6b9c61d5c man/Makefile
---- a/man/Makefile	Tue Nov 20 10:38:26 2012 +0100
-+++ b/man/Makefile	Tue Nov 20 10:41:10 2012 +0100
-@@ -64,12 +64,12 @@
- AWK = gawk
- CC = gcc
- CCDEPMODE = depmode=gcc3
--CFLAGS =  -O2 
-+CFLAGS =  -g -fpic
- CPP = gcc -E
- CPPFLAGS = 
- CXX = g++
- CXXDEPMODE = depmode=gcc3
--CXXFLAGS =  -O2 
-+CXXFLAGS =  -g -fpic
- CYGPATH_W = echo
- DEFS = -DHAVE_CONFIG_H
- DEPDIR = .deps
-@@ -83,7 +83,7 @@
- INSTALL_PROGRAM = ${INSTALL}
- INSTALL_SCRIPT = ${INSTALL}
- INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
--LDFLAGS = 
-+LDFLAGS = -pie
- LIBOBJS = 
- LIBS = 
- LTLIBOBJS = 
-diff -r e6a6b9c61d5c src/Makefile
---- a/src/Makefile	Tue Nov 20 10:38:26 2012 +0100
-+++ b/src/Makefile	Tue Nov 20 10:41:10 2012 +0100
-@@ -88,12 +88,12 @@
- AWK = gawk
- CC = gcc
- CCDEPMODE = depmode=gcc3
--CFLAGS =  -O2 
-+CFLAGS =  -g -fpic
- CPP = gcc -E
- CPPFLAGS = 
- CXX = g++
- CXXDEPMODE = depmode=gcc3
--CXXFLAGS =  -O2 
-+CXXFLAGS =  -g -fpic
- CYGPATH_W = echo
- DEFS = -DHAVE_CONFIG_H
- DEPDIR = .deps
-@@ -107,7 +107,7 @@
- INSTALL_PROGRAM = ${INSTALL}
- INSTALL_SCRIPT = ${INSTALL}
- INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
--LDFLAGS = 
-+LDFLAGS = -pie
- LIBOBJS = 
- LIBS = 
- LTLIBOBJS = 
+diff --git a/include/headers.h b/include/headers.h
+index 4667bfe894ce..8d7d9a64874c 100644
+--- a/include/headers.h
++++ b/include/headers.h
+@@ -57,6 +57,7 @@
+ #define HEADERS_H
+ 
+ 
++#include <math.h>
+ #ifdef HAVE_CONFIG_H
+     #include "config.h"
+ 
+@@ -82,7 +83,6 @@
+ #include <errno.h>
+ #include <string.h>
+ #include <time.h>
+-#include <math.h>
+ 
+ #ifdef WIN32
+ 
