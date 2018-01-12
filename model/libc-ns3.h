@@ -619,6 +619,7 @@ DCE_WITH_ALIAS2 (dlopen, __dlopen)
 DCE (dlsym)
 
 NATIVE (dl_iterate_phdr)
+NATIVE (__libc_start_main)
 
 #undef DCE
 #undef DCET

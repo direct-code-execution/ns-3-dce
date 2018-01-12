@@ -145,7 +145,31 @@ extern void __stack_chk_fail (void);
 
 typedef void (*func_t)(...);
 
+struct dl_open_hook
+{
+  void *(*dlopen_mode) (const char *name, int mode);
+  void *(*dlsym) (void *map, const char *name);
+  int (*dlclose) (void *map);
+};
+
+void *private_dlopen (const char *name, int mode)
+{
+  return dlopen(name, RTLD_LAZY);
+}
+
 extern "C" {
+
+static struct dl_open_hook dce_dl_open_hook =
+  {
+    .dlopen_mode = private_dlopen,
+    .dlsym = dlsym,
+    .dlclose = dlclose
+  };
+
+extern int __libc_start_main(int *(main) (int, char * *, char * *),
+                             int argc, char * * ubp_av, void (*init) (void),
+                             void (*fini) (void),
+                             void (*rtld_fini) (void), void (* stack_end));
 
 void libc_dce (struct Libc **libc)
 {
@@ -167,6 +191,9 @@ void libc_dce (struct Libc **libc)
   (*libc)->strpbrk_fn = dce_strpbrk;
   (*libc)->strstr_fn = dce_strstr;
   (*libc)->vsnprintf_fn = dce_vsnprintf;
+
+  extern struct dl_open_hook *_dl_open_hook;
+  _dl_open_hook = (struct dl_open_hook *)&dce_dl_open_hook;
 }
 } // extern "C"
 
