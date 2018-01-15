@@ -353,7 +353,7 @@ ManetCcnx::ConfigureTopology ()
   nodeContainer.Create (numNodes);
 
   // The below set of helpers will help us to put together the wifi NICs we want
-  WifiHelper wifi = WifiHelper::Default ();
+  WifiHelper wifi;
   if (verbose)
     {
       // Turn on all Wifi logging

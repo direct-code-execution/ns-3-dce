@@ -27,6 +27,14 @@ char * dce___strcpy_chk (char *__restrict __dest,
   return strcpy (__dest, __src);
 }
 
+void *dce___memcpy_chk (void *__restrict __dest,
+		       const void *__restrict __src, size_t __len,
+		       size_t __destlen)
+{
+  /// \todo Do actual checking
+  return memcpy (__dest, __src, __len);
+}
+
 char * dce_strpbrk (const char *s, const char *a)
 {
   return (char*) strpbrk (s, a);

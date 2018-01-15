@@ -14,6 +14,9 @@ char * dce___strcpy_chk (char *__restrict __dest,
                          size_t __destlen);
 char * dce_strpbrk (const char *s, const char *accept);
 char * dce_strstr (const char *h, const char *n);
+void *dce___memcpy_chk (void *__restrict __dest,
+		       const void *__restrict __src, size_t __len,
+		       size_t __destlen);
 
 #ifdef __cplusplus
 }

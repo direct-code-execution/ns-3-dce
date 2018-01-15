@@ -128,6 +128,11 @@ int dce_poll (struct pollfd *fds, nfds_t nfds, int timeout)
   return count;
 }
 
+int dce___poll_chk (struct pollfd *fds, nfds_t nfds, int timeout, size_t fdslen)
+{
+  return dce_poll(fds, nfds, timeout);
+}
+
 int dce_select (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
                 struct timeval *timeout)
 {

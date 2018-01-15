@@ -140,9 +140,65 @@ int snprintf (char *s, size_t si, const char *f, ...)
 
   return r;
 }
+int __snprintf (char *s, size_t si, const char *f, ...)
+{
+  va_list vl;
+  va_start (vl, f);
+  int r =  g_libc.vsnprintf_fn (s, si, f, vl);
+  va_end (vl);
+
+  return r;
+}
+int __sprintf_chk (char *s, int len, const char *f, ...)
+{
+  va_list vl;
+  va_start (vl, f);
+  int r =  g_libc.vsnprintf_fn (s, len, f, vl);
+  va_end (vl);
+
+  return r;
+}
 int vsnprintf (char *s, size_t si, const char *f, va_list v)
 {
   return g_libc.vsnprintf_fn (s, si, f, v);
+}
+
+// XXX
+int __libc_alloca_cutoff (size_t size)
+{
+  return 0;
+}
+
+// glibc's resolv.h
+void __res_iclose (void *statp, int free_addr)
+{
+}
+
+struct resolv_context;
+struct __res_state;
+struct resolv_context *__resolv_context_get_preinit (void)
+{
+  return 0;
+}
+
+struct resolv_context *__resolv_context_get_override (struct __res_state *)
+{
+  return 0;
+}
+
+struct resolv_context *__resolv_context_get (void)
+{
+  return 0;
+}
+
+void __resolv_context_put (struct resolv_context *ctx)
+{
+}
+
+void *rawmemchr(const void *s, int c);
+void *__rawmemchr(const void *s, int c)
+{
+  return rawmemchr(s, c);
 }
 
 #include "libc-globals.h"

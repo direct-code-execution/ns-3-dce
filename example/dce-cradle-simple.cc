@@ -132,6 +132,11 @@ main (int argc, char *argv[])
     {
       BulkSendHelper bulk (proto_sw[m_proto],
                            InetSocketAddress (interfaces.GetAddress (1), 9));
+      if (m_proto.find ("6", 0) != std::string::npos)
+        {
+          bulk.SetAttribute ("Remote", AddressValue (Inet6SocketAddress (interfaces6.GetAddress (0, 1), 9)));
+        }
+
       // Set the amount of data to send in bytes.  Zero is unlimited.
       bulk.SetAttribute ("MaxBytes", UintegerValue (1024));
       apps = bulk.Install (nodes.Get (0));

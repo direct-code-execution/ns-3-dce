@@ -160,7 +160,7 @@ int main (int argc, char *argv[])
   if (!disWifi)
     {
       // Left link: H1 <-> WiFi-R
-      WifiHelper wifi = WifiHelper::Default ();
+      WifiHelper wifi;
       phy = YansWifiPhyHelper::Default ();
       YansWifiChannelHelper phyChannel = YansWifiChannelHelper::Default ();
       NqosWifiMacHelper mac;

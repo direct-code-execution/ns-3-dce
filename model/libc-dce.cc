@@ -84,7 +84,6 @@
 #include <unistd.h>
 #include <wchar.h>
 #include <wctype.h>
-#include <xlocale.h>
 #include <errno.h>
 #include <setjmp.h>
 #include <libintl.h>
@@ -101,6 +100,14 @@
 #include <assert.h>
 #include <dlfcn.h>
 #include <link.h>
+#include <execinfo.h>
+#include <sched.h>
+#include <sys/mount.h>
+#include <sys/inotify.h>
+#include <regex.h>
+#include <iconv.h>
+#include <glob.h>
+#include <malloc.h>
 
 extern void __cxa_finalize (void *d);
 extern int __cxa_atexit (void (*func)(void *), void *arg, void *d);
@@ -119,6 +126,10 @@ extern int __xpg_strerror_r (int __errnum, char *__buf, size_t __buflen);
 extern char * __strcpy_chk (char *__restrict __dest,
                             const char *__restrict __src,
                             size_t __destlen);
+extern void *__memcpy_chk (void *__restrict __dest,
+                           const void *__restrict __src, size_t __len,
+                           size_t __destlen) __THROW;
+
 // from glibc's stdio.h
 extern int __sprintf_chk (char *, int, size_t, const char *, ...) __THROW;
 extern int __snprintf_chk (char *, size_t, int, size_t, const char *, ...)
@@ -145,7 +156,31 @@ extern void __stack_chk_fail (void);
 
 typedef void (*func_t)(...);
 
+struct dl_open_hook
+{
+  void *(*dlopen_mode) (const char *name, int mode);
+  void *(*dlsym) (void *map, const char *name);
+  int (*dlclose) (void *map);
+};
+
+void *private_dlopen (const char *name, int mode)
+{
+  return dlopen(name, RTLD_LAZY);
+}
+
 extern "C" {
+
+static struct dl_open_hook dce_dl_open_hook =
+  {
+    .dlopen_mode = private_dlopen,
+    .dlsym = dlsym,
+    .dlclose = dlclose
+  };
+
+extern int __libc_start_main(int *(main) (int, char * *, char * *),
+                             int argc, char * * ubp_av, void (*init) (void),
+                             void (*fini) (void),
+                             void (*rtld_fini) (void), void (* stack_end));
 
 void libc_dce (struct Libc **libc)
 {
@@ -167,6 +202,9 @@ void libc_dce (struct Libc **libc)
   (*libc)->strpbrk_fn = dce_strpbrk;
   (*libc)->strstr_fn = dce_strstr;
   (*libc)->vsnprintf_fn = dce_vsnprintf;
+
+  extern struct dl_open_hook *_dl_open_hook;
+  _dl_open_hook = (struct dl_open_hook *)&dce_dl_open_hook;
 }
 } // extern "C"
 

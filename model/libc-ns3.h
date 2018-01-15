@@ -94,10 +94,12 @@ DCE_WITH_ALIAS2 (strtol, __strtol_internal)
 DCET (long long int, strtoll)
 DCE (strtoul)
 DCE (strtoull)
+NATIVE (strtof)
+NATIVE (strtold)
 DCET (double, strtod)
 DCE (getenv)
-#ifdef HAVE___SECURE_GETENV
-NATIVE (__secure_getenv)
+#ifdef HAVE_SECURE_GETENV
+NATIVE_WITH_ALIAS2 (secure_getenv, __secure_getenv)
 #endif
 DCE (putenv)
 DCE (setenv)
@@ -110,14 +112,23 @@ DCE (__stack_chk_fail)
 DCE (mkstemp)
 DCE (tmpfile)
 DCE (rename)
+NATIVE (mblen)
+NATIVE (mbstowcs)
+NATIVE (mbtowc)
+NATIVE (mbsrtowcs)
+NATIVE (mkostemp)
 
 // STRING.H
 NATIVE (bzero)
+#ifdef HAVE___EXPLICIT_BZERO
+NATIVE_WITH_ALIAS2 (explicit_bzero, __explicit_bzero_chk)
+#endif	/* HAVE___EXPLICIT_BZERO */
 NATIVE (strerror)
 NATIVE (strerror_r)
 NATIVE (strcoll)
 NATIVE (memset)
 NATIVE (memcpy)
+DCE (__memcpy_chk)
 NATIVE (bcopy)
 NATIVE (memcmp)
 NATIVE (memmove)
@@ -125,6 +136,7 @@ NATIVE_EXPLICIT (memchr, void * (*)(void *, int, size_t))
 NATIVE_EXPLICIT (memrchr, void * (*)(void *, int, size_t))
 NATIVE (strcpy)
 NATIVE (strncpy)
+NATIVE (__stpncpy)
 NATIVE (strcat)
 NATIVE (strncat)
 NATIVE (strcmp)
@@ -137,6 +149,7 @@ NATIVE_EXPLICIT (strchr, char* (*)(char *, int))
 NATIVE_EXPLICIT (strrchr, const char * (*)(const char *, int))
 NATIVE (strcasecmp)
 NATIVE (strncasecmp)
+NATIVE_EXPLICIT (strcasestr, char *(*)(char *, const char *))
 DCE_WITH_ALIAS (strdup) // because C++ defines both const and non-const functions
 DCE (strndup)
 NATIVE_EXPLICIT (index, char * (*)(char *, int))
@@ -144,17 +157,35 @@ NATIVE_EXPLICIT (rindex, char * (*)(char *, int))
 NATIVE_EXPLICIT (strtok, char * (*)(char *, const char *))
 NATIVE_EXPLICIT (strtok_r,  char * (*)(char *, const char *, char **))
 NATIVE (strsep)
+NATIVE (strsignal)
 
 
 // LOCALE.H
 DCE    (setlocale)
 NATIVE_WITH_ALIAS (newlocale)
 NATIVE_WITH_ALIAS (uselocale)
+NATIVE_WITH_ALIAS (localeconv)
 
 // WCHAR.H
 NATIVE (wctob)
 NATIVE (btowc)
 NATIVE (mbrlen)
+NATIVE (mbrtowc)
+NATIVE (wcscmp)
+NATIVE (wcscoll)
+NATIVE (wcsrtombs)
+NATIVE (wcslen)
+NATIVE (wcsdup)
+NATIVE (wcsncmp)
+NATIVE_EXPLICIT (wcschr, wchar_t * (*)(wchar_t *, wchar_t))
+NATIVE (wctype)
+NATIVE (wcwidth)
+NATIVE (wcrtomb)
+NATIVE (iswalnum)
+NATIVE (iswprint)
+NATIVE (mbsinit)
+NATIVE (towlower)
+NATIVE (towupper)
 
 // ARPA/INET.H
 NATIVE (htonl)
@@ -172,6 +203,7 @@ NATIVE (inet_netof)
 DCE (inet_ntop)
 NATIVE (inet_pton)
 NATIVE (inet6_opt_find)
+NATIVE (inet_nsap_ntoa)
 
 // SYS/SOCKET.H
 DCE (socket)
@@ -188,6 +220,8 @@ DCE (shutdown)
 DCE (send)
 DCE (sendto)
 DCE (sendmsg)
+/* XXX */
+NATIVE_WITH_ALIAS (sendmmsg)
 DCE (recv)
 DCE (recvfrom)
 DCE (recvmsg)
@@ -220,7 +254,7 @@ DCE (unlink)
 DCE (rmdir)
 DCE (select)
 DCE (isatty)
-DCE (exit)
+DCE_WITH_ALIAS2 (exit, _exit)
 DCE (getcwd)
 DCE (getwd)
 DCE (get_current_dir_name)
@@ -244,6 +278,12 @@ DCE (getgid)
 DCE (getegid)
 DCE (gethostname)
 DCE (getpgrp)
+NATIVE (setpgrp)
+NATIVE (setpgid)
+NATIVE (setsid)
+NATIVE (tcgetpgrp)
+NATIVE (tcsetpgrp)
+NATIVE (tcflow)
 DCE (lseek)
 DCE (lseek64)
 DCE (euidaccess)
@@ -260,6 +300,17 @@ DCE (readlink)
 DCE (chown)
 DCE (initgroups)
 DCE (fsync)
+NATIVE (chroot)
+NATIVE (popen)
+NATIVE (pclose)
+NATIVE (getgroups)
+NATIVE (setgroups)
+NATIVE (confstr)
+NATIVE (sync)
+NATIVE (link)
+NATIVE (symlink)
+NATIVE (nice)
+NATIVE (fchown)
 
 // SYS/UIO.H
 DCE (readv)
@@ -313,10 +364,12 @@ DCE_WITH_ALIAS2 (feof,feof_unlocked)
 DCE_WITH_ALIAS2 (fileno,fileno_unlocked)
 DCE (perror)
 DCE (remove)
-//NATIVE (sscanf)
+NATIVE_WITH_ALIAS2 (fscanf, __isoc99_fscanf)
 NATIVE_WITH_ALIAS2 (sscanf, __isoc99_sscanf)
 NATIVE (flockfile)
 NATIVE (funlockfile)
+NATIVE (getline)
+NATIVE (__fsetlocking)
 
 // STDARG.H
 DCE (vprintf)
@@ -336,7 +389,7 @@ NATIVE (asctime_r)
 DCE (ctime)
 NATIVE (ctime_r)
 DCE_WITH_ALIAS2 (gmtime, localtime)
-NATIVE_WITH_ALIAS2 (gmtime_r, localtime_r)
+NATIVE_WITH_ALIAS (gmtime_r)
 NATIVE (mktime)
 NATIVE (strftime)
 NATIVE (strptime)
@@ -366,18 +419,26 @@ DCE (mmap)
 DCE (mmap64)
 DCE (munmap)
 
+// sys/mman.h
+NATIVE (madvise)
+
 // SYS/STAT/H
 DCE (mkdir)
 DCE (umask)
+NATIVE (chmod)
 
 // SYS/IOCTL.H
 DCE (ioctl)
 
 // SCHED.H
 DCE (sched_yield)
+NATIVE (unshare)
+NATIVE (setns)
 
 // POLL.H
-DCE (poll)
+//DCE (poll)
+DCE_WITH_ALIAS2 (poll, __poll)
+DCE_EXPLICIT (__poll_chk, int, struct pollfd *, long unsigned int, int, long unsigned int)
 
 // SIGNAL.H
 DCE (signal)
@@ -391,6 +452,7 @@ DCE (sigprocmask)
 DCE    (sigwait)
 DCE    (kill)
 NATIVE (sys_siglist)
+NATIVE (killpg)
 
 // PTHREAD.H
 DCE (pthread_create)
@@ -467,10 +529,12 @@ NATIVE (getservbyname)
 NATIVE (getservbyport)
 NATIVE (setservent)
 NATIVE (endservent)
+NATIVE (gethostbyaddr)
 
 // CTYPE.H
 NATIVE (toupper)
 NATIVE (tolower)
+NATIVE (iswlower)
 NATIVE (isdigit)
 NATIVE (isxdigit)
 NATIVE (isalnum)
@@ -483,6 +547,8 @@ DCE (timerfd_gettime)
 // NET/IF.H
 DCE (if_nametoindex)
 DCE (if_indextoname)
+NATIVE (if_nameindex)
+NATIVE (if_freenameindex)
 
 // DIRENT.H
 DCE (opendir)
@@ -511,6 +577,9 @@ NATIVE (__xpg_basename)
 
 // GRP.H
 NATIVE (getgrnam)
+NATIVE (endgrent)
+NATIVE (getgrent)
+NATIVE (setgrent)
 
 // SYS/RESOURCE.H
 NATIVE (getrusage) // not sure if native call will give stats about the requested process..
@@ -535,9 +604,13 @@ NATIVE (textdomain)
 NATIVE (gettext)
 NATIVE (catopen)
 NATIVE (catgets)
+NATIVE (dgettext)
+NATIVE (ngettext)
 
 // PWD.H
 NATIVE (getpwnam)
+NATIVE (setpwent)
+NATIVE (getpwent)
 DCE (getpwuid)
 DCE (endpwent)
 
@@ -575,6 +648,8 @@ DCE (fstatvfs)
 // TERMIO.H
 DCE (tcgetattr)
 DCE (tcsetattr)
+NATIVE (tcflush)
+NATIVE (cfgetospeed)
 
 ///////////////////// END OF INVENTAIRE //////////////////////////////////////////////////
 
@@ -582,6 +657,9 @@ DCE (tcsetattr)
 NATIVE (__ctype_b_loc)
 NATIVE_WITH_ALIAS (wctype_l)
 NATIVE (__ctype_tolower_loc)
+NATIVE (__ctype_toupper_loc)
+NATIVE (iswctype)
+NATIVE (iswupper)
 
 // stdlib.h
 NATIVE (__ctype_get_mb_cur_max)
@@ -611,14 +689,55 @@ NATIVE (__cmsg_nxthdr)
 // math.h
 NATIVE (lrintl)
 NATIVE (llrintl)
-NATIVE (ceil)
-NATIVE (floor)
+NATIVE_EXPLICIT (ceil, double(*)(double))
+NATIVE_EXPLICIT (floor, double(*)(double))
+NATIVE_EXPLICIT (trunc, double(*)(double))
+NATIVE_EXPLICIT (sqrt, double(*)(double))
+NATIVE_EXPLICIT (exp, double(*)(double))
+NATIVE_EXPLICIT (pow, double(*)(double, double))
+NATIVE_EXPLICIT (log, double(*)(double))
+NATIVE_EXPLICIT (log10, double(*)(double))
 
 // dlfcn.h
 DCE_WITH_ALIAS2 (dlopen, __dlopen)
 DCE (dlsym)
+DCE (dlclose)
+NATIVE (dlerror)
+
+// execinfo.h
+NATIVE (backtrace)
+NATIVE (backtrace_symbols)
+NATIVE (backtrace_symbols_fd)
+
+// sys/mount.h
+NATIVE (mount)
+NATIVE (umount2)
+
+// sys/inotify.h
+NATIVE (inotify_init)
+NATIVE (inotify_add_watch)
+
+// regex.h
+NATIVE (regfree)
+NATIVE (regcomp)
+NATIVE (regexec)
+NATIVE (regerror)
+
+// iconv.h
+NATIVE (iconv_open)
+
+// glob.h
+NATIVE (glob)
+NATIVE (globfree)
+
+// malloc.h
+NATIVE (mallinfo)
+
+// error.h
+NATIVE (error)
 
 NATIVE (dl_iterate_phdr)
+NATIVE (__libc_start_main)
 
 #undef DCE
 #undef DCET

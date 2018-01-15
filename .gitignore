@@ -1,6 +1,15 @@
 \#*\#
 *~
-.lock-wafbuild
+.lock-waf*
 .waf*
 build/
 ns3waf/__init__.pyc
+elf-cache
+*.pyc
+files-*
+exitprocs
+GPATH
+GRTAGS
+GTAGS
+myscripts/ns-3-dce-quagga/
+myscripts/ns-3-dce-umip/

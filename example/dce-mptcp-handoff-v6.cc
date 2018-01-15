@@ -107,7 +107,7 @@ int main (int argc, char *argv[])
   p2p.Install (NodeContainer (router.Get (0), ar.Get (0)));
   p2p.Install (NodeContainer (router.Get (0), ar.Get (1)));
 
-  WifiHelper wifi = WifiHelper::Default ();
+  WifiHelper wifi;
   NqosWifiMacHelper mac = NqosWifiMacHelper::Default ();
   YansWifiPhyHelper phy = YansWifiPhyHelper::Default ();
   YansWifiChannelHelper phyChannel = YansWifiChannelHelper::Default ();
