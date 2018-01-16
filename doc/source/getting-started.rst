@@ -44,11 +44,11 @@ then you must to create a directory for DCE and install it using bake:
 
    mkdir dce
    cd dce
-   bake.py configure -e dce-ns3-|version|
+   bake.py configure -e dce-ns3-$version
    bake.py download
    bake.py build
  
-note that dce-ns3-|version| is the DCE version |version| module. If you would like to use the development version of DCE module, you can specify **dce-ns3-dev** as a module name for bake.
+note that dce-ns3-$version is the DCE module with a version number. If you would like to use the development version of DCE module, you can specify **dce-ns3-dev** as a module name for bake.
 
 the output should look likes this:
 
@@ -84,11 +84,11 @@ The difference to build the advanced mode is the different module name *dce-linu
 
     mkdir dce
     cd dce
-    bake.py configure -e dce-linux-|version|
+    bake.py configure -e dce-linux-$version
     bake.py download
     bake.py build
 
-note that dce-linux-|version| is the DCE version |version| module. If you would like to use the development version of DCE module, you can specify **dce-linux-dev** as a module name for bake.
+note that dce-linux-$version is the DCE module with a version number. If you would like to use the development version of DCE module, you can specify **dce-linux-dev** as a module name for bake.
 
 
 Building DCE using WAF
