@@ -1,13 +1,10 @@
-FROM ubuntu:14.04
+FROM ns3dce/ubuntu14.04:0.1
 MAINTAINER Hajime Tazaki <thehajime@gmail.com>
 
-RUN apt-get update
-RUN apt-get install -y mercurial libexpat1-dev git-core build-essential bison flex libssl-dev libdb-dev libpcap-dev libc6-dbg libsysfs-dev gawk indent pkg-config autoconf automake
-
-WORKDIR /var/lib/dce-linux-dev
 # bake
-RUN mkdir -p /var/lib/dce-linux-dev
-RUN hg clone http://code.nsnam.org/bake
+RUN mkdir -p /home/ns3dce/dce-linux-dev
+WORKDIR /home/ns3dce/dce-linux-dev
+RUN git clone https://github.com/thehajime/bake
 
 RUN ./bake/bake.py configure -e dce-linux-dev -e dce-umip-dev
 RUN ./bake/bake.py download
