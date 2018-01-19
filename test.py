@@ -577,7 +577,7 @@ def read_waf_config():
 
     if options.verbose:
         for item in interesting_config_items:
-            print "%s ==" % item, eval(item)
+            print ("%s ==" % item, eval(item))
 
 #
 # It seems pointless to fork a process to run waf to fork a process to run

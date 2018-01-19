@@ -175,7 +175,7 @@ def _check_dependencies(conf, required, mandatory):
                                 args='--cflags --libs', mandatory=mandatory,
                                 msg="Checking for %s (%s)" % (libname, "mandatory" if mandatory else "optional"), # module.lower(),),
                                 uselib_store='NS3_%s' % module.upper())
-        # if retval is not None:
+        if retval is not None:
             # XXX pkg-config doesn't give the proper order of whole-archive option..
             if conf.env['NS3_ENABLE_STATIC']:
                 libname = 'STLIB_ST_NS3_%s' % module.upper()
