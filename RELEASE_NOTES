@@ -5,6 +5,48 @@ This file contains Direct Code Execution release notes (most recent releases fir
 
 Please refer the page http://www.nsnam.org/projects/direct-code-execution/ for detailed instructions
 
+Release dce-1.10
+===============
+Availability
+------------
+In order to use DCE, please use bake tool to install DCE.
+The followings are the basic steps to use DCE.
+
+ % bake.py configure -e dce-ns3-1.10
+   or
+ % bake.py configure -e dce-linux-1.10
+ % bake.py download
+ % bake.py build
+
+For more information, please refer the document.
+
+Tested platforms
+-------------------
+- Ubuntu 14.04 64bit
+- Ubuntu 16.04 64bit
+- Ubuntu 17.04 64bit
+- Fedora 26 64bit
+- Fedora 27 64bit
+
+New user-visible features
+-------------------------
+- migrate github for the repositories (ns-3-dce, quagga, umip)
+- add various missing symbols which are required for newer glibc (ubuntu 16/17, Fedora26/27)
+- migrate to circleci 2.0 build
+- doc infra update: generate doxygen on readthedocs.io servers
+- Updated waf to 1.8.19
+
+Bugs fixed
+----------
+- Bug 2833 - ns-3-dce compilation fails on gcc-6.3
+- github #57 Fatal error: glibc detected an invalid stdio handle
+- github #54 dce documentation missguide
+- fix DceCradle bind issues
+- update deprecated method of ns3::WifiHelper
+- update iperf2 patch
+- Enable C++11 following ns3 example
+- Use so_names to prevent loading wrong abi (#56)
+
 Release dce-1.9
 ===============
 Availability
