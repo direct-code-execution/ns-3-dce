@@ -35,7 +35,6 @@
 #include "ns3/point-to-point-helper.h"
 #include "ns3/wifi-module.h"
 #include "ns3/yans-wifi-helper.h"
-#include "ns3/nqos-wifi-mac-helper.h"
 #include "ns3/mobility-module.h"
 #include "ns3/quagga-helper.h"
 
@@ -108,7 +107,7 @@ int main (int argc, char *argv[])
   p2p.Install (NodeContainer (router.Get (0), ar.Get (1)));
 
   WifiHelper wifi;
-  NqosWifiMacHelper mac = NqosWifiMacHelper::Default ();
+  WifiMacHelper mac;
   YansWifiPhyHelper phy = YansWifiPhyHelper::Default ();
   YansWifiChannelHelper phyChannel = YansWifiChannelHelper::Default ();
   wifi.SetRemoteStationManager ("ns3::ArfWifiManager");

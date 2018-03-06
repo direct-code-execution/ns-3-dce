@@ -37,7 +37,6 @@
 #include "ns3/wifi-module.h"
 #include "ns3/lte-module.h"
 #include "ns3/yans-wifi-helper.h"
-#include "ns3/nqos-wifi-mac-helper.h"
 #include "ns3/mobility-module.h"
 #include "ns3/quagga-helper.h"
 
@@ -139,7 +138,7 @@ int main (int argc, char *argv[])
 
   // Wi-Fi
   WifiHelper wifi;
-  NqosWifiMacHelper mac = NqosWifiMacHelper::Default ();
+  WifiMacHelper mac;
   YansWifiPhyHelper phy = YansWifiPhyHelper::Default ();
   YansWifiChannelHelper phyChannel = YansWifiChannelHelper::Default ();
   wifi.SetRemoteStationManager ("ns3::ArfWifiManager");

@@ -88,7 +88,7 @@ int main (int argc, char *argv[])
         WifiHelper wifi;
         YansWifiPhyHelper phy = YansWifiPhyHelper::Default ();
         YansWifiChannelHelper phyChannel = YansWifiChannelHelper::Default ();
-        NqosWifiMacHelper mac;
+        WifiMacHelper mac;
         phy.SetChannel (phyChannel.Create ());
         mac.SetType ("ns3::AdhocWifiMac");
         wifi.SetStandard (WIFI_PHY_STANDARD_80211a);
