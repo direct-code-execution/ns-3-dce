@@ -87,7 +87,7 @@ DceLinuxIp6TestCase::CsmaRxCallback (std::string context, Ptr<const Packet> orig
     case 0x0800:   //IPv4
       packet->RemoveHeader (v4hdr);
       packet->RemoveHeader (icmphdr);
-      if (icmphdr.GetType () == Icmpv4Header::ECHO_REPLY)
+      if (icmphdr.GetType () == Icmpv4Header::ICMPV4_ECHO_REPLY)
         {
           m_pingStatus = true;
         }

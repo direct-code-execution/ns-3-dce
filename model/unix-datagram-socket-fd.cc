@@ -99,23 +99,23 @@ UnixDatagramSocketFd::IcmpCallback (Ipv4Address icmpSource, uint8_t icmpTtl,
   sock_extended_err ee;
   struct sockaddr_in offender;
 
-  if (icmpType == Icmpv4Header::DEST_UNREACH
-      && icmpCode == Icmpv4DestinationUnreachable::FRAG_NEEDED)
+  if (icmpType == Icmpv4Header::ICMPV4_DEST_UNREACH
+      && icmpCode == Icmpv4DestinationUnreachable::ICMPV4_FRAG_NEEDED)
     {
       ee.ee_errno = EMSGSIZE;
     }
-  else if (icmpType == Icmpv4Header::DEST_UNREACH
-           && icmpCode == Icmpv4DestinationUnreachable::PORT_UNREACHABLE)
+  else if (icmpType == Icmpv4Header::ICMPV4_DEST_UNREACH
+           && icmpCode == Icmpv4DestinationUnreachable::ICMPV4_PORT_UNREACHABLE)
     {
       ee.ee_errno = EHOSTUNREACH;
     }
-  else if (icmpType == Icmpv4Header::TIME_EXCEEDED
-           && icmpCode == Icmpv4TimeExceeded::TIME_TO_LIVE)
+  else if (icmpType == Icmpv4Header::ICMPV4_TIME_EXCEEDED
+           && icmpCode == Icmpv4TimeExceeded::ICMPV4_TIME_TO_LIVE)
     {
       ee.ee_errno = EHOSTUNREACH;
     }
-  else if (icmpType == Icmpv4Header::TIME_EXCEEDED
-           && icmpCode == Icmpv4TimeExceeded::FRAGMENT_REASSEMBLY)
+  else if (icmpType == Icmpv4Header::ICMPV4_TIME_EXCEEDED
+           && icmpCode == Icmpv4TimeExceeded::ICMPV4_FRAGMENT_REASSEMBLY)
     {
       ee.ee_errno = ETIMEDOUT;
     }
