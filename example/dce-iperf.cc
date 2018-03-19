@@ -8,6 +8,11 @@
 #include "ns3/constant-position-mobility-model.h"
 #include "ccnx/misc-tools.h"
 
+/**
+ * Comment to use iperf2 instead
+ */
+#define IPERF3
+
 using namespace ns3;
 NS_LOG_COMPONENT_DEFINE ("DceIperf");
 // ===========================================================================
@@ -45,13 +50,18 @@ int main (int argc, char *argv[])
   NodeContainer nodes;
   nodes.Create (2);
 
+	// Provide tmp directory to iperf3 to create stream
+	#ifdef IPERF3
+		UtilsEnsureDirectoryExists (UtilsGetAbsRealFilePath (nodes.Get (0)->GetId (), "/tmp"));
+		UtilsEnsureDirectoryExists (UtilsGetAbsRealFilePath (nodes.Get (1)->GetId (), "/tmp"));
+	#endif
+
   PointToPointHelper pointToPoint;
   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
   pointToPoint.SetChannelAttribute ("Delay", StringValue ("1ms"));
 
-  NetDeviceContainer devices, devices2;
+  NetDeviceContainer devices;
   devices = pointToPoint.Install (nodes);
-  devices2 = pointToPoint.Install (nodes);
 
   DceManagerHelper dceManager;
   dceManager.SetTaskManagerAttribute ("FiberManagerType", StringValue ("UcontextFiberManager"));
@@ -92,8 +102,6 @@ int main (int argc, char *argv[])
   Ipv4AddressHelper address;
   address.SetBase ("10.1.1.0", "255.255.255.252");
   Ipv4InterfaceContainer interfaces = address.Assign (devices);
-  address.SetBase ("10.1.2.0", "255.255.255.252");
-  interfaces = address.Assign (devices2);
 
   // setup ip routes
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
@@ -110,42 +118,74 @@ int main (int argc, char *argv[])
 
   dce.SetStackSize (1 << 20);
 
-  // Launch iperf client on node 0
-  dce.SetBinary ("iperf");
-  dce.ResetArguments ();
-  dce.ResetEnvironment ();
-  dce.AddArgument ("-c");
-  dce.AddArgument ("10.1.1.2");
-  dce.AddArgument ("-i");
-  dce.AddArgument ("1");
-  dce.AddArgument ("--time");
-  dce.AddArgument ("10");
-  if (useUdp)
-    {
-      dce.AddArgument ("-u");
-      dce.AddArgument ("-b");
-      dce.AddArgument (bandWidth);
-    }
+	#ifdef IPERF3
+		dce.SetBinary ("iperf3");
+		dce.ResetArguments ();
+		dce.ResetEnvironment ();
+		dce.AddArgument ("-c");
+		dce.AddArgument ("10.1.1.2");
+		dce.AddArgument ("--interval=1");
+		dce.AddArgument ("--time=10");
+		dce.AddArgument ("--verbose");
+		dce.AddArgument ("--json");
+		dce.AddArgument ("--logfile=client.res");
 
-  apps = dce.Install (nodes.Get (0));
-  apps.Start (Seconds (0.7));
-  apps.Stop (Seconds (20));
+		apps = dce.Install (nodes.Get (0));
+		apps.Start (Seconds (3.0));
+		apps.Stop (Seconds(20));
 
-  // Launch iperf server on node 1
-  dce.SetBinary ("iperf");
-  dce.ResetArguments ();
-  dce.ResetEnvironment ();
-  dce.AddArgument ("-s");
-  dce.AddArgument ("-P");
-  dce.AddArgument ("1");
-  if (useUdp)
-    {
-      dce.AddArgument ("-u");
-    }
+		dce.SetBinary ("iperf3");
+		dce.ResetArguments ();
+		dce.ResetEnvironment ();
+		dce.AddArgument ("--verbose");
+		dce.AddArgument ("--json");
+		dce.AddArgument ("--logfile=server.res");
+		dce.AddArgument ("--bind=10.1.1.2");
+		dce.AddArgument ("--server");
 
-  apps = dce.Install (nodes.Get (1));
+		if (useUdp) {
+			dce.AddArgument ("--udp");
+		}
 
-  pointToPoint.EnablePcapAll ("iperf-" + stack, false);
+		apps = dce.Install (nodes.Get (1));
+
+	#else
+		// Launch iperf client on node 0
+		dce.SetBinary ("iperf");
+		dce.ResetArguments ();
+		dce.ResetEnvironment ();
+		dce.AddArgument ("-c");
+		dce.AddArgument ("10.1.1.2");
+		dce.AddArgument ("-i");
+		dce.AddArgument ("1");
+		dce.AddArgument ("--time");
+		dce.AddArgument ("10");
+		if (useUdp)
+		{
+			dce.AddArgument ("-u");
+			dce.AddArgument ("-b");
+			dce.AddArgument (bandWidth);
+		}
+		apps = dce.Install (nodes.Get (0));
+		apps.Start (Seconds (0.7));
+		apps.Stop (Seconds (20));
+
+		// Launch iperf server on node 1
+		dce.SetBinary ("iperf");
+		dce.ResetArguments ();
+		dce.ResetEnvironment ();
+		dce.AddArgument ("-s");
+		dce.AddArgument ("-P");
+		dce.AddArgument ("1");
+		if (useUdp)
+		{
+			dce.AddArgument ("-u");
+		}
+
+		apps = dce.Install (nodes.Get (1));
+	#endif
+
+	pointToPoint.EnablePcapAll ("iperf-" + stack, false);
 
   apps.Start (Seconds (0.6));
 
