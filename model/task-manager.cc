@@ -228,6 +228,11 @@ Task *
 TaskManager::Start (void (*fn)(void*), void *context, uint32_t stackSize)
 {
   NS_LOG_FUNCTION (this << fn << context << stackSize);
+  if (stackSize == 0)
+    {
+      stackSize = m_defaultStackSize;
+      NS_LOG_INFO ("Setting stack size to default value " << stackSize);
+    }
   Task *task = new Task ();
   struct StartTaskContext *ctx = new StartTaskContext ();
   ctx->function = fn;

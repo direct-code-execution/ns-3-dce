@@ -61,6 +61,8 @@
 #include <fcntl.h>
 #include <stdlib.h>
 
+#define INITSTACKSIZE 0
+
 NS_LOG_COMPONENT_DEFINE ("DceManager");
 
 namespace ns3 {
@@ -400,17 +402,9 @@ DceManager::Start (std::string name, std::string stdinfilename, std::vector<std:
                    uid_t uid, uid_t euid, uid_t gid, uid_t egid)
 {
   NS_LOG_FUNCTION (this << name << args.size ());
-  struct Process *process = CreateProcess (name, stdinfilename, args, envs, 0);
-  process->ruid = uid;
-  process->euid = euid;
-  process->rgid = gid;
-  process->egid = egid;
-  struct Thread *thread = CreateThread (process);
-  Task *task = TaskManager::Current ()->Start (&DceManager::DoStartProcess, thread);
-  task->SetContext (thread);
-  task->SetSwitchNotifier (&DceManager::TaskSwitch, process);
-  thread->task = task;
-  return process->pid;
+  // Use INITSTACKSIZE if user doesn't specify the stack size.
+  // Latter stack size will get initialized to default size.
+  return Start (name, stdinfilename, INITSTACKSIZE, args, envs, uid, euid, gid, egid);
 }
 uint16_t
 DceManager::Start (std::string name, std::string stdinfilename, uint32_t stackSize,
