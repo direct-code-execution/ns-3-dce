@@ -83,7 +83,7 @@ TaskManager::GetTypeId (void)
     .SetParent<Object> ()
     .AddConstructor<TaskManager> ()
     .AddAttribute ("DefaultStackSize",
-                   "The default size of the stack of every task created by this manager.",
+                   "The default size of the stack of every task created by this manager, used when stack size is zero.",
                    UintegerValue (8192),
                    MakeUintegerAccessor (&TaskManager::m_defaultStackSize),
                    MakeUintegerChecker<uint32_t> (4096))
@@ -196,11 +196,6 @@ TaskManager::SetDelayModel (Ptr<ProcessDelayModel> model)
   m_delayModel = model;
 }
 
-Task *
-TaskManager::Start (void (*fn)(void*), void *context)
-{
-  return Start (fn, context, m_defaultStackSize);
-}
 // At every switch of context this method is called and it runs the signal handlers of pending signals.
 static void SwitchNotifEatSignal (void)
 {
@@ -228,6 +223,12 @@ Task *
 TaskManager::Start (void (*fn)(void*), void *context, uint32_t stackSize)
 {
   NS_LOG_FUNCTION (this << fn << context << stackSize);
+  if (stackSize == 0)
+    {
+      // Using default stack size.
+      stackSize = m_defaultStackSize;
+      NS_LOG_INFO ("Setting stack size to default value " << stackSize);
+    }
   Task *task = new Task ();
   struct StartTaskContext *ctx = new StartTaskContext ();
   ctx->function = fn;

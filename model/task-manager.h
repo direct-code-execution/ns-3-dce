@@ -81,8 +81,7 @@ public:
    * The input context is forever associated to this task and
    * can be retrieved by a call to CurrentTaskContext.
    */
-  Task *Start (void (*fn)(void*), void *context);
-  Task *Start (void (*fn)(void*), void *context, uint32_t stackSize);
+  Task *Start (void (*fn)(void*), void *context, uint32_t stackSize = 0);
 
   Task * Clone (Task *task);
 
@@ -185,7 +184,7 @@ private:
   Ptr<ProcessDelayModel> m_delayModel;
   FiberManager *m_fiberManager;
   Fiber *m_mainFiber;
-  uint32_t m_defaultStackSize;
+  uint32_t m_defaultStackSize; // used when stack size is zero.
   EventId m_nextSchedule;
   bool m_reSchedule;
   Time m_reScheduleTime;
