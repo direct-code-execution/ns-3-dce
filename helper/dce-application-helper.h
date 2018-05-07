@@ -43,17 +43,13 @@ public:
    * \param arg add an argument for the main executable
    */
   void AddArgument (std::string arg);
-  void AddArguments (std::string a0, std::string a1);
-  void AddArguments (std::string a0, std::string a1, std::string a2);
-  void AddArguments (std::string a0, std::string a1, std::string a2, std::string a3);
-  void AddArguments (std::string a0, std::string a1, std::string a2, std::string a3,
-                     std::string a4);
-  void AddArguments (std::string a0, std::string a1, std::string a2, std::string a3,
-                     std::string a4, std::string a5);
-  void AddArguments (std::string a0, std::string a1, std::string a2, std::string a3,
-                     std::string a4, std::string a5, std::string a6);
-  void AddArguments (std::string a0, std::string a1, std::string a2, std::string a3,
-                     std::string a4, std::string a5, std::string a6, std::string a7);
+  void AddArguments (std::string arg);
+  template <typename... str>
+  void AddArguments (std::string arg, str... args)
+  {
+      AddArgument (arg);
+      AddArguments (args...);
+  }
   /**
    * \param args add a string of arguments for the main executable. can specify with space-separated arguments, e.g., "-d -f test.conf".
    */
