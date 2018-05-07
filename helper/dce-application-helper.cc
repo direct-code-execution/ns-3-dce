@@ -36,71 +36,10 @@ DceApplicationHelper::AddArgument (std::string arg)
   NS_LOG_FUNCTION (this << arg);
   m_args.push_back (arg);
 }
-void DceApplicationHelper::AddArguments (std::string a0, std::string a1)
-{
-  AddArgument (a0);
-  AddArgument (a1);
-}
 void
-DceApplicationHelper::AddArguments (std::string a0, std::string a1, std::string a2)
+DceApplicationHelper::AddArguments (std::string arg)
 {
-  AddArgument (a0);
-  AddArgument (a1);
-  AddArgument (a2);
-}
-void
-DceApplicationHelper::AddArguments (std::string a0, std::string a1, std::string a2, std::string a3)
-{
-  AddArgument (a0);
-  AddArgument (a1);
-  AddArgument (a2);
-  AddArgument (a3);
-}
-void
-DceApplicationHelper::AddArguments (std::string a0, std::string a1, std::string a2, std::string a3,
-                                    std::string a4)
-{
-  AddArgument (a0);
-  AddArgument (a1);
-  AddArgument (a2);
-  AddArgument (a3);
-  AddArgument (a4);
-}
-void
-DceApplicationHelper::AddArguments (std::string a0, std::string a1, std::string a2, std::string a3,
-                                    std::string a4, std::string a5)
-{
-  AddArgument (a0);
-  AddArgument (a1);
-  AddArgument (a2);
-  AddArgument (a3);
-  AddArgument (a4);
-  AddArgument (a5);
-}
-void
-DceApplicationHelper::AddArguments (std::string a0, std::string a1, std::string a2, std::string a3,
-                                    std::string a4, std::string a5, std::string a6)
-{
-  AddArgument (a0);
-  AddArgument (a1);
-  AddArgument (a2);
-  AddArgument (a3);
-  AddArgument (a4);
-  AddArgument (a5);
-  AddArgument (a6);
-}
-void
-DceApplicationHelper::AddArguments (std::string a0, std::string a1, std::string a2, std::string a3,
-                                    std::string a4, std::string a5, std::string a6, std::string a7)
-{
-  AddArgument (a0);
-  AddArgument (a1);
-  AddArgument (a2);
-  AddArgument (a3);
-  AddArgument (a4);
-  AddArgument (a5);
-  AddArgument (a6);
-  AddArgument (a7);
+  AddArgument(arg);
 }
 void DceApplicationHelper::ParseArguments (std::string args)
 {
