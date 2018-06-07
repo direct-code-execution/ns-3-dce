@@ -107,6 +107,7 @@ int main (int argc, char *argv[])
 
   DceApplicationHelper dce;
   ApplicationContainer apps;
+  std::ostringstream serverIp;
 
   dce.SetStackSize (1 << 20);
 
@@ -115,7 +116,13 @@ int main (int argc, char *argv[])
   dce.ResetArguments ();
   dce.ResetEnvironment ();
   dce.AddArgument ("-c");
-  dce.AddArgument ("10.1.1.2");
+
+  // Extract server IP address
+  Ptr<Ipv4> ipv4Server = nodes.Get (1)->GetObject<Ipv4> ();
+  Ipv4Address serverAddress = ipv4Server->GetAddress (1, 0).GetLocal ();
+  serverAddress.Print (serverIp);
+
+  dce.AddArgument (serverIp.str());
   dce.AddArgument ("-i");
   dce.AddArgument ("1");
   dce.AddArgument ("--time");
