@@ -15,4 +15,8 @@ def build(bld):
 #				  linkflags=['-L/usr/local/lib'],
 #				  lib=['foolib']
 				  )
+    bld.build_a_script('dce', needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim' ],
+          target='bin/dce-fping',
+          source=['dce-fping.cc', 'misc-tools.cc'],
+          )
 
