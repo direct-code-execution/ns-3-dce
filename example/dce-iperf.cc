@@ -49,9 +49,8 @@ int main (int argc, char *argv[])
   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
   pointToPoint.SetChannelAttribute ("Delay", StringValue ("1ms"));
 
-  NetDeviceContainer devices, devices2;
+  NetDeviceContainer devices;
   devices = pointToPoint.Install (nodes);
-  devices2 = pointToPoint.Install (nodes);
 
   DceManagerHelper dceManager;
   dceManager.SetTaskManagerAttribute ("FiberManagerType", StringValue ("UcontextFiberManager"));
@@ -92,8 +91,6 @@ int main (int argc, char *argv[])
   Ipv4AddressHelper address;
   address.SetBase ("10.1.1.0", "255.255.255.252");
   Ipv4InterfaceContainer interfaces = address.Assign (devices);
-  address.SetBase ("10.1.2.0", "255.255.255.252");
-  interfaces = address.Assign (devices2);
 
   // setup ip routes
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
