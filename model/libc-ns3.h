@@ -383,6 +383,7 @@ DCE (open64)
 DCE (unlinkat)
 
 // TIME.H
+NATIVE (clock) // without this iperf3 crash with code 127
 DCE (nanosleep)
 DCE (asctime)
 NATIVE (asctime_r)
