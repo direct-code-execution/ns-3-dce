@@ -65,7 +65,7 @@ int main (int argc, char *argv[])
   else if (stack == "linux")
     {
 #ifdef KERNEL_STACK
-      dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
+      dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblkl.so"));
       dceManager.Install (nodes);
       LinuxStackHelper stack;
       stack.Install (nodes);
