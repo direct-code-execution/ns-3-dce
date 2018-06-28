@@ -13,7 +13,7 @@
 #include "sys/dce-stat.h"
 #include "dce-fcntl.h"
 #include "dce-stdio.h"
-#include "include/sim-init.h"
+#include "dce-init.h"
 #include "ns3/log.h"
 #include "ns3/string.h"
 #include "ns3/double.h"
@@ -574,8 +574,8 @@ KernelSocketFdFactory::InitializeStack (void)
     {
       NS_FATAL_ERROR ("Oops. Can't find initialization function");
     }
-  m_exported = new struct SimExported ();
-  struct SimImported imported;
+  m_exported = new struct KernelHandle ();
+  struct DceHandle imported;
   imported.vprintf = &KernelSocketFdFactory::Vprintf;
   imported.malloc = &KernelSocketFdFactory::Malloc;
   imported.free = &KernelSocketFdFactory::Free;

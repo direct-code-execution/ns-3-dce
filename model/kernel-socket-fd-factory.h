@@ -14,8 +14,8 @@
 #include "linux/types.h"
 
 extern "C" {
-struct SimExported;
-struct SimDevice;
+struct DceHandle;
+struct KernelHandle;
 struct SimSocket;
 struct SimTask;
 struct SimKernel;
@@ -48,7 +48,7 @@ public:
 
 protected:
   void InitializeStack (void);
-  struct SimExported *m_exported;
+  struct KernelHandle *m_exported;
   Ptr<TaskManager> m_manager;
   Loader *m_loader;
   FILE *m_logFile;

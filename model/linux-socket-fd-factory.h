@@ -5,7 +5,7 @@
 #include <vector>
 
 extern "C" {
-struct SimExported;
+struct KernelHandle;
 struct SimDevice;
 struct SimSocket;
 struct SimTask;
