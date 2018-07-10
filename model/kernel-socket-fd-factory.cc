@@ -129,14 +129,14 @@ KernelSocketFdFactory::DoDispose (void)
 }
 
 int
-KernelSocketFdFactory::Vprintf (struct SimKernel *kernel, const char *str, va_list args)
+KernelSocketFdFactory::Vprintf (struct DceKernel *kernel, const char *str, va_list args)
 {
   KernelSocketFdFactory *self = (KernelSocketFdFactory *)kernel;
   return vfprintf (self->m_logFile, str, args);
 }
 
 void *
-KernelSocketFdFactory::Malloc (struct SimKernel *kernel, unsigned long size)
+KernelSocketFdFactory::Malloc (struct DceKernel *kernel, unsigned long size)
 {
   KernelSocketFdFactory *self = (KernelSocketFdFactory *)kernel;
   if (self->m_ranvar->GetValue () < self->m_rate)
@@ -153,7 +153,7 @@ KernelSocketFdFactory::Malloc (struct SimKernel *kernel, unsigned long size)
   return buffer;
 }
 void
-KernelSocketFdFactory::Free (struct SimKernel *kernel, void *ptr)
+KernelSocketFdFactory::Free (struct DceKernel *kernel, void *ptr)
 {
   KernelSocketFdFactory *self = (KernelSocketFdFactory *)kernel;
   uint8_t *buffer = (uint8_t*)ptr;
@@ -163,17 +163,17 @@ KernelSocketFdFactory::Free (struct SimKernel *kernel, void *ptr)
   self->m_alloc->Free (buffer, size);
 }
 void *
-KernelSocketFdFactory::Memcpy (struct SimKernel *kernel, void *dst, const void *src, unsigned long size)
+KernelSocketFdFactory::Memcpy (struct DceKernel *kernel, void *dst, const void *src, unsigned long size)
 {
   return memcpy (dst, src, size);
 }
 void *
-KernelSocketFdFactory::Memset (struct SimKernel *kernel, void *dst, char value, unsigned long size)
+KernelSocketFdFactory::Memset (struct DceKernel *kernel, void *dst, char value, unsigned long size)
 {
   return memset (dst, value, size);
 }
 int
-KernelSocketFdFactory::AtExit (struct SimKernel *kernel, void (*function)(void))
+KernelSocketFdFactory::AtExit (struct DceKernel *kernel, void (*function)(void))
 {
   NS_LOG_FUNCTION (kernel << function);
   KernelSocketFdFactory *self = (KernelSocketFdFactory *)kernel;
@@ -188,67 +188,67 @@ KernelSocketFdFactory::AtExit (struct SimKernel *kernel, void (*function)(void))
   return 0;
 }
 int
-KernelSocketFdFactory::Access (struct SimKernel *kernel, const char *pathname, int mode)
+KernelSocketFdFactory::Access (struct DceKernel *kernel, const char *pathname, int mode)
 {
   return dce_access (pathname, mode);
 }
 char*
-KernelSocketFdFactory::Getenv (struct SimKernel *kernel, const char *name)
+KernelSocketFdFactory::Getenv (struct DceKernel *kernel, const char *name)
 {
   return dce_getenv (name);
 }
 int
-KernelSocketFdFactory::Mkdir (struct SimKernel *kernel, const char *pathname, mode_t mode)
+KernelSocketFdFactory::Mkdir (struct DceKernel *kernel, const char *pathname, mode_t mode)
 {
   return dce_mkdir (pathname, mode);
 }
 int
-KernelSocketFdFactory::Open (struct SimKernel *kernel, const char *pathname, int flags)
+KernelSocketFdFactory::Open (struct DceKernel *kernel, const char *pathname, int flags)
 {
   return dce_open (pathname, flags, 0666);
 }
 int
-KernelSocketFdFactory::__Fxstat (struct SimKernel *kernel, int ver, int fd, void *buf)
+KernelSocketFdFactory::__Fxstat (struct DceKernel *kernel, int ver, int fd, void *buf)
 {
   return dce___fxstat (ver, fd, (struct stat *)buf);
 }
 int
-KernelSocketFdFactory::Fseek (struct SimKernel *kernel, FILE *stream, long offset, int whence)
+KernelSocketFdFactory::Fseek (struct DceKernel *kernel, FILE *stream, long offset, int whence)
 {
   return dce_fseek (stream, offset, whence);
 }
 void
-KernelSocketFdFactory::Setbuf (struct SimKernel *kernel, FILE *stream, char *buf)
+KernelSocketFdFactory::Setbuf (struct DceKernel *kernel, FILE *stream, char *buf)
 {
   return dce_setbuf (stream, buf);
 }
 long
-KernelSocketFdFactory::Ftell (struct SimKernel *kernel, FILE *stream)
+KernelSocketFdFactory::Ftell (struct DceKernel *kernel, FILE *stream)
 {
   return dce_ftell (stream);
 }
 FILE*
-KernelSocketFdFactory::FdOpen (struct SimKernel *kernel, int fd, const char *mode)
+KernelSocketFdFactory::FdOpen (struct DceKernel *kernel, int fd, const char *mode)
 {
   return dce_fdopen (fd, mode);
 }
 size_t
-KernelSocketFdFactory::Fread (struct SimKernel *kernel, void *ptr, size_t size, size_t nmemb, FILE *stream)
+KernelSocketFdFactory::Fread (struct DceKernel *kernel, void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
   return dce_fread (ptr, size, nmemb, stream);
 }
 size_t
-KernelSocketFdFactory::Fwrite (struct SimKernel *kernel, const void *ptr, size_t size, size_t nmemb, FILE *stream)
+KernelSocketFdFactory::Fwrite (struct DceKernel *kernel, const void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
   return dce_fwrite (ptr, size, nmemb, stream);
 }
 int
-KernelSocketFdFactory::Fclose (struct SimKernel *kernel, FILE *fp)
+KernelSocketFdFactory::Fclose (struct DceKernel *kernel, FILE *fp)
 {
   return dce_fclose (fp);
 }
 unsigned long
-KernelSocketFdFactory::Random (struct SimKernel *kernel)
+KernelSocketFdFactory::Random (struct DceKernel *kernel)
 {
   KernelSocketFdFactory *self = (KernelSocketFdFactory *)kernel;
   union
@@ -273,7 +273,7 @@ KernelSocketFdFactory::EventTrampoline (void (*fn)(void *context),
   m_loader->NotifyEndExecute ();
 }
 void *
-KernelSocketFdFactory::EventScheduleNs (struct SimKernel *kernel, __u64 ns, void (*fn)(void *context), void *context,
+KernelSocketFdFactory::EventScheduleNs (struct DceKernel *kernel, __u64 ns, void (*fn)(void *context), void *context,
                                        void (*pre_fn)(void))
 {
   KernelSocketFdFactory *self = (KernelSocketFdFactory *)kernel;
@@ -286,12 +286,12 @@ KernelSocketFdFactory::EventScheduleNs (struct SimKernel *kernel, __u64 ns, void
   return &ev->id;
 }
 void
-KernelSocketFdFactory::EventCancel (struct SimKernel *kernel, void *ev)
+KernelSocketFdFactory::EventCancel (struct DceKernel *kernel, void *ev)
 {
   EventId *event = (EventId *)ev;
   Simulator::Remove (*event);
 }
-static __u64 CurrentNs (struct SimKernel *kernel)
+static __u64 CurrentNs (struct DceKernel *kernel)
 {
   return Simulator::Now ().GetNanoSeconds ();
 }
@@ -313,7 +313,7 @@ KernelSocketFdFactory::TaskSwitch (enum Task::SwitchType type, void *context)
 }
 
 struct SimTask *
-KernelSocketFdFactory::TaskStart (struct SimKernel *kernel, void (*callback)(void *), void *context)
+KernelSocketFdFactory::TaskStart (struct DceKernel *kernel, void (*callback)(void *), void *context)
 {
   KernelSocketFdFactory *self = (KernelSocketFdFactory *)kernel;
   Task *task = self->m_manager->Start (callback, context, 1 << 17);
@@ -324,7 +324,7 @@ KernelSocketFdFactory::TaskStart (struct SimKernel *kernel, void (*callback)(voi
   return (struct SimTask *)task->GetExtraContext ();
 }
 struct SimTask *
-KernelSocketFdFactory::TaskCurrent (struct SimKernel *kernel)
+KernelSocketFdFactory::TaskCurrent (struct DceKernel *kernel)
 {
   KernelSocketFdFactory *self = (KernelSocketFdFactory *)kernel;
   TaskManager *manager = TaskManager::Current ();
@@ -343,7 +343,7 @@ KernelSocketFdFactory::TaskCurrent (struct SimKernel *kernel)
   return (struct SimTask *)current->GetExtraContext ();
 }
 void
-KernelSocketFdFactory::TaskWait (struct SimKernel *kernel)
+KernelSocketFdFactory::TaskWait (struct DceKernel *kernel)
 {
   // force initialization of 'current'
   TaskCurrent (kernel);
@@ -351,7 +351,7 @@ KernelSocketFdFactory::TaskWait (struct SimKernel *kernel)
   TaskManager::Current ()->Sleep ();
 }
 int
-KernelSocketFdFactory::TaskWakeup (struct SimKernel *kernel, struct SimTask *task)
+KernelSocketFdFactory::TaskWakeup (struct DceKernel *kernel, struct SimTask *task)
 {
   KernelSocketFdFactory *self = (KernelSocketFdFactory *)kernel;
   TaskManager *manager = TaskManager::Current ();
@@ -365,7 +365,7 @@ KernelSocketFdFactory::TaskWakeup (struct SimKernel *kernel, struct SimTask *tas
   return isBlocked ? 1 : 0;
 }
 void
-KernelSocketFdFactory::TaskYield (struct SimKernel *kernel)
+KernelSocketFdFactory::TaskYield (struct DceKernel *kernel)
 {
   // force initialization of 'current'
   TaskCurrent (kernel);
@@ -378,7 +378,7 @@ KernelSocketFdFactory::SendMain (bool *r, NetDevice *dev, Ptr<Packet> p, const A
   *r = dev->Send (p, d, pro);
 }
 void
-KernelSocketFdFactory::DevXmit (struct SimKernel *kernel, struct SimDevice *dev, unsigned char *data, int len)
+KernelSocketFdFactory::DevXmit (struct DceKernel *kernel, struct SimDevice *dev, unsigned char *data, int len)
 {
   NS_LOG_FUNCTION (dev);
   KernelSocketFdFactory *self = (KernelSocketFdFactory *)kernel;
@@ -404,7 +404,7 @@ KernelSocketFdFactory::DevXmit (struct SimKernel *kernel, struct SimDevice *dev,
 }
 
 void
-KernelSocketFdFactory::SignalRaised (struct SimKernel *kernel, struct SimTask *task, int signalNumber)
+KernelSocketFdFactory::SignalRaised (struct DceKernel *kernel, struct SimTask *task, int signalNumber)
 {
   NS_LOG_FUNCTION ("XXX: Not Yet Implemented " << signalNumber);
 }
@@ -610,7 +610,7 @@ KernelSocketFdFactory::InitializeStack (void)
   Ptr<DceManager> manager = this->GetObject<DceManager> ();
   m_pid = manager->StartInternalTask ();
 
-  init (m_exported, &imported, (struct SimKernel *)this);
+  init (m_exported, &imported, (struct DceKernel *)this);
 
   // update the kernel device list with simulation device list
   Ptr<Node> node = GetObject<Node> ();
@@ -623,7 +623,7 @@ UnixFd *
 KernelSocketFdFactory::CreateSocket (int domain, int type, int protocol)
 {
   GET_CURRENT (this << domain << type << protocol);
-  struct SimSocket *socket;
+  struct DceSocket *socket;
   m_loader->NotifyStartExecute ();
   int retval = m_exported->sock_socket (domain, type, protocol, &socket);
   m_loader->NotifyEndExecute ();
@@ -636,7 +636,7 @@ KernelSocketFdFactory::CreateSocket (int domain, int type, int protocol)
 }
 
 int
-KernelSocketFdFactory::Close (struct SimSocket *socket)
+KernelSocketFdFactory::Close (struct DceSocket *socket)
 {
   GET_CURRENT (socket);
   m_loader->NotifyStartExecute ();
@@ -650,7 +650,7 @@ KernelSocketFdFactory::Close (struct SimSocket *socket)
   return retval;
 }
 ssize_t
-KernelSocketFdFactory::Recvmsg (struct SimSocket *socket, struct msghdr *msg, int flags)
+KernelSocketFdFactory::Recvmsg (struct DceSocket *socket, struct msghdr *msg, int flags)
 {
   GET_CURRENT (socket << msg << flags);
   m_loader->NotifyStartExecute ();
@@ -664,7 +664,7 @@ KernelSocketFdFactory::Recvmsg (struct SimSocket *socket, struct msghdr *msg, in
   return retval;
 }
 ssize_t
-KernelSocketFdFactory::Sendmsg (struct SimSocket *socket, const struct msghdr *msg, int flags)
+KernelSocketFdFactory::Sendmsg (struct DceSocket *socket, const struct msghdr *msg, int flags)
 {
   GET_CURRENT (socket << msg << flags);
   m_loader->NotifyStartExecute ();
@@ -678,7 +678,7 @@ KernelSocketFdFactory::Sendmsg (struct SimSocket *socket, const struct msghdr *m
   return retval;
 }
 int
-KernelSocketFdFactory::Getsockname (struct SimSocket *socket, struct sockaddr *name, socklen_t *namelen)
+KernelSocketFdFactory::Getsockname (struct DceSocket *socket, struct sockaddr *name, socklen_t *namelen)
 {
   GET_CURRENT (socket << name << namelen);
   m_loader->NotifyStartExecute ();
@@ -692,7 +692,7 @@ KernelSocketFdFactory::Getsockname (struct SimSocket *socket, struct sockaddr *n
   return retval;
 }
 int
-KernelSocketFdFactory::Getpeername (struct SimSocket *socket, struct sockaddr *name, socklen_t *namelen)
+KernelSocketFdFactory::Getpeername (struct DceSocket *socket, struct sockaddr *name, socklen_t *namelen)
 {
   GET_CURRENT (socket << name << namelen);
   m_loader->NotifyStartExecute ();
@@ -706,7 +706,7 @@ KernelSocketFdFactory::Getpeername (struct SimSocket *socket, struct sockaddr *n
   return retval;
 }
 int
-KernelSocketFdFactory::Bind (struct SimSocket *socket, const struct sockaddr *my_addr, socklen_t addrlen)
+KernelSocketFdFactory::Bind (struct DceSocket *socket, const struct sockaddr *my_addr, socklen_t addrlen)
 {
   GET_CURRENT (socket << my_addr << addrlen);
   m_loader->NotifyStartExecute ();
@@ -720,7 +720,7 @@ KernelSocketFdFactory::Bind (struct SimSocket *socket, const struct sockaddr *my
   return retval;
 }
 int
-KernelSocketFdFactory::Connect (struct SimSocket *socket, const struct sockaddr *my_addr,
+KernelSocketFdFactory::Connect (struct DceSocket *socket, const struct sockaddr *my_addr,
                                socklen_t addrlen, int flags)
 {
   GET_CURRENT (socket << my_addr << addrlen << flags);
@@ -735,7 +735,7 @@ KernelSocketFdFactory::Connect (struct SimSocket *socket, const struct sockaddr 
   return retval;
 }
 int
-KernelSocketFdFactory::Listen (struct SimSocket *socket, int backlog)
+KernelSocketFdFactory::Listen (struct DceSocket *socket, int backlog)
 {
   GET_CURRENT (socket << backlog);
   m_loader->NotifyStartExecute ();
@@ -749,7 +749,7 @@ KernelSocketFdFactory::Listen (struct SimSocket *socket, int backlog)
   return retval;
 }
 int
-KernelSocketFdFactory::Shutdown (struct SimSocket *socket, int how)
+KernelSocketFdFactory::Shutdown (struct DceSocket *socket, int how)
 {
   GET_CURRENT (socket << how);
   m_loader->NotifyStartExecute ();
@@ -763,10 +763,10 @@ KernelSocketFdFactory::Shutdown (struct SimSocket *socket, int how)
   return retval;
 }
 int
-KernelSocketFdFactory::Accept (struct SimSocket *socket, struct sockaddr *my_addr, socklen_t *addrlen, int flags)
+KernelSocketFdFactory::Accept (struct DceSocket *socket, struct sockaddr *my_addr, socklen_t *addrlen, int flags)
 {
   GET_CURRENT (socket << my_addr << addrlen << flags);
-  struct SimSocket *newSocket;
+  struct DceSocket *newSocket;
   m_loader->NotifyStartExecute ();
   int retval = m_exported->sock_accept (socket, &newSocket, flags);
   m_loader->NotifyEndExecute ();
@@ -805,7 +805,7 @@ KernelSocketFdFactory::Accept (struct SimSocket *socket, struct sockaddr *my_add
   return fd;
 }
 int
-KernelSocketFdFactory::Ioctl (struct SimSocket *socket, unsigned long request, char *argp)
+KernelSocketFdFactory::Ioctl (struct DceSocket *socket, unsigned long request, char *argp)
 {
   GET_CURRENT (socket << request << argp);
   m_loader->NotifyStartExecute ();
@@ -819,7 +819,7 @@ KernelSocketFdFactory::Ioctl (struct SimSocket *socket, unsigned long request, c
   return retval;
 }
 int
-KernelSocketFdFactory::Setsockopt (struct SimSocket *socket, int level, int optname,
+KernelSocketFdFactory::Setsockopt (struct DceSocket *socket, int level, int optname,
                                   const void *optval, socklen_t optlen)
 {
   GET_CURRENT (socket << level << optname << optval << optlen);
@@ -834,7 +834,7 @@ KernelSocketFdFactory::Setsockopt (struct SimSocket *socket, int level, int optn
   return retval;
 }
 int
-KernelSocketFdFactory::Getsockopt (struct SimSocket *socket, int level, int optname,
+KernelSocketFdFactory::Getsockopt (struct DceSocket *socket, int level, int optname,
                                   void *optval, socklen_t *optlen)
 {
   GET_CURRENT (socket << level << optname << optval << optlen);
@@ -876,7 +876,7 @@ struct poll_table_ref
   void *opaque;
 };
 int
-KernelSocketFdFactory::Poll (struct SimSocket *socket, PollTable* ptable)
+KernelSocketFdFactory::Poll (struct DceSocket *socket, PollTable* ptable)
 {
   struct poll_table_ref kernelInOut =
   {

@@ -16,10 +16,11 @@
 extern "C" {
 struct DceHandle;
 struct KernelHandle;
-struct SimSocket;
+struct DceSocket;
 struct SimTask;
-struct SimKernel;
+struct DceKernel;
 struct SimSysFile;
+struct SimDevice;
 }
 
 class KingsleyAlloc;
@@ -62,58 +63,58 @@ private:
   };
 
   // called from KernelSocketFd
-  int Close (struct SimSocket *socket);
-  ssize_t Recvmsg (struct SimSocket *socket, struct msghdr *msg, int flags);
-  ssize_t Sendmsg (struct SimSocket *socket, const struct msghdr *msg, int flags);
-  int Getsockname (struct SimSocket *socket, struct sockaddr *name, socklen_t *namelen);
-  int Getpeername (struct SimSocket *socket, struct sockaddr *name, socklen_t *namelen);
-  int Bind (struct SimSocket *socket, const struct sockaddr *my_addr, socklen_t addrlen);
-  int Connect (struct SimSocket *socket, const struct sockaddr *my_addr, socklen_t addrlen, int flags);
-  int Listen (struct SimSocket *socket, int backlog);
-  int Shutdown (struct SimSocket *socket, int how);
-  int Accept (struct SimSocket *socket, struct sockaddr *my_addr, socklen_t *addrlen, int flags);
-  int Ioctl (struct SimSocket *socket, unsigned long request, char *argp);
-  int Setsockopt (struct SimSocket *socket, int level, int optname,
+  int Close (struct DceSocket *socket);
+  ssize_t Recvmsg (struct DceSocket *socket, struct msghdr *msg, int flags);
+  ssize_t Sendmsg (struct DceSocket *socket, const struct msghdr *msg, int flags);
+  int Getsockname (struct DceSocket *socket, struct sockaddr *name, socklen_t *namelen);
+  int Getpeername (struct DceSocket *socket, struct sockaddr *name, socklen_t *namelen);
+  int Bind (struct DceSocket *socket, const struct sockaddr *my_addr, socklen_t addrlen);
+  int Connect (struct DceSocket *socket, const struct sockaddr *my_addr, socklen_t addrlen, int flags);
+  int Listen (struct DceSocket *socket, int backlog);
+  int Shutdown (struct DceSocket *socket, int how);
+  int Accept (struct DceSocket *socket, struct sockaddr *my_addr, socklen_t *addrlen, int flags);
+  int Ioctl (struct DceSocket *socket, unsigned long request, char *argp);
+  int Setsockopt (struct DceSocket *socket, int level, int optname,
                   const void *optval, socklen_t optlen);
-  int Getsockopt (struct SimSocket *socket, int level, int optname,
+  int Getsockopt (struct DceSocket *socket, int level, int optname,
                   void *optval, socklen_t *optlen);
-  bool CanRecv (struct SimSocket *socket);
-  bool CanSend (struct SimSocket *socket);
-  void* PollWait (struct SimSocket *socket, void *ctxt);
-  void  FreePoll (struct SimSocket *socket, void *ctxt);
-  int Poll (struct SimSocket *socket, PollTable* ptable);
+  bool CanRecv (struct DceSocket *socket);
+  bool CanSend (struct DceSocket *socket);
+  void* PollWait (struct DceSocket *socket, void *ctxt);
+  void  FreePoll (struct DceSocket *socket, void *ctxt);
+  int Poll (struct DceSocket *socket, PollTable* ptable);
   void PollFreeWait (void *ref);
 
   // called from kernel.
-  static int Vprintf (struct SimKernel *kernel, const char *str, va_list args);
-  static void * Malloc (struct SimKernel *kernel, unsigned long size);
-  static void Free (struct SimKernel *kernel, void *buffer);
-  static void * Memcpy (struct SimKernel *kernel, void *dst, const void *src, unsigned long size);
-  static void * Memset (struct SimKernel *kernel, void *dst, char value, unsigned long size);
-  static int AtExit (struct SimKernel *kernel, void (*function)(void));
-  static int Access (struct SimKernel *kernel, const char *pathname, int mode);
-  static char* Getenv (struct SimKernel *kernel, const char *name);
-  static int Mkdir (struct SimKernel *kernel, const char *pathname, mode_t mode);
-  static int Open (struct SimKernel *kernel, const char *pathname, int flags);
-  static size_t Fread (struct SimKernel *kernel, void *ptr, size_t size, size_t nmemb, FILE *stream);
-  static size_t Fwrite (struct SimKernel *kernel, const void *ptr, size_t size, size_t nmemb, FILE *stream);
-  static FILE* FdOpen (struct SimKernel *kernel, int fd, const char *mode);
-  static int __Fxstat (struct SimKernel *kernel, int ver, int fd, void *buf);
-  static int Fseek (struct SimKernel *kernel, FILE *stream, long offset, int whence);
-  static void Setbuf (struct SimKernel *kernel, FILE *stream, char *buf);
-  static long Ftell (struct SimKernel *kernel, FILE *stream);
-  static int Fclose (struct SimKernel *kernel, FILE *fp);
-  static unsigned long Random (struct SimKernel *kernel);
-  static void *EventScheduleNs (struct SimKernel *kernel, __u64 ns, void (*fn)(void *context), void *context,
+  static int Vprintf (struct DceKernel *kernel, const char *str, va_list args);
+  static void * Malloc (struct DceKernel *kernel, unsigned long size);
+  static void Free (struct DceKernel *kernel, void *buffer);
+  static void * Memcpy (struct DceKernel *kernel, void *dst, const void *src, unsigned long size);
+  static void * Memset (struct DceKernel *kernel, void *dst, char value, unsigned long size);
+  static int AtExit (struct DceKernel *kernel, void (*function)(void));
+  static int Access (struct DceKernel *kernel, const char *pathname, int mode);
+  static char* Getenv (struct DceKernel *kernel, const char *name);
+  static int Mkdir (struct DceKernel *kernel, const char *pathname, mode_t mode);
+  static int Open (struct DceKernel *kernel, const char *pathname, int flags);
+  static size_t Fread (struct DceKernel *kernel, void *ptr, size_t size, size_t nmemb, FILE *stream);
+  static size_t Fwrite (struct DceKernel *kernel, const void *ptr, size_t size, size_t nmemb, FILE *stream);
+  static FILE* FdOpen (struct DceKernel *kernel, int fd, const char *mode);
+  static int __Fxstat (struct DceKernel *kernel, int ver, int fd, void *buf);
+  static int Fseek (struct DceKernel *kernel, FILE *stream, long offset, int whence);
+  static void Setbuf (struct DceKernel *kernel, FILE *stream, char *buf);
+  static long Ftell (struct DceKernel *kernel, FILE *stream);
+  static int Fclose (struct DceKernel *kernel, FILE *fp);
+  static unsigned long Random (struct DceKernel *kernel);
+  static void *EventScheduleNs (struct DceKernel *kernel, __u64 ns, void (*fn)(void *context), void *context,
                                 void (*pre_fn)(void));
-  static void EventCancel (struct SimKernel *kernel, void *ev);
-  static struct SimTask *TaskStart (struct SimKernel *kernel, void (*callback)(void *), void *context);
-  static struct SimTask * TaskCurrent (struct SimKernel *kernel);
-  static void TaskWait (struct SimKernel *kernel);
-  static int TaskWakeup (struct SimKernel *kernel, struct SimTask *task);
-  static void TaskYield (struct SimKernel *kernel);
-  static void DevXmit (struct SimKernel *kernel, struct SimDevice *dev, unsigned char *data, int len);
-  static void SignalRaised (struct SimKernel *kernel, struct SimTask *task, int signalNumber);
+  static void EventCancel (struct DceKernel *kernel, void *ev);
+  static struct SimTask *TaskStart (struct DceKernel *kernel, void (*callback)(void *), void *context);
+  static struct SimTask * TaskCurrent (struct DceKernel *kernel);
+  static void TaskWait (struct DceKernel *kernel);
+  static int TaskWakeup (struct DceKernel *kernel, struct SimTask *task);
+  static void TaskYield (struct DceKernel *kernel);
+  static void DevXmit (struct DceKernel *kernel, struct SimDevice *dev, unsigned char *data, int len);
+  static void SignalRaised (struct DceKernel *kernel, struct SimTask *task, int signalNumber);
   static void PollEvent (int flag, void *context);
 
 

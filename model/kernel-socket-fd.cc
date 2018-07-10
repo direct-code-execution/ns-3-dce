@@ -12,7 +12,7 @@ NS_LOG_COMPONENT_DEFINE ("DceKernelSocketFd");
 
 namespace ns3 {
 
-KernelSocketFd::KernelSocketFd (Ptr<KernelSocketFdFactory> factory, struct SimSocket *socket)
+KernelSocketFd::KernelSocketFd (Ptr<KernelSocketFdFactory> factory, struct DceSocket *socket)
   : m_factory (factory),
     m_socket (socket),
     m_statusFlags (0)

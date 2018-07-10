@@ -7,9 +7,9 @@
 extern "C" {
 struct KernelHandle;
 struct SimDevice;
-struct SimSocket;
+struct DceKernel;
 struct SimTask;
-struct SimKernel;
+struct DceKernel;
 struct SimSysFile;
 }
 
