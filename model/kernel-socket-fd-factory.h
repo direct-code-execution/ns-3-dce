@@ -49,7 +49,7 @@ public:
 
 protected:
   void InitializeStack (void);
-  struct KernelHandle *m_exported;
+  struct KernelHandle *m_kernelHandle;
   Ptr<TaskManager> m_manager;
   Loader *m_loader;
   FILE *m_logFile;

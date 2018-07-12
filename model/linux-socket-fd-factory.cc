@@ -73,7 +73,7 @@ LinuxSocketFdFactory::SetTask (std::string path, std::string value)
           const char *s = value.c_str ();
           int toWrite = value.size ();
           int written;
-          written = m_exported->sys_file_write (files[i].second, s, toWrite, 0);
+          written = m_kernelHandle->sys_file_write (files[i].second, s, toWrite, 0);
           break;
         }
     }
@@ -104,7 +104,7 @@ LinuxSocketFdFactory::Get (std::string path)
         {
           char buffer[512];
           memset (buffer, 0, sizeof(buffer));
-          m_exported->sys_file_read (files[i].second, buffer, sizeof(buffer), 0);
+          m_kernelHandle->sys_file_read (files[i].second, buffer, sizeof(buffer), 0);
           NS_LOG_FUNCTION ("sysctl read: " << buffer);
           ret = std::string (buffer);
           break;
@@ -145,7 +145,7 @@ LinuxSocketFdFactory::GetSysFileList (void)
   iter.head.report_end_dir = &MyIterator::ReportEndDir;
   iter.head.report_file = &MyIterator::ReportFile;
   m_loader->NotifyStartExecute ();
-  m_exported->sys_iterate_files ((struct SimSysIterator *)&iter);
+  m_kernelHandle->sys_iterate_files ((struct SimSysIterator *)&iter);
   m_loader->NotifyEndExecute ();
   return iter.m_list;
 }
