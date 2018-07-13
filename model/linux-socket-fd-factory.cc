@@ -73,7 +73,7 @@ LinuxSocketFdFactory::SetTask (std::string path, std::string value)
           const char *s = value.c_str ();
           int toWrite = value.size ();
           int written;
-          written = m_kernelHandle->sys_file_write (files[i].second, s, toWrite, 0);
+          written = m_kernelHandle->dce_lkl_sysctl (path.c_str(), value.c_str());
           break;
         }
     }
@@ -104,7 +104,7 @@ LinuxSocketFdFactory::Get (std::string path)
         {
           char buffer[512];
           memset (buffer, 0, sizeof(buffer));
-          m_kernelHandle->sys_file_read (files[i].second, buffer, sizeof(buffer), 0);
+          m_kernelHandle->dce_lkl_sysctl_get (path.c_str(), buffer, sizeof(buffer));
           NS_LOG_FUNCTION ("sysctl read: " << buffer);
           ret = std::string (buffer);
           break;
