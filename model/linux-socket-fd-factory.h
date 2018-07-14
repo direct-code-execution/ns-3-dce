@@ -28,7 +28,6 @@ public:
 private:
   virtual void NotifyNewAggregate (void);
   void InitializeStack (void);
-  std::vector<std::pair<std::string,struct SimSysFile *> > GetSysFileList (void);
   void SetTask (std::string path, std::string value);
 
   std::list<std::pair<std::string,std::string> > m_earlySysfs;
