@@ -151,7 +151,7 @@ def configure(conf):
             raise SystemExit(1)
 
         # add include dir to KERNEL_DIR if architecture is lkl.
-        # This will help DCE to locate dce-init.h and lkl.h
+        # This will help DCE to locate dce_init.h and lkl.h
         if (kernel_stack_dir == Options.options.kernel_stack+architectures[0]):
             kernel_stack_dir = os.path.join(kernel_stack_dir, "include")
         else:

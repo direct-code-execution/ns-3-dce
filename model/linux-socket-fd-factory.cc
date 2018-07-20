@@ -1,5 +1,5 @@
 #include "linux-socket-fd-factory.h"
-#include "dce-init.h"
+#include "dce_init.h"
 #include "kernel-socket-fd-factory.h"
 #include "loader-factory.h"
 #include "utils.h"
