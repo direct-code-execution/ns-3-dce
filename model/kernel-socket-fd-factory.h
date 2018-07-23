@@ -92,6 +92,7 @@ private:
   static void * Memcpy (struct DceKernel *kernel, void *dst, const void *src, unsigned long size);
   static void * Memset (struct DceKernel *kernel, void *dst, char value, unsigned long size);
   static int AtExit (struct DceKernel *kernel, void (*function)(void));
+  static void Panic (struct DceKernel *kernel);
   static int Access (struct DceKernel *kernel, const char *pathname, int mode);
   static char* Getenv (struct DceKernel *kernel, const char *name);
   static int Mkdir (struct DceKernel *kernel, const char *pathname, mode_t mode);

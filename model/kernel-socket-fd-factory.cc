@@ -13,7 +13,7 @@
 #include "sys/dce-stat.h"
 #include "dce-fcntl.h"
 #include "dce-stdio.h"
-#include "dce-init.h"
+#include "dce_init.h"
 #include "ns3/log.h"
 #include "ns3/string.h"
 #include "ns3/double.h"
@@ -261,6 +261,16 @@ KernelSocketFdFactory::Random (struct DceKernel *kernel)
       u.buffer[i] = self->m_variable->GetInteger (0,255);
     }
   return u.v;
+}
+void
+KernelSocketFdFactory::Panic (struct DceKernel *kernel)
+{
+  NS_LOG_FUNCTION (kernel << function)
+  KernelSocketFdFactory *self = (KernelSocketFdFactory) *kernel;
+  ptr<DceManager> manager = self->GetObject<DceManager> ();
+  ptr<Node> node = GetObject <Node> ();
+  NS_ASSERT (node != 0);
+  manager->Panic (node->GetId ());
 }
 void
 KernelSocketFdFactory::EventTrampoline (void (*fn)(void *context),
@@ -578,6 +588,7 @@ KernelSocketFdFactory::InitializeStack (void)
   dceHandle.memcpy = &KernelSocketFdFactory::Memcpy;
   dceHandle.memset = &KernelSocketFdFactory::Memset;
   dceHandle.atexit = &KernelSocketFdFactory::AtExit;
+  dceHandle.panic = &KernelSocketFdFactory::Panic;
   dceHandle.access = &KernelSocketFdFactory::Access;
   dceHandle.getenv = &KernelSocketFdFactory::Getenv;
   dceHandle.mkdir = &KernelSocketFdFactory::Mkdir;

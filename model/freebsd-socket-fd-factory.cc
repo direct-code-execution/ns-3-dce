@@ -3,7 +3,7 @@
 #include "loader-factory.h"
 #include "kernel-socket-fd.h"
 #include "utils.h"
-#include "dce-init.h"
+#include "dce_init.h"
 #include "ns3/log.h"
 #include "ns3/string.h"
 #include "ns3/simulator.h"
