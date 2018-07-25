@@ -86,6 +86,19 @@ private:
   void PollFreeWait (void *ref);
 
   // called from kernel.
+  static int SemInit (struct DceKernel *kernel, sem_t *sem, int pshared,
+                      unsigned int value);
+  static void SemDestroy (DceKernel *kernel, sem_t *sem);
+  static void SemPost (DceKernel *kernel, sem_t *sem);
+  static void SemWait (DceKernel *kernel, sem_t *sem);
+  static int PthreadMutexInit (DceKernel *kernel, pthread_mutex_t *mutex,
+                               const pthread_mutexattr_t *attribute);
+  static int PthreadMutexDestroy (DceKernel *kernel, pthread_mutex_t *mutex);
+  static int PthreadMutexLock (DceKernel *kernel, pthread_mutex_t *mutex);
+  static int PthreadMutexUnlock (DceKernel *kernel, pthread_mutex_t *mutex);
+  static int PthreadMutexattrSettype (DceKernel *kernel,
+                                      pthread_mutexattr_t *attribute, int kind);
+  static int PthreadMutexattrInit (DceKernel *kernel, pthread_mutexattr_t *attr);
   static int Vprintf (struct DceKernel *kernel, const char *str, va_list args);
   static void * Malloc (struct DceKernel *kernel, unsigned long size);
   static void Free (struct DceKernel *kernel, void *buffer);

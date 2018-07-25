@@ -10,6 +10,8 @@
 #include "file-usage.h"
 #include "dce-unistd.h"
 #include "dce-stdlib.h"
+#include "dce-semaphore.h"
+#include "dce-pthread.h"
 #include "sys/dce-stat.h"
 #include "dce-fcntl.h"
 #include "dce-stdio.h"
@@ -33,6 +35,7 @@
 #include <errno.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
+#include <semaphore.h>
 
 NS_LOG_COMPONENT_DEFINE ("DceKernelSocketFdFactory");
 
@@ -126,6 +129,68 @@ KernelSocketFdFactory::DoDispose (void)
   m_kernelTasks.clear ();
   m_manager = 0;
   m_listeners.clear ();
+}
+
+int
+SemInit (struct DceKernel *kernel, sem_t *sem, int pshared, unsigned int value)
+{
+  return dce_sem_init (sem, pshared, value);
+}
+
+void
+SemDestroy (DceKernel *kernel, sem_t *sem)
+{
+  dce_sem_destroy (sem);
+}
+
+void
+SemPost (DceKernel *kernel, sem_t *sem)
+{
+  dce_sem_post (sem);
+}
+
+void
+SemWait (DceKernel *kernel, sem_t *sem)
+{
+  dce_sem_wait (sem);
+}
+
+int
+PthreadMutexInit (DceKernel *kernel, pthread_mutex_t *mutex,
+                  const pthread_mutexattr_t *attribute)
+{
+  return dce_pthread_mutex_init (mutex, attribute);
+}
+
+int
+PthreadMutexDestroy (DceKernel *kernel, pthread_mutex_t *mutex)
+{
+  return dce_pthread_mutex_destroy (mutex);
+}
+
+int
+PthreadMutexLock (DceKernel *kernel, pthread_mutex_t *mutex)
+{
+  return dce_pthread_mutex_lock (mutex);
+}
+
+int
+PthreadMutexUnlock (DceKernel *kernel, pthread_mutex_t *mutex)
+{
+  return dce_pthread_mutex_unlock (mutex);
+}
+
+int
+PthreadMutexattrSettype (DceKernel *kernel,
+                         pthread_mutexattr_t *attribute, int kind)
+{
+  return dce_pthread_mutexattr_settype (attribute, kind);
+}
+
+int
+PthreadMutexattrInit (DceKernel *kernel, pthread_mutexattr_t *attribute)
+{
+  return pthread_mutexattr_init (attribute);
 }
 
 int
@@ -265,7 +330,7 @@ KernelSocketFdFactory::Random (struct DceKernel *kernel)
 void
 KernelSocketFdFactory::Panic (struct DceKernel *kernel)
 {
-  NS_LOG_FUNCTION (kernel << function)
+  NS_LOG_FUNCTION (kernel << function);
   KernelSocketFdFactory *self = (KernelSocketFdFactory) *kernel;
   ptr<DceManager> manager = self->GetObject<DceManager> ();
   ptr<Node> node = GetObject <Node> ();
@@ -582,6 +647,16 @@ KernelSocketFdFactory::InitializeStack (void)
     }
   m_kernelHandle = new struct KernelHandle ();
   struct DceHandle dceHandle;
+  dceHandle.sem_init = &KernelSocketFdFactory::SemInit;
+  dceHandle.sem_destroy = &KernelSocketFdFactory::SemDestroy;
+  dceHandle.sem_post = &KernelSocketFdFactory::SemPost;
+  dceHandle.sem_wait = &KernelSocketFdFactory::SemWait;
+  dceHandle.pthread_mutex_init = &KernelSocketFdFactory::PthreadMutexInit;
+  dceHandle.pthread_mutex_destroy = &KernelSocketFdFactory::PthreadMutexDestroy;
+  dceHandle.pthread_mutex_lock = &KernelSocketFdFactory::PthreadMutexLock
+  dceHandle.pthread_mutex_unlock = &KernelSocketFdFactory::PthreadMutexUnlock;
+  dceHandle.pthread_mutexattr_settype = &KernelSocketFdFactory::PthreadMutexattrSettype;
+  dceHandle.pthread_mutexattr_init = &KernelSocketFdFactory::PthreadMutexattrInit;
   dceHandle.vprintf = &KernelSocketFdFactory::Vprintf;
   dceHandle.malloc = &KernelSocketFdFactory::Malloc;
   dceHandle.free = &KernelSocketFdFactory::Free;
