@@ -3,7 +3,7 @@
 #include "loader-factory.h"
 #include "kernel-socket-fd.h"
 #include "utils.h"
-#include "include/sim-init.h"
+#include "dce_init.h"
 #include "ns3/log.h"
 #include "ns3/string.h"
 #include "ns3/simulator.h"
@@ -93,7 +93,7 @@ FreeBSDSocketFdFactory::GetSysFileList (void)
   iter.head.report_file = &MyIterator::ReportFile;
 #ifdef FIXME
   m_loader->NotifyStartExecute ();
-  m_exported->sys_iterate_files ((struct SimSysIterator *)&iter);
+  m_kernelHandle->sys_iterate_files ((struct SimSysIterator *)&iter);
   m_loader->NotifyEndExecute ();
 #endif
   return iter.m_list;
@@ -111,7 +111,7 @@ FreeBSDSocketFdFactory::SetTask (std::string path, std::string value)
           const char *s = value.c_str ();
           int toWrite = value.size ();
           int written;
-          written = m_exported->sys_file_write (files[i].second, s, toWrite, 0);
+          written = m_kernelHandle->sys_file_write (files[i].second, s, toWrite, 0);
           break;
         }
     }
@@ -142,7 +142,7 @@ FreeBSDSocketFdFactory::Get (std::string path)
         {
           char buffer[512];
           memset (buffer, 0, sizeof(buffer));
-          m_exported->sys_file_read (files[i].second, buffer, sizeof(buffer), 0);
+          m_kernelHandle->sys_file_read (files[i].second, buffer, sizeof(buffer), 0);
           NS_LOG_FUNCTION ("sysctl read: " << buffer);
           ret = std::string (buffer);
           break;

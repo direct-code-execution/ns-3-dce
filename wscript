@@ -137,8 +137,8 @@ def configure(conf):
             Logs.error( "\"%s\" is not a directory: please fix your --enable-kernel-stack parameter." % (Options.options.kernel_stack))
             raise SystemExit(1)
 
-        # look for kernel dir from 1) {KERNEL_DIR}/sim, then 2) {KERNEL_DIR}/lib.
-        architectures = ["sim", "lib"]
+        # look for kernel dir from 1) {KERNEL_DIR}/lkl, 2) {KERNEL_DIR}/sim, then 3) {KERNEL_DIR}/lib.
+        architectures = ["lkl", "sim", "lib"]
         kernel_stack_dir = None
         for dir in architectures:
             dir = os.path.join(Options.options.kernel_stack, dir)
@@ -150,8 +150,13 @@ def configure(conf):
             Logs.error("Could not find any of the [%s] architecture. Make sure you use the net-next-sim kernel or fix your --enabled-kernel-stack parameter" % ','.join(architectures))
             raise SystemExit(1)
 
-        conf.check(header_name='sim.h',
-                   includes=os.path.join(kernel_stack_dir, 'include'))
+        # add include dir to KERNEL_DIR if architecture is lkl.
+        # This will help DCE to locate dce_init.h and lkl.h
+        if (kernel_stack_dir == Options.options.kernel_stack+architectures[0]):
+            kernel_stack_dir = os.path.join(kernel_stack_dir, "include")
+        else:
+            conf.check(header_name='sim.h',
+                       includes=os.path.join(kernel_stack_dir, 'include'))
         conf.env['KERNEL_STACK'] = kernel_stack_dir
         conf.env.append_value ('DEFINES', 'KERNEL_STACK=Y')
 

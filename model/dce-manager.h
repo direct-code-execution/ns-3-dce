@@ -125,6 +125,7 @@ public:
   void SuspendTemporaryTask (uint16_t pid);
   struct Process* CreateProcess (std::string name, std::string stdinfilename, std::vector<std::string> args,
                                  std::vector<std::pair<std::string,std::string> > envs, int pid);
+  void Panic ();
 
 private:
   // inherited from Object.

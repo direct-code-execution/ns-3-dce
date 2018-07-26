@@ -5,7 +5,7 @@
 #include "ns3/ptr.h"
 
 extern "C" {
-struct SimSocket;
+struct DceSocket;
 }
 
 namespace ns3 {
@@ -17,7 +17,7 @@ class Waiter;
 class KernelSocketFd : public UnixFd
 {
 public:
-  KernelSocketFd (Ptr<KernelSocketFdFactory> factory, struct SimSocket *socket);
+  KernelSocketFd (Ptr<KernelSocketFdFactory> factory, struct DceSocket *socket);
   virtual ~KernelSocketFd ();
 
   virtual int Close (void);
@@ -59,7 +59,7 @@ public:
 
 private:
   Ptr<KernelSocketFdFactory> m_factory;
-  struct SimSocket *m_socket;
+  struct DceSocket *m_socket;
   int m_statusFlags;
 };
 
