@@ -31,7 +31,7 @@ do_steps: &do_steps
         if [ -z "${BAKE_MOD_VERSION}" ] ; then export BAKE_MOD_VERSION="dev" ; fi
 
         # we clone a fork of bake
-        cd "$HOME" && git clone -b ${BAKE_BRANCH} git://github.com/direct-code-execution/bake ./bake
+        cd "$HOME" && git clone -b ${BAKE_BRANCH} git://github.com/nsnam/bake-git ./bake
         cd "$HOME" && ./bake/bake.py configure -e dce-umip-${BAKE_MOD_VERSION} -e dce-linux-${BAKE_MOD_VERSION}
         cd "$HOME" && ./bake/bake.py download -vvv && ./bake/bake.py update -vvv
 
