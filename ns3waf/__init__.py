@@ -143,7 +143,7 @@ def _check_win32(conf):
                 env['WL_SONAME_SUPPORTED'] = True
 
 
-ns3_versions = ['3-dev', '3.26', '3.25', '3.24', '3.23', '3.22', '3.21', '3.20', '3.19', '3.18', '3.17']
+ns3_versions = ['3-dev', '3.28', '3.27', '3.26', '3.25', '3.24', '3.23', '3.22', '3.21', '3.20', '3.19', '3.18', '3.17']
 def _check_dependencies(conf, required, mandatory):
     found = []
     match_pkg = None
@@ -161,6 +161,10 @@ def _check_dependencies(conf, required, mandatory):
                 if match_pkg:
                     match_pkg = os.path.splitext(match_pkg)[0]
                 break
+        if match_pkg == 'None':
+           print("Error: your ns-3 version number is not found among the supported ns3_versions: %s" % ns3_versions)
+           print("Try updating the ns3_versions variable found in ns3waf/__init__.py")
+           print("or else point the --with-ns3 configuration target to a supported version")
 
         lib = re.search("(ns[0-9][\.\-][dev0-9\.]+)", match_pkg)
         lib = lib.group(0) if lib else 'None'
