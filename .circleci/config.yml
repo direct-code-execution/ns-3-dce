@@ -33,7 +33,7 @@ do_steps: &do_steps
         # we clone a fork of bake
         cd "$HOME" && git clone -b ${BAKE_BRANCH} git://github.com/nsnam/bake-git ./bake
         cd "$HOME" && ./bake/bake.py configure -e dce-umip-${BAKE_MOD_VERSION} -e dce-linux-${BAKE_MOD_VERSION}
-        cd "$HOME" && ./bake/bake.py download -vvv && ./bake/bake.py update -vvv
+        cd "$HOME" && ./bake/bake.py download -vvv
 
   - save_cache:
       key: code-tree-shallow-{{ epoch }}
