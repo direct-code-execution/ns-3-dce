@@ -162,7 +162,7 @@ def _check_dependencies(conf, required, mandatory):
                     match_pkg = os.path.splitext(match_pkg)[0]
                 break
         if match_pkg == 'None':
-           print("Error: your ns-3 version number is not found among the supported ns3_versions: %s" % ns3_versions)
+           print("Error: Your version of ns-3 module ns3-%s is not found among the supported ns3_versions: %s" % (module, ns3_versions))
            print("Try updating the ns3_versions variable found in ns3waf/__init__.py")
            print("or else point the --with-ns3 configuration target to a supported version")
 
