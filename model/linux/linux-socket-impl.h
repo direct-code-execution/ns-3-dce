@@ -90,6 +90,7 @@ public:
   Ns3ToPosixConverter m_ns3toposix;
   PosixToNs3Converter m_posixtons3;
 
+  int Ioctl(unsigned long request, char *result_buffer);
 private:
   // Attributes set through UdpSocket base class
   virtual void SetRcvBufSize (uint32_t size);
