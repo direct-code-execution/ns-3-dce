@@ -543,6 +543,17 @@ LinuxSocketImpl::Getsockopt (int level, int optname,
   return ret;
 }
 
+int
+LinuxSocketImpl::Ioctl (unsigned long request, char* result_buffer)
+{
+  NS_LOG_FUNCTION (request << result_buffer);
+  uint16_t pid = EnterFakeTask ();
+  int ret = this->m_kernsock->Ioctl (request, result_buffer);
+  NS_LOG_INFO ("Ioctl returns " << ret << " errno " << Current ()->err);
+  LeaveFakeTask (pid);
+  return ret;
+}
+
 void
 LinuxSocketImpl::Poll ()
 {
