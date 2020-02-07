@@ -148,11 +148,11 @@ def build_ns3_libname(version, module, profile):
 def _check_dependencies(conf, required, mandatory):
     found = []
     libcore = build_ns3_libname("*", "core", conf.env['LIB_SUFFIX'])
+    ns3_dir_pkgconfig = conf.env['NS3_DIR'] + '/lib/pkgconfig'
+
     if not 'NS3_VERSION' in conf.env:
 
-        pc_path_pattern = conf.env['NS3_DIR'] + '/lib/pkgconfig/' + libcore + ".pc"
-        pcfiles = glob.glob(pc_path_pattern)
-
+        pcfiles = glob.glob(ns3_dir_pkgconfig + '/' + libcore + ".pc")
         if len(pcfiles) > 1:
             Logs.errors("Too many candidates, DCE should only see one ns-3 version.")
             return
@@ -177,7 +177,9 @@ def _check_dependencies(conf, required, mandatory):
             args='--cflags --libs' + (' --static' if conf.env['NS3_ENABLE_STATIC'] else ''),
             mandatory=mandatory,
             msg="Checking for %s (%s)" % (libname, "mandatory" if mandatory else "optional"),
-            uselib_store='NS3_%s' % module.upper())
+            uselib_store='NS3_%s' % module.upper(),
+            pkg_config_path=":".join([os.environ.get("PKG_CONFIG_PATH"), ns3_dir_pkgconfig])
+            )
 
         if retval is not None:
             # XXX pkg-config doesn't give the proper order of whole-archive option..
