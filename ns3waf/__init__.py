@@ -143,7 +143,7 @@ def _check_win32(conf):
                 env['WL_SONAME_SUPPORTED'] = True
 
 def build_ns3_libname(version, module, profile):
-    return f"lib{version}-{module}-{profile}"
+    return "lib{}-{}-{}".format(version, module, profile)
 
 def _check_dependencies(conf, required, mandatory):
     found = []
