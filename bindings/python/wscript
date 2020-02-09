@@ -18,7 +18,18 @@ from waflib.Errors import WafError
 REQUIRED_PYBINDGEN_VERSION = '0.17.0.post41+ngd10fa60'
 REQUIRED_PYGCCXML_VERSION = (0, 9, 5)
 
-
+# return types of some APIs differ in Python 2/3 (type string vs class bytes)
+# This method will decode('utf-8') a byte object in Python 3,
+# and do nothing in Python 2
+def maybe_decode(input):
+    if sys.version_info < (3,):
+        return input
+    else:
+        try:
+            return input.decode('utf-8')
+        except:
+            sys.exc_clear()
+            return input
 
 def add_to_python_path(path):
     if os.environ.get('PYTHONPATH', ''):
@@ -179,7 +190,7 @@ def configure(conf):
                                 "import pybindgen.version; "
                                 "print(pybindgen.__version__)"],
                                 stdout=subprocess.PIPE).communicate()[0]
-        pybindgen_version = out.strip()
+        pybindgen_version = maybe_decode(out.strip())
         conf.msg('Checking for pybindgen version', pybindgen_version)
         if not (pybindgen_version >= REQUIRED_PYBINDGEN_VERSION):
             Logs.warn("pybindgen (found %r), (need %r)" %
@@ -266,10 +277,15 @@ int main ()
                                      "Missing 'pygccxml' Python module")
         return
 
-    out = subprocess.Popen([conf.env['PYTHON'][0], "-c",
-                            "import pygccxml; print pygccxml.__version__"],
-                            stdout=subprocess.PIPE).communicate()[0]
-    pygccxml_version_str = out.strip()
+    try:
+        import pygccxml as pygccxml_imported
+        pygccxml_version_str = pygccxml_imported.__version__
+    except (ImportError, AttributeError):
+        Logs.warn("pygccxml version cannot be determined")
+        conf.report_optional_feature("castxml", "Python API Scanning Support", False,
+                                     "pygccxml Python module version is unknown")
+        return
+
     # Bug 2160:  pygccxml versions > 1.0.0 prepend a 'v' to version number
     pygccxml_version_str = pygccxml_version_str.lstrip('v')
     pygccxml_version = tuple([int(x) for x in pygccxml_version_str.split('.')])
@@ -282,7 +298,6 @@ int main ()
         ns3waf._report_optional_feature(conf, "pygccxml", "Python API Scanning Support", False,
                                      "pygccxml too old")
         return
-    
 
     ## Check gccxml version
     try:
