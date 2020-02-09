@@ -26,11 +26,11 @@ def options(opt):
     opt.add_option('--enable-opt',
                    help=('Enable use of DCE and NS-3 optimized compilation'),
                    dest='enable_opt', action='store_true',
-                   default=False)    
+                   default=False)
     opt.add_option('--with-ns3',
                    help=('Specify the installed directory of ns-3-dev'),
                    dest='with_ns3', type='string',
-                   default=None)    
+                   default=None)
     opt.add_option('--with-elf-loader',
                    help=('Specify the installed directory of elf-loader'),
                    dest='with_elf_loader', type='string',
@@ -69,12 +69,21 @@ def options(opt):
                    action="store_true", default=False,
                    dest='valgrind')
     opt.recurse('bindings/python')
-                                  
+
 def search_file(files):
     for f in files:
         if os.path.isfile (f):
             return f
     return None
+
+# starting with waf 1.6, conf.check() becomes fatal by default if the
+# test fails, this alternative method makes the test non-fatal, as it
+# was in waf <= 1.5
+def _check_nonfatal(conf, *args, **kwargs):
+    try:
+        return conf.check(*args, **kwargs)
+    except conf.errors.ConfigurationError:
+        return None
 
 def configure(conf):
 
@@ -83,6 +92,9 @@ def configure(conf):
     cc_string = '.'.join(conf.env['CC_VERSION'])
     conf.msg('Checking for cc version',cc_string,'GREEN')
     conf.load('compiler_cxx')
+    conf.check_nonfatal = types.MethodType(_check_nonfatal, conf)
+    conf.check_compilation_flag = types.MethodType(_check_compilation_flag, conf)
+    conf.report_optional_feature = types.MethodType(report_optional_feature, conf)
 
     conf.load('clang_compilation_database', tooldir=['waf-tools'])
 
@@ -140,10 +152,10 @@ def configure(conf):
         # look for kernel dir from 1) {KERNEL_DIR}/sim, then 2) {KERNEL_DIR}/lib.
         architectures = ["sim", "lib"]
         kernel_stack_dir = None
-        for dir in architectures:
-            dir = os.path.join(Options.options.kernel_stack, dir)
-            if os.path.isdir(dir):
-                kernel_stack_dir = dir 
+        for subdir in architectures:
+            subdir = os.path.join(Options.options.kernel_stack, subdir)
+            if os.path.isdir(subdir):
+                kernel_stack_dir = subdir
                 break
 
         if not kernel_stack_dir:
@@ -202,7 +214,7 @@ def configure(conf):
         pass
 
     # sctp-tools check
-    have_sctp_tools = conf.check(header_name='netinet/sctp.h', 
+    have_sctp_tools = conf.check(header_name='netinet/sctp.h',
                                 define_name='HAVE_SCTP_H', mandatory=False)
     conf.env['SCTP_TOOLS_FOUND'] = True
     if have_sctp_tools is None:
@@ -228,7 +240,7 @@ def build_netlink(bld):
         'netlink/netlink-socket-factory.h',
         'netlink/netlink-socket-address.h',
         ]
-    module = ns3waf.create_module(bld, 
+    module = ns3waf.create_module(bld,
                                   name='netlink',
                                   needed = ['internet', 'core'],
                                   source=module_source,
@@ -254,26 +266,26 @@ def dce_kw(**kw):
 
 def build_dce_tests(module, bld):
     tests_source = [
-        'test/dce-manager-test.cc', 
-        ]
+        'test/dce-manager-test.cc',
+    ]
     if bld.env['KERNEL_STACK']:
         tests_source += [
             'test/dce-cradle-test.cc',
             'test/dce-mptcp-test.cc',
-            ]
+        ]
 
-    for dir in os.listdir('test/addons'):
-        if dir.startswith('.') or dir == 'CVS':
+    for subdir in os.listdir('test/addons'):
+        if subdir.startswith('.') or subdir == 'CVS':
             continue
-        elif dir.endswith(".cc"):
-            tests_source += ["test/addons/" + dir]
+        elif subdir.endswith(".cc"):
+            tests_source += ["test/addons/" + subdir]
 
     module.add_runner_test(needed=['core', 'dce', 'internet', 'applications'],
                            source=tests_source)
 
-    module.add_test(features='cxx cxxshlib', source=['test/test-macros.cc'], 
+    module.add_test(features='cxx cxxshlib', source=['test/test-macros.cc'],
                     target='lib/test', linkflags=['-Wl,-soname=libtest.so'])
-    bld.install_files('${PREFIX}/lib', 'lib/libtest.so', chmod=0755 )
+    bld.install_files('${PREFIX}/lib', 'lib/libtest.so', chmod=Utils.O755 )
 
     tests = [['test-empty', []],
              ['test-sleep', []],
@@ -319,7 +331,7 @@ def build_dce_tests(module, bld):
     for name,uselib in tests:
         module.add_test(**dce_kw(target='bin_dce/' + name, source = ['test/' + name + '.cc'],
                                  use = uselib + ['lib/test']))
-        bld.install_files('${PREFIX}/bin_dce', 'build/bin_dce/' + name , chmod=0755 )
+        bld.install_files('${PREFIX}/bin_dce', 'build/bin_dce/' + name , chmod=Utils.O755 )
 
 def build_dce_examples(module, bld):
     dce_examples = [['udp-server', []],
@@ -348,7 +360,7 @@ def build_dce_examples(module, bld):
         module.add_example(**dce_kw(target = 'bin_dce/' + name, 
                                     source = ['example/' + name + '.cc'],
                                     lib = lib))
-        bld.install_files('${PREFIX}/bin_dce', 'bin_dce/' + name , chmod=0755 )        
+        bld.install_files('${PREFIX}/bin_dce', 'bin_dce/' + name , chmod=Utils.O755 )        
 
     module.add_example(needed = ['core', 'internet', 'dce'], 
                        target='bin/dce-tcp-simple',
@@ -432,20 +444,20 @@ def build_dce_kernel_examples(module, bld):
                        target='bin/dce-linux',
                        source=['example/dce-linux.cc'])
 
-    module.add_example(needed = ['core', 'network', 'dce', 'csma'], 
+    module.add_example(needed = ['core', 'network', 'dce', 'csma'],
                        target='bin/dce-dccp',
                        source=['example/dce-dccp.cc'])
-    
-    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
+
+    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'],
                        target='bin/dce-ccnd-udp-2-nodes',
                        source=['example/ccnx/dce-ccnd-udp-2-nodes.cc', 'example/ccnx/misc-tools.cc'])
 
-    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'], 
+    module.add_example(needed = ['core', 'internet', 'dce', 'point-to-point', 'netanim'],
                        target='bin/dce-ccnd-linear-multiple',
                        source=['example/ccnx/dce-ccnd-linear-multiple.cc', 'example/ccnx/misc-tools.cc'])
-                       
 
-    module.add_example(needed = ['core', 'network', 'dce', 'point-to-point'], 
+
+    module.add_example(needed = ['core', 'network', 'dce', 'point-to-point'],
                        target='bin/dce-xfrm',
                        source=['example/dce-xfrm.cc'])
 
@@ -507,7 +519,7 @@ def build_dce_kernel_examples(module, bld):
                        source=['example/dce-freebsd.cc'])
 
 
-# Add a script to build system 
+# Add a script to build system
 def build_a_script(bld, name, needed = [], **kw):
     external = [i for i in needed if not i == name]
     if not ns3waf.modules_found(bld, external):
@@ -566,11 +578,11 @@ def add_myscripts(bld):
 
 # Configure directories under myscripts dir
 def conf_myscripts(conf):
-    for dir in os.listdir('myscripts'):
-        if dir.startswith('.') or dir == 'CVS':
+    for folder in os.listdir('myscripts'):
+        if folder.startswith('.') or folder == 'CVS':
             continue
-        if os.path.isdir(os.path.join('myscripts', dir)):
-             conf.recurse(os.path.join('myscripts', dir))
+        if os.path.isdir(os.path.join('myscripts', folder)):
+             conf.recurse(os.path.join('myscripts', folder))
 
 	
 def _get_all_task_gen(self):
@@ -578,7 +590,7 @@ def _get_all_task_gen(self):
         for taskgen in group:
             yield taskgen
 
-def build(bld):    
+def build(bld):
     bld.env['NS3_MODULES_WITH_TEST_LIBRARIES'] = []
     bld.env['NS3_ENABLED_MODULE_TEST_LIBRARIES'] = []
     bld.env['NS3_SCRIPT_DEPENDENCIES'] = []
@@ -722,7 +734,7 @@ def build(bld):
         'model/linux/ipv4-linux.h',
         'model/linux/ipv6-linux.h',
         'model/freebsd/ipv4-freebsd.h',
-        'model/process-delay-model.h',        
+        'model/process-delay-model.h',
         'model/exec-utils.h',
         'model/utils.h',
         'model/linux/linux-ipv4-raw-socket-factory.h',
@@ -763,7 +775,7 @@ def build(bld):
     build_dce_examples(module, bld)
 
     # no idea to solve this two-way dependency (dce <-> netlink)
-    module.add_runner_test(needed = ['internet', 'point-to-point', 'core', 'dce'], 
+    module.add_runner_test(needed = ['internet', 'point-to-point', 'core', 'dce'],
                            use=uselib,
                            includes=['netlink'],
                            source=['test/netlink-socket-test.cc'],
@@ -788,8 +800,8 @@ def build(bld):
 
 
     bld.add_group('dce_version_files')
-    
-    bld.program(source='utils/dcemakeversion.c', 
+
+    bld.program(source='utils/dcemakeversion.c',
                 name='dcemakeversion',
                 target='dcemakeversion', cflags = [ '-g'], linkflags    = ['-lpthread', '-lrt', '-lm', '-ldl'])
 
@@ -882,7 +894,7 @@ def build(bld):
         for gen in bld.all_task_gen:
             if type(gen).__name__ in ['task_gen', 'ns3header_taskgen', 'ns3moduleheader_taskgen']:
                 gen.post()
-        bld.env['PRINT_BUILT_MODULES_AT_END'] = False 
+        bld.env['PRINT_BUILT_MODULES_AT_END'] = False
 
 
 
@@ -897,7 +909,7 @@ def _doxygen(bld):
 
     # try:
     #     program_obj = wutils.find_program('print-introspected-doxygen', env)
-    # except ValueError: 
+    # except ValueError:
     #     Logs.warn("print-introspected-doxygen does not exist")
     #     raise SystemExit(1)
     #     return
@@ -937,10 +949,10 @@ class Ns3ShellContext(Context.Context):
     def execute(self):
 
         # first we execute the build
-	bld = Context.create_context("build")
-	bld.options = Options.options # provided for convenience
-	bld.cmd = "build"
-	bld.execute()
+        bld = Context.create_context("build")
+        bld.options = Options.options # provided for convenience
+        bld.cmd = "build"
+        bld.execute()
 
         # Set this so that the lists won't be printed when the user
         # exits the shell.
@@ -958,26 +970,76 @@ class Ns3ShellContext(Context.Context):
             }
         wutils.run_argv([shell], env, os_env)
 
+
+def _check_compilation_flag(conf, flag, mode='cxx', linkflags=None):
+    """
+    Checks if the C++ compiler accepts a certain compilation flag or flags
+    flag: can be a string or a list of strings
+    """
+    l = []
+    if flag:
+        l.append(flag)
+    if isinstance(linkflags, list):
+        l.extend(linkflags)
+    else:
+        if linkflags:
+            l.append(linkflags)
+    if len(l) > 1:
+        flag_str = 'flags ' + ' '.join(l)
+    else:
+        flag_str = 'flag ' + ' '.join(l)
+    if len(flag_str) > 28:
+        flag_str = flag_str[:28] + "..."
+
+    conf.start_msg('Checking for compilation %s support' % (flag_str,))
+    env = conf.env.derive()
+
+    retval = False
+    if mode == 'cc':
+        mode = 'c'
+
+    if mode == 'cxx':
+        env.append_value('CXXFLAGS', flag)
+    else:
+        env.append_value('CFLAGS', flag)
+
+    if linkflags is not None:
+        env.append_value("LINKFLAGS", linkflags)
+
+    try:
+        retval = conf.check(compiler=mode, fragment='int main() { return 0; }', features='c', env=env)
+    except Errors.ConfigurationError:
+        ok = False
+    else:
+        ok = (retval == True)
+    conf.end_msg(ok)
+    return ok
+
+
+def report_optional_feature(conf, name, caption, was_enabled, reason_not_enabled):
+    conf.env.append_value('NS3_OPTIONAL_FEATURES', [(name, caption, was_enabled, reason_not_enabled)])
+
+
 class Ns3DoxygenContext(Context.Context):
     """do a full build, generate the introspected doxygen and then the doxygen"""
     cmd = 'doxygen'
     def execute(self):
         # first we execute the build
-	bld = Context.create_context("build")
-	bld.options = Options.options # provided for convenience
-	bld.cmd = "build"
-	bld.execute()
+        bld = Context.create_context("build")
+        bld.options = Options.options # provided for convenience
+        bld.cmd = "build"
+        bld.execute()
         _doxygen(bld)
 
 from waflib import Context, Build
 class Ns3SphinxContext(Context.Context):
     """build the Sphinx documentation: manual, tutorial, models"""
-    
+
     cmd = 'sphinx'
 
     def sphinx_build(self, path):
-        print
-        print "[waf] Building sphinx docs for " + path
+        print()
+        print("[waf] Building sphinx docs for " + path)
         if path == './doc':
             dir_opt = "BUILDDIR=" + os.getcwd () + "/doc/build/"
         else:

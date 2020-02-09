@@ -2,19 +2,19 @@
 import os
 
 def configure(conf):
-	conf.load('compiler_c')
-	conf.load('compiler_cxx')
+        conf.load('compiler_c')
+        conf.load('compiler_cxx')
 
 def build(bld):
-	if bld.env['ELF_LOADER_PATH']:
-	   linkerpath = os.path.abspath (bld.env['ELF_LOADER_PATH'] + '/ldso')
+        if bld.env['ELF_LOADER_PATH']:
+           linkerpath = os.path.abspath (bld.env['ELF_LOADER_PATH'] + '/ldso')
            target='../bin/dce-runner'
            bld.program(source='dce-runner.c', 
                        target=target,
                        cflags = [ '-fPIC'], 
                        linkflags = ['-pie','-ldl','-Wl,--dynamic-linker=' + linkerpath ],
                        is_ns3_program = True)
-           bld.install_files(os.path.join('${PREFIX}', 'bin'), [target], chmod=0755)
+           bld.install_files(os.path.join('${PREFIX}', 'bin'), [target], chmod=0o755)
            bld.env.append_value('NS3_RUNNABLE_PROGRAMS', 'dce-runner')
 
 
