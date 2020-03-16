@@ -6,11 +6,19 @@ Introduction
 Overview
 ********
 
-Direct Code Execution (DCE) is a module for `ns-3 <http://www.nsnam.org/>`_ that provides facilities to execute, within |ns3|, existing implementations of userspace and kernelspace network protocols or applications without source code changes. For example instead of using the pseudo application provided by |ns3| **V4PingHelper** you can use the true **ping**.
+Direct Code Execution (DCE) is a module for `ns-3 <https://www.nsnam.org/>`_ that provides facilities to execute, within |ns3|, existing implementations of userspace and kernelspace network protocols or applications without source code changes. For example instead of using the pseudo application provided by |ns3| **V4PingHelper** you can use the true **ping**.
+
+If you wish to cite DCE in your academic work, please reference `this paper <https://dl.acm.org/doi/abs/10.1145/2535372.2535374>`_.
+
+.. _maintainers:
+
+Maintainers
+***********
+
+DCE is maintained by `Hajime Tazaki <https://github.com/thehajime>`_ and `Matthieu Coudron <https://github.com/teto>`_.  
 
 Manual Structure
 ****************
-
 
 This document consists of the following parts:
 
@@ -23,7 +31,7 @@ This document consists of the following parts:
 DCE Outlook
 ***********
 
-- To run an application using DCE, it is **not** necessary to **change** its sources. However you will need to **recompile** them.
+- To run an application using DCE, it is usually **not** necessary to **change** its sources. However you will need to **recompile** them.
 - The simulation is executed wholly within a **single process** which greatly facilitates the **debugging**.
 - DCE is very **memory-efficient**, thanks to the way it loads the executables similarly to shared libraries.
 
@@ -66,17 +74,15 @@ Tested Applications
 Tested Environment
 ******************
 
-Currently, DCE only supports Linux-based operating system.
+Currently, DCE only supports Linux-based operating systems.
 DCE has been tested on the following distributions:
 
-- Ubuntu 10.04 64bit
-- Ubuntu 12.04 32bit/64bit
-- Ubuntu 12.10 64bit
-- Ubuntu 13.04 64bit
-- Ubuntu 13.10 64bit (new)
-- Fedora 18 32bit
-- CentOS 6.2 64bit
+- Ubuntu 16.04 and equivalents (gcc-5.4, libc-2.23)
 
-but you can try on the others (e.g., CentOS, RHEL).
-If you got run on another distribution, please let us know.
+but you can try on others (e.g., CentOS, RHEL).  However, unfortunately
+only a narrow range of older Linux systems work with DCE (gcc-5-based
+systems such as Ubuntu 16.04).
 
+If you find that you can run on another distribution, please let the
+:ref:`maintainers` know.  Also, if you would like to work on getting DCE to 
+work on newer systems, please let the :ref:`maintainers` know.
