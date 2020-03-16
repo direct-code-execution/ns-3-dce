@@ -28,29 +28,37 @@ DCE offers two major modes of operation:
 Building DCE basic mode
 +++++++++++++++++++++++
 
-First you need to download Bake using Mercurial and set some variables:
+First you need to download Bake using Git and set some environment variables:
 
 .. code-block:: sh
 
-  hg clone http://code.nsnam.org/bake bake
-  export BAKE_HOME=`pwd`/bake
-  export PATH=$PATH:$BAKE_HOME
-  export PYTHONPATH=$PYTHONPATH:$BAKE_HOME
+  git clone https://gitlab.com/nsnam/bake.git
+  cd bake
+  export PATH=$PATH:`pwd`/build/bin:`pwd`/build/bin_dce
+  export PYTHONPATH=$PYTHONPATH:`pwd`/build/lib
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`pwd`/build/lib
 
 
-then you must to create a directory for DCE and install it using bake:
+then you can install it using bake:
 
 .. code-block:: sh
 
-   mkdir dce
-   cd dce
    bake.py configure -e dce-ns3-$version
+   bake.py check
+   bake.py show
+
+The check and show commands show you missing packages needed by the configured
+module.  Please use your package manager to install missing ones, and then
+proceed with:
+
+.. code-block:: sh
+
    bake.py download
    bake.py build
  
-note that dce-ns3-$version is the DCE module with a version number. If you would like to use the development version of DCE module, you can specify **dce-ns3-dev** as a module name for bake.
+Note that dce-ns3-$version is the DCE module with a version number. If you would like to use the development version of DCE module, you can specify **dce-ns3-dev** as a module name for bake.  As of March 2020, this (dev version) is recommended.
 
-the output should look likes this:
+the output should look something like this:
 
 .. code-block:: none
 
@@ -82,13 +90,13 @@ The difference to build the advanced mode is the different module name *dce-linu
     :caption: Installation of DCE via `bake`
     :linenos:
 
-    mkdir dce
-    cd dce
     bake.py configure -e dce-linux-$version
+    bake.py check
+    bake.py show 
     bake.py download
     bake.py build
 
-note that dce-linux-$version is the DCE module with a version number. If you would like to use the development version of DCE module, you can specify **dce-linux-dev** as a module name for bake.
+Note that dce-linux-$version is the DCE module with a version number. If you would like to use the development version of DCE module, you can specify **dce-linux-dev** as a module name for bake.
 
 
 Building DCE using WAF
@@ -102,29 +110,23 @@ framework, and called by the *waf* executable.
 In this case you need to install the single packages one by one. You may want to start with *ns-3*:
 
 
-
-
-* HG_NS3= |hg_ns3| 
 * GIT_NS3= |git_ns3|
 * LAST_VERSION= |ns3_tag|
-
 
 
 .. code-block:: sh
     :caption: ns-3 installation
     :linenos:
-    :emphasize-lines: 10,12,13
 
+    export HOME=`pwd`
+    mkdir dce
+    cd dce
     # Download pybindgen (optional)
-    bzr clone  https://launchpad.net/pybindgen
+    git clone https://github.com/gjcarneiro/pybindgen.git
     cd pybindgen
-    ./waf configure --prefix=$HOME/dce/build
-    ./waf
-    ./waf install
+    python3 setup.py install
 
     # Download ns-3
-    # Mercurial instructions
-    # hg clone HG_NS3
     # git instructions
     git clone GIT_NS3
     git checkout LAST_VERSION
@@ -137,30 +139,31 @@ In this case you need to install the single packages one by one. You may want to
     ./waf build
     ./waf install
 
-More detailed information can be found on the `ns-3 wiki <https://www.nsnam.org/wiki/Installation>`_.
+More detailed information on installation requirements can be found on the `ns-3 wiki <https://www.nsnam.org/wiki/Installation>`_.
  
  
-Then you can download and install *net-next-sim* and DCE (*net-next-sim* includes the linux stack module):
+Then you can download and install *net-next-nuse and DCE (*net-next-nuse* includes the linux stack module):
  
+* GIT_DCE= |git_dce|
+
 .. code-block:: sh
     :caption: Kernel and DCE installation 
     :linenos:
 
-    # Clone net-next-sim
-    git clone https://github.com/thehajime/net-next-sim.git
-    cd net-next-sim
+    # Clone net-next-nuse
+    git clone https://github.com/libos-nuse/net-next-nuse.git
+    cd net-next-nuse
     # Select a kernel version
-    git checkout sim-ns3-3.10.0-branch
+    git checkout libos-v4.4
     # Configure and build
     make defconfig OPT=yes ARCH=sim
     make library OPT=yes ARCH=sim
     cd ..
 
     # Download, configure, build and install DCE
-    hg clone hg_dce_
-    # or git clone :ref:`git_dce`_
+    git clone GIT_DCE
     ./waf configure --with-ns3=$HOME/dce/build --enable-opt \
-                    --enable-kernel-stack=$HOME/dce/net-next-sim/arch \
+                    --enable-kernel-stack=$HOME/dce/net-next-nuse/arch \
                     --prefix=$HOME/dce/install
     ./waf build
     ./waf install
@@ -168,7 +171,7 @@ Then you can download and install *net-next-sim* and DCE (*net-next-sim* include
 
 Examples
 ********
-If you got succeed to build DCE, you can try an example script which is already included in DCE package.
+If you succeeded to build DCE, you can try an example script which is already included in DCE package.
   
 Example: Simple UDP socket application
 ++++++++++++++++++++++++++++++++++++++
