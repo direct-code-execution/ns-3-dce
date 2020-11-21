@@ -108,7 +108,7 @@ int main (int argc, char *argv[])
 
   WifiHelper wifi;
   WifiMacHelper mac;
-  YansWifiPhyHelper phy = YansWifiPhyHelper::Default ();
+  YansWifiPhyHelper phy;
   YansWifiChannelHelper phyChannel = YansWifiChannelHelper::Default ();
   wifi.SetRemoteStationManager ("ns3::ArfWifiManager");
 

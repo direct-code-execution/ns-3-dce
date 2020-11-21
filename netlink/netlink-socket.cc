@@ -837,7 +837,7 @@ NetlinkSocket::BuildInterfaceAddressDumpMessages (uint32_t received_seq)
           uint8_t mask_len = prefix.GetPrefixLength ();
 
           //loopback address's prefix is wrong... FIXME
-          if (addri.IsEqual (Ipv6Address::GetLoopback ()))
+          if (addri == Ipv6Address::GetLoopback ())
             {
               mask_len = 128;
             }
@@ -1521,7 +1521,7 @@ NetlinkSocket::DoRouteMessage (const NetlinkMessage &nlmsg, uint16_t type, uint8
             {
               Ipv4RoutingTableEntry route = m_ipv4Routing->GetRoute (i);
               //find the route entry with same dest address and send unicast to user space
-              if (dest.IsEqual (route.GetDest ()))
+              if (dest == route.GetDest ())
                 {
                   //                Ptr<Ipv4>ipv4 = m_node->GetObject<Ipv4> ();
                   NetlinkMessage nlmsg_route;
@@ -1562,7 +1562,7 @@ NetlinkSocket::DoRouteMessage (const NetlinkMessage &nlmsg, uint16_t type, uint8
             {
               Ipv6RoutingTableEntry route = ipv6Static->GetRoute (i);
               //find the route entry with same dest address and send unicast to user space
-              if (dest6.IsEqual (route.GetDest ()))
+              if (dest6 == route.GetDest ())
                 {
                   NetlinkMessage nlmsg_route;
                   NetlinkMessageHeader nhr = NetlinkMessageHeader (NETLINK_RTM_NEWROUTE, 0,
