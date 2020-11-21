@@ -360,7 +360,7 @@ ManetCcnx::ConfigureTopology ()
       wifi.EnableLogComponents ();
     }
 
-  YansWifiPhyHelper wifiPhy = YansWifiPhyHelper::Default ();
+  YansWifiPhyHelper wifiPhy;
   // set it to zero; otherwise, gain will be added
   wifiPhy.Set ("RxGain", DoubleValue (-10));
   // ns-3 supports RadioTap and Prism tracing extensions for 802.11b
@@ -373,7 +373,7 @@ ManetCcnx::ConfigureTopology ()
 
   // Add a non-QoS upper mac, and disable rate control
   WifiMacHelper wifiMac;
-  wifi.SetStandard (WIFI_PHY_STANDARD_80211b);
+  wifi.SetStandard (WIFI_STANDARD_80211b);
   wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager",
 				"DataMode", StringValue (phyMode),
 				"ControlMode", StringValue (phyMode));

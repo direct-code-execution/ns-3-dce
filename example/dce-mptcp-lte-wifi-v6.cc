@@ -139,7 +139,7 @@ int main (int argc, char *argv[])
   // Wi-Fi
   WifiHelper wifi;
   WifiMacHelper mac;
-  YansWifiPhyHelper phy = YansWifiPhyHelper::Default ();
+  YansWifiPhyHelper phy;
   YansWifiChannelHelper phyChannel = YansWifiChannelHelper::Default ();
   wifi.SetRemoteStationManager ("ns3::ArfWifiManager");
   wifi.SetStandard (WIFI_PHY_STANDARD_80211b);

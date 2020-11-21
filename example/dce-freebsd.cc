@@ -86,12 +86,12 @@ int main (int argc, char *argv[])
         mobility.Install (nodes);
 
         WifiHelper wifi;
-        YansWifiPhyHelper phy = YansWifiPhyHelper::Default ();
+        YansWifiPhyHelper phy;
         YansWifiChannelHelper phyChannel = YansWifiChannelHelper::Default ();
         WifiMacHelper mac;
         phy.SetChannel (phyChannel.Create ());
         mac.SetType ("ns3::AdhocWifiMac");
-        wifi.SetStandard (WIFI_PHY_STANDARD_80211a);
+        wifi.SetStandard (WIFI_STANDARD_80211a);
         devices = wifi.Install (phy, mac, nodes);
         phy.EnablePcapAll ("process-freebsd");
       }

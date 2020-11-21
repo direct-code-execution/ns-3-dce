@@ -3,7 +3,7 @@
 import ns3waf
 
 def configure(conf):
-    ns3waf.check_modules(conf, ['core', 'internet', 'point-to-point', 'mpi'], mandatory = True)
+    pass
 
 def build(bld):
     if bld.env['MPI']:
