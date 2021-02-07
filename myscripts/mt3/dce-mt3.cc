@@ -117,7 +117,7 @@ main (int argc, char *argv[])
   dt.Add (nodes.Get (3));
 
   WifiHelper wifi;
-  YansWifiPhyHelper phy = YansWifiPhyHelper::Default ();
+  YansWifiPhyHelper phy;
   YansWifiChannelHelper phyChannel = YansWifiChannelHelper::Default ();
   WifiMacHelper mac;
   phy.SetChannel (phyChannel.Create ());
