@@ -9,7 +9,7 @@ One of contradictions when we use DCE is, tracing, how to put trace sources into
 |ns3| originally has a nice feature of tracing with such a purpose, with on-demand trace connector to obtain additional information.
 Instead of inserting TraceSource into the original code, DCE gives dynamic trace points with this library, based on the idea of aspect-based tracing.
 
-For more detail, see the Chapter 6.3.2 of the `thesis <http://cutebugs.net/files/thesis.pdf>`_.
+For more detail, see the Chapter 6.3.2 of the `thesis <http://web.archive.org/web/20151129103935/http://cutebugs.net:80/files/thesis.pdf>`_.
 
 Quick Start
 -----------

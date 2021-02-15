@@ -51,7 +51,8 @@ We need to prepare the following simulation codes to conduct the experiment.
 * ns-3-dce
 * ns-3-linux
 * |dce_cradle| `patch <https://codereview.appspot.com/download/issue6856090_7001.diff>`_
-* iperf DCCP `extension <http://www.erg.abdn.ac.uk/~gerrit/dccp/apps/>`_
+* iperf DCCP `extension <
+http://web.archive.org/web/20140515222503/http://www.erg.abdn.ac.uk/~gerrit/dccp/apps/>`_
 * Linux TC (packet loss and delay injection)
 
 Results:
@@ -142,11 +143,11 @@ Instructions to Replicate This Experiment:
 
       % wget http://www.erg.abdn.ac.uk/~gerrit/dccp/apps/iperf/zip/iperf-2.0.2_DCCP-patched-CBR-continuous.tar.bz2
       % tar xfj iperf-2.0.2_DCCP-patched-CBR-continuous.tar.bz2
-      % cd iperf-2.0.2_DCCP-patched-CBR-continuous 
+      % cd iperf-2.0.2_DCCP-patched-CBR-continuous
       % ./configure
       % make
       % cp src/iperf (somewhere_in_path)/iperf-dccp
-      
+
       and put iperf-dccp to node1, node2, node5 and node6
 
    #. run a script at node1
