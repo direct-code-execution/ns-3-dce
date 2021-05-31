@@ -161,9 +161,10 @@ public:
   /**
    * \param interface Interface number of an Ipv6 interface
    * \param address Ipv6InterfaceAddress address to associate with the underlying Ipv6 interface
+   * \param addOnLinkRoute add on-link route to the network (default true)
    * \returns true if the operation succeeded
    */
-  virtual bool AddAddress (uint32_t interface, Ipv6InterfaceAddress address);
+  virtual bool AddAddress (uint32_t interface, Ipv6InterfaceAddress address, bool addOnLinkRoute = true);
 
   /**
    * \param interface Interface number of an Ipv6 interface

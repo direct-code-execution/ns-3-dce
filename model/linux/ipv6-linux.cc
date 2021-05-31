@@ -211,10 +211,11 @@ Ipv6Linux::GetInterfaceForDevice (Ptr<const NetDevice> device) const
 }
 
 bool
-Ipv6Linux::AddAddress (uint32_t i, Ipv6InterfaceAddress address)
+Ipv6Linux::AddAddress (uint32_t i, Ipv6InterfaceAddress address, bool addOnLinkRoute)
 {
   NS_LOG_FUNCTION (this << i << address);
   Ptr<Ipv6Interface> interface = GetInterface (i);
+  address.SetOnLink (addOnLinkRoute);
   bool retVal = interface->AddAddress (address);
   if (m_routingProtocol != 0)
     {
