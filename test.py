@@ -662,9 +662,7 @@ def make_paths():
     else:
         if not have_LD_LIBRARY_PATH:
             os.environ["LD_LIBRARY_PATH"] = ""
-        print("%r" % NS3_MODULE_PATH)
         for path in NS3_MODULE_PATH:
-            print("%r", path)
             os.environ["LD_LIBRARY_PATH"] += ":" + path
         os.environ["LD_LIBRARY_PATH"] += ":" + dce_ldlibpath
         if options.verbose:
