@@ -35,6 +35,10 @@ def options(opt):
                    help=('Specify the installed directory of elf-loader'),
                    dest='with_elf_loader', type='string',
                    default=None)
+    opt.add_option('--with-glibc',
+                   help=('Specify the installed directory of Glibc-2.25'),
+                   dest='with_glibc', type='string',
+                   default=None)
     opt.add_option('--with-libaspect',
                    help=('Specify the installed directory of libaspect.so'),
                    dest='with_libaspect', type='string',
@@ -98,6 +102,8 @@ def configure(conf):
 
     conf.load('clang_compilation_database', tooldir=['waf-tools'])
     conf.load('command', tooldir=['waf-tools'])
+
+    conf.env.GLIBC_INSTALL_DIR = conf.options.with_glibc
 
     if Options.options.with_ns3 is not None and os.path.isdir(Options.options.with_ns3):
         conf.env['NS3_DIR']= os.path.abspath(Options.options.with_ns3)
@@ -759,6 +765,20 @@ def build(bld):
         'helper/freebsd-stack-helper.h',
         ]
 
+    SYSROOT = bld.env.GLIBC_INSTALL_DIR
+    extra_cflags_root = [
+        '-L'+SYSROOT+'/usr/lib64',
+        '-I'+SYSROOT+'/include',
+        '--sysroot='+SYSROOT,
+        '-Wl,--start-group',
+        '-Wl,-rpath='+SYSROOT+'/lib64',
+        '-Wl,--dynamic-linker='+SYSROOT+'/lib64/ld-2.31.so'
+    ]
+    wl_end_group = [
+        '-Wl,--end-group'
+    ]
+
+    bld.env.append_value('LINKFLAGS',extra_cflags_root+wl_end_group)
     module_source = module_source + kernel_source
     module_headers = module_headers + kernel_headers
     uselib = ns3waf.modules_uselib(bld, ['core', 'network', 'internet', 'netlink'])
@@ -767,7 +787,7 @@ def build(bld):
                                   headers=module_headers,
                                   use=uselib,
                                   includes=kernel_includes,
-                                  cxxflags= ['-Wno-deprecated-declarations'],
+                                  cxxflags= extra_cflags_root+['-Wno-deprecated-declarations']+wl_end_group,
                                   lib=['dl'])
 #                                  lib=['dl','efence'])
 
@@ -820,7 +840,7 @@ def build(bld):
     # and forward to the dce_* code
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc', 'model/libc-global-variables.cc'],
               target='lib/c-ns3',
-              cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage', '-Wno-builtin-declaration-mismatch'],
+              cxxflags=extra_cflags_root+['-g', '-fno-profile-arcs', '-fno-test-coverage', '-Wno-builtin-declaration-mismatch']+wl_end_group,
               defines=['LIBSETUP=libc_setup'],
               linkflags=['-nostdlib', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'libc.version'),
@@ -829,7 +849,7 @@ def build(bld):
     # and forward to the dce_* code
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc'],
               target='lib/pthread-ns3',
-              cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage', '-Wno-builtin-declaration-mismatch'],
+              cxxflags=extra_cflags_root+['-g', '-fno-profile-arcs', '-fno-test-coverage', '-Wno-builtin-declaration-mismatch']+wl_end_group,
               defines=['LIBSETUP=libpthread_setup'],
               linkflags=['-nostdlib', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'libpthread.version'),
@@ -839,7 +859,7 @@ def build(bld):
     # and forward to the dce_* code
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc'],
               target='lib/rt-ns3',
-              cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage', '-Wno-builtin-declaration-mismatch'],
+              cxxflags=extra_cflags_root+['-g', '-fno-profile-arcs', '-fno-test-coverage', '-Wno-builtin-declaration-mismatch']+wl_end_group,
               defines=['LIBSETUP=librt_setup'],
               linkflags=['-nostdlib', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'librt.version'),
@@ -849,7 +869,7 @@ def build(bld):
     # and forward to the dce_* code
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc'],
               target='lib/m-ns3',
-              cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage', '-Wno-builtin-declaration-mismatch'],
+              cxxflags=extra_cflags_root+['-g', '-fno-profile-arcs', '-fno-test-coverage', '-Wno-builtin-declaration-mismatch']+wl_end_group,
               defines=['LIBSETUP=libm_setup'],
               linkflags=['-nostdlib', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'libm.version'),
@@ -859,7 +879,7 @@ def build(bld):
     # and forward to the dce_* code
     bld.shlib(source = ['model/libc.cc', 'model/libc-setup.cc'],
               target='lib/dl-ns3',
-              cxxflags=['-g', '-fno-profile-arcs', '-fno-test-coverage', '-Wno-builtin-declaration-mismatch'],
+              cxxflags=extra_cflags_root+['-g', '-fno-profile-arcs', '-fno-test-coverage', '-Wno-builtin-declaration-mismatch']+wl_end_group,
               defines=['LIBSETUP=libdl_setup'],
               linkflags=['-nostdlib', '-fno-profile-arcs',
                          '-Wl,--version-script=' + os.path.join('model', 'libdl.version'),
