@@ -32,6 +32,17 @@ do_steps: &do_steps
 
         # we clone a fork of bake
         cd "$HOME" && git clone -b ${BAKE_BRANCH} git://github.com/nsnam/bake-git ./bake
+
+        # setup environment
+        OS=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
+        if [[ $OS = "\"Ubuntu\"" ]] ; then 
+          sudo apt-get update; sudo apt-get install -y python-pip python3-pip ;
+        elif [[ $OS = "Fedora" ]] ; then
+          sudo yum -y update ; sudo yum install -y python-pip python3-pip;
+        fi
+
+        sudo pip install distro requests; sudo pip3 install distro requests                    
+
         cd "$HOME" && ./bake/bake.py configure -e dce-umip-${BAKE_MOD_VERSION} -e dce-linux-${BAKE_MOD_VERSION}
         cd "$HOME" && ./bake/bake.py download -vvv
 
@@ -77,44 +88,14 @@ do_steps: &do_steps
       path: ~/junit
   - store_artifacts:
       path: ~/junit
+  - store_artifacts:
       path: ~/testpy-output
 
 ## Customize the test machine
 jobs:
-  ubuntu14.04:
-   docker:
-     - image: ns3dce/ubuntu14.04:0.1
-   environment:
-   <<: *do_steps
-
   ubuntu16.04:
    docker:
      - image: ns3dce/ubuntu16.04:0.1
-   environment:
-   <<: *do_steps
-
-  ubuntu17.04:
-   docker:
-     - image: ns3dce/ubuntu17.04:0.1
-   environment:
-   <<: *do_steps
-
-  fedora26:
-   docker:
-     - image: ns3dce/fedora26:0.1
-   environment:
-   <<: *do_steps
-
-  fedora27:
-   docker:
-     - image: ns3dce/fedora27:0.1
-   environment:
-   <<: *do_steps
-
-  # not yet released (171228)
-  fedora28:
-   docker:
-     - image: ns3dce/fedora28:0.1
    environment:
    <<: *do_steps
 
@@ -123,11 +104,7 @@ workflows:
   version: 2
   build:
     jobs:
-     - ubuntu14.04
      - ubuntu16.04
-     - ubuntu17.04
-     - fedora26
-     - fedora27
   nightly_workflow:
     triggers:
       - schedule:
@@ -135,6 +112,6 @@ workflows:
           filters:
             branches:
               only:
-                - fix-valgrind-test
+                - fix-valgrind-test    
     jobs:
       - ubuntu14.04_valgrind
