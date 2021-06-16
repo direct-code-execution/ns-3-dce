@@ -1,0 +1,10 @@
+diff --git a/arch/lib/generate-linker-script.py b/arch/lib/generate-linker-script.py
+index db3d7f8dab16..93971ee4871d 100755
+--- a/arch/lib/generate-linker-script.py
++++ b/arch/lib/generate-linker-script.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ 
+ import re
+ 

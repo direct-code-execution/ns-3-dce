@@ -12,6 +12,7 @@
 #include <netinet/ip.h>
 #include <unistd.h>
 #include "test-macros.h"
+#include <linux/sockios.h>
 
 #undef OUTPUT
 #define OUTPUT(s) (std::cout << s << std::endl)

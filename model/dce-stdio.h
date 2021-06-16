@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdio_ext.h>
 #include <unistd.h>
+#include <cstdarg>
 
 #ifdef __cplusplus
 extern "C" {
@@ -59,7 +60,7 @@ void dce_perror (const char *s);
 
 int dce___printf_chk (int __flag, __const char *__restrict __format, ...);
 int dce___vfprintf_chk (FILE *__restrict __stream, int __flag,
-                        __const char *__restrict __format, _G_va_list __ap);
+                        __const char *__restrict __format, __gnuc_va_list __ap);
 int dce___fprintf_chk (FILE *__restrict __stream, int __flag,
                        __const char *__restrict __format, ...);
 int dce___snprintf_chk (char *__restrict __s, size_t __n, int __flag,
@@ -73,7 +74,7 @@ int dce_vasprintf (char **strp, const char *fmt, va_list ap);
 int dce_vsnprintf (char *s, size_t si, const char *f, va_list ap);
 int dce___vsnprintf_chk (char *__restrict __s, size_t __n, int __flag,
                                                size_t __slen,
-                         __const char *__restrict __format, _G_va_list __ap);
+                         __const char *__restrict __format, __gnuc_va_list __ap);
 
 
 #ifdef __cplusplus

@@ -1,0 +1,28 @@
+diff --git a/elf/dl-load.c b/elf/dl-load.c
+index a6b80f9395..e7dca92238 100644
+--- a/elf/dl-load.c
++++ b/elf/dl-load.c
+@@ -1205,9 +1205,7 @@ _dl_map_object_from_fd (const char *name, const char *origname, int fd,
+   /* Make sure we are not dlopen'ing an object that has the
+      DF_1_NOOPEN flag set, or a PIE object.  */
+   if ((__glibc_unlikely (l->l_flags_1 & DF_1_NOOPEN)
+-       && (mode & __RTLD_DLOPEN))
+-      || (__glibc_unlikely (l->l_flags_1 & DF_1_PIE)
+-	  && __glibc_unlikely ((mode & __RTLD_OPENEXEC) == 0)))
++       && (mode & __RTLD_DLOPEN)))
+     {
+       /* We are not supposed to load this object.  Free all resources.  */
+       _dl_unmap_segments (l);
+diff --git a/libio/vtables.c b/libio/vtables.c
+index 17f2e8e587..73e6906768 100644
+--- a/libio/vtables.c
++++ b/libio/vtables.c
+@@ -69,7 +69,7 @@ _IO_vtable_check (void)
+     return;
+ #endif
+ 
+-  __libc_fatal ("Fatal error: glibc detected an invalid stdio handle\n");
++  //__libc_fatal ("Fatal error: glibc detected an invalid stdio handle\n");
+ }
+ 
+ /* Some variants of libstdc++ interpose _IO_2_1_stdin_ etc. and

@@ -13,8 +13,8 @@
 #include <stdlib.h>
 #include <dlfcn.h>
 #include <sys/mman.h>
-#include <libio.h>
 #include <string.h>
+#include <cstdarg>
 
 NS_LOG_COMPONENT_DEFINE ("DceStdio");
 
@@ -726,7 +726,7 @@ int dce___printf_chk (int __flag, __const char *__restrict __format, ...)
 }
 
 int dce___vfprintf_chk (FILE *__restrict __stream, int __flag,
-                        __const char *__restrict __format, _G_va_list __ap)
+                        __const char *__restrict __format, __gnuc_va_list __ap)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
@@ -761,7 +761,7 @@ int dce___snprintf_chk (char *__restrict __s, size_t __n, int __flag,
 }
 int dce___vsnprintf_chk (char *__restrict __s, size_t __n, int __flag,
 						size_t __slen,
-						__const char *__restrict __format, _G_va_list __ap)
+						__const char *__restrict __format, __gnuc_va_list __ap)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);

@@ -34,9 +34,9 @@ First you need to download Bake using Git and set some environment variables:
 
   git clone https://gitlab.com/nsnam/bake.git
   cd bake
-  export PATH=$PATH:`pwd`/build/bin:`pwd`/build/bin_dce
-  export PYTHONPATH=$PYTHONPATH:`pwd`/build/lib
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`pwd`/build/lib
+  export PATH=`pwd`/build/bin${PATH:+:$PATH}
+  export PYTHONPATH=`pwd`/build/lib${PYTHONPATH:+:$PYTHONPATH}
+  export LD_LIBRARY_PATH=`pwd`/source/ns-3-dce/build/lib:`pwd`/source/ns-3-dev/build/lib:`pwd`/build/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 
 
 then you can install it using bake:
