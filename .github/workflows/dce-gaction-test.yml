@@ -1,0 +1,69 @@
+name: DCE Build
+on: [push, pull_request]
+
+# Anchors are not supported, so could not make use of modular workflow
+
+jobs : 
+  build:
+    strategy:
+      matrix:
+        job:           
+          # Used a personal Ubuntu-16.04 docker image since the previous once defaulted to root user, 
+          # so had to prefix all commands with sudo, and Github actions like checkout and caching throws permission error
+          # [ 'job-name'    , 'docker-image-name' ]
+          - [ 'ubuntu-16.04', 'parthpratim27/ns-3-dce:ubuntu-16.04' ]
+          # [ 'ubuntu-20.04', 'ns3dce/ubuntu20.04:0.1' ]
+
+    name : ${{ matrix.job[0] }}
+    runs-on : ubuntu-20.04 # This is ignored, but is a required field so is being set to this
+    container: ${{ matrix.job[1] }}
+
+    env:
+      BAKE_GIT: 'https://gitlab.com/nsnam/bake.git'
+      BAKE_CONFIG: 'dce-linux-dev'   # list-type, for each entry, -e {bake_config_entry} ... , will be added
+      GIT_HEAD_TRACK : '.git/HEAD'
+      HG_CHANGE_LOG : '.hg/store/00changelog.i'
+
+    steps:      
+      - name: Pull Source Tree 
+        uses: actions/checkout@v2   
+        with:     
+          path : target-dce-repo
+
+      - name: Download Bake 
+        run: git clone $BAKE_GIT bake 
+
+      - name: Configure Bake
+        run: ./bake/bake.py configure -e $BAKE_CONFIG      
+
+      - name: Download all required repos
+        run: ./bake/bake.py download -vvv       
+
+      - name: Copy Current ${{ github.event_name }} to source/ns-3-dce
+        run: cp -a target-dce-repo/. source/ns-3-dce      
+
+      # Below Caching saves 16 mins of build time (if an ns-3-dev build with same HEAD already exists)
+      # Couldn't add the same for net-next-nuse-4.4.0, because it would anyways still build the entire project after defconfig
+      - name: Load Build Cache for ns-3-dev
+        uses: actions/cache@v2
+        with:
+          id : cache-ns-3-dev
+          path: source/ns-3-dev
+          key: ${{ matrix.job[0] }}-src-build-ns-3-dev-${{ hashFiles('source/ns-3-dev/.git/HEAD') }}      
+
+      - name: Build Bake
+        run: ./bake/bake.py build -vvv
+
+      - name: Run Tests
+        run: |
+          cd source/ns-3-dce && ./test.py -r
+          find "testpy-output/" -type s -exec rm -f {} \;
+               
+      - name: Save Test Output Artifacts        
+        uses: actions/upload-artifact@v1
+        with: 
+          name: ${{ github.job }}-test-py-output
+          path: source/ns-3-dce/testpy-output
+
+
+
