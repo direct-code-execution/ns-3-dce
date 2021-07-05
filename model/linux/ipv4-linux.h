@@ -348,6 +348,9 @@ public:
 
 private:
   // Indirect the Ipv4 attributes through private pure virtual methods
+  Ipv4Linux (Ipv4Linux const &);
+  Ipv4Linux& operator= (Ipv4Linux const &);
+  
   virtual void SetIpForward (bool forward);
   virtual bool GetIpForward (void) const;
   virtual void SetWeakEsModel (bool model);

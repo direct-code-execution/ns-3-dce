@@ -67,6 +67,8 @@ public:
   static Ptr<T> GetRouting (Ptr<Ipv4RoutingProtocol> ipv4rp, T*);
 
 private:
+  Ipv4DceRouting (Ipv4DceRouting const &);
+  Ipv4DceRouting& operator= (Ipv4DceRouting const &);
   Ptr<Ipv4> m_ipv4;
   Ptr<NetlinkSocket> m_netlink;
 };

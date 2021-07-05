@@ -54,6 +54,9 @@ protected:
   FILE *m_logFile;
 
 private:
+  KernelSocketFdFactory (KernelSocketFdFactory const &);
+  KernelSocketFdFactory& operator= (KernelSocketFdFactory const &);
+  
   friend class KernelSocketFd;
   friend class KernelDeviceStateListener;
   struct EventIdHolder : public SimpleRefCount<EventIdHolder>
