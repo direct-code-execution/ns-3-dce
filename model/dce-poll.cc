@@ -36,7 +36,7 @@ int dce_poll (struct pollfd *fds, nfds_t nfds, int timeout)
     }
   else if (timeout > 0)
     {
-      endtime = Now () + MilliSeconds (timeout);
+      endtime = Now () + MicroSeconds (timeout);
     }
 
   for (uint32_t i = 0; i < nfds; ++i)
@@ -208,7 +208,7 @@ int dce_select (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
 
   if (timeout)
     {
-      pollTo = timeout->tv_sec * 1000 + timeout->tv_usec / 1000;
+      pollTo = timeout->tv_sec * 1000000 + timeout->tv_usec / 1000;
     }
 
   int pollRet = dce_poll (pollFd, nfds, pollTo);
