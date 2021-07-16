@@ -11,8 +11,8 @@ jobs :
           # Used a personal Ubuntu-16.04 docker image since the previous once defaulted to root user, 
           # so had to prefix all commands with sudo, and Github actions like checkout and caching throws permission error
           # [ 'job-name'    , 'docker-image-name' ]
-          - [ 'ubuntu-16.04', 'parthpratim27/ns-3-dce:ubuntu-16.04' ]
-          # [ 'ubuntu-20.04', 'ns3dce/ubuntu20.04:0.1' ]
+          # [ 'ubuntu-16.04', 'parthpratim27/ns-3-dce:ubuntu-16.04' ]
+          - [ 'ubuntu-20.04', 'parthpratim27/ns-3-dce:ubuntu-20.04' ]
 
     name : ${{ matrix.job[0] }}
     runs-on : ubuntu-20.04 # This is ignored, but is a required field so is being set to this
