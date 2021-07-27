@@ -4,10 +4,6 @@ general:
 
 do_steps: &do_steps
  steps:
-  - restore_cache:
-      key: code-tree-shallow
-  - restore_cache:
-      key: bake-tree-cache
   - run:
       name: checkout build tree
       command: |
@@ -31,7 +27,7 @@ do_steps: &do_steps
         if [ -z "${BAKE_MOD_VERSION}" ] ; then export BAKE_MOD_VERSION="dev" ; fi
 
         # we clone a fork of bake
-        cd "$HOME" && git clone -b ${BAKE_BRANCH} git://github.com/nsnam/bake-git ./bake
+        cd "$HOME" && git clone -b ${BAKE_BRANCH} https://gitlab.com/nsnam/bake.git ./bake
 
         # setup environment
         OS=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
@@ -42,8 +38,8 @@ do_steps: &do_steps
         fi
 
         sudo pip install distro requests; sudo pip3 install distro requests                    
-
-        cd "$HOME" && ./bake/bake.py configure -e dce-umip-${BAKE_MOD_VERSION} -e dce-linux-${BAKE_MOD_VERSION}
+        
+        cd "$HOME" && ./bake/bake.py configure -e dce-linux-${BAKE_MOD_VERSION}
         cd "$HOME" && ./bake/bake.py download -vvv
 
   - save_cache:
@@ -105,13 +101,3 @@ workflows:
   build:
     jobs:
      - ubuntu16.04
-  nightly_workflow:
-    triggers:
-      - schedule:
-          cron: "0 1 * * *" # run at 1am UTC
-          filters:
-            branches:
-              only:
-                - fix-valgrind-test    
-    jobs:
-      - ubuntu14.04_valgrind
