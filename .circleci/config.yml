@@ -105,13 +105,3 @@ workflows:
   build:
     jobs:
      - ubuntu16.04
-  nightly_workflow:
-    triggers:
-      - schedule:
-          cron: "0 1 * * *" # run at 1am UTC
-          filters:
-            branches:
-              only:
-                - fix-valgrind-test    
-    jobs:
-      - ubuntu14.04_valgrind
