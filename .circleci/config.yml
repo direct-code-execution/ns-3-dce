@@ -4,10 +4,6 @@ general:
 
 do_steps: &do_steps
  steps:
-  - restore_cache:
-      key: code-tree-shallow
-  - restore_cache:
-      key: bake-tree-cache
   - run:
       name: checkout build tree
       command: |
