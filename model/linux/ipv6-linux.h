@@ -24,6 +24,7 @@
 #include "ns3/ipv6.h"
 #include "ns3/ipv6-routing-protocol.h"
 #include "ns3/ipv6-pmtu-cache.h"
+#include "ns3/ipv6-interface.h"
 #include "ns3/ip-l4-protocol.h"
 
 namespace ns3 {

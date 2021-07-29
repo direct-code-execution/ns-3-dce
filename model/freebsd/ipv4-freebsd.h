@@ -348,6 +348,10 @@ public:
 
 private:
   // Indirect the Ipv4 attributes through private pure virtual methods
+  Ipv4FreeBSD (Ipv4FreeBSD const &);
+  Ipv4FreeBSD& operator= (Ipv4FreeBSD const &);
+  
+
   virtual void SetIpForward (bool forward);
   virtual bool GetIpForward (void) const;
   virtual void SetWeakEsModel (bool model);

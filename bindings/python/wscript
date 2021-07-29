@@ -476,6 +476,76 @@ class gen_ns3_compat_pymod_task(Task.Task):
         outfile.close()
         return 0
 
+def removedup(seq):
+    seen = set()
+    seen_add = seen.add
+    return [ x for x in seq if x not in seen and not seen_add(x)]
+
+def dce_generate_python_bindings(bld):
+    env = bld.env
+    extension_name = 'dce'
+    module = 'dce'
+    module_abs_src_path = bld.srcnode.abspath()
+
+    ns3inc=bld.env['INCLUDES_NS3_CORE'][0]
+    dceinc = os.path.abspath('build/include')
+
+    needed = bld.env['NS3_MODULES_FOUND']
+    useslibs = ns3waf.modules_uselib(bld, needed)
+
+    SYSROOT = bld.env.GLIBC_INSTALL_DIR
+
+    lnklibs = ["-shared", "-Wl,--no-as-needed", "-o dce", "-L"+str(os.getcwd())+"/build/lib"]
+    for dep in useslibs:
+        lnklibs = lnklibs + ns3waf._lib(bld,dep)    
+    lnklibs = lnklibs + ['-lns3-dce']
+    lnklibs = removedup(lnklibs)    
+    sys.stdout.flush()
+    sys.stderr.flush()
+    
+    apidefs = env['PYTHON_BINDINGS_APIDEFS'].replace("-", "_")    
+    
+    source = [
+        bld.srcnode.find_resource('bindings/python/ns3modulegen-modular.py'),
+        bld.srcnode.find_resource("bindings/modulegen__%s.py" % apidefs)
+    ]
+    argv = ['NS3_ENABLED_FEATURES=${FEATURES}',
+            'GCC_RTTI_ABI_COMPLETE=${GCC_RTTI_ABI_COMPLETE}',
+            '${PYTHON}']
+    
+    argv.extend(['${SRC[0]}', module_abs_src_path , apidefs, extension_name, '${TGT[0]}'])
+
+    argv.extend(['2>', '${TGT[2]}']) # 2> ns3modulegen.log
+
+    target = ['ns3module.cc', 'ns3module.h', 'ns3modulegen.log']
+    
+    features = []
+    for (name, caption, was_enabled, reason_not_enabled) in env['NS3_OPTIONAL_FEATURES']:
+        if was_enabled:
+            features.append(name)
+    
+    bindgen = bld(features='command', source=source, target=target, command=argv)
+    bindgen.env['FEATURES'] = ','.join(features)
+    bindgen.dep_vars = ['FEATURES', "GCC_RTTI_ABI_COMPLETE"]
+    bindgen.name = "pybindgen(ns3 module %s)" % module
+    bindgen.module = module
+    bindgen.install_path = None
+    
+    ns3_module_cc_src =  bld.srcnode.find_resource('bindings/python/ns3module.cc')
+    
+
+    
+    bld.program(
+        source= 'ns3module.cc', 
+        target='ns/dce',
+        includes     = ['.', ns3inc, dceinc], 
+        features = 'cxx cxxshlib pyext',
+        linkflags    = lnklibs, 
+        install_path = '${PYTHONARCHDIR}/ns', 
+        cxxflags     = ['-O0', '-Wall', '-fPIC'],
+        dflags       = ['-g'],
+    )
+    
 
 
 def build(bld):
@@ -513,9 +583,11 @@ def build(bld):
 
     if not env['ENABLE_PYTHON_BINDINGS']:
         return
+    
+    dce_generate_python_bindings(bld)
 
     #printInfo(bld)
-
+    '''
     if Options.options.genbind:
         genbind(bld)
         return
@@ -525,6 +597,7 @@ def build(bld):
         return
         
     compileBindings(bld)
+    '''
 
 
 
