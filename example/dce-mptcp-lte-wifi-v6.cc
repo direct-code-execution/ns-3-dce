@@ -162,7 +162,7 @@ int main (int argc, char *argv[])
   LinuxStackHelper stack;
   dceMng.SetNetworkStack ("ns3::LinuxSocketFdFactory",
                           "Library", StringValue ("liblinux.so"));
-  dceMng.SetLoader ("ns3::DlmLoaderFactory");
+  // dceMng.SetLoader ("ns3::DlmLoaderFactory");
   dceMng.SetTaskManagerAttribute ("FiberManagerType",
                                   StringValue ("UcontextFiberManager"));
   dceMng.Install (mn);
