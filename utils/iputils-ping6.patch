@@ -10,4 +10,25 @@ diff -ur iputils.orig/Makefile iputils/Makefile
 +ping6: LDLIBS = -lresolv -lcrypto
  ping.o ping6.o ping_common.o: ping_common.h
  tftpd.o tftpsubs.o: tftp.h
+
+diff -ur iputils.orig/ping_common.c iputils/ping_common.c
+--- iputils.orig/ping_common.c	2021-08-02 09:28:23.531893295 -0700
++++ iputils/ping_common.c	2021-08-02 09:31:34.829597557 -0700
+@@ -597,12 +597,17 @@
+ 				if (recv_expected) {
+ 					next = MININTERVAL;
+ 				} else {
++			/* Avoid spinning when using DCE; see issue:
++			   https://github.com/direct-code-execution/ns-3-dce-umip/issues/2 */
++#if 0
+ 					next = 0;
+ 					/* When spinning, no reasons to poll.
+ 					 * Use nonblocking recvmsg() instead. */
+ 					polling = MSG_DONTWAIT;
+ 					/* But yield yet. */
+ 					sched_yield();
++#endif
++					next = MININTERVAL;
+ 				}
+ 			}
  
