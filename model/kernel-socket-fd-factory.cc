@@ -24,6 +24,7 @@
 #include "ns3/event-id.h"
 #include "ns3/simulator.h"
 #include "ns3/mac48-address.h"
+#include "ns3/mac64-address.h"
 #include "ns3/packet.h"
 #include "exec-utils.h"
 #include <dlfcn.h>
@@ -444,10 +445,43 @@ KernelSocketFdFactory::RxFromDevice (Ptr<NetDevice> device, Ptr<const Packet> p,
   } *hdr = (struct ethhdr *)packet.buffer;
   if (device->GetInstanceTypeId () != m_lteUeTid)
     {
-      Mac48Address realFrom = Mac48Address::ConvertFrom (from);
+      Mac48Address realFrom;
+      if (Mac48Address::IsMatchingType (from))
+        {
+          realFrom = Mac48Address::ConvertFrom (from);
+        }
+      else
+        {
+          // Only handling Mac64Address conversion at this time
+          // See DCE issue #122
+          NS_ASSERT_MSG (Mac64Address::IsMatchingType (from), "Not a Mac64Address");
+          Mac64Address addr = Mac64Address::ConvertFrom (from);
+          uint8_t bytes[8];
+          addr.CopyTo (bytes);
+          uint8_t* newBytes = bytes + 2;  // discard first two bytes
+          realFrom.CopyFrom (newBytes);
+          NS_LOG_DEBUG ("Converting 'from' address from " << from << " to " << realFrom);
+        }
       realFrom.CopyTo (hdr->h_source);
     }
-  Mac48Address realTo = Mac48Address::ConvertFrom (to);
+
+  Mac48Address realTo;
+  if (Mac48Address::IsMatchingType (to))
+    {
+      realTo = Mac48Address::ConvertFrom (to);
+    }
+  else
+    {
+      // Only handling Mac64Address conversion at this time
+      // See DCE issue #122
+      NS_ASSERT_MSG (Mac64Address::IsMatchingType (to), "Not a Mac64Address");
+      Mac64Address addr = Mac64Address::ConvertFrom (to);
+      uint8_t bytes[8];     
+      addr.CopyTo (bytes);
+      uint8_t* newBytes = bytes + 2;  // discard first two bytes
+      realTo.CopyFrom (newBytes);
+      NS_LOG_DEBUG ("Converting 'to' address from " << from << " to " << realTo);
+    }
   realTo.CopyTo (hdr->h_dest);
   hdr->h_proto = ntohs (protocol);
   m_exported->dev_rx (dev, packet);
@@ -469,7 +503,26 @@ KernelSocketFdFactory::NotifyDeviceStateChangeTask (Ptr<NetDevice> device)
     {
       return;
     }
-  Mac48Address ad = Mac48Address::ConvertFrom (device->GetAddress ());
+  
+  Mac48Address ad;
+  if (Mac48Address::IsMatchingType (device->GetAddress()))
+    {
+      ad = Mac48Address::ConvertFrom (device->GetAddress ());
+    }
+  else
+    {
+      // Only handling Mac64Address conversion at this time
+      // See DCE issue #122
+      NS_ASSERT_MSG (Mac64Address::IsMatchingType (device->GetAddress ()), "Not a Mac64Address");
+
+      Mac64Address addr = Mac64Address::ConvertFrom (device->GetAddress ());
+      uint8_t bytes[8];
+      addr.CopyTo (bytes);
+      uint8_t* newBytes = bytes + 2;  // discard first two bytes
+      ad.CopyFrom (newBytes);
+      NS_LOG_DEBUG ("Converting device address from " << device->GetAddress () << " to " << ad);
+   }
+  
   uint8_t buffer[6];
   ad.CopyTo (buffer);
   m_loader->NotifyStartExecute (); // Restore the memory of the kernel before access it !
