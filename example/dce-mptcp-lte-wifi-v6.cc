@@ -326,7 +326,7 @@ int main (int argc, char *argv[])
   phy.EnablePcapAll ("dce-mptcp-lte-wifi-v6");
   p2p.EnablePcapAll ("dce-mptcp-lte-wifi-v6");
 
-  // Simulator::Stop (Seconds (50.0));
+  Simulator::Stop (Seconds (50.0));
   Simulator::Run ();
   Simulator::Destroy ();
 
