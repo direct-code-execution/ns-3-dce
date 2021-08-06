@@ -91,6 +91,10 @@ int main (int argc, char *argv[])
   Ipv4AddressHelper address;
   address.SetBase ("10.1.1.0", "255.255.255.252");
   Ipv4InterfaceContainer interfaces = address.Assign (devices);
+  // Save pointer to server's IPv4 instance, and IP interface index, for later
+  std::pair<Ptr<Ipv4>, uint32_t> returnValue = interfaces.Get (1); 
+  Ptr<Ipv4> serverIpv4 = returnValue.first;
+  uint32_t serverIndex = returnValue.second;
 
   // setup ip routes
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
@@ -115,8 +119,7 @@ int main (int argc, char *argv[])
   dce.AddArgument ("-c");
 
   // Extract server IP address
-  Ptr<Ipv4> ipv4Server = nodes.Get (1)->GetObject<Ipv4> ();
-  Ipv4Address serverAddress = ipv4Server->GetAddress (1, 0).GetLocal ();
+  Ipv4Address serverAddress = serverIpv4->GetAddress (serverIndex, 0).GetLocal ();
   serverAddress.Print (serverIp);
 
   dce.AddArgument (serverIp.str());
