@@ -475,23 +475,6 @@ def get_modules_and_headers(bld):
 
 
 
-class gen_ns3_compat_pymod_task(Task.Task):
-    """Generates a 'ns3.py' compatibility module."""
-    before = ['cxxprogram', 'cxxshlib', 'cxxstlib']
-    color = 'BLUE'
-
-    def run(self):
-        assert len(self.outputs) == 1
-        outfile = open(self.outputs[0].abspath(), "w")
-        print("import warnings", file=outfile)
-        print('warnings.warn("the ns3 module is a compatibility layer '\
-            'and should not be used in newly written code", DeprecationWarning, stacklevel=2)', file=outfile)
-        print(file=outfile)
-        for module in ['antenna', 'aodv', 'applications', 'bridge', 'buildings', 'config-store', 'core', 'csma', 'csma-layout', 'dsdv', 'dsr', 'energy', 'fd-net-device', 'flow-monitor', 'internet', 'internet-apps', 'lr-wpan', 'lte', 'mesh', 'mobility', 'netanim', 'network', 'nix-vector-routing', 'olsr', 'point-to-point', 'point-to-point-layout', 'propagation', 'sixlowpan', 'spectrum', 'stats', 'tap-bridge', 'topology-read', 'traffic-control', 'uan', 'virtual-net-device', 'wave', 'wifi', 'wimax','dce']:
-            print("from ns.%s import *" % (module.replace('-', '_')), file=outfile)
-        outfile.close()
-        return 0
-
 def removedup(seq):
     seen = set()
     seen_add = seen.add
