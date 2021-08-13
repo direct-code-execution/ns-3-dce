@@ -345,64 +345,17 @@ int main ()
 # ---------------------
 
 def get_headers_map(bld):
-    module_headers = [
-        'dce-manager.h',
-        'dce-manager-helper.h',
-        'dce-application.h',
-        'ipv4-dce-routing-helper.h',
-        'task-scheduler.h',
-        'task-manager.h',
-        'socket-fd-factory.h',
-        'loader-factory.h',
-        'dce-application.h',
-        'ipv4-dce-routing.h',
-        'ipv4-linux.h',
-        'ipv6-linux.h',
-        'ipv4-freebsd.h',
-        'process-delay-model.h',
-        'process.h',
-        'unix-fd.h',
-        'wait-queue.h',
-        'exec-utils.h',
-        'utils.h',
-        'linux-ipv4-raw-socket-factory.h',
-        'linux-ipv6-raw-socket-factory.h',
-        'linux-udp-socket-factory.h',
-        'linux-udp6-socket-factory.h',
-        'linux-tcp-socket-factory.h',
-        'linux-tcp6-socket-factory.h',
-        'linux-dccp-socket-factory.h',
-        'linux-dccp6-socket-factory.h',
-        'linux-sctp-socket-factory.h',
-        'linux-sctp6-socket-factory.h',
-        'dce-manager-helper.h',
-        'dce-application-helper.h',
-        'ccn-client-helper.h',
-        'ipv4-dce-routing-helper.h',
-        'linux-stack-helper.h',
-        'freebsd-stack-helper.h',
-        'freebsd-socket-fd-factory.h',
-        'kernel-socket-fd-factory.h',
-        'linux-socket-fd-factory.h',
-        'linux-socket-impl.h'        
-        ]
     h_map = {}
-    for header in module_headers:
-        h_map[header] = 'dce'
+    for ns3headers in bld.all_task_gen:
+        if './lib/ns3-dce' == getattr(ns3headers, 'name', []):
+            for h in getattr(ns3headers, 'headers', []):
+                h_map[os.path.basename(h)] = 'dce'
+    
     # iterate ns-3-dev to find all headers    
-    ns3_src = os.path.abspath(os.path.join(bld.srcnode.__str__(),"..","ns-3-dev","src"))
-    for model in os.listdir(ns3_src):
-        iterate = [
-            "model",
-            "helper",
-            "utils",
-        ]
-        for _it in iterate :
-            model_dir = os.path.join(ns3_src , model , _it)
-            if os.path.exists(model_dir) and os.path.isdir(model_dir):
-                for _file in os.scandir(model_dir): 
-                    if _file.path.endswith('h') and _file.is_file():
-                        h_map[os.path.basename(_file.path)] = model
+    ns3_headers = os.path.abspath(os.path.join(bld.env['NS3_DIR'],'include',bld.env['NS3_VERSION'],'ns3'))    
+    for _file in os.scandir(ns3_headers):
+        if _file.path.endswith('h') and _file.is_file():
+            h_map[os.path.basename(_file.path)] = 'ns3'
     
     return h_map
 
