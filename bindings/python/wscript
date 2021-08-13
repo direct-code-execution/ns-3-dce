@@ -305,7 +305,7 @@ int main ()
                 (pygccxml_version_str,
                  '.'.join([str(x) for x in REQUIRED_PYGCCXML_VERSION])))
         ns3waf._report_optional_feature(conf, "castxml", "Python API Scanning Support", False,
-                                     "pygccxml Python module too old")
+                                     "castxml Python module too old")
         return
 
 
