@@ -37,7 +37,7 @@ First you need to download Bake using Git and set some environment variables:
   export PATH=$PATH:`pwd`/build/bin:`pwd`/build/bin_dce
   export PYTHONPATH=$PYTHONPATH:`pwd`/build/lib
   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`pwd`/build/lib
-
+  export DCE_PATH=`pwd`/build/bin_dce:`pwd`/build/sbin
 
 then you can install it using bake:
 
@@ -56,7 +56,8 @@ proceed with:
    bake.py download
    bake.py build
  
-Note that dce-ns3-$version is the DCE module with a version number. If you would like to use the development version of DCE module, you can specify **dce-ns3-dev** as a module name for bake.  As of March 2020, this (dev version) is recommended.
+Note that dce-ns3-$version is the DCE module with a version number. If you would like to use the development version of DCE module, you can specify **dce-ns3-dev** as a module name for bake.  As of August 2021, the dce-ns3-1.11 version is recommended for Ubuntu 16.04, and the dev version is expected to shortly migrate away from
+compatibility with Ubuntu 16.04 towards Ubuntu 20.04.
 
 the output should look something like this:
 

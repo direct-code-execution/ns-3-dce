@@ -8,7 +8,7 @@ A first part will describe the architecture and the second will show how we went
 Prerequisite
 ============
 
-You must be familiar with |ns3|, DCE and Linux Kernel Developpement.
+You must be familiar with |ns3|, DCE and Linux kernel development.
 
 Download
 ========

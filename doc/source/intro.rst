@@ -15,7 +15,7 @@ If you wish to cite DCE in your academic work, please reference `this paper <htt
 Maintainers
 ***********
 
-DCE is maintained by `Hajime Tazaki <https://github.com/thehajime>`_ and `Matthieu Coudron <https://github.com/teto>`_.  
+DCE is maintained by `Hajime Tazaki <https://github.com/thehajime>`_, `Matthieu Coudron <https://github.com/teto>`_, `Tom Henderson <https://github.com/tomhenderson>`_, and `Parth Pratim Chatterjee <https://github.com/ParthPratim>`_.  
 
 Manual Structure
 ****************
@@ -39,9 +39,9 @@ Supported Features
 ******************
 - Simulation with POSIX socket application (no manual modifications)
  
-- C/C++ applications
+- C/C++ applications; applications written in other languages (Python, Java, etc.) are not presently supported.
 
-- Simulation with Linux kernel implemented network protocol
+- Simulation with selected versions of the Linux kernel (network and transport layers) 
 
  - IPv4/IPv6
  - TCP/UDP/DCCP
@@ -50,7 +50,7 @@ Supported Features
  - multiple nodes debugging with single gdb interface
  - memory analysis by single valgrind execution with multiple nodes
 
-- Variance of network stacks
+- Variations of network stacks
 
  - ns-3 native stack (IPv4/IPv6, partially)
  - Network simulation cradle network stack (IPv4 TCP only)
@@ -66,7 +66,7 @@ Tested Applications
 - iperf
 - ping/ping6
 - ip (iproute2 package)
-- Mobilt IPv6 daemon (umip)
+- Mobile IPv6 daemon (umip)
 - Linux kernel (from 2.6.36 to 3.7 versions)
 - http server (thttpd)
 - torrent (libtorrent from rasterbar + opentracker)
@@ -75,14 +75,18 @@ Tested Environment
 ******************
 
 Currently, DCE only supports Linux-based operating systems.
-DCE has been tested on the following distributions:
+The current version of DCE has been tested only on the following distribution:
 
-- Ubuntu 16.04 and equivalents (gcc-5.4, libc-2.23)
+- Ubuntu 16.04 (gcc-5.4, libc-2.23)
 
-but you can try on others (e.g., CentOS, RHEL).  However, unfortunately
-only a narrow range of older Linux systems work with DCE (gcc-5-based
-systems such as Ubuntu 16.04).
+Newer Linux distributions (based on newer libc) require different support and
+are not presently supported but are under development.
 
 If you find that you can run on another distribution, please let the
 :ref:`maintainers` know.  Also, if you would like to work on getting DCE to 
 work on newer systems, please let the :ref:`maintainers` know.
+
+Roadmap
+*******
+
+The DCE roadmap is maintained `here <https://github.com/direct-code-execution/ns-3-dce/wiki/Roadmap>`_.
