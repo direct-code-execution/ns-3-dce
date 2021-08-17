@@ -91,6 +91,10 @@ Limitations
 The DCE Python bindings does not currently match completely the C++ API of DCE. The following
 classes are supported:
 
+.. table:: DCE Python support
+   :widths: 25  75
+.. tabularcolumns:: |p{4cm}|p{10cm}|
+
 +--------------------------+-----------------------------------------------------------------+
 | Class                    | Methods                                                         |
 +==========================+=================================================================+

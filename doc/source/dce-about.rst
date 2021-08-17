@@ -1,9 +1,9 @@
 About
 *****
 
-The creator of DCE is Mathieu Lacage.
+The creator of DCE is Mathieu Lacage.  Frédéric Urbani is a past developer and maintainer.
 
-The current maintainers and developers are Hajime Tazaki and Frédéric Urbani.
+The current maintainers and developers are Hajime Tazaki, Matthieu Coudron, Tom Henderson, and Parth Pratim Chatterjee. 
 
 Contacts
 ========
@@ -11,7 +11,11 @@ Contacts
 +--------------------------------+
 | tazaki AT sfc.wide.ad.jp       |
 +--------------------------------+
-| mathieu.lacage AT cutebugs.net |
+| mattator AT gmail.com          |
++--------------------------------+
+| tomh AT tomh.org               |
++--------------------------------+
+| parth27official AT gmail.com   |
 +--------------------------------+
 
 

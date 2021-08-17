@@ -7,12 +7,12 @@ As explained in :ref:`how-it-works`, DCE needs to relocate the executable binary
 
 In order to this you should follow the two following rules:
 
-1. Compile your objects using this gcc flag: **-fPIC** for exemple:   ``gcc -fPIC -c foo.c``
+1. Compile your objects using this gcc flag: **-fPIC** for example:   ``gcc -fPIC -c foo.c``
 
  1. (option) Some application needs to be compile with **-U_FORTIFY_SOURCE** so that the application doesn't use alternative symbols including **__chk** (like memcpy_chk).
 
-2. Link your executable using this gcc flag: **-pie** and **-rdynamic** for exemple:   ``gcc -o foo -pie -rdynamic foo.o``
-3. Verify the produced executable using readelf utility in order to display the ELF file header and to verify that your exe is of type **DYN** indicating that DCE should be able to relocate and virtualize it under |ns3| virtual world and network. For exemple: ``readelf -h foo|grep Type:`` ==> ``Type: DYN (Shared object file)``
+2. Link your executable using this gcc flag: **-pie** and **-rdynamic** for example:   ``gcc -o foo -pie -rdynamic foo.o``
+3. Verify the produced executable using readelf utility in order to display the ELF file header and to verify that your exe is of type **DYN** indicating that DCE should be able to relocate and virtualize it under |ns3| virtual world and network. For example: ``readelf -h foo|grep Type:`` ==> ``Type: DYN (Shared object file)``
 4. Check also that your executable runs as expected outside of |ns3| and DCE.
 
 
@@ -27,9 +27,13 @@ Write a |ns3| script
 
 Now that you have compiled your executable you can use it within |ns3| script with the help of a set of DCE Helper Class:
 
+.. table:: DCE helper classes
+   :widths: 20 20 60
+.. tabularcolumns:: |p{3cm}|p{3cm}|p{9cm}|
+
 +----------------------+--------------------------------+-----------------------------------------------------------------------------+
 | HELPER CLASS NAME    | INCLUDE NAME                   |  DESCRIPTION                                                                |
-+----------------------+--------------------------------+-----------------------------------------------------------------------------+
++======================+================================+=============================================================================+
 | DceManagerHelper     | ns3/dce-manager-helper.h       | A DceManager is a DCE internal class which manage the execution of the      |
 |                      |                                | executable you will declare to run within |ns3|; The DceManagerHelper is    |
 |                      |                                | the tool you will use within your script to parameter and install DceManager|
