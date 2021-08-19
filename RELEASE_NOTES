@@ -3,7 +3,38 @@
 
 This file contains Direct Code Execution release notes (most recent releases first).  
 
-Please refer the page http://www.nsnam.org/projects/direct-code-execution/ for detailed instructions
+Please refer the page https://www.nsnam.org/projects/direct-code-execution/ for detailed instructions
+
+Release dce-1.11
+================
+In order to use DCE, please use the bake tool to install DCE.  DCE 1.11
+is designed to be used with the ns-3.34 release, and the bake tool
+orchestrates a coordinated build of ns-3, DCE, and supporting packages.
+
+Instructions for this release can be found at:
+https://ns-3-dce.readthedocs.io/en/dce-1.11/getting-started.html
+
+Tested platforms
+----------------
+- Ubuntu 16.04.7
+
+This release will not work on newer Ubuntu releases.  Other Linux platforms
+have not been tested, and in general, are not expected to work with this
+release due to the narrow combinations of g++ version, glibc version, and 
+Python 3 support needed for this release.
+
+New user-visible features
+-------------------------
+- Update ns-3 version supported from ns-3.28 to ns-3.34
+- General update to use Python 3 instead of Python 2
+- Add Ioctl support to LinuxSocketImpl
+
+Bugs fixed
+----------
+- (issue #122) Fix compatibility with ns-3 LTE devices
+- (issue #125) Protect against invalid interface index for example program
+- Removed unused devices and interface from dce-iperf-example
+- Improvements on how to find ns-3 libraries
 
 Release dce-1.10
 ===============
