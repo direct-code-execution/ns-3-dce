@@ -128,9 +128,9 @@ def get_proc_env(os_env=None):
     else:
         pyvizdir = ''
     if 'PYTHONPATH' in proc_env:
-        proc_env['PYTHONPATH'] = os.pathsep.join([pymoddir, pyvizdir] + [proc_env['PYTHONPATH']])
+        proc_env['PYTHONPATH'] = os.pathsep.join([pyvizdir,pymoddir] + [proc_env['PYTHONPATH']])
     else:
-        proc_env['PYTHONPATH'] = os.pathsep.join([pymoddir, pyvizdir])
+        proc_env['PYTHONPATH'] = os.pathsep.join([pyvizdir,pymoddir])
 
     if 'PATH' in proc_env:
         proc_env['PATH'] = os.pathsep.join(list(env['NS3_EXECUTABLE_PATH']) + [proc_env['PATH']])
