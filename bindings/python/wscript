@@ -582,8 +582,12 @@ def build(bld):
     '''
 
     if not env['ENABLE_PYTHON_BINDINGS']:
-        return
-    
+        return 
+
+    if bld.env['KERNEL_STACK']:
+        os.environ['KERNEL_STACK'] = bld.env['KERNEL_STACK']
+
+
     dce_generate_python_bindings(bld)
 
     #printInfo(bld)

@@ -104,6 +104,9 @@ def main(argv):
     if hasattr(module_customization, 'post_register_types'):
         module_customization.post_register_types(root_module)
 
+    # Remove classes from DCE (if required) now before we register the methods for each added class
+    ns3modulegen_core_customizations.post_register_types(root_module)
+
     # register Callback<...> type handlers
     ns3modulegen_core_customizations.register_callback_classes(root_module.after_forward_declarations,
                                                                callback_classes)

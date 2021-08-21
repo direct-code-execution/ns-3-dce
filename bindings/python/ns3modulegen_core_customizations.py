@@ -1,6 +1,7 @@
 from __future__ import print_function
 import sys
 import re
+import os
 
 from pybindgen.typehandlers import base as typehandlers
 from pybindgen import ReturnValue, Parameter
@@ -444,3 +445,22 @@ _ns3_Ipv4Address_tp_hash (PyObject *obj)
 ''')
     module.header.writeln('long _ns3_Ipv4Address_tp_hash (PyObject *obj);')
     module['Ipv4Address'].pytype.slots['tp_hash'] = "_ns3_Ipv4Address_tp_hash"
+
+
+def post_register_types(root_module):
+    remove_classes = [
+        # These are classes which get introduced when KERNEL_STACK is enabled , so should be removed for non-linux DCE builds
+        'KernelSocketFdFactory',
+        'LinuxSocketImpl',
+        'KernelSocketFd',
+        'LinuxSocketFdFactory',
+        'FreeBSDSocketFdFactory'
+    ]
+
+    if "KERNEL_STACK" not in os.environ:
+        for classname in remove_classes:
+            try:
+                root_module.classes.remove(root_module['ns3::%s' % classname])
+            except:
+                pass
+
