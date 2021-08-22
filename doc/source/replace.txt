@@ -1,5 +1,5 @@
 .. |ns3| replace:: *ns-3*
-.. |ns3_tag| replace:: ns-3.30
+.. |ns3_tag| replace:: ns-3.34
 .. |dce_cradle| replace:: DCE Cradle
 
 .. |git_ns3| replace:: git@gitlab.com:nsnam/ns-3-dev.git

@@ -11,7 +11,7 @@ The DCE ns-3 module provides facilities to execute within ns-3 existing
 implementations of userspace and kernelspace network protocols. 
 
 As of today, the Quagga routing protocol implementation, the CCNx CCN
-implementation, and recent versions of the Linux kernel network stack are
+implementation, and a few versions of the Linux kernel network stack are
 known to run within DCE, hence allowing network protocol experimenters and
 researchers to use the unmodified implementation of their protocols for
 real-world deployments and simulations.
@@ -22,7 +22,7 @@ Build DCE
 *********
 
 DCE offers two major modes of operation:
- 1. The basic mode, where DCE use the |ns3| TCP stacks,
+ 1. The basic mode, where DCE uses the |ns3| TCP stacks,
  2. The advanced mode, where DCE uses a Linux network stack instead.
 
 Building DCE basic mode
@@ -35,52 +35,74 @@ First you need to download Bake using Git and set some environment variables:
   git clone https://gitlab.com/nsnam/bake.git
   cd bake
   export PATH=$PATH:`pwd`/build/bin:`pwd`/build/bin_dce
-  export PYTHONPATH=$PYTHONPATH:`pwd`/build/lib
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`pwd`/build/lib
+  export PYTHONPATH=`pwd`/build/lib${PYTHONPATH:+:$PYTHONPATH}
+  export LD_LIBRARY_PATH=`pwd`/build/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
   export DCE_PATH=`pwd`/build/bin_dce:`pwd`/build/sbin
 
 then you can install it using bake:
 
 .. code-block:: sh
 
-   bake.py configure -e dce-ns3-$version
-   bake.py check
-   bake.py show
+   ./bake.py configure -e dce-ns3-$version
+   ./bake.py check
+   ./bake.py show
 
-The check and show commands show you missing packages needed by the configured
+The check and show commands check for missing packages needed by the configured
 module.  Please use your package manager to install missing ones, and then
 proceed with:
 
 .. code-block:: sh
 
-   bake.py download
-   bake.py build
+   ./bake.py download
+   ./bake.py build
  
 Note that dce-ns3-$version is the DCE module with a version number. If you would like to use the development version of DCE module, you can specify **dce-ns3-dev** as a module name for bake.  As of August 2021, the dce-ns3-1.11 version is recommended for Ubuntu 16.04, and the dev version is expected to shortly migrate away from
 compatibility with Ubuntu 16.04 towards Ubuntu 20.04.
 
-the output should look something like this:
+The download output should look something like this for the dce-ns3-dev module:
 
 .. code-block:: none
 
-  Installing selected module and dependencies.
-  Please, be patient, this may take a while!
-  >> Downloading ccnx
-  >> Download ccnx - OK
-  >> Downloading iperf
-  >> Download iperf - OK
-  >> Downloading ns-3-dev-dce
-  >> Download ns-3-dev-dce - OK
-  >> Downloading dce-ns3
-  >> Download dce-ns3 - OK
-  >> Building ccnx
-  >> Built ccnx - OK
-  >> Building iperf
-  >> Built iperf - OK
-  >> Building ns-3-dev-dce
-  >> Built ns-3-dev-dce - OK
-  >> Building dce-ns3
-  >> Built dce-ns3 - OK
+  >> Searching for system dependency python3-dev - OK
+  >> Downloading bash - OK
+  >> Downloading thttpd - OK
+  >> Downloading wget - OK
+  >> Downloading iperf - OK
+  >> Searching for system dependency libexpat-dev - OK
+  >> Searching for system dependency libpcap-dev - OK
+  >> Searching for system dependency libc - OK
+  >> Downloading libaspect - OK
+  >> Searching for system dependency qt - OK
+  >> Searching for system dependency g++ - OK
+  >> Searching for system dependency python3-setuptools - OK
+  >> Searching for system dependency gi-cairo - OK
+  >> Searching for system dependency gir-bindings - OK
+  >> Searching for system dependency pygobject - OK
+  >> Searching for system dependency pygraphviz - OK
+  >> Downloading ccnx - OK
+  >> Searching for system dependency libc-debug - OK
+  >> Downloading netanim - OK
+  >> Downloading pybindgen - OK
+  >> Downloading ns-3-dev - OK
+  >> Downloading elf-loader - OK
+  >> Downloading dce-meta-dev (target directory:ns-3-dce) - OK
+  >> Downloading dce-ns3-dev (target directory:ns-3-dce) - (Nothing to do, source directory already exists) - OK
+
+The build output should look something like this for the dce-ns3-dev module:
+
+.. code-block:: none
+
+  >> Building bash - OK
+  >> Building thttpd - OK
+  >> Building wget - OK
+  >> Building iperf - OK
+  >> Building libaspect - OK
+  >> Building ccnx - OK
+  >> Building netanim - OK
+  >> Building pybindgen - OK
+  >> Building elf-loader - OK
+  >> Building ns-3-dev - OK
+  >> Building dce-ns3-dev - OK
 
 Building DCE advanced mode (with Linux kernel)
 ++++++++++++++++++++++++++++++++++++++++++++++
@@ -91,11 +113,11 @@ The difference to build the advanced mode is the different module name *dce-linu
     :caption: Installation of DCE via `bake`
     :linenos:
 
-    bake.py configure -e dce-linux-$version
-    bake.py check
-    bake.py show 
-    bake.py download
-    bake.py build
+    ./bake.py configure -e dce-linux-$version
+    ./bake.py check
+    ./bake.py show 
+    ./bake.py download
+    ./bake.py build
 
 Note that dce-linux-$version is the DCE module with a version number. If you would like to use the development version of DCE module, you can specify **dce-linux-dev** as a module name for bake.
 
@@ -177,7 +199,7 @@ If you succeeded to build DCE, you can try an example script which is already in
 Example: Simple UDP socket application
 ++++++++++++++++++++++++++++++++++++++
 
-This example execute the binaries named udp-client and udp-server under |ns3| using DCE.
+This example executes the binaries named udp-client and udp-server under |ns3| using DCE.
 These 2 binaries are written using POSIX socket API in order to send and receive UDP packets.
 
 If you would like to see what is going on this script, please refer to the :ref:`user's guide<dce-udp-simple-example>`.
