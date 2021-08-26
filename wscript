@@ -91,6 +91,13 @@ def _check_nonfatal(conf, *args, **kwargs):
 
 def configure(conf):
 
+    conf.env.GLIBC_INSTALL_DIR = os.path.abspath(conf.options.with_glibc)
+
+    if not os.path.exists(conf.env.GLIBC_INSTALL_DIR):
+        Logs.error("Custom glibc install directory does not exist ! Please pass a valid directory in --with-glibc argument")
+        raise SystemExit(1)
+        return
+
     conf.load('relocation', tooldir=['waf-tools'])
     conf.load('compiler_c')
     cc_string = '.'.join(conf.env['CC_VERSION'])
@@ -103,7 +110,6 @@ def configure(conf):
     conf.load('clang_compilation_database', tooldir=['waf-tools'])
     conf.load('command', tooldir=['waf-tools'])
 
-    conf.env.GLIBC_INSTALL_DIR = conf.options.with_glibc
 
     if Options.options.with_ns3 is not None and os.path.isdir(Options.options.with_ns3):
         conf.env['NS3_DIR']= os.path.abspath(Options.options.with_ns3)
