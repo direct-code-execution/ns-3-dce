@@ -778,6 +778,7 @@ def build(bld):
         '--sysroot='+SYSROOT,
         '-Wl,--start-group',
         '-Wl,-rpath='+SYSROOT+'/lib64',
+        '-Wl,-rpath-link=/usr/lib/x86_64-linux-gnu',
         '-Wl,--dynamic-linker='+SYSROOT+'/lib64/ld-2.31.so'
     ]
     wl_end_group = [
