@@ -808,11 +808,11 @@ int dce_vasprintf (char **strp, const char *fmt, va_list ap)
 
   if (ret > 0)
     {
-      char *tmp = (char*) dce_malloc (ret);
+      char *tmp = (char*) dce_malloc (ret + 1);
 
       if (tmp)
         {
-          memcpy (tmp, res, ret);
+          memcpy (tmp, res, ret + 1);
 
           *strp = tmp;
           free (res);
