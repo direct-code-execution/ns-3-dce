@@ -93,7 +93,6 @@ int dce_internalClosedir (DIR *dirp, struct Thread *cur)
       if (ret == 0)
         {
           dce_close (-saveFd);
-          ds->fd = saveFd;
           remove_dir (dirp, cur);
         }
       else
