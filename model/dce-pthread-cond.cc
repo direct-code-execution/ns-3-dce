@@ -205,3 +205,8 @@ int dce_pthread_condattr_destroy (pthread_condattr_t *attr)
 {
   return 0;
 }
+int dce_pthread_setname_np (pthread_t thread, const char *name)
+{
+  return 0;
+}
+void dce_pthread_testcancel (void) {}

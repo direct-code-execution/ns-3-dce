@@ -13,6 +13,8 @@ int dce_open64 (const char *path, int flags, ...);
 int dce_creat (const char *path, mode_t mode);
 int dce_fcntl (int fd, int cmd, ...);
 int dce_unlinkat (int dirfd, const char *pathname, int flags);
+int dce_openat (int dirfd, const char *pathname, int flags, ...);
+int dce_posix_fallocate(int fd, off_t offset, off_t len);
 
 #ifdef __cplusplus
 }

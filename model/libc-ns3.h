@@ -84,6 +84,7 @@ NATIVE (seed48_r)
 NATIVE (lcong48_r)
 DCE (calloc)
 DCE_WITH_ALIAS2 (malloc, valloc)
+DCE (malloc_usable_size)
 DCE (free)
 DCE (realloc)
 NATIVE (atoi)
@@ -311,6 +312,7 @@ NATIVE (link)
 NATIVE (symlink)
 NATIVE (nice)
 NATIVE (fchown)
+NATIVE (fchownat)
 
 // SYS/UIO.H
 DCE (readv)
@@ -381,6 +383,8 @@ DCE (fcntl)
 DCE (open)
 DCE (open64)
 DCE (unlinkat)
+DCE (openat)
+DCE (posix_fallocate)
 
 // TIME.H
 DCE (nanosleep)
@@ -389,6 +393,7 @@ NATIVE (asctime_r)
 DCE (ctime)
 NATIVE (ctime_r)
 DCE_WITH_ALIAS2 (gmtime, localtime)
+DCE (localtime_r)
 NATIVE_WITH_ALIAS (gmtime_r)
 NATIVE (mktime)
 NATIVE (strftime)
@@ -439,6 +444,7 @@ NATIVE (setns)
 //DCE (poll)
 DCE_WITH_ALIAS2 (poll, __poll)
 DCE_EXPLICIT (__poll_chk, int, struct pollfd *, long unsigned int, int, long unsigned int)
+DCE (ppoll)
 
 // SIGNAL.H
 DCE (signal)
@@ -495,6 +501,8 @@ NATIVE (pthread_spin_init)
 NATIVE (pthread_spin_lock)
 NATIVE (pthread_spin_unlock)
 NATIVE (pthread_spin_destroy)
+DCE (pthread_setname_np)
+DCE (pthread_testcancel)
 
 
 // SEMAPHORE.H
@@ -580,6 +588,7 @@ NATIVE (getgrnam)
 NATIVE (endgrent)
 NATIVE (getgrent)
 NATIVE (setgrent)
+NATIVE (getgrouplist)
 
 // SYS/RESOURCE.H
 NATIVE (getrusage) // not sure if native call will give stats about the requested process..

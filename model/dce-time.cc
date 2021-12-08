@@ -42,6 +42,13 @@ struct tm * dce_localtime (const time_t *timep)
   return localtime_r (timep, &Current ()->process->struct_tm);
 }
 
+struct tm * dce_localtime_r (const time_t *timep, struct tm *buf)
+{
+  setenv ("TZ", "UTC", 1);
+  tzset ();
+  return localtime_r (timep, buf);
+};
+
 char * dce_ctime (const time_t *timep)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());

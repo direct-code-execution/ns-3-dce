@@ -45,6 +45,8 @@ int dce_pthread_cond_wait (pthread_cond_t * cond,
                            pthread_mutex_t * mutex);
 int dce_pthread_condattr_destroy (pthread_condattr_t *attr);
 int dce_pthread_condattr_init (pthread_condattr_t *attr);
+int dce_pthread_setname_np (pthread_t thread, const char *name);
+void dce_pthread_testcancel (void);
 
 #ifdef __cplusplus
 }
