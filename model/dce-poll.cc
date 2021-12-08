@@ -8,6 +8,7 @@
 #include "dce-manager.h"
 #include "process.h"
 #include "errno.h"
+#include "dce-signal.h"
 #include <map>
 
 
@@ -131,6 +132,21 @@ int dce_poll (struct pollfd *fds, nfds_t nfds, int timeout)
 int dce___poll_chk (struct pollfd *fds, nfds_t nfds, int timeout, size_t fdslen)
 {
   return dce_poll(fds, nfds, timeout);
+}
+
+// Taken from https://linux.die.net/man/2/ppoll
+int dce_ppoll (struct pollfd *fds, nfds_t nfds, 
+  const struct timespec *timeout_ts, const sigset_t *sigmask)
+{
+  sigset_t origmask;
+  int timeout;
+
+  timeout = (timeout_ts == NULL) ? -1 :
+            (timeout_ts->tv_sec * 1000 + timeout_ts->tv_nsec / 1000000);
+  dce_sigprocmask(SIG_SETMASK, sigmask, &origmask);
+  int ready = dce_poll(fds, nfds, timeout);
+  dce_sigprocmask(SIG_SETMASK, &origmask, NULL);
+  return ready;
 }
 
 int dce_select (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,

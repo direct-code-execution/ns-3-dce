@@ -64,6 +64,7 @@ NS_LOG_COMPONENT_DEFINE ("DceFd");
 
 
 using namespace ns3;
+
 int dce_open64 (const char *path, int flags, ...)
 {
   va_list vl;
@@ -133,6 +134,66 @@ int dce_open (const char *path, int flags, ...)
   unixFd->IncFdCount ();
   current->process->openFiles[fd] = new FileUsage (fd, unixFd);
   return fd;
+}
+
+int dce_posix_fallocate(int fd, off_t offset, off_t len)
+{
+  return 0;
+}
+
+int dce_openat (int dirfd, const char *pathname, int flags, ...) {
+  va_list vl;
+  va_start (vl, flags);
+
+  mode_t mode = 0;
+  if (flags & O_CREAT)
+    {
+      mode = va_arg (vl, mode_t);
+    }
+  va_end (vl);
+  
+  // If pathname is absolute, then dirfd is ignored and openat behaves
+  // the same way as open
+  char c = *pathname;
+  if (c == '/' || dirfd == AT_FDCWD) {
+    return dce_open(pathname, flags, mode);
+  }
+  
+  // If pathname is relative, then it is interpreted relative to the directory 
+  // referred to by the file descriptor dirfd
+  Thread *current = Current ();
+  int realFd = getRealFd (dirfd, current);
+
+  struct stat finfo;
+  int error = fstat(realFd, &finfo);
+  if (error)
+  {
+    return -1;
+  }
+
+  // We find the directory referred by dirfd and finally open the dile with dce_open
+  std::stringstream command_cp;    
+  command_cp << "cd files-" << UtilsGetNodeId () << "; find . -inum " << finfo.st_ino;
+
+  const char* cmd = command_cp.str ().c_str ();
+  char buffer[128];
+  std::string ret = "";
+  FILE* pipe = popen(cmd, "r");
+  if (!pipe) throw std::runtime_error("popen() failed!");
+  try {
+    while (fgets(buffer, sizeof buffer, pipe) != NULL) {
+      ret += buffer;
+    }
+  } catch (...) {
+    pclose(pipe);
+    throw;
+  }
+  pclose(pipe);
+
+  ret.erase(0,1);
+  ret.erase(ret.length()-1,1);
+  ret = ret + "/" + pathname;
+  return dce_open(ret.c_str(), flags, mode);
 }
 
 int dce_creat (const char *path, mode_t mode)

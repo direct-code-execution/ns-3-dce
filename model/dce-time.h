@@ -14,6 +14,7 @@ extern "C" {
 time_t dce_time (time_t *t);
 struct tm * dce_gmtime (const time_t *timep);
 struct tm * dce_localtime (const time_t *timep);
+struct tm * dce_localtime_r (const time_t *timep, struct tm *buf);
 char * dce_ctime (const time_t *timep);
 char * dce_asctime (const struct tm *tm);
 int dce_clock_gettime (clockid_t which_clock, struct timespec *tp);

@@ -42,6 +42,17 @@ struct tm * dce_localtime (const time_t *timep)
   return localtime_r (timep, &Current ()->process->struct_tm);
 }
 
+// This returns different time than dce_localtime.  Simply redirecting
+// dce_localtime_r to dce_localtime can cause logs to start at different
+// offsets from zero such as 2009/12/31 22:00:00. With the below, logs
+// start at 2010/01/01 00:00:00.
+struct tm * dce_localtime_r (const time_t *timep, struct tm *buf)
+{
+  setenv ("TZ", "UTC", 1);
+  tzset ();
+  return localtime_r (timep, buf);
+};
+
 char * dce_ctime (const time_t *timep)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());

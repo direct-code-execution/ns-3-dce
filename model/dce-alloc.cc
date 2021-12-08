@@ -27,6 +27,12 @@ void * dce_malloc (size_t size)
   NS_LOG_DEBUG ("alloc=" << (void*)buffer);
   return buffer;
 }
+size_t dce_malloc_usable_size (void *ptr)
+{
+  size_t* buffer = (size_t*) ptr;
+  buffer--;
+  return *buffer - sizeof (size_t);
+}
 void dce_free (void *ptr)
 {
   GET_CURRENT (ptr);

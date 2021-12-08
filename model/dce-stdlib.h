@@ -15,6 +15,7 @@ long long unsigned int dce_strtoull (const char *nptr, char **endptr, int base);
 double dce_strtod (const char *nptr, char **endptr);
 void * dce_calloc (size_t nmemb, size_t size);
 void * dce_malloc (size_t size);
+size_t dce_malloc_usable_size (void *ptr);
 void dce_free (void *ptr);
 void * dce_realloc (void *ptr, size_t size);
 int dce_atexit (void (*function)(void));
