@@ -152,11 +152,15 @@ int dce_openat (int dirfd, const char *pathname, int flags, ...) {
     }
   va_end (vl);
   
+  // If pathname is absolute, then dirfd is ignored and openat behaves
+  // the same way as open
   char c = *pathname;
   if (c == '/' || dirfd == AT_FDCWD) {
     return dce_open(pathname, flags, mode);
   }
   
+  // If pathname is relative, then it is interpreted relative to the directory 
+  // referred to by the file descriptor dirfd
   Thread *current = Current ();
   int realFd = getRealFd (dirfd, current);
 
@@ -167,6 +171,7 @@ int dce_openat (int dirfd, const char *pathname, int flags, ...) {
     return -1;
   }
 
+  // We find the directory referred by dirfd and finally open the dile with dce_open
   std::stringstream command_cp;    
   command_cp << "cd files-" << UtilsGetNodeId () << "; find . -inum " << finfo.st_ino;
 
