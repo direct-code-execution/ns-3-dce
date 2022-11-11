@@ -9,15 +9,14 @@ Direct Code Execution (DCE) is a framework for ns-3 that provides facilities to 
 
 
 More explanation available on:
-http://www.nsnam.org/projects/direct-code-execution/
+https://www.nsnam.org/about/projects/direct-code-execution/
 
 Documentation
 ===
 
 In case you have a question, you should first refer to the documentation:
 
-* A manual is available at https://www.nsnam.org/docs/dce/manual/html/index.html
-* API/Doxygen documentation on https://www.nsnam.org/docs/dce/doxygen/index.html
+* A manual is available at https://ns-3-dce.readthedocs.io/en/latest/
 
 And look for answers on the ns3 mailing list https://groups.google.com/forum/#!forum/ns-3-users.
 
@@ -25,8 +24,7 @@ Contribute
 ===
 Development is done on github and bugs should be filed at https://github.com/direct-code-execution/ns-3-dce/issues.
 
-The mailing list used to discuss internals is the same as ns3's: *ns-developers at isi.edu*
-
+The mailing list used to discuss internals is the same as ns3's: https://groups.google.com/g/ns-developers
 
 License
 ===
