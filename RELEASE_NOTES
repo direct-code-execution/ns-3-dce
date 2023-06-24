@@ -5,6 +5,39 @@ This file contains Direct Code Execution release notes (most recent releases fir
 
 Please refer the page https://www.nsnam.org/projects/direct-code-execution/ for detailed instructions
 
+Release dce-1.12
+================
+In order to use DCE, please use the bake tool to install DCE.  DCE 1.12
+is designed to be used with the ns-3.35 release, and the bake tool
+orchestrates a coordinated build of ns-3, DCE, and supporting packages.
+
+Instructions for this release can be found at:
+https://ns-3-dce.readthedocs.io/en/dce-1.12/getting-started.html
+
+Tested platforms
+----------------
+- Ubuntu 20.04
+
+This release is not tested on newer Ubuntu releases.  Other Linux platforms
+have not been tested.
+
+New user-visible features
+-------------------------
+This release upgrades DCE to work on Ubuntu 20.04 from Ubuntu 16.04.  This
+is due to the work from Parth Pratim Chatterjee, described more fully here:
+https://ns-3-dce-linux-upgrade.github.io/
+
+Due to some changes in the glibc installed in newer Ubuntu releases, DCE now
+has to build a custom glibc, and as a result, the disk space requirements for
+the build have increased to between 12 to 15 GB.
+
+The underlying ns-3 release compatible with this version is ns-3.35.
+
+Bugs fixed
+----------
+- (pull request 132) Fix bug in dce_vasprintf
+- (pull request 133) Fix bug in dce_internalClosedir
+
 Release dce-1.11
 ================
 In order to use DCE, please use the bake tool to install DCE.  DCE 1.11
