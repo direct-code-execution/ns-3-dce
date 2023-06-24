@@ -10,8 +10,7 @@ Introduction
 The DCE ns-3 module provides facilities to execute within ns-3 existing
 implementations of userspace and kernelspace network protocols. 
 
-As of today, the Quagga routing protocol implementation, the CCNx CCN
-implementation, and a few versions of the Linux kernel network stack are
+As of today, the Quagga routing protocol implementation and a few versions of the Linux kernel network stack are
 known to run within DCE, hence allowing network protocol experimenters and
 researchers to use the unmodified implementation of their protocols for
 real-world deployments and simulations.
@@ -28,6 +27,9 @@ DCE offers two major modes of operation:
 Building DCE basic mode
 +++++++++++++++++++++++
 
+Note that as of version 1.12, DCE requires about 12 to 15 GB of space in 
+your working directory.
+
 First you need to download Bake using Git and set some environment variables:
 
 .. code-block:: sh
@@ -35,7 +37,6 @@ First you need to download Bake using Git and set some environment variables:
   git clone https://gitlab.com/nsnam/bake.git
   cd bake
   export PATH=$PATH:`pwd`/build/bin:`pwd`/build/bin_dce
-  export PYTHONPATH=`pwd`/build/lib${PYTHONPATH:+:$PYTHONPATH}
   export LD_LIBRARY_PATH=`pwd`/build/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
   export DCE_PATH=`pwd`/build/bin_dce:`pwd`/build/sbin
 
@@ -56,53 +57,62 @@ proceed with:
    ./bake.py download
    ./bake.py build
  
-Note that dce-ns3-$version is the DCE module with a version number. If you would like to use the development version of DCE module, you can specify **dce-ns3-dev** as a module name for bake.  As of August 2021, the dce-ns3-1.11 version is recommended for Ubuntu 16.04, and the dev version is expected to shortly migrate away from
-compatibility with Ubuntu 16.04 towards Ubuntu 20.04.
+Note that dce-ns3-$version is the DCE module with a version number. If you would like to use the development version of DCE module, you can specify **dce-ns3-dev** as a module name for bake.
 
-The download output should look something like this for the dce-ns3-dev module:
+DCE version 1.12 is tested on Ubuntu 20.04 only, and DCE version 1.11 is only known to work for Ubuntu 16.04.
+
+The download output should look something like this for the dce-ns3-1.12 module:
 
 .. code-block:: none
 
-  >> Searching for system dependency python3-dev - OK
+  >> Downloading iperf - OK
+  >> Searching for system dependency gawk - OK
   >> Downloading bash - OK
   >> Downloading thttpd - OK
   >> Downloading wget - OK
-  >> Downloading iperf - OK
-  >> Searching for system dependency libexpat-dev - OK
-  >> Searching for system dependency libpcap-dev - OK
-  >> Searching for system dependency libc - OK
-  >> Downloading libaspect - OK
   >> Searching for system dependency qt - OK
   >> Searching for system dependency g++ - OK
-  >> Searching for system dependency python3-setuptools - OK
+  >> Searching for system dependency setuptools - OK
   >> Searching for system dependency gi-cairo - OK
   >> Searching for system dependency gir-bindings - OK
   >> Searching for system dependency pygobject - OK
   >> Searching for system dependency pygraphviz - OK
-  >> Downloading ccnx - OK
-  >> Searching for system dependency libc-debug - OK
-  >> Downloading netanim - OK
-  >> Downloading pybindgen - OK
-  >> Downloading ns-3-dev - OK
-  >> Downloading elf-loader - OK
-  >> Downloading dce-meta-dev (target directory:ns-3-dce) - OK
-  >> Downloading dce-ns3-dev (target directory:ns-3-dce) - (Nothing to do, source directory already exists) - OK
+  >> Searching for system dependency python3-dev - OK
+  >> Searching for system dependency mercurial - OK
+  >> Downloading glibc-2.31 (target directory:glibc) - OK
+  >> Downloading netanim-3.108 - OK
+  >> Downloading libaspect - OK
+  >> Downloading pybindgen-0.22.0 (target directory:pybindgen) - OK
+  >> Downloading linux-dev (target directory:linux) - OK
+  >> Downloading ns-3.35 (target directory:ns-3.35) - OK
+  >> Downloading dce-meta-1.12 (target directory:ns-3-dce) - OK
+  >> Downloading dce-ns3-1.12 (target directory:ns-3-dce) - (Nothing to do, source directory already exists) - OK
 
 The build output should look something like this for the dce-ns3-dev module:
 
 .. code-block:: none
 
+  >> Building iperf - OK
   >> Building bash - OK
   >> Building thttpd - OK
   >> Building wget - OK
-  >> Building iperf - OK
+  >> Building glibc-2.31 - OK
   >> Building libaspect - OK
-  >> Building ccnx - OK
-  >> Building netanim - OK
-  >> Building pybindgen - OK
-  >> Building elf-loader - OK
-  >> Building ns-3-dev - OK
-  >> Building dce-ns3-dev - OK
+  >> Building pybindgen-0.22.0 - OK
+  >> Building netanim-3.108 - OK
+  >> Building linux-dev - OK
+  >> Building ns-3.35 - OK
+  >> Building dce-ns3-1.12 - OK
+
+After building, change into the source/ns-3-dce directory and check that
+tests pass by running:
+
+.. code-block:: sh
+    :caption: Running unit tests
+    :linenos:
+
+    cd source/ns-3-dce
+    ./test.py
 
 Building DCE advanced mode (with Linux kernel)
 ++++++++++++++++++++++++++++++++++++++++++++++
@@ -121,6 +131,31 @@ The difference to build the advanced mode is the different module name *dce-linu
 
 Note that dce-linux-$version is the DCE module with a version number. If you would like to use the development version of DCE module, you can specify **dce-linux-dev** as a module name for bake.
 
+Docker container instructions
++++++++++++++++++++++++++++++
+
+If you have a Docker container of Ubuntu 20.04, you can try the following
+installation recipe.  This also lists all of the Ubuntu 20.04 packages
+needed for DCE version 1.12 and DCE quagga version 1.12.
+
+.. code-block:: sh
+    :caption: Installation of DCE into a new ubuntu:20.04 container
+    :linenos:
+
+    apt install -y g++ cmake ninja-build ccache libgsl-dev libgtk-3-dev libboost-dev wget git python3 python3-pip
+    apt install -y automake bc bison flex gawk libc6 libc6-dbg libdb-dev libssl-dev libpcap-dev vim rsync gdb
+    apt install -y mercurial indent libsysfs-dev
+    pip3 install requests distro
+    git clone https://gitlab.com/nsnam/bake.git
+    cd bake
+    git checkout -b dce-1.12 origin/dce-1.12
+    export PATH=$PATH:`pwd`/build/bin
+    export LD_LIBRARY_PATH=`pwd`/build/lib
+    export DCE_PATH=`pwd`/build/bin_dce:`pwd`/build/sbin
+    ./bake.py configure -e dce-linux-1.12 -e dce-quagga-1.12
+    ./bake.py show
+    ./bake.py download
+    ./bake.py build
 
 Building DCE using WAF
 ++++++++++++++++++++++

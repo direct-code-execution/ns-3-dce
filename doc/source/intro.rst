@@ -75,9 +75,14 @@ Tested Environment
 ******************
 
 Currently, DCE only supports Linux-based operating systems.
-The current version of DCE has been tested only on the following distribution:
 
-- Ubuntu 16.04 (gcc-5.4, libc-2.23)
+DCE version 1.12 has been tested only on the following distribution:
+
+- Ubuntu 20.04
+
+DCE version 1.11 has been tested only on the following distribution:
+
+- Ubuntu 16.04
 
 Newer Linux distributions (based on newer libc) require different support and
 are not presently supported but are under development.

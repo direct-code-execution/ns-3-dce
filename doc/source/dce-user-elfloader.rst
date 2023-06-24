@@ -1,6 +1,8 @@
 .. include:: replace.txt
 Using Alternative, Fast Loader
 ==============================
+**Note:** elf-loader currently only works for DCE version 1.11 and earlier.
+
 DCE optionally supports an alternative ELF loader/linker, so-called elf-loader, in order to replace system-provided linker/loader module. The intention of the loader is to support unlimited number of instances used by **dlmopen** call, which provides DCE to load a single ELF binary to multiple different memory space. dlmopen-based loader (ns3::DlmLoaderFactory) is much faster than another default one (ns3::CoojaLOaderFactory), but few issues are remain so, this is optional.
 
 To Speedup Run-time
