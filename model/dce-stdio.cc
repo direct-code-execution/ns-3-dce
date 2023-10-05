@@ -22,27 +22,15 @@ using namespace ns3;
 
 namespace {
 
-struct my_IO_jump_t
+struct my_cookie
 {
-  size_t dummy0;
-  size_t dummy1;
-  void *functions[12];
-  void *__read;
-  void *__write;
-  void *__seek;
-  void *__close;
-  void *__stat;
-  void *__showmanyc;
-  void *__imbue;
-};
-struct my_IO_FILE_plus
-{
-  _IO_FILE file;
-  struct my_IO_jump_t *vtable;
+  int _fileno;
+  off64_t _offset;
 };
 
-ssize_t my_read (_IO_FILE *file, void *buffer, ssize_t size)
+ssize_t my_read (void *c, char *buffer, size_t size)
 {
+  struct my_cookie *file = (struct my_cookie *)c;
   ssize_t data_read = dce_read (file->_fileno, buffer, size);
   if (data_read == -1)
     {
@@ -50,8 +38,9 @@ ssize_t my_read (_IO_FILE *file, void *buffer, ssize_t size)
     }
   return data_read;
 }
-ssize_t my_write (_IO_FILE *file, const void *buffer, ssize_t size)
+ssize_t my_write (void *c, const char *buffer, size_t size)
 {
+  struct my_cookie *file = (struct my_cookie *)c;
   ssize_t data_written = dce_write (file->_fileno, buffer, size);
   if (data_written == -1)
     {
@@ -63,46 +52,38 @@ ssize_t my_write (_IO_FILE *file, const void *buffer, ssize_t size)
     }
   return data_written;
 }
-off64_t my_seek (_IO_FILE *file, off64_t where, int whence)
+int my_seek(void *c, off64_t *where, int whence)
 {
-  off64_t result = dce_lseek (file->_fileno, where, whence);
+  struct my_cookie *file = (struct my_cookie *)c;
+  off64_t result = dce_lseek (file->_fileno, *where, whence);
   if (result == -1)
     {
       errno = Current ()->err;
+      return -1;
     }
-  return result;
+  file->_offset = result;
+  *where = result;
+  return 0;
 }
-int my_close (_IO_FILE *file)
+int my_close(void *c)
 {
+  struct my_cookie *file = (struct my_cookie *)c;
   int result = dce_close (file->_fileno);
   if (result == -1)
     {
       errno = Current ()->err;
     }
+  free(file);
   return result;
 }
-int my_close_unconditional (_IO_FILE *file)
-{
-  return 0;
-}
-int my_write_unconditional (_IO_FILE *file)
-{
-  errno = EBADF;
-  return -1;
-}
-off64_t my_seek_unconditional (_IO_FILE *file, off64_t where, int whence)
-{
-  return -1;
-}
-int my_stat (_IO_FILE *file, void *buf)
-{
-  int result = dce_fstat64 (file->_fileno, (struct stat64 *)buf);
-  if (result == -1)
-    {
-      errno = Current ()->err;
-    }
-  return result;
-}
+
+cookie_io_functions_t my_func = {
+  .read = my_read,
+  .write = my_write,
+  .seek = my_seek,
+  .close = my_close,
+};
+
 bool mode_seek_start (const char *mode)
 {
   return *mode != 'a';
@@ -186,24 +167,9 @@ FILE * dce_fdopen (int fildes, const char *mode)
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << fildes << mode);
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
-  // no need to create or truncate. Just need to seek if needed.
-  FILE *file = fopen ("/dev/null", mode);
-  if (file == 0)
-    {
-      current->err = errno;
-      return 0;
-    }
-  struct my_IO_FILE_plus *fp = (struct my_IO_FILE_plus *)file;
-  static struct my_IO_jump_t vtable;
-  memcpy (&vtable, fp->vtable, sizeof(struct my_IO_jump_t));
-  vtable.__read = (void*)my_read;
-  vtable.__write = (void*)my_write;
-  vtable.__seek = (void*)my_seek;
-  vtable.__close = (void*)my_close;
-  vtable.__stat = (void*)my_stat;
-  fp->vtable = &vtable;
-  close (file->_fileno);
-  file->_fileno = fildes;
+  struct my_cookie *fp = (struct my_cookie*)malloc(sizeof(struct my_cookie));
+  fp->_fileno = fildes;
+  FILE *file = fopencookie(fp, mode, my_func);
   current->process->openStreams.push_back (file);
   dce_fseek (file, dce_lseek (fildes, 0, SEEK_CUR), SEEK_SET);
 
@@ -258,6 +224,8 @@ FILE * dce_fopen (const char *path, const char *mode)
   mode_setup (file, fd, mode);
   return file;
 }
+// FIXME: Ugly but less code movement.
+static void remove_stream (FILE *fp);
 FILE * dce_freopen (const char *path, const char *mode, FILE *stream)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << path << mode << stream);
@@ -268,36 +236,25 @@ FILE * dce_freopen (const char *path, const char *mode, FILE *stream)
       current->err = EINVAL;
       return 0;
     }
-  int oldFd = stream->_fileno;
-  stream->_fileno = -1;
-  stream = freopen ("/dev/null", mode, stream);
-  if (stream == 0)
-    {
-      stream->_fileno = oldFd;
-      current->err = errno;
-      return 0;
-    }
-  struct my_IO_FILE_plus *fp = (struct my_IO_FILE_plus *)stream;
-  static struct my_IO_jump_t vtable;
-  memcpy (&vtable, fp->vtable, sizeof(struct my_IO_jump_t));
-  vtable.__read = (void*)my_read;
-  vtable.__write = (void*)my_write;
-  vtable.__seek = (void*)my_seek;
-  vtable.__close = (void*)my_close;
-  vtable.__stat = (void*)my_stat;
-  fp->vtable = &vtable;
+  if (path == NULL) {
+      // Just change mode
+      // Create a copy of the fd behind stream
+      int oldFdCopy = dup(fileno(stream));
+      // Close the old
+      fclose(stream);
+      remove_stream(stream);
+      // And create a new dce_fdopen from the copied fd
+      // // And create a new dce_fdopen from the copied fd
+      stream = dce_fdopen(oldFdCopy, mode);
+      return stream;
+  }
+  if (stream) {
+      fclose(stream);
+      remove_stream(stream);
+  }
 
-  int fd = dce_open (path, mode_posix_flags (mode), ~0);
-  if (fd == -1)
-    {
-      dce_close (oldFd);
-      fclose (stream);
-      current->err = errno;
-      return 0;
-    }
-  dce_close (oldFd);
-  stream->_fileno = fd;
-  mode_setup (stream, fd, mode);
+  stream = dce_fopen(path, mode);
+
   return stream;
 }
 int dce_fcloseall (void)
@@ -342,14 +299,9 @@ int dce_fclose_unconditional (FILE *file)
   // Note: it is important here not to call the Current function here
   // because we need to be able to run this function even if there is no context.
   // For example, this is why we have no call to NS_LOG_FUNCTION (Current () ...);
-  struct my_IO_FILE_plus *fp = (struct my_IO_FILE_plus *)file;
-  static struct my_IO_jump_t vtable;
-  memcpy (&vtable, fp->vtable, sizeof(struct my_IO_jump_t));
-  vtable.__close = (void*)my_close_unconditional;
-  vtable.__write = (void*)my_write_unconditional;
-  vtable.__seek = (void*)my_seek_unconditional;
-  fp->vtable = &vtable;
-  fclose (file);
+  // TODO
+  //fclose(file);
+  // Maybee dce_close(fileno(file)) ?
   return 0;
 }
 int dce_fclose_onexec (FILE *file)
@@ -357,12 +309,9 @@ int dce_fclose_onexec (FILE *file)
   // Note: it is important here not to call the Current function here
   // because we need to be able to run this function even if there is no context.
   // For example, this is why we have no call to NS_LOG_FUNCTION (Current () ...);
-  struct my_IO_FILE_plus *fp = (struct my_IO_FILE_plus *)file;
-  static struct my_IO_jump_t vtable;
-  memcpy (&vtable, fp->vtable, sizeof(struct my_IO_jump_t));
-  vtable.__close = (void*)my_close_unconditional;
-  fp->vtable = &vtable;
-  fclose (file);
+  // TODO: fclose here might cause dce_write and will cause dce_close which calls Current()...
+  // but it works in the tests now.
+  fclose(file);
   return 0;
 }
 int dce_fclose (FILE *fp)
@@ -375,6 +324,9 @@ int dce_fclose (FILE *fp)
       || (current->process->pstdin && fp == *current->process->pstderr)
       || (current->process->pstdin && fp == *current->process->pstdin))
     {
+      // TODO: BUG: This is not right
+      // fcloseall says:
+      // The standard streams, stdin, stdout, and stderr are also closed.
       return 0;
     }
 
@@ -460,6 +412,19 @@ int dce_fileno (FILE *stream)
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << stream);
   NS_ASSERT (Current () != 0);
   Thread *current = Current ();
+
+  // UGLY: FIXME: Use current->process->openStreams instead
+  if (current->process->pstdin && stream == *current->process->pstdin) {
+      return 0;
+  } else if (current->process->pstdout && stream == *current->process->pstdout) {
+      return 1;
+  } else if (current->process->pstderr && stream == *current->process->pstderr) {
+      return 2;
+  }
+
+  // FIXME: Handle fopencookie things to. We need to detect those FILE*
+  // and return cookie->_fileno instead... But how?
+
   int status = fileno (stream);
   if (status == -1)
     {
