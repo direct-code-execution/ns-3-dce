@@ -1,0 +1,34 @@
+diff --git a/src/nettest_omni.c b/src/nettest_omni.c
+index 852eeb1..51a3d7a 100644
+--- a/src/nettest_omni.c
++++ b/src/nettest_omni.c
+@@ -5429,6 +5429,29 @@ recv_omni()
+       exit(1);
+     }
+ #endif /* TCP_DEFER_ACCEPT */
++  struct sockaddr_storage addr_source;
++  int addr_source_len = sizeof(addr_source);
++  if (getsockname(s_listen, (struct sockaddr *) &addr_source, &addr_source_len) == SOCKET_ERROR) {
++    netperf_response.content.serv_errno = errno;
++    close(s_listen);
++    send_response();
++    if (debug) {
++      fprintf(where,"netperfserver: %s could not get socket addr.\n",__FUNCTION__);
++      fflush(where);
++    }
++    exit(1);
++  }
++
++  if (bind(s_listen, (struct sockaddr *) &addr_source, sizeof(addr_source)) == SOCKET_ERROR) {
++    netperf_response.content.serv_errno = errno;
++    close(s_listen);
++    send_response();
++    if (debug) {
++      fprintf(where,"netperfserver: %s could not bind.\n",__FUNCTION__);
++      fflush(where);
++    }
++    exit(1);
++  }
+     if (listen(s_listen, backlog) == SOCKET_ERROR) {
+       netperf_response.content.serv_errno = errno;
+       close(s_listen);
