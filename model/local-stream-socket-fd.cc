@@ -45,11 +45,6 @@ LocalStreamSocketFd::GetTypeId (void)
 
   return tid;
 }
-TypeId
-LocalStreamSocketFd::GetInstanceTypeId (void) const
-{
-  return LocalStreamSocketFd::GetTypeId ();
-}
 LocalStreamSocketFd::LocalStreamSocketFd (Ptr<LocalSocketFdFactory> f)
   : m_state (CREATED),
     m_backLog (0)

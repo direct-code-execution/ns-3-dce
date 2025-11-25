@@ -48,7 +48,6 @@ class LocalDatagramSocketFd : public LocalSocketFd
 {
 public:
   static TypeId GetTypeId (void);
-  virtual TypeId GetInstanceTypeId (void) const;
 
   LocalDatagramSocketFd (Ptr<LocalSocketFdFactory> f);
   virtual ~LocalDatagramSocketFd ();

@@ -40,11 +40,6 @@ LocalSocketFdFactory::GetTypeId (void)
 
   return tid;
 }
-TypeId
-LocalSocketFdFactory::GetInstanceTypeId (void) const
-{
-  return LocalSocketFdFactory::GetTypeId ();
-}
 LocalSocketFdFactory::LocalSocketFdFactory ()
   : m_totalBuffersSize (0)
 {

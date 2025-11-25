@@ -41,11 +41,6 @@ LocalSocketFd::GetTypeId (void)
 
   return tid;
 }
-TypeId
-LocalSocketFd::GetInstanceTypeId (void) const
-{
-  return LocalSocketFd::GetTypeId ();
-}
 LocalSocketFd::LocalSocketFd () : m_readBuffer (0),
                                   m_readBufferSize (0),
                                   m_sendTimeout (0),

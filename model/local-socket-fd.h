@@ -47,7 +47,6 @@ class LocalSocketFd : public UnixFd
 {
 public:
   static TypeId GetTypeId (void);
-  virtual TypeId GetInstanceTypeId (void) const;
 
   LocalSocketFd ();
   virtual ~LocalSocketFd ();

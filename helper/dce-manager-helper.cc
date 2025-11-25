@@ -39,11 +39,6 @@ DceManagerHelper::GetTypeId (void)
   ;
   return tid;
 }
-TypeId
-DceManagerHelper::GetInstanceTypeId (void) const
-{
-  return DceManagerHelper::GetTypeId ();
-}
 
 DceManagerHelper::DceManagerHelper ()
 {

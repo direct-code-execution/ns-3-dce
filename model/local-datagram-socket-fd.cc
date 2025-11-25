@@ -44,11 +44,6 @@ LocalDatagramSocketFd::GetTypeId (void)
 
   return tid;
 }
-TypeId
-LocalDatagramSocketFd::GetInstanceTypeId (void) const
-{
-  return LocalDatagramSocketFd::GetTypeId ();
-}
 LocalDatagramSocketFd::LocalDatagramSocketFd (Ptr<LocalSocketFdFactory> f)
   : m_state (CREATED),
     m_peer (0)

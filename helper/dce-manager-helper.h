@@ -83,7 +83,6 @@ class DceManagerHelper : public Object
 {
 public:
   static TypeId GetTypeId (void);
-  virtual TypeId GetInstanceTypeId (void) const;
 
   /**
    * Construct a DceManagerHelper

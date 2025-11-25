@@ -36,7 +36,6 @@ class LocalSocketFdFactory : public SocketFdFactory
 {
 public:
   static TypeId GetTypeId (void);
-  virtual TypeId GetInstanceTypeId (void) const;
 
   LocalSocketFdFactory ();
   virtual void DoDispose ();

@@ -50,7 +50,6 @@ class LocalStreamSocketFd : public LocalSocketFd
 {
 public:
   static TypeId GetTypeId (void);
-  virtual TypeId GetInstanceTypeId (void) const;
 
   LocalStreamSocketFd (Ptr<LocalSocketFdFactory> f);
   LocalStreamSocketFd (LocalStreamSocketFd *peer, std::string connectPath);

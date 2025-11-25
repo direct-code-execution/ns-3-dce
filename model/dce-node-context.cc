@@ -46,11 +46,6 @@ DceNodeContext::GetTypeId (void)
 
   return tid;
 }
-TypeId
-DceNodeContext::GetInstanceTypeId (void) const
-{
-  return DceNodeContext::GetTypeId ();
-}
 DceNodeContext::DceNodeContext ()
 {
   m_randomCtx = CreateObject<NormalRandomVariable> ();
