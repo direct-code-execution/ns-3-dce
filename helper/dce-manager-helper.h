@@ -89,6 +89,8 @@ public:
    */
   DceManagerHelper ();
 
+  void NotifyConstructionCompleted (void) override;
+
   /**
    * \param type the name of the TaskScheduler to set
    * \param n0 the name of the attribute to set to the TaskScheduler

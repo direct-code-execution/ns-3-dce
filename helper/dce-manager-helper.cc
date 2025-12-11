@@ -30,7 +30,9 @@ TypeId
 DceManagerHelper::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::DceManagerHelper")
-    .SetParent<ObjectBase> ()
+    .SetParent<Object> ()
+    .SetGroupName ("Dce")
+    .AddConstructor<DceManagerHelper> ()
     .AddAttribute ("LoaderFactory",
                    "The kind of loader factory created when Install is called",
                    StringValue ("ns3::CoojaLoaderFactory[]"),
@@ -42,13 +44,19 @@ DceManagerHelper::GetTypeId (void)
 
 DceManagerHelper::DceManagerHelper ()
 {
-  ConstructSelf (AttributeConstructionList ());
+  m_loaderFactory.SetTypeId ("ns3::CoojaLoaderFactory");
   m_taskManagerFactory.SetTypeId ("ns3::TaskManager");
   m_schedulerFactory.SetTypeId ("ns3::RrTaskScheduler");
   m_managerFactory.SetTypeId ("ns3::DceManager");
   m_networkStackFactory.SetTypeId ("ns3::Ns3SocketFdFactory");
   m_delayFactory.SetTypeId ("ns3::RandomProcessDelayModel");
   m_virtualPath = "";
+}
+
+void
+DceManagerHelper::NotifyConstructionCompleted (void)
+{
+  Object::NotifyConstructionCompleted ();
 }
 void
 DceManagerHelper::SetScheduler (std::string type,
