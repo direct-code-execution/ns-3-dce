@@ -10,6 +10,7 @@
 #include <sys/un.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <ctime>
 
 #define SOCK_PATH "/tmp/socket"
 #define BUF_LEN 256

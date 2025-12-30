@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <sys/un.h>
+#include <ctime>
 
 #define SOCK_PATH "/tmp/socket"
 #define BUF_LEN 128 * 1024 + 255

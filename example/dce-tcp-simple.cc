@@ -27,7 +27,7 @@ int main (int argc, char *argv[])
   apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds (4.0));
 
-  Simulator::Stop (Seconds (1000100.0));
+  Simulator::Stop (Seconds (60.0));
   Simulator::Run ();
   Simulator::Destroy ();
 
