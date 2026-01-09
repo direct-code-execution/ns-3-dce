@@ -792,6 +792,51 @@ def run_job_synchronously(shell_command, directory, valgrind, is_python, build_p
 
     retval = proc.returncode
 
+    # If the process crashed (segfault = 139, etc), re-run with GDB to get backtrace
+    if options.gdb and (retval < 0 or retval == 139):  # 139 = 128 + 11 (SIGSEGV)
+        print("=" * 70)
+        print("CRASH DETECTED (exit code %d). Re-running with GDB to get backtrace..." % retval)
+        print("=" * 70)
+
+        # Create GDB batch file
+        gdb_commands = """
+set pagination off
+set print pretty on
+handle SIGUSR1 nostop noprint pass
+run
+bt
+bt full
+thread apply all bt
+quit
+"""
+        gdb_script = os.path.join(os.getcwd(), "gdb_batch_%d.txt" % os.getpid())
+        with open(gdb_script, 'w') as f:
+            f.write(gdb_commands)
+
+        # Re-run with GDB
+        gdb_cmd = "gdb -batch -x %s --args %s" % (gdb_script, path_cmd)
+        if options.verbose:
+            print("GDB command: %s" % gdb_cmd)
+
+        gdb_proc = subprocess.Popen(gdb_cmd, shell=True, universal_newlines=True,
+            cwd = directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        gdb_stdout, gdb_stderr = gdb_proc.communicate()
+
+        print("\n" + "=" * 70)
+        print("GDB BACKTRACE OUTPUT:")
+        print("=" * 70)
+        print(gdb_stdout)
+        if gdb_stderr:
+            print("GDB STDERR:")
+            print(gdb_stderr)
+        print("=" * 70 + "\n")
+
+        # Clean up
+        try:
+            os.remove(gdb_script)
+        except:
+            pass
+
     #
     # valgrind sometimes has its own idea about what kind of memory management
     # errors are important.  We want to detect *any* leaks, so the way to do 
@@ -1951,6 +1996,9 @@ def main(argv):
 
     parser.add_option("-z", "--dlm", action="store_true", dest="dlm_test_runner", default=False,
                       help="execute test runner with external elf-loader.")
+
+    parser.add_option("--gdb", action="store_true", dest="gdb", default=False,
+                      help="Re-run tests that crash with gdb")
 
     global options
     options = parser.parse_args()[0]
