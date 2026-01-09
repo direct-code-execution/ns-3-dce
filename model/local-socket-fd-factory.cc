@@ -81,6 +81,7 @@ LocalSocketFdFactory::CreateSocket (int domain, int type, int protocol)
 LocalSocketFd*
 LocalSocketFdFactory::FindBinder (std::string path, TypeId type) const
 {
+  NS_LOG_FUNCTION (this << path << type.GetName());
   BindMap::const_iterator i = m_bindByPath.find (path);
   if (m_bindByPath.end () == i)
     {
@@ -89,7 +90,7 @@ LocalSocketFdFactory::FindBinder (std::string path, TypeId type) const
 
   LocalSocketFd* winner = i->second;
 
-  if ((winner != 0) && (winner->GetInstanceTypeId () == type))
+  if ((winner != 0))
     {
       return winner;
     }
