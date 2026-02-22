@@ -1,0 +1,108 @@
+name: Build and Test DCE
+
+on:
+  push:
+    branches: [ sikabo_master ]
+  pull_request:
+    branches: [ sikabo_master ]
+  workflow_dispatch:
+
+env:
+  NS3_VER: "3.46"
+
+jobs:
+  build:
+    name: Build on ${{ matrix.distro }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - distro: ubuntu-22.04
+            image: ubuntu:22.04
+          - distro: ubuntu-24.04
+            image: ubuntu:24.04
+          - distro: debian-trixie
+            image: debian:trixie
+    container:
+      image: ${{ matrix.image }}
+    steps:
+      - name: Install dependencies
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update
+          apt-get install -y \
+            git \
+            gcc \
+            g++ \
+            python3 \
+            python3-dev \
+            cmake \
+            ninja-build \
+            pkg-config \
+            libgsl-dev \
+            libsqlite3-dev \
+            libxml2-dev \
+            wget \
+            make
+
+      - name: Configure git safe directory
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE/ns-3-dce"
+
+      - name: Checkout DCE repository
+        uses: actions/checkout@v4
+        with:
+          path: ns-3-dce
+
+      - name: Cache NS-3 build
+        id: cache-ns3
+        uses: actions/cache@v4
+        with:
+          path: build/
+          key: ns3-${{ env.NS3_VER }}-${{ matrix.distro }}
+          restore-keys: |
+            ns3-${{ env.NS3_VER }}-${{ matrix.distro }}
+
+      - name: Clone NS-3
+        if: steps.cache-ns3.outputs.cache-hit != 'true'
+        run: |
+          git clone --branch "ns-${{ env.NS3_VER }}" --depth 1 \
+            https://gitlab.com/nsnam/ns-3-dev.git "ns-${{ env.NS3_VER }}"
+
+      - name: Configure NS-3
+        if: steps.cache-ns3.outputs.cache-hit != 'true'
+        working-directory: ns-${{ env.NS3_VER }}
+        run: |
+          ./ns3 configure \
+            --disable-werror \
+            --prefix="$GITHUB_WORKSPACE/build" \
+            --build-profile=release
+
+      - name: Build NS-3
+        if: steps.cache-ns3.outputs.cache-hit != 'true'
+        working-directory: ns-${{ env.NS3_VER }}
+        run: ./ns3 build
+
+      - name: Install NS-3
+        if: steps.cache-ns3.outputs.cache-hit != 'true'
+        working-directory: ns-${{ env.NS3_VER }}
+        run: ./ns3 install
+
+      - name: Configure DCE
+        working-directory: ns-3-dce
+        run: |
+          ./waf configure \
+            --with-ns3="$GITHUB_WORKSPACE/build" \
+            --prefix="$GITHUB_WORKSPACE/build" \
+            --enable-opt
+
+      - name: Build DCE
+        working-directory: ns-3-dce
+        run: ./waf build
+
+      - name: Run DCE test (dce-mt2)
+        working-directory: ns-3-dce
+        env:
+          LD_LIBRARY_PATH: ${{ github.workspace }}/build/lib:${{ github.workspace }}/build/lib64
+          DCE_PATH: ${{ github.workspace }}/ns-3-dce/myscripts/mt2
+        run: ./waf --run "dce-mt2"
