@@ -100,9 +100,12 @@ jobs:
         working-directory: ns-3-dce
         run: ./waf build
 
-      - name: Run DCE test (dce-mt2)
+      - name: Build bash for DCE
+        working-directory: ns-3-dce
+        run: ./utils/build_bash.sh build/bin_dce
+
+      - name: Run DCE tests
         working-directory: ns-3-dce
         env:
           LD_LIBRARY_PATH: ${{ github.workspace }}/build/lib:${{ github.workspace }}/build/lib64
-          DCE_PATH: ${{ github.workspace }}/ns-3-dce/myscripts/mt2
-        run: ./waf --run "dce-mt2"
+        run: python3 test.py

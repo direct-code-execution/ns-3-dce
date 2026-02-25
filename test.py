@@ -74,6 +74,8 @@ BUILD_PROFILE = "" # not used
 VERSION = ""
 PYTHON = ""
 VALGRIND_FOUND = True
+BASH_DCE_FOUND = False
+IPERF_DCE_FOUND = False
 
 #
 # This will be given a prefix and a suffix when the waf config file is
@@ -1159,6 +1161,44 @@ def run_tests():
     # Dynamically set up paths.
     #
     make_paths()
+
+    #
+    # Check if bash is available for DCE. The dce-bash-simple example requires
+    # a DCE compiled version of bash.
+    #
+    global BASH_DCE_FOUND
+    bash_search_dirs = [
+        os.path.join(NS3_BUILDDIR, "bin_dce"),
+        os.path.join(NS3_BUILDDIR, "bin"),
+        os.path.join(NS3_INSTALL_DIR, "bin_dce"),
+        os.path.join(NS3_INSTALL_DIR, "bin"),
+        os.path.join(NS3_INSTALL_DIR, "sbin"),
+    ]
+    for d in bash_search_dirs:
+        if os.path.isfile(os.path.join(d, "bash")):
+            BASH_DCE_FOUND = True
+            break
+    if options.verbose:
+        print("BASH_DCE_FOUND == %s" % BASH_DCE_FOUND)
+
+    #
+    # Check if iperf is available for DCE. The dce-iperf examples require
+    # a DCE compiled version of iperf.
+    #
+    global IPERF_DCE_FOUND
+    iperf_search_dirs = [
+        os.path.join(NS3_BUILDDIR, "bin_dce"),
+        os.path.join(NS3_BUILDDIR, "bin"),
+        os.path.join(NS3_INSTALL_DIR, "bin_dce"),
+        os.path.join(NS3_INSTALL_DIR, "bin"),
+        os.path.join(NS3_INSTALL_DIR, "sbin"),
+    ]
+    for d in iperf_search_dirs:
+        if os.path.isfile(os.path.join(d, "iperf")):
+            IPERF_DCE_FOUND = True
+            break
+    if options.verbose:
+        print("IPERF_DCE_FOUND == %s" % IPERF_DCE_FOUND)
 
     #
     # Get the information from the build status file.
