@@ -253,7 +253,52 @@ ElfCache::EditBuffer (uint8_t *map, uint32_t selfId) const
         }
       cur++;
     }
+
+  DemoteUniqueSymbols (map, header);
+
   return fileInfo;
+}
+
+void
+ElfCache::DemoteUniqueSymbols (uint8_t *map, ElfW (Ehdr) *header) const
+{
+  // Rewrite every STB_GNU_UNIQUE symbol in the cached module's .dynsym to
+  // STB_GLOBAL.  STB_GNU_UNIQUE forces a single, process-wide instance of the
+  // symbol regardless of RTLD_LOCAL / RTLD_DEEPBIND; demoting it lets each
+  // symbol honour RTLD_DEEPBIND and resolve to the guest's own copy, keeping
+  // DCE's per-process module isolation intact.  The host libraries that the
+  // ns-3 test-runner links are never edited -- only the elf-cache copies.
+  if (header->e_shoff == 0 || header->e_shnum == 0)
+    {
+      return;
+    }
+  ElfW (Shdr) *shdr = (ElfW (Shdr) *)(map + header->e_shoff);
+  uint32_t demoted = 0;
+  for (uint32_t i = 0; i < header->e_shnum; i++)
+    {
+      if (shdr[i].sh_type != SHT_DYNSYM || shdr[i].sh_entsize == 0)
+        {
+          continue;
+        }
+      ElfW (Sym) *syms = (ElfW (Sym) *)(map + shdr[i].sh_offset);
+      uint32_t count = shdr[i].sh_size / shdr[i].sh_entsize;
+      for (uint32_t s = 0; s < count; s++)
+        {
+          // st_info packs binding in the high nibble, type in the low nibble;
+          // the encoding is identical for ELF32 and ELF64.
+          unsigned char bind = syms[s].st_info >> 4;
+          if (bind == STB_GNU_UNIQUE)
+            {
+              unsigned char type = syms[s].st_info & 0xf;
+              syms[s].st_info = (STB_GLOBAL << 4) | type;
+              demoted++;
+            }
+        }
+    }
+  if (demoted != 0)
+    {
+      NS_LOG_DEBUG ("demoted " << demoted << " STB_GNU_UNIQUE symbol(s) to STB_GLOBAL");
+    }
 }
 
 struct ElfCache::FileInfo

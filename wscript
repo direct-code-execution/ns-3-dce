@@ -261,13 +261,9 @@ def dce_kw(**kw):
     nofortify = ['-U_FORTIFY_SOURCE']
     #debug_dl = ['-Wl,--dynamic-linker=/usr/lib/debug/ld-linux-x86-64.so.2']
     debug_dl = []
-    # Auto-include dce-iostream-simple.h to override std::cout
-    auto_include = ['-include', 'utils/dce-iostream-simple.h']
-    d['cxxflags'] = d.get('cxxflags', []) + ['-fpie'] + mcmodel + nofortify + ['-Wno-deprecated-declarations'] + auto_include
+    d['cxxflags'] = d.get('cxxflags', []) + ['-fpie'] + mcmodel + nofortify + ['-Wno-deprecated-declarations']
     d['cflags'] = d.get('cflags', []) + ['-fpie'] + mcmodel + nofortify
     d['linkflags'] = d.get('linkflags', []) + ['-pie'] + ['-lrt'] + ['-rdynamic'] + debug_dl
-    # Add utils and model directories for dce-iostream-simple.h access
-    d['includes'] = d.get('includes', []) + ['.', 'utils', 'model']
     return d
 
 def build_dce_tests(module, bld):
@@ -333,6 +329,7 @@ def build_dce_tests(module, bld):
              ['test-signal', []],
              ['test-clock-gettime', []],
              ['test-gcc-builtin-apply', []],
+             ['test-iostream', []],
              ]
     for name,uselib in tests:
         module.add_test(**dce_kw(target='bin_dce/' + name, source = ['test/' + name + '.cc'],

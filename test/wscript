@@ -42,4 +42,4 @@ def build(bld):
     new_test(bld, 'test-local-socket', 'PTHREAD')
     new_test(bld, 'test-tcp-socket', 'PTHREAD')
     new_test(bld, 'test-pipe', 'PTHREAD')
-    
+    new_test(bld, 'test-iostream', '')

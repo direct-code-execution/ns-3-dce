@@ -192,6 +192,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
     {  "test-strerror", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
     {  "test-stdio", 0, "/etc/passwd",false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
     {  "test-string", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    {  "test-iostream", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
     {  "test-netdb", 3600, "", true, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
     {  "test-env", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
     {  "test-cond", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
