@@ -73,24 +73,24 @@ int dce_fstatat (int fd, const char *pathname, struct stat *buf, int flag)
   return retval;
 }
 
-int dce_fstatat64(int dirfd, const char * path, struct stat64 * stat_buf, int flags)
+int dce_fstatat64(int dirfd, const char * pathname, struct stat64 * buf, int flags)
 {
   Thread *current = Current ();
-  NS_LOG_FUNCTION (current << UtilsGetNodeId () << path << stat_buf);
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << pathname << buf);
   NS_ASSERT (current != 0);
   int retval = -1;
 
-  if ((0 == path) || (0 == stat_buf))
+  if ((0 == pathname) || (0 == buf))
     {
       current->err = EFAULT;
       return -1;
     }
-  if (std::string (path) == "")
+  if (std::string (pathname) == "")
     {
       current->err = ENOENT;
       return -1;
     }
-  if (dirfd != AT_FDCWD && path[0] != '/')
+  if (dirfd != AT_FDCWD && pathname[0] != '/')
     {
       int realFd = getRealFd (dirfd, current);
 
@@ -99,12 +99,12 @@ int dce_fstatat64(int dirfd, const char * path, struct stat64 * stat_buf, int fl
           current->err = EBADF;
           return -1;
         }
-      retval = ::fstatat64 (realFd, path, stat_buf, flags);
+      retval = ::fstatat64 (realFd, pathname, buf, flags);
     }
   else
     {
-      std::string path = UtilsGetCurrentDirName () + "/" +  UtilsGetRealFilePath (path);
-      retval = ::fstatat64 (dirfd, path.c_str (), stat_buf, flags);
+      std::string path = UtilsGetCurrentDirName () + "/" +  UtilsGetRealFilePath (pathname);
+      retval = ::fstatat64 (dirfd, path.c_str (), buf, flags);
     }
   if (retval == -1)
     {
