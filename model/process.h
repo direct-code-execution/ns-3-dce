@@ -140,6 +140,7 @@ struct Process
   // Key is the fd
   std::map<int,FileUsage *> openFiles;
   std::vector<FILE *> openStreams;
+  std::map<FILE *, int> openStreamFds; // Maps a fopencookie-backed stream to its DCE fd.
   std::vector<DIR *> openDirs;
   std::vector<SignalHandler> signalHandlers;
   std::vector<Thread *> threads;
