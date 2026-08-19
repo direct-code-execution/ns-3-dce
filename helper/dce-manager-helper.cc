@@ -14,7 +14,7 @@
 #include "ipv4-linux.h"
 #include "dce-application-helper.h"
 #include "ns3/ipv4-routing-protocol.h"
-#include "ns3/ipv4-global-routing.h"
+#include "ns3/global-routing.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <limits.h>
