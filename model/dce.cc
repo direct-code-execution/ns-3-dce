@@ -295,7 +295,7 @@ int dce_gettimeofday (struct timeval *tv, struct timezone *tz)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId ());
   NS_ASSERT (Current () != 0);
-  NS_ASSERT (tz == 0);
+  // NS_ASSERT (tz == 0);
   *tv = UtilsTimeToTimeval (UtilsSimulationTimeToTime (Now ()));
   return 0;
 }
