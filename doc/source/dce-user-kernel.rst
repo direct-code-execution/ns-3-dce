@@ -244,6 +244,12 @@ You need first to add to your *DCE_PATH* the path to the previously compiled *li
     apps = process.Install (nodes.Get (1));
     apps.Start (Seconds (1.5));
 
+**Optional**
+When running hybrid simulations, i.e. with both kernel and ns3 stacks, the kernel will drop packets with invalid checksums. You can enable ns3 checksums globally:
+
+  1. if you pass the argument '--ChecksumEnabled=1' to any program that includes CommandLine parsing.
+  2. if you export the environment variable NS_GLOBAL_VALUE="ChecksumEnabled=1" before launching your simulation
+
 5. run it !
 -------------
 
