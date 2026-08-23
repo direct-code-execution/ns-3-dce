@@ -18,20 +18,20 @@ For more detail document, see :doc:`dce-ccnx`.
 
 Quagga
 ======
-`Quagga <http://www.quagga.net/about.php>`_ is a routing software suite, providing implementations of OSPFv2, OSPFv3, RIP v1 and v2, RIPng and BGP-4 for Unix platforms, particularly FreeBSD, Linux, Solaris and NetBSD.
+`Quagga <http://www.quagga.net/>`_ is a routing software suite, providing implementations of OSPFv2, OSPFv3, RIP v1 and v2, RIPng and BGP-4 for Unix platforms, particularly FreeBSD, Linux, Solaris and NetBSD.
 `More information <http://ns-3-dce-quagga.readthedocs.io/en/latest/>`_.
 
 iperf
 =====
 
-iperf from the following archive  `<http://walami.googlecode.com/files/iperf-2.0.5.tar.gz>`_ as been tested.
+iperf from the following archive  `<http://sourceforge.net/projects/iperf/>`_ as been tested.
 It is the exception that proves the rule. That is to say that this particular example requires a change in its code. 
 In the source file named ``Thread.c`` at line 412 in the function named ``thread_rest`` you must add a ``sleep(1)`` in order to help DCE to break the infinite loop.
 
 ping/ping6
 ==========
 
-Ping from the following archive `<http://www.skbuff.net/iputils/iputils-s20101006.tar.bz2>`_ is supported.
+Ping is used from the iputils package.
 
 ip (iproute2 package)
 =====================
