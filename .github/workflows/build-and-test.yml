@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  NS3_VER: "3.46"
+  NS3_VER: "3.48"
 
 jobs:
   build:
@@ -18,8 +18,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - distro: ubuntu-22.04
-            image: ubuntu:22.04
           - distro: ubuntu-24.04
             image: ubuntu:24.04
           - distro: debian-trixie

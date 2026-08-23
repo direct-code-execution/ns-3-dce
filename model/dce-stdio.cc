@@ -15,6 +15,7 @@
 #include <sys/mman.h>
 #include <string.h>
 #include <cstdarg>
+#include <map>
 
 NS_LOG_COMPONENT_DEFINE ("DceStdio");
 
@@ -171,6 +172,10 @@ FILE * dce_fdopen (int fildes, const char *mode)
   fp->_fileno = fildes;
   FILE *file = fopencookie(fp, mode, my_func);
   current->process->openStreams.push_back (file);
+  if (file != 0)
+    {
+      current->process->openStreamFds[file] = fildes;
+    }
   dce_fseek (file, dce_lseek (fildes, 0, SEEK_CUR), SEEK_SET);
 
   return file;
@@ -278,6 +283,7 @@ remove_stream (FILE *fp)
 {
   Thread *current = Current ();
   bool found = false;
+  current->process->openStreamFds.erase (fp);
   for (std::vector<FILE*>::iterator  i = current->process->openStreams.begin ();
        i != current->process->openStreams.end (); ++i)
     {
@@ -422,8 +428,14 @@ int dce_fileno (FILE *stream)
       return 2;
   }
 
-  // FIXME: Handle fopencookie things to. We need to detect those FILE*
-  // and return cookie->_fileno instead... But how?
+  // For fopencookie-backed streams, return the mapped DCE fd instead of the
+  // libc fileno() (which would return -1 since they have no real fd).
+  std::map<FILE *, int>::const_iterator it =
+    current->process->openStreamFds.find (stream);
+  if (it != current->process->openStreamFds.end ())
+    {
+      return it->second;
+    }
 
   int status = fileno (stream);
   if (status == -1)

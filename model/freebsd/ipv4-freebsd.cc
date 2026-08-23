@@ -25,7 +25,7 @@
 #include "ns3/ipv4-static-routing-helper.h"
 #include "ns3/ipv4-global-routing-helper.h"
 #include "ns3/ipv4-interface.h"
-#include "ns3/ipv4-global-routing.h"
+#include "ns3/global-routing.h"
 #include "ns3/ipv4-routing-table-entry.h"
 #include "dce-application-helper.h"
 #include "freebsd-socket-fd-factory.h"

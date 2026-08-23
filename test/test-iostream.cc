@@ -1,7 +1,18 @@
 #include <sstream>
+#include <fstream>
 #include <string>
 #include <ios>
+#include <unistd.h>
 #include "test-macros.h"
+
+static std::string
+read_whole_file (const char *path)
+{
+  std::ifstream ifs (path);
+  std::ostringstream oss;
+  oss << ifs.rdbuf ();
+  return oss.str ();
+}
 
 template<typename T>
 static std::string
@@ -41,6 +52,39 @@ main (int argc, char *argv[])
     std::ostringstream oss;
     oss << "value=" << 42 << " done";
     TEST_ASSERT_EQUAL (oss.str (), std::string ("value=42 done"));
+  }
+
+  // std::ofstream: write to a file, close, read it back.
+  {
+    const char *path = "iostream-test.out";
+    unlink (path);
+
+    std::ofstream ofs;
+    ofs.open (path);
+    TEST_ASSERT (ofs.is_open ());
+    TEST_ASSERT (ofs.good ());
+    TEST_ASSERT ((bool) ofs);
+
+    ofs << "line1=" << 1 << "\n";
+    ofs << "pi=" << 3.5 << "\n";
+    ofs << "hex=" << std::hex << std::showbase << 255 << "\n";
+    TEST_ASSERT (ofs.good ());
+    ofs.close ();
+    TEST_ASSERT (!ofs.fail ());
+
+    std::string contents = read_whole_file (path);
+    TEST_ASSERT_EQUAL (contents, std::string ("line1=1\npi=3.5\nhex=0xff\n"));
+
+    unlink (path);
+  }
+
+  // std::ofstream opening a path that cannot be created must report failure.
+  {
+    std::ofstream bad;
+    bad.open ("no-such-dir/definitely-missing/status.new");
+    TEST_ASSERT (!bad);
+    TEST_ASSERT (bad.fail ());
+    bad.close ();
   }
 
   return 0;
