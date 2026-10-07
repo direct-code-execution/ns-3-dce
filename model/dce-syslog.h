@@ -18,5 +18,6 @@ dce_syslog (int priority, const char *message, ...);
 
 void
 dce_vsyslog (int priority, const char *message, va_list args);
+void dce___syslog_chk (int priority, int flag, const char *message, ...);
 
 #endif // DCE_SYSLOG_H

@@ -2,7 +2,8 @@
 //
 // A real graphical web browser inside ns-3: Dillo runs on a Wi-Fi station,
 // fetches pages from a real thttpd running on another station through the
-// access point, and draws its window on the host X display.
+// access point, and draws its window on the host X display. --browser
+// selects another DCE build of a browser (same invocation: [options] URL).
 //
 //   node 0 (server STA)         node 1 (AP)          node 2 (client STA)
 //   +-------------------+   +--------------+   +------------------------+
@@ -37,12 +38,12 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("DceDillo");
+NS_LOG_COMPONENT_DEFINE ("DceBrowser");
 
 static void
 BrowserFinished (uint16_t pid, int status)
 {
-  std::cout << "dillo exited with status " << status << " at t="
+  std::cout << "the browser exited with status " << status << " at t="
             << Simulator::Now ().GetSeconds () << "s, stopping" << std::endl;
   Simulator::Stop ();
 }
@@ -76,6 +77,9 @@ CreateSite (void)
            "<tr><td>2</td><td>client STA (dillo)</td><td>10.1.1.2</td></tr></table>\n"
            "<p><a href=\"big.html\">A 1 MB page</a> to watch the Wi-Fi link work, and\n"
            "<a href=\"about.html\">how this works</a>.</p>\n"
+           "<div class=box id=js>JavaScript is <b>off</b> in this browser (Dillo has none).</div>\n"
+           "<script>document.getElementById('js').innerHTML = 'JavaScript is <b>running</b> in this browser: '"
+           " + navigator.userAgent + ' says 6 * 7 = ' + (6 * 7) + '.';</script>\n"
            "</body></html>\n";
   std::ofstream about ("files-0/about.html");
   about << "<html><head><title>How this works</title></head><body>\n"
@@ -103,12 +107,14 @@ main (int argc, char *argv[])
 {
   std::string url = "http://10.1.1.1/";
   std::string browser = "dillo";
+  std::string browserArgs = "";
   double distance = 10.0;
   double stopTime = 600.0;
 
   CommandLine cmd (__FILE__);
   cmd.AddValue ("url", "Page the browser opens", url);
-  cmd.AddValue ("browser", "Browser binary (a DCE build of dillo)", browser);
+  cmd.AddValue ("browser", "Browser binary (a DCE build; default dillo)", browser);
+  cmd.AddValue ("browserArgs", "Extra command line options for the browser", browserArgs);
   cmd.AddValue ("distance", "Distance in meters between the AP and the client STA", distance);
   cmd.AddValue ("stopTime", "Give up after this many seconds if the browser is still running", stopTime);
   cmd.Parse (argc, argv);
@@ -152,7 +158,7 @@ main (int argc, char *argv[])
   WifiHelper wifi;
   wifi.SetStandard (WIFI_STANDARD_80211n);
   wifi.SetRemoteStationManager ("ns3::MinstrelHtWifiManager");
-  Ssid ssid = Ssid ("dce-dillo");
+  Ssid ssid = Ssid ("dce-browser");
   WifiMacHelper mac;
   mac.SetType ("ns3::StaWifiMac", "Ssid", SsidValue (ssid), "ActiveProbing", BooleanValue (false));
   NetDeviceContainer staDevices = wifi.Install (phy, mac, NodeContainer (server, client));
@@ -202,16 +208,24 @@ main (int argc, char *argv[])
   dce.SetStackSize (1 << 24);
   dce.SetBinary (browser);
   dce.ResetArguments ();
-  dce.AddArgument (url);
   dce.ResetEnvironment ();
   DceX11Helper::SetEnvironment (dce);
+  {
+    std::istringstream is (browserArgs);
+    std::string arg;
+    while (is >> arg)
+      {
+        dce.AddArgument (arg);
+      }
+  }
+  dce.AddArgument (url);
   dce.SetUid (0);
   dce.SetEuid (0);
   dce.SetFinishedCallback (MakeCallback (&BrowserFinished));
   apps = dce.Install (client);
   apps.Start (Seconds (2.0));
 
-  phy.EnablePcap ("dce-dillo", apDevice.Get (0));
+  phy.EnablePcap ("dce-browser", apDevice.Get (0));
 
   std::cout << "thttpd on " << interfaces.GetAddress (0) << " serves files-0/, "
             << browser << " on " << interfaces.GetAddress (1) << " opens " << url

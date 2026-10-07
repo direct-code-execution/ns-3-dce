@@ -78,6 +78,7 @@ BASH_DCE_FOUND = False
 IPERF_DCE_FOUND = False
 FFMPEG_DCE_FOUND = False
 X11_DCE_FOUND = False
+GTK4_DCE_FOUND = False
 DILLO_DCE_FOUND = False
 
 #
@@ -1229,6 +1230,15 @@ def run_tests():
             break
     if options.verbose:
         print("X11_DCE_FOUND == %s" % X11_DCE_FOUND)
+
+    # The GTK4 client (needs libgtk-4-dev at build time and an X server).
+    global GTK4_DCE_FOUND
+    for d in iperf_search_dirs:
+        if os.path.isfile(os.path.join(d, "gtk4-hello")):
+            GTK4_DCE_FOUND = True
+            break
+    if options.verbose:
+        print("GTK4_DCE_FOUND == %s" % GTK4_DCE_FOUND)
 
     # The dce-dillo example needs the DCE build of the dillo browser.
     global DILLO_DCE_FOUND

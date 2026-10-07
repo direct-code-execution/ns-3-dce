@@ -13,6 +13,8 @@
 #include "ns3/network-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/dce-module.h"
+#include <unistd.h>
+#include <sys/stat.h>
 
 using namespace ns3;
 
@@ -21,7 +23,7 @@ static int g_exitStatus = -1;
 static void
 ClientFinished (uint16_t pid, int status)
 {
-  std::cout << "x11-hello (pid " << pid << ") exited with status " << status
+  std::cout << "the client (pid " << pid << ") exited with status " << status
             << " at t=" << Simulator::Now ().GetSeconds () << "s" << std::endl;
   g_exitStatus = status;
   Simulator::Stop ();
@@ -33,11 +35,17 @@ main (int argc, char *argv[])
   std::string binary = "x11-hello";
   double seconds = 5.0;
   std::string display = getenv ("DISPLAY") ? getenv ("DISPLAY") : "";
+  std::string env = "";
+  std::string args = "";
+  bool hostfs = false;
 
   CommandLine cmd (__FILE__);
   cmd.AddValue ("binary", "X11 client (DCE application) to run", binary);
   cmd.AddValue ("seconds", "How long the client keeps its window open", seconds);
   cmd.AddValue ("display", "X display the client connects to (default: $DISPLAY)", display);
+  cmd.AddValue ("env", "Extra environment for the client, comma separated KEY=VALUE pairs", env);
+  cmd.AddValue ("args", "Extra arguments for the client, space separated, after the seconds", args);
+  cmd.AddValue ("hostfs", "Give the client the host's /usr and /etc (symlinks in files-0/), for fonts and toolkit data", hostfs);
   cmd.Parse (argc, argv);
 
   if (display == "")
@@ -62,6 +70,14 @@ main (int argc, char *argv[])
 
   // The client reads its X authority cookies in its own file system.
   DceX11Helper::InstallAuthority (nodes.Get (0));
+  if (hostfs)
+    {
+      unlink ("files-0/usr");
+      unlink ("files-0/etc");
+      symlink ("/usr", "files-0/usr");
+      symlink ("/etc", "files-0/etc");
+      mkdir ("files-0/.cache", 0755);
+    }
 
   DceApplicationHelper dce;
   dce.SetStackSize (1 << 20);
@@ -70,8 +86,28 @@ main (int argc, char *argv[])
   std::ostringstream secondsArg;
   secondsArg << (int)seconds;
   dce.AddArgument (secondsArg.str ());
+  {
+    std::istringstream is (args);
+    std::string arg;
+    while (is >> arg)
+      {
+        dce.AddArgument (arg);
+      }
+  }
   dce.ResetEnvironment ();
   DceX11Helper::SetEnvironment (dce, display);
+  {
+    std::istringstream is (env);
+    std::string pair;
+    while (std::getline (is, pair, ','))
+      {
+        size_t eq = pair.find ('=');
+        if (eq != std::string::npos && eq > 0)
+          {
+            dce.AddEnvironment (pair.substr (0, eq), pair.substr (eq + 1));
+          }
+      }
+  }
   dce.SetFinishedCallback (MakeCallback (&ClientFinished));
   ApplicationContainer apps = dce.Install (nodes.Get (0));
   apps.Start (Seconds (0.1));

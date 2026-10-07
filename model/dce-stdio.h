@@ -72,6 +72,7 @@ size_t dce___fpending (FILE *stream);
 int dce_asprintf (char **strp, const char *fmt, ...);
 int dce_vasprintf (char **strp, const char *fmt, va_list ap);
 int dce___asprintf_chk (char **strp, int flag, const char *fmt, ...);
+int dce___vasprintf_chk (char **strp, int flag, const char *fmt, va_list ap);
 char * dce___fgets_chk (char *buf, size_t size, int n, FILE *stream);
 size_t dce___fread_chk (void *ptr, size_t ptrlen, size_t size, size_t n, FILE *stream);
 int dce_vsnprintf (char *s, size_t si, const char *f, va_list ap);

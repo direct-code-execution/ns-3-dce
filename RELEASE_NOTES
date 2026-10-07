@@ -23,13 +23,18 @@ New user-visible features
   such as ffmpeg's xv output device (dce-wifi-video --viewer=1), open a
   window on the host display from inside the simulation. Real-time
   simulator only.
-- New example dce-dillo: the Dillo web browser (built for DCE by
+- New example dce-browser: the Dillo web browser (built for DCE by
   utils/build_kernel_deps.sh when the FLTK headers are installed) browses,
   on the host display, a web site served by thttpd on another Wi-Fi
   station. See doc/source/dce-x11.rst.
 - New example dce-x11-hello and the DceX11Helper class for X11 clients.
-- eventfd(2), epoll(7) and pipe2(2) are now provided to DCE applications,
-  with test-eventfd and test-epoll in the test suite.
+- eventfd(2), epoll(7), pipe2(2) and futex(2) (through syscall(2), as GLib
+  and Rust use it) are now provided to DCE applications, with test-eventfd,
+  test-epoll and test-futex in the test suite. GLib/GIO/GTK4 applications
+  run inside DCE (example/gtk4-hello.cc, run by dce-x11-hello).
+- malloc() and friends return 16 byte aligned memory, like glibc, and
+  posix_memalign/memalign/aligned_alloc are implemented.
+- dce-browser --browserArgs passes options to the browser.
 - Many libm functions, fcntl64/readdir64/mkstemp64, getrlimit64/setrlimit64,
   clock, __sysv_signal, the POSIX strerror_r, the glibc fortified and C23
   (__isoc23_*) entry points, SysV shared memory, getpw*_r/getgr*_r and
@@ -43,6 +48,8 @@ Bugs fixed
   "missing socket type" on the ns-3 stack), as did setsockopt(SO_SNDBUF)
   on ns-3 UDP sockets.
 - Closing a pipe end whose other end was already closed failed with EBADF.
+- realpath() leaked host paths when the node file system had symbolic links
+  to host directories.
 - The fortified __sprintf_chk() took the buffer size as the format string
   (crash in FLTK).
 - A task could be rescheduled after its process had exited: TaskManager

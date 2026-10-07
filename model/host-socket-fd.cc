@@ -236,10 +236,12 @@ HostSocketFd::Recvmsg (struct msghdr *msg, int flags)
       ssize_t r = ::recvmsg (PeekRealFd (), msg, flags | MSG_DONTWAIT);
       if (r >= 0)
         {
+          NS_LOG_LOGIC ("recvmsg fd=" << PeekRealFd () << " -> " << r);
           return r;
         }
       if (errno != EAGAIN && errno != EWOULDBLOCK)
         {
+          NS_LOG_INFO ("recvmsg fd=" << PeekRealFd () << " failed: " << strerror (errno));
           current->err = errno;
           return -1;
         }
@@ -250,6 +252,7 @@ HostSocketFd::Recvmsg (struct msghdr *msg, int flags)
         }
       if (!WaitFor (POLLIN))
         {
+          NS_LOG_INFO ("recvmsg fd=" << PeekRealFd () << " interrupted");
           current->err = EINTR;
           return -1;
         }
@@ -267,10 +270,12 @@ HostSocketFd::Sendmsg (const struct msghdr *msg, int flags)
       ssize_t r = ::sendmsg (PeekRealFd (), msg, flags | MSG_DONTWAIT | MSG_NOSIGNAL);
       if (r >= 0)
         {
+          NS_LOG_LOGIC ("sendmsg fd=" << PeekRealFd () << " -> " << r);
           return r;
         }
       if (errno != EAGAIN && errno != EWOULDBLOCK)
         {
+          NS_LOG_INFO ("sendmsg fd=" << PeekRealFd () << " failed: " << strerror (errno));
           current->err = errno;
           return -1;
         }

@@ -221,6 +221,13 @@ def configure(conf):
                                     have_x11,
                                     "libx11-dev (X11/Xlib.h) not found")
 
+    have_gtk4 = conf.check_cfg(package='gtk4', args=['--cflags', '--libs'], uselib_store='GTK4',
+                               mandatory=False)
+    conf.env['GTK4_FOUND'] = have_gtk4 is not None
+    ns3waf._report_optional_feature(conf, "gtk4", "GTK4 client (gtk4-hello)",
+                                    have_gtk4,
+                                    "libgtk-4-dev not found")
+
     conf.recurse(os.path.join('utils'))
     conf.recurse('bindings/python')
     ns3waf.print_feature_summary(conf)
@@ -306,6 +313,7 @@ def build_dce_tests(module, bld):
              ['test-timer-fd', []],
              ['test-eventfd', ['PTHREAD']],
              ['test-epoll', ['PTHREAD']],
+             ['test-futex', ['PTHREAD']],
              ['test-stdlib', []],
              ['test-select', ['PTHREAD']],
              ['test-random', []],
@@ -364,6 +372,11 @@ def build_dce_examples(module, bld):
         dce_examples += [
                     ['x11-hello', ['X11']],
         ]
+    if bld.env['GTK4_FOUND']:
+        module.add_example(**dce_kw(target = 'bin_dce/gtk4-hello',
+                                    source = ['example/gtk4-hello.cc'],
+                                    use = ['GTK4']))
+        bld.install_files('${PREFIX}/bin_dce', 'bin_dce/gtk4-hello', chmod=Utils.O755)
 
     for name,lib in dce_examples:
         module.add_example(**dce_kw(target = 'bin_dce/' + name, 
@@ -506,8 +519,8 @@ def build_dce_kernel_examples(module, bld):
                            target='bin/dce-x11-hello',
                            source=['example/dce-x11-hello.cc'])
         module.add_example(needed = ['core', 'network', 'internet', 'dce', 'wifi', 'mobility'],
-                           target='bin/dce-dillo',
-                           source=['example/dce-dillo.cc'])
+                           target='bin/dce-browser',
+                           source=['example/dce-browser.cc'])
     # The clip streamed by dce-wifi-video, installed with the DCE binaries so
     # that the example finds it through DCE_PATH.
     bld(rule='cp ${SRC} ${TGT}', source='example/dce-wifi-video-sample.ts',
@@ -655,6 +668,8 @@ def build(bld):
         'model/event-fd.cc',
         'model/epoll-fd.cc',
         'model/dce-epoll.cc',
+        'model/dce-futex.cc',
+        'model/dce-compat.cc',
         'model/unix-socket-fd.cc',
         'model/unix-datagram-socket-fd.cc',
         'model/unix-stream-socket-fd.cc',

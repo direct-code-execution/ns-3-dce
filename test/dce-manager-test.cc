@@ -207,6 +207,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
     {  "test-timer-fd", 0, "", false, false, NS3_MASK|LINUX_MASK},
     {  "test-eventfd", 0, "", false, false, NS3_MASK|LINUX_MASK},
     {  "test-epoll", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-futex", 0, "", false, false, NS3_MASK|LINUX_MASK},
     {  "test-stdlib", 0, "", false, false, NS3_MASK|LINUX_MASK},
     {  "test-fork", 0, "", false, true, NS3_MASK|LINUX_MASK},
     {  "test-select", 3600, "", true, false, NS3_MASK|LINUX_MASK},

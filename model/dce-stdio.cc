@@ -803,3 +803,8 @@ size_t dce___fread_chk (void *ptr, size_t ptrlen, size_t size, size_t n, FILE *s
 {
   return dce_fread (ptr, size, n, stream);
 }
+
+int dce___vasprintf_chk (char **strp, int flag, const char *fmt, va_list ap)
+{
+  return dce_vasprintf (strp, fmt, ap);
+}

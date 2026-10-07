@@ -22,6 +22,8 @@
 #include "dce-libc-private.h"
 #include "dce-fcntl.h"
 #include "dce-epoll.h"
+#include "dce-futex.h"
+#include "dce-compat.h"
 #include "dce-sched.h"
 #include "dce-poll.h"
 #include "dce-signal.h"
@@ -67,6 +69,22 @@
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
+#include <sys/auxv.h>
+#include <sys/xattr.h>
+#include <sys/statvfs.h>
+#include <sys/prctl.h>
+#include <sys/mman.h>
+#include <sys/wait.h>
+#include <sys/mount.h>
+#include <spawn.h>
+#include <mntent.h>
+#include <fts.h>
+#include <resolv.h>
+#include <netdb.h>
+#include <sched.h>
+#include <wchar.h>
+#include <locale.h>
+#include <libintl.h>
 #include <sys/dir.h>
 #include <sys/ioctl.h>
 #include <sys/io.h>
@@ -196,6 +214,16 @@ extern ssize_t __readlink_chk (const char *path, char *buf, size_t len, size_t b
 extern char *__realpath_chk (const char *path, char *resolved, size_t resolvedlen);
 extern size_t __strlcpy_chk (char *dst, const char *src, size_t n, size_t dstlen);
 extern void __longjmp_chk (jmp_buf env, int val) __attribute__ ((noreturn));
+extern void __syslog_chk (int priority, int flag, const char *format, ...);
+extern int __open64_2 (const char *file, int oflag);
+extern int __openat_2 (int fd, const char *file, int oflag);
+extern char *__getcwd_chk (char *buf, size_t size, size_t buflen);
+extern int __getgroups_chk (int size, __gid_t list[], size_t listlen);
+extern void *__mempcpy_chk (void *dest, const void *src, size_t len, size_t destlen);
+extern long long int __isoc23_strtoll_l (const char *nptr, char **endptr, int base, locale_t loc);
+extern unsigned long long int __isoc23_strtoull_l (const char *nptr, char **endptr, int base, locale_t loc);
+extern int __isoc23_vfscanf (FILE *stream, const char *format, __gnuc_va_list arg);
+extern int __uflow (FILE *);
 }
 extern int _IO_getc(_IO_FILE * __fp);
 extern int _IO_putc(int __c, _IO_FILE * __fp);

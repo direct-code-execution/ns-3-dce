@@ -8,6 +8,7 @@
 #include "waiter.h"
 #include "dce-fcntl.h"
 #include <limits.h>
+#include <vector>
 #include "host-socket-fd.h"
 #include "local-stream-socket-fd.h"
 #include <sys/un.h>
@@ -1038,30 +1039,64 @@ ssize_t dce___readlink_chk (const char *p, char *b, size_t bufsize, size_t bufle
   return dce_readlink (p, b, bufsize);
 }
 
-// realpath() of a path of the node file system: resolve the real path
-// and strip the node directory from the result.
+// realpath() in the node file system: the canonical absolute path of an
+// existing file. Symbolic links are not resolved: a node file system often
+// has links to directories of the host (files-N/usr -> /usr) that would
+// otherwise leak host paths or loop.
 char * dce_realpath (const char *path, char *resolved)
 {
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << path);
   NS_ASSERT (current != 0);
-  char nodeDir[PATH_MAX];
-  char real[PATH_MAX];
-  if (::realpath (UtilsGetRealFilePath ("/").c_str (), nodeDir) == 0
-      || ::realpath (UtilsGetRealFilePath (path).c_str (), real) == 0)
+  if (path == 0 || path[0] == 0)
+    {
+      current->err = ENOENT;
+      return 0;
+    }
+  std::string virt = UtilsGetVirtualFilePath (path);
+  // canonicalise: split on '/', drop "" and ".", pop on ".."
+  std::vector<std::string> parts;
+  size_t pos = 0;
+  while (pos <= virt.size ())
+    {
+      size_t next = virt.find ('/', pos);
+      if (next == std::string::npos)
+        {
+          next = virt.size ();
+        }
+      std::string part = virt.substr (pos, next - pos);
+      if (part == "..")
+        {
+          if (!parts.empty ())
+            {
+              parts.pop_back ();
+            }
+        }
+      else if (part != "" && part != ".")
+        {
+          parts.push_back (part);
+        }
+      pos = next + 1;
+    }
+  std::string result;
+  for (std::vector<std::string>::iterator i = parts.begin (); i != parts.end (); ++i)
+    {
+      result += "/" + *i;
+    }
+  if (result == "")
+    {
+      result = "/";
+    }
+  struct stat st;
+  if (::stat (UtilsGetRealFilePath (result).c_str (), &st) != 0)
     {
       current->err = errno;
       return 0;
     }
-  std::string result = real;
-  std::string prefix = nodeDir;
-  if (result.compare (0, prefix.size (), prefix) == 0)
+  if (result.size () >= PATH_MAX)
     {
-      result = result.substr (prefix.size ());
-      if (result == "")
-        {
-          result = "/";
-        }
+      current->err = ENAMETOOLONG;
+      return 0;
     }
   if (resolved == 0)
     {

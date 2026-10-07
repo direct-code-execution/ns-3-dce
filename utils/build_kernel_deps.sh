@@ -4,7 +4,7 @@
 # itself is LKL, built by utils/build_lkl.sh):
 #   - DCE-compatible (PIE) builds of ip, iperf, thttpd, wget, ping/ping6,
 #     the quagga routing daemons, a minimal ffmpeg (dce-wifi-video) and,
-#     when the FLTK headers are installed, the dillo web browser (dce-dillo)
+#     when the FLTK headers are installed, the dillo web browser (dce-browser)
 #   - the ns-3-dce-quagga module sources, patched for current ns-3
 #
 # Usage: ./utils/build_kernel_deps.sh [deps_dir]

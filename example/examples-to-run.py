@@ -29,9 +29,12 @@ cpp_examples = [
     # An X11 client drawing a window from inside the simulation through the
     # host socket passthrough; needs an X server (DISPLAY), e.g. xvfb-run.
     ("dce-x11-hello --seconds=2", "X11_DCE_FOUND == True and os.getenv('DISPLAY') is not None", "False"),
-    # The dillo browser fetching a page from thttpd over Wi-Fi and drawing on
-    # the X display, for 8 s (the browser does not exit by itself).
-    ("dce-dillo --stopTime=8", "DILLO_DCE_FOUND == True and X11_DCE_FOUND == True and os.getenv('DISPLAY') is not None", "False"),
+    # GLib/GTK4 inside DCE: event loop, threads, futex locks, X11 window.
+    ("dce-x11-hello --binary=gtk4-hello --seconds=2 --hostfs=1 --env=GSK_RENDERER=cairo,GDK_BACKEND=x11,GSETTINGS_BACKEND=memory,NO_AT_BRIDGE=1,GTK_A11Y=none",
+     "GTK4_DCE_FOUND == True and os.getenv('DISPLAY') is not None", "False"),
+    # A web browser fetching a page from thttpd over Wi-Fi and drawing on the
+    # X display, for 8 s (the browser does not exit by itself).
+    ("dce-browser --stopTime=8", "DILLO_DCE_FOUND == True and X11_DCE_FOUND == True and os.getenv('DISPLAY') is not None", "False"),
 #    ("dce-ccnd-udp-2-nodes", "True", "True"), 
 #    ("dce-ccnd-linear-multiple", "True", "True"),
     ("dce-cradle-simple", "True", "True"),  

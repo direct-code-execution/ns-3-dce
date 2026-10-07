@@ -1,4 +1,4 @@
-.. include:: replace.txt
+you .. include:: replace.txt
 
 Graphical applications: X11 clients inside DCE
 ==============================================
@@ -49,7 +49,7 @@ Examples
   simulated client station (see :doc:`dce-wifi-video`). XVideo is not
   available on Xvfb, so this one needs a real display.
 
-``dce-dillo``
+``dce-browser``
   A real graphical web browser. Dillo (HTML, CSS, images, no JavaScript)
   runs on a Wi-Fi station, fetches pages from a real thttpd running on
   another station through the access point, and draws its window on the
@@ -58,8 +58,8 @@ Examples
   ``files-2/``) so that fontconfig finds its configuration and the fonts.
   Closing the browser window ends the simulation::
 
-     $ ./bin/dce-dillo
-     $ ./bin/dce-dillo --url=http://10.1.1.1/big.html --distance=40
+     $ ./bin/dce-browser
+     $ ./bin/dce-browser --url=http://10.1.1.1/big.html --distance=40
 
   ``utils/build_kernel_deps.sh`` builds Dillo 3.1.1 for DCE (single
   process, no threaded DNS, no TLS) when the FLTK headers are installed.
@@ -71,6 +71,26 @@ This path only works for single-process clients whose threads, if any, go
 through pthreads (cooperative fibers in DCE). Multi-process browsers
 (Firefox, Chromium, Servo, Ladybird) and VLC are out of reach. There is no
 sound: it would need a PulseAudio/PipeWire client running under DCE.
+
+GTK4 applications
+-----------------
+
+GLib, GObject, GIO and GTK 4 run inside DCE: ``example/gtk4-hello.cc`` is
+a minimal GTK4 application built as a DCE application when libgtk-4-dev is
+installed, and ``test.py`` runs it with ``dce-x11-hello`` under Xvfb. What
+this exercises in DCE: eventfd and poll based main loops, GLib's futex
+based locks (``syscall(SYS_futex)`` is emulated, see ``model/dce-futex.cc``),
+16 byte aligned ``malloc`` and ``posix_memalign``, the file and process
+system calls GIO probes (statx, extended attributes, inotify, posix_spawn:
+reported as unsupported in the way GIO handles), and the X11 connection.
+Run GTK4 applications with ``GSK_RENDERER=cairo`` (no OpenGL in the
+simulation), ``GDK_BACKEND=x11``, ``GSETTINGS_BACKEND=memory`` (no dconf),
+``NO_AT_BRIDGE=1`` (no accessibility bus), and give them the host's
+``/usr`` and ``/etc`` for fonts and toolkit data
+(``dce-x11-hello --hostfs=1``)::
+
+   $ ./bin/dce-x11-hello --binary=gtk4-hello --hostfs=1 \
+       --env=GSK_RENDERER=cairo,GDK_BACKEND=x11,GSETTINGS_BACKEND=memory,NO_AT_BRIDGE=1
 
 Event loops: eventfd and epoll
 ------------------------------
