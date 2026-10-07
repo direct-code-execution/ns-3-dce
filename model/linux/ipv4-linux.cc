@@ -378,10 +378,6 @@ Ipv4Linux::SelectSourceAddress (Ptr<const NetDevice> device,
       for (uint32_t j = 0; j < GetNAddresses (i); j++)
         {
           iaddr = GetAddress (i, j);
-          if (iaddr.IsSecondary ())
-            {
-              continue;
-            }
           if (iaddr.GetScope () > scope)
             {
               continue;
@@ -408,10 +404,6 @@ Ipv4Linux::SelectSourceAddress (Ptr<const NetDevice> device,
       for (uint32_t j = 0; j < GetNAddresses (i); j++)
         {
           iaddr = GetAddress (i, j);
-          if (iaddr.IsSecondary ())
-            {
-              continue;
-            }
           if (iaddr.GetScope () != Ipv4InterfaceAddress::LINK
               && iaddr.GetScope () <= scope)
             {
