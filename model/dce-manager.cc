@@ -338,6 +338,7 @@ DceManager::CreateProcess (std::string name, std::string stdinfilename, std::vec
   process->pgid = 0;
   process->pid = pid ? pid : AllocatePid ();
   process->manager = this;
+  process->getoptStarted = false;
   sigemptyset (&process->pendingSignals);
 
   SetDefaultSigHandler (process->signalHandlers);
@@ -544,6 +545,7 @@ DceManager::CreateThread (struct Process *process)
   thread->pollTable = 0;
   thread->ioWait = std::make_pair ((UnixFd*)0,(WaitQueueEntry*)0);
   sigemptyset (&thread->signalMask);
+  sigemptyset (&thread->sigwaitSet);
   if (!process->threads.empty ())
     {
       // copy all key values.

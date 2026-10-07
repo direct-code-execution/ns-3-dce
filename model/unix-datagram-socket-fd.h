@@ -8,6 +8,8 @@
 
 namespace ns3 {
 
+class NetDevice;
+
 class Address;
 
 class UnixDatagramSocketFd : public UnixSocketFd
@@ -30,7 +32,7 @@ private:
                      uint32_t icmpInfo);
   void QueueErr (sock_extended_err ee, struct sockaddr_in offender, uint8_t ttl);
   void CopyMacAddress (const Address &a,  uint8_t* const buf);
-  void MainSendTo (int *r, Ptr<Packet> p, uint32_t f, Address ad);
+  void MainSendTo (int *r, Ptr<Packet> p, uint32_t f, Address ad, Ptr<NetDevice> dev);
   void MainSend (int *r, Ptr<Packet> p);
 
   struct Error

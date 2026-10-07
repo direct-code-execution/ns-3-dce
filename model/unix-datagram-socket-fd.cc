@@ -36,6 +36,7 @@
 #include "ns3/ipv6.h"
 #include "ns3/ipv4-packet-info-tag.h"
 #include "ns3/ipv6-packet-info-tag.h"
+#include "ns3/ipv6-header.h"
 #include "cmsg.h"
 #include <errno.h>
 #include <netinet/in.h>
@@ -183,13 +184,20 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
   // we ignore the secondary items of the iovec buffers.
   // because we implement a datagram-only socket for now.
   Address from;
-  Ptr<Packet> packet = m_socket->RecvFrom (count, flags, from);
+  // ns-3 IPv6 raw sockets return the IPv6 header too; Linux does not.
+  bool ipv6Raw = m_socket->GetInstanceTypeId () == TypeId::LookupByName ("ns3::Ipv6RawSocketImpl");
+  Ptr<Packet> packet = m_socket->RecvFrom (ipv6Raw ? count + 40 : count, flags, from);
   uint32_t l = 0;
 
   if (!packet)
     {
       current->err = ErrnoToSimuErrno ();
       return -1;
+    }
+  if (ipv6Raw)
+    {
+      Ipv6Header ipv6Header;
+      packet->RemoveHeader (ipv6Header);
     }
   if ((PacketSocketAddress::IsMatchingType (from)))
     {
@@ -235,7 +243,8 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
                 {
                   struct in_pktinfo pkt;
                   Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> ();
-                  pkt.ipi_ifindex = ipv4->GetInterfaceForDevice (node->GetDevice (ipv4Tag.GetRecvIf ()));
+                  // Interface index as used by netlink: NetDevice index + 1.
+                  pkt.ipi_ifindex = ipv4Tag.GetRecvIf () + 1;
                   if (msg->msg_name)
                     {
                       memcpy (&pkt.ipi_addr, msg->msg_name, sizeof (pkt.ipi_addr));
@@ -251,7 +260,7 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
                 {
                   struct in6_pktinfo pkt6;
                   Ptr<Ipv6> ipv6 = node->GetObject<Ipv6> ();
-                  pkt6.ipi6_ifindex = ipv6->GetInterfaceForDevice (node->GetDevice (ipv6Tag.GetRecvIf ()));
+                  pkt6.ipi6_ifindex = ipv6Tag.GetRecvIf () + 1;
                   if (msg->msg_name)
                     {
                       memcpy (&pkt6.ipi6_addr, msg->msg_name, sizeof (pkt6.ipi6_addr));
@@ -281,6 +290,24 @@ UnixDatagramSocketFd::DoSendmsg (const struct msghdr *msg, int flags)
 
   BooleanValue isIpHeaderIncluded (false);
   m_socket->GetAttributeFailSafe ("IpHeaderInclude", isIpHeaderIncluded);
+
+  // IPV6_PKTINFO selects the output interface, as needed to send to
+  // link-local multicast groups. Its index is the interface index that
+  // netlink link messages report, i.e. the NetDevice index + 1.
+  Ptr<NetDevice> outDev = 0;
+  for (struct cmsghdr *c = CMSG_FIRSTHDR (msg); c != 0; c = CMSG_NXTHDR ((struct msghdr *)msg, c))
+    {
+      if (c->cmsg_level == SOL_IPV6 && c->cmsg_type == IPV6_PKTINFO
+          && c->cmsg_len >= CMSG_LEN (sizeof (struct in6_pktinfo)))
+        {
+          struct in6_pktinfo *pkt6 = (struct in6_pktinfo *)CMSG_DATA (c);
+          Ptr<Node> node = current->process->manager->GetObject<Node> ();
+          if (pkt6->ipi6_ifindex >= 1 && pkt6->ipi6_ifindex <= node->GetNDevices ())
+            {
+              outDev = node->GetDevice (pkt6->ipi6_ifindex - 1);
+            }
+        }
+    }
 
   ssize_t retval = 0;
   Ipv4Header ipHeader;
@@ -356,7 +383,7 @@ UnixDatagramSocketFd::DoSendmsg (const struct msghdr *msg, int flags)
 
           result = -1;
           manager->ExecOnMain (MakeEvent (&UnixDatagramSocketFd::MainSendTo,
-                                          this, &result, packet, flags, ad));
+                                          this, &result, packet, flags, ad, outDev));
         }
       else
         {
@@ -443,9 +470,17 @@ UnixDatagramSocketFd::Poll (PollTable* ptable)
   return ret;
 }
 void
-UnixDatagramSocketFd::MainSendTo (int *r, Ptr<Packet> p, uint32_t f, Address ad)
+UnixDatagramSocketFd::MainSendTo (int *r, Ptr<Packet> p, uint32_t f, Address ad, Ptr<NetDevice> dev)
 {
+  if (!dev)
+    {
+      *r = m_socket->SendTo (p, f, ad);
+      return;
+    }
+  Ptr<NetDevice> bound = m_socket->GetBoundNetDevice ();
+  m_socket->BindToNetDevice (dev);
   *r = m_socket->SendTo (p, f, ad);
+  m_socket->BindToNetDevice (bound);
 }
 void
 UnixDatagramSocketFd::MainSend (int *r, Ptr<Packet> p)
