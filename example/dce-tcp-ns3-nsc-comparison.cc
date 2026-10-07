@@ -118,25 +118,6 @@ main (int argc, char *argv[])
       sock_factory = "ns3::TcpSocketFactory";
       internetStack.Install (nodes);
     }
-  else if (m_stack == "nsc-linux")
-    {
-      internetStack.Install (routers);
-      sock_factory = "ns3::TcpSocketFactory";
-      internetStack.SetTcp ("ns3::NscTcpL4Protocol",
-                            "Library", StringValue ("liblinux2.6.26.so"));
-      internetStack.Install (lefts);
-      internetStack.Install (rights);
-      // Config::Set ("/NodeList/*/$ns3::Ns3NscStack<linux2.6.26>/net.ipv4.tcp_congestion_control",
-      //              StringValue ("reno"));
-    }
-  else if (m_stack == "nsc-freebsd")
-    {
-      // didn't work under 64bit (12/11/13)
-      sock_factory = "ns3::TcpSocketFactory";
-      internetStack.SetTcp ("ns3::NscTcpL4Protocol",
-                            "Library", StringValue ("libfreebsd5.3.so"));
-      internetStack.Install (nodes);
-    }
   else
     {
       NS_ASSERT_MSG (0, "no stack " << m_stack << " is available");

@@ -61,6 +61,10 @@ public:
 
   virtual void PrintRoutingTable (Ptr<OutputStreamWrapper> stream) const;
 
+  bool RouteInput (Ptr<const Packet> p, const Ipv4Header &header, Ptr<const NetDevice> idev,
+                   const UnicastForwardCallback &ucb, const MulticastForwardCallback &mcb,
+                   const LocalDeliverCallback &lcb, const ErrorCallback &ecb) override;
+
   virtual void SetIpv4 (Ptr<Ipv4> ipv4);
 
   template<class T>

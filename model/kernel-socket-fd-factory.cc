@@ -211,7 +211,7 @@ KernelSocketFdFactory::Open (struct SimKernel *kernel, const char *pathname, int
 int
 KernelSocketFdFactory::__Fxstat (struct SimKernel *kernel, int ver, int fd, void *buf)
 {
-  return dce___fxstat (ver, fd, (struct stat *)buf);
+  return dce_fstat (fd, (struct stat *)buf);
 }
 int
 KernelSocketFdFactory::Fseek (struct SimKernel *kernel, FILE *stream, long offset, int whence)

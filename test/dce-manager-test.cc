@@ -199,12 +199,12 @@ DceManagerTestSuite::DceManagerTestSuite ()
     {  "test-timer-fd", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
     {  "test-stdlib", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
     {  "test-fork", 0, "", false, true, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-select", 3600, "", true, false, 0 /*LINUX_STACK*/},
+    {  "test-select", 3600, "", true, false, NS3_STACK|LINUX_STACK}, // freebsd-sim has no sock_poll
     {  "test-nanosleep", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
     {  "test-random", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
     {  "test-local-socket", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-poll", 3200, "", true, false, 0 /*NS3_STACK|LINUX_STACK*/},
-    {  "test-tcp-socket", 320, "", true, false, 0/*LINUX_STACK*/},
+    {  "test-poll", 3200, "", true, false, NS3_STACK|LINUX_STACK}, // freebsd-sim has no sock_poll
+    {  "test-tcp-socket", 320, "", true, false, NS3_STACK|LINUX_STACK},
     {  "test-exec", 0, "", false, true, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
     {  "test-raw-socket", 320, "", true, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
     {  "test-iperf", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
@@ -216,7 +216,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
     {  "test-tsearch", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
     {  "test-clock-gettime", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
     {  "test-gcc-builtin-apply", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    // XXX: not completely tested      {  "test-signal", 30, "" , false},
+    {  "test-signal", 30, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
   };
 
   // Prepare directories and files for test-stdio
