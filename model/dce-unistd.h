@@ -75,6 +75,7 @@ int dce_euidaccess (const char *pathname, int mode);
 int dce_eaccess (const char *pathname, int mode);
 
 int dce_pipe (int pipefd[2]);
+int dce_pipe2 (int pipefd[2], int flags);
 
 ssize_t dce_pread (int fd, void *buf, size_t count, off_t offset);
 ssize_t dce_pwrite (int fd, const void *buf, size_t count, off_t offset);
@@ -86,6 +87,9 @@ int dce_daemon (int nochdir, int noclose);
 unsigned int dce_alarm (unsigned int seconds);
 
 ssize_t dce_readlink (const char *p, char *b, size_t bufsize);
+ssize_t dce___readlink_chk (const char *p, char *b, size_t bufsize, size_t buflen);
+char * dce_realpath (const char *path, char *resolved);
+char * dce___realpath_chk (const char *path, char *resolved, size_t resolvedlen);
 int dce_fsync(int fd);
 
 #ifdef __cplusplus

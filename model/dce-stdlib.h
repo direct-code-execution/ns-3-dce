@@ -26,6 +26,7 @@ int dce_unsetenv (const char *name);
 int dce_clearenv (void);
 int dce_mkstemp (char *temp);
 int dce_mkstemp64 (char *temp);
+int dce_system (const char *command);
 void * dce_reallocarray (void *ptr, size_t nmemb, size_t size);
 long int dce___isoc23_strtol (const char *nptr, char **endptr, int base);
 long long int dce___isoc23_strtoll (const char *nptr, char **endptr, int base);

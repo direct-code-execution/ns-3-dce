@@ -149,11 +149,13 @@ int __snprintf (char *s, size_t si, const char *f, ...)
 
   return r;
 }
-int __sprintf_chk (char *s, int len, const char *f, ...)
+// glibc: int __sprintf_chk (char *s, int flag, size_t slen, const char *format, ...)
+// slen is the size of s known to the compiler, or (size_t) -1 when unknown.
+int __sprintf_chk (char *s, int flag, size_t slen, const char *f, ...)
 {
   va_list vl;
   va_start (vl, f);
-  int r =  g_libc.vsnprintf_fn (s, len, f, vl);
+  int r =  g_libc.vsnprintf_fn (s, slen, f, vl);
   va_end (vl);
 
   return r;

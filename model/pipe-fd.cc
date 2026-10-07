@@ -59,8 +59,8 @@ PipeFd::Close (void)
       WakeWaiters (&ph);
       return 0;
     }
-  Current ()->err = EBADF;
-  return -1;
+  // The other end is already closed: nothing left to do.
+  return 0;
 }
 
 ssize_t

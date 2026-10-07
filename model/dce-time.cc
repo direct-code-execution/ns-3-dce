@@ -1,4 +1,5 @@
 #include "dce-time.h"
+#include <sys/time.h>
 #include "dce-manager.h"
 #include "process.h"
 #include "utils.h"
@@ -169,3 +170,17 @@ int dce_timer_gettime (int fd, struct itimerspec *cur_value)
 }
 
 
+
+int dce_utimes (const char *filename, const struct timeval times[2])
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << filename);
+  NS_ASSERT (current != 0);
+  std::string fullpath = UtilsGetRealFilePath (filename);
+  int ret = ::utimes (fullpath.c_str (), times);
+  if (ret == -1)
+    {
+      current->err = errno;
+    }
+  return ret;
+}

@@ -7,6 +7,7 @@
 #include "socket-fd-factory.h"
 #include "waiter.h"
 #include "dce-fcntl.h"
+#include <limits.h>
 #include "host-socket-fd.h"
 #include "local-stream-socket-fd.h"
 #include <sys/un.h>
@@ -998,4 +999,79 @@ ssize_t dce___read_chk (int fd, void *buf, size_t nbytes, size_t buflen)
       NS_FATAL_ERROR ("read: buffer overflow detected");
     }
   return dce_read (fd, buf, nbytes);
+}
+
+int dce_pipe2 (int pipefd[2], int flags)
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << flags);
+  NS_ASSERT (current != 0);
+  if (flags & ~(O_NONBLOCK | O_CLOEXEC))
+    {
+      current->err = EINVAL;
+      return -1;
+    }
+  int r = dce_pipe (pipefd);
+  if (r == 0 && (flags & O_NONBLOCK))
+    {
+      for (int i = 0; i < 2; i++)
+        {
+          dce_fcntl (pipefd[i], F_SETFL, dce_fcntl (pipefd[i], F_GETFL, 0) | O_NONBLOCK);
+        }
+    }
+  return r;
+}
+
+// Fortified open() of glibc without a mode argument.
+int dce___open_2 (const char *path, int flags)
+{
+  return dce_open (path, flags);
+}
+
+int dce_posix_fadvise (int fd, off_t offset, off_t len, int advice)
+{
+  return 0; // an advice: nothing to do
+}
+
+ssize_t dce___readlink_chk (const char *p, char *b, size_t bufsize, size_t buflen)
+{
+  return dce_readlink (p, b, bufsize);
+}
+
+// realpath() of a path of the node file system: resolve the real path
+// and strip the node directory from the result.
+char * dce_realpath (const char *path, char *resolved)
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << path);
+  NS_ASSERT (current != 0);
+  char nodeDir[PATH_MAX];
+  char real[PATH_MAX];
+  if (::realpath (UtilsGetRealFilePath ("/").c_str (), nodeDir) == 0
+      || ::realpath (UtilsGetRealFilePath (path).c_str (), real) == 0)
+    {
+      current->err = errno;
+      return 0;
+    }
+  std::string result = real;
+  std::string prefix = nodeDir;
+  if (result.compare (0, prefix.size (), prefix) == 0)
+    {
+      result = result.substr (prefix.size ());
+      if (result == "")
+        {
+          result = "/";
+        }
+    }
+  if (resolved == 0)
+    {
+      resolved = (char *)dce_malloc (result.size () + 1);
+    }
+  strcpy (resolved, result.c_str ());
+  return resolved;
+}
+
+char * dce___realpath_chk (const char *path, char *resolved, size_t resolvedlen)
+{
+  return dce_realpath (path, resolved);
 }

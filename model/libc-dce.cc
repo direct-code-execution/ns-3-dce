@@ -21,6 +21,7 @@
 #include "dce-errno.h"
 #include "dce-libc-private.h"
 #include "dce-fcntl.h"
+#include "dce-epoll.h"
 #include "dce-sched.h"
 #include "dce-poll.h"
 #include "dce-signal.h"
@@ -109,6 +110,10 @@
 #include <glob.h>
 #include <malloc.h>
 #include <sys/shm.h>
+#include <setjmp.h>
+#include <ctype.h>
+#include <libintl.h>
+#include <sys/time.h>
 #include <sys/file.h>
 #include <sys/random.h>
 #include <grp.h>
@@ -185,6 +190,12 @@ extern intmax_t __isoc23_strtoimax (const char *nptr, char **endptr, int base);
 extern uintmax_t __isoc23_strtoumax (const char *nptr, char **endptr, int base);
 extern size_t __mbstowcs_chk (wchar_t *dst, const char *src, size_t len, size_t dstlen);
 extern int __register_atfork (void (*prepare) (void), void (*parent) (void), void (*child) (void), void *dso_handle);
+extern size_t __fread_chk (void *ptr, size_t ptrlen, size_t size, size_t n, FILE *stream);
+extern int __open_2 (const char *file, int oflag);
+extern ssize_t __readlink_chk (const char *path, char *buf, size_t len, size_t buflen);
+extern char *__realpath_chk (const char *path, char *resolved, size_t resolvedlen);
+extern size_t __strlcpy_chk (char *dst, const char *src, size_t n, size_t dstlen);
+extern void __longjmp_chk (jmp_buf env, int val) __attribute__ ((noreturn));
 }
 extern int _IO_getc(_IO_FILE * __fp);
 extern int _IO_putc(int __c, _IO_FILE * __fp);

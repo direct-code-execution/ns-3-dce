@@ -209,3 +209,13 @@ long long unsigned int dce___isoc23_strtoull (const char *nptr, char **endptr, i
 {
   return dce_strtoull (nptr, endptr, base);
 }
+
+// There is no shell to run commands in the simulation.
+int dce_system (const char *command)
+{
+  Thread *current = Current ();
+  NS_ASSERT (current != 0);
+  NS_LOG_WARN ("system(\"" << (command ? command : "") << "\") is not supported");
+  current->err = ENOSYS;
+  return -1;
+}

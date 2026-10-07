@@ -61,6 +61,12 @@ jobs:
             libx11-dev \
             libxext-dev \
             libxv-dev \
+            libfltk1.3-dev \
+            libpng-dev \
+            libjpeg-dev \
+            autoconf \
+            automake \
+            libtool \
             xvfb
 
       - name: Configure git safe directory
@@ -168,10 +174,12 @@ jobs:
         # xvfb-run provides the X server used by dce-x11-hello
         run: xvfb-run -a python3 test.py -r
 
-      - name: Remove sockets from test output
+      # Sockets cannot be uploaded; symlinks would be followed (dce-browser
+      # links its browser's /usr and /etc to the host's).
+      - name: Remove sockets and symlinks from test output
         if: always()
         working-directory: ns-3-dce
-        run: if [ -d testpy-output ]; then find testpy-output -type s -delete; fi
+        run: if [ -d testpy-output ]; then find testpy-output \( -type s -o -type l \) -delete; fi
 
       - name: Upload test output
         if: always()

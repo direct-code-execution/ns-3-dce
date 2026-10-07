@@ -793,3 +793,13 @@ int dce___asprintf_chk (char **strp, int flag, const char *fmt, ...)
   va_end (ap);
   return r;
 }
+
+// Fortified fgets()/fread() of glibc.
+char * dce___fgets_chk (char *buf, size_t size, int n, FILE *stream)
+{
+  return dce_fgets (buf, n, stream);
+}
+size_t dce___fread_chk (void *ptr, size_t ptrlen, size_t size, size_t n, FILE *stream)
+{
+  return dce_fread (ptr, size, n, stream);
+}

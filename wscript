@@ -304,6 +304,8 @@ def build_dce_tests(module, bld):
              ['test-env', []],
              ['test-cond', ['PTHREAD']],
              ['test-timer-fd', []],
+             ['test-eventfd', ['PTHREAD']],
+             ['test-epoll', ['PTHREAD']],
              ['test-stdlib', []],
              ['test-select', ['PTHREAD']],
              ['test-random', []],
@@ -503,6 +505,9 @@ def build_dce_kernel_examples(module, bld):
         module.add_example(needed = ['core', 'network', 'internet', 'dce'],
                            target='bin/dce-x11-hello',
                            source=['example/dce-x11-hello.cc'])
+        module.add_example(needed = ['core', 'network', 'internet', 'dce', 'wifi', 'mobility'],
+                           target='bin/dce-dillo',
+                           source=['example/dce-dillo.cc'])
     # The clip streamed by dce-wifi-video, installed with the DCE binaries so
     # that the example finds it through DCE_PATH.
     bld(rule='cp ${SRC} ${TGT}', source='example/dce-wifi-video-sample.ts',
@@ -647,6 +652,9 @@ def build(bld):
         'model/unix-fd.cc',
         'model/unix-file-fd.cc',
         'model/host-socket-fd.cc',
+        'model/event-fd.cc',
+        'model/epoll-fd.cc',
+        'model/dce-epoll.cc',
         'model/unix-socket-fd.cc',
         'model/unix-datagram-socket-fd.cc',
         'model/unix-stream-socket-fd.cc',

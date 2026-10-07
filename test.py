@@ -78,6 +78,7 @@ BASH_DCE_FOUND = False
 IPERF_DCE_FOUND = False
 FFMPEG_DCE_FOUND = False
 X11_DCE_FOUND = False
+DILLO_DCE_FOUND = False
 
 #
 # This will be given a prefix and a suffix when the waf config file is
@@ -1228,6 +1229,15 @@ def run_tests():
             break
     if options.verbose:
         print("X11_DCE_FOUND == %s" % X11_DCE_FOUND)
+
+    # The dce-dillo example needs the DCE build of the dillo browser.
+    global DILLO_DCE_FOUND
+    for d in iperf_search_dirs:
+        if os.path.isfile(os.path.join(d, "dillo")):
+            DILLO_DCE_FOUND = True
+            break
+    if options.verbose:
+        print("DILLO_DCE_FOUND == %s" % DILLO_DCE_FOUND)
 
     #
     # Get the information from the build status file.

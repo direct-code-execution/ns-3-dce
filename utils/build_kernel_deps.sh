@@ -3,7 +3,8 @@
 # Build the programs DCE's kernel-stack tests and examples run (the kernel
 # itself is LKL, built by utils/build_lkl.sh):
 #   - DCE-compatible (PIE) builds of ip, iperf, thttpd, wget, ping/ping6,
-#     the quagga routing daemons and a minimal ffmpeg (dce-wifi-video)
+#     the quagga routing daemons, a minimal ffmpeg (dce-wifi-video) and,
+#     when the FLTK headers are installed, the dillo web browser (dce-dillo)
 #   - the ns-3-dce-quagga module sources, patched for current ns-3
 #
 # Usage: ./utils/build_kernel_deps.sh [deps_dir]
@@ -33,6 +34,7 @@ WGET_VERSION="1.15"
 QUAGGA_VERSION="0.99.20"
 # 5.1 is the last ffmpeg whose command line tool works without threads.
 FFMPEG_REV="n5.1.6"
+DILLO_REV="v3.1.1"
 
 # Old C code: keep building with GCC >= 10 (-fcommon) and GCC >= 14, which
 # turned these warnings into errors. -U_FORTIFY_SOURCE: DCE does not provide
@@ -184,6 +186,23 @@ fetch_git https://github.com/FFmpeg/FFmpeg.git "${FFMPEG_REV}" ffmpeg
     make -j"${JOBS}" ffmpeg > /dev/null 2>&1
 )
 cp "${SRC}/ffmpeg/ffmpeg" "${BIN_DCE}/"
+
+if [ -f /usr/include/FL/Fl.H ]; then
+    echo "== dillo ${DILLO_REV}"
+    fetch_git https://github.com/dillo-browser/dillo.git "${DILLO_REV}" dillo
+    (
+        cd "${SRC}/dillo"
+        # Single process, single thread (no threaded DNS), no TLS: the browser
+        # of the dce-dillo example, drawing on the host X display through
+        # DCE's host socket passthrough.
+        [ -f configure ] || ./autogen.sh > /dev/null 2>&1
+        CFLAGS="-fPIC -g -O1 -U_FORTIFY_SOURCE -fno-stack-protector" \
+        CXXFLAGS="-fPIC -g -O1 -U_FORTIFY_SOURCE -fno-stack-protector" \
+        LDFLAGS="-pie -rdynamic" ./configure --disable-tls --disable-threaded-dns > /dev/null
+        make -j"${JOBS}" > /dev/null 2>&1
+    )
+    cp "${SRC}/dillo/src/dillo" "${BIN_DCE}/"
+fi
 
 echo "== quagga ${QUAGGA_VERSION}"
 fetch_tar "https://src.fedoraproject.org/repo/pkgs/quagga/quagga-${QUAGGA_VERSION}.tar.gz/64cc29394eb8a4e24649d19dac868f64/quagga-${QUAGGA_VERSION}.tar.gz" "quagga-${QUAGGA_VERSION}" \
