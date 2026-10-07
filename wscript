@@ -485,6 +485,14 @@ def build_dce_kernel_examples(module, bld):
                        target='bin/dce-mptcp-lte-wifi',
                        source=['example/dce-mptcp-lte-wifi.cc'])
 
+    module.add_example(needed = ['core', 'network', 'internet', 'dce', 'wifi', 'mobility'],
+                       target='bin/dce-wifi-video',
+                       source=['example/dce-wifi-video.cc'])
+    # The clip streamed by dce-wifi-video, installed with the DCE binaries so
+    # that the example finds it through DCE_PATH.
+    bld(rule='cp ${SRC} ${TGT}', source='example/dce-wifi-video-sample.ts',
+        target='bin_dce/video.ts', name='dce-wifi-video-sample')
+
     module.add_example(needed = ['core', 'network', 'dce', 'point-to-point', 'mobility', 'wifi', 'lte', 'dce-quagga'],
                        target='bin/dce-mptcp-lte-wifi-v6',
                        source=['example/dce-mptcp-lte-wifi-v6.cc'])

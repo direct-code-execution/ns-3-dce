@@ -25,6 +25,8 @@ int dce_setenv (const char *name, const char *value, int overwrite);
 int dce_unsetenv (const char *name);
 int dce_clearenv (void);
 int dce_mkstemp (char *temp);
+int dce_mkstemp64 (char *temp);
+int dce___xpg_strerror_r (int errnum, char *buf, size_t buflen);
 FILE * dce_tmpfile(void);
 int dce_rename (const char *oldpath, const char *newpath);
 

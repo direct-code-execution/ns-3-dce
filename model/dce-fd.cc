@@ -65,28 +65,36 @@ NS_LOG_COMPONENT_DEFINE ("DceFd");
 
 using namespace ns3;
 
+static int dce_open_mode (const char *path, int flags, mode_t mode);
+
 int dce_open64 (const char *path, int flags, ...)
 {
   va_list vl;
   va_start (vl, flags);
-  // hope this trick actually works...
-  int status = dce_open (path, flags, vl);
-  va_end (vl);
-
-  return status;
-}
-
-int dce_open (const char *path, int flags, ...)
-{
-  va_list vl;
-  va_start (vl, flags);
-
   mode_t mode = 0;
   if (flags & O_CREAT)
     {
       mode = va_arg (vl, mode_t);
     }
   va_end (vl);
+  return dce_open_mode (path, flags, mode);
+}
+
+int dce_open (const char *path, int flags, ...)
+{
+  va_list vl;
+  va_start (vl, flags);
+  mode_t mode = 0;
+  if (flags & O_CREAT)
+    {
+      mode = va_arg (vl, mode_t);
+    }
+  va_end (vl);
+  return dce_open_mode (path, flags, mode);
+}
+
+static int dce_open_mode (const char *path, int flags, mode_t mode)
+{
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << path << flags);
   NS_ASSERT (current != 0);
@@ -911,4 +919,15 @@ int dce_fsync (int fd)
   NS_ASSERT (current != 0);
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd);
   OPENED_FD_METHOD (int, Fsync ())
+}
+
+// fcntl64 is what glibc's fcntl() resolves to when _FILE_OFFSET_BITS=64;
+// on 64-bit targets it is identical to fcntl.
+int dce_fcntl64 (int fd, int cmd, ...)
+{
+  va_list vl;
+  va_start (vl, cmd);
+  unsigned long arg = va_arg (vl, unsigned long);
+  va_end (vl);
+  return dce_fcntl (fd, cmd, arg);
 }

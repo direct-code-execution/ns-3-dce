@@ -31,6 +31,7 @@ extern "C" {
 DIR * dce_opendir (const char *name);
 DIR * dce_fdopendir (int fd);
 struct dirent * dce_readdir (DIR *dirp);
+struct dirent * dce_readdir64 (DIR *dirp);
 int dce_readdir_r (DIR *dirp, struct dirent *entry, struct dirent **result);
 int dce_closedir (DIR *dirp);
 int dce_dirfd (DIR *dirp);

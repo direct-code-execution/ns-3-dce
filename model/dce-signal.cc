@@ -186,3 +186,11 @@ int dce_sigprocmask (int how, const sigset_t *set, sigset_t *oldset)
     }
   return 0;
 }
+
+// __sysv_signal is what glibc's signal() resolves to in strict ISO C /
+// POSIX mode (no _GNU_SOURCE/_DEFAULT_SOURCE). SysV reset-to-default
+// semantics are not modelled; DCE's own signal() behaviour is used.
+sighandler_t dce___sysv_signal (int signum, sighandler_t handler)
+{
+  return dce_signal (signum, handler);
+}

@@ -22,6 +22,10 @@ cpp_examples = [
     ("dce-linux", "True", "True"), 
     ("dce-dccp", "True", "True"), 
     ("dce-iperf", "IPERF_DCE_FOUND == True", "IPERF_DCE_FOUND == True"),
+    # Real ffmpeg streaming video over 802.11n with the Linux and ns-3 stacks;
+    # the example fails if the received streams differ from the sent ones.
+    ("dce-wifi-video --realtime=0 --fifo=0 --stopTime=60", "FFMPEG_DCE_FOUND == True", "False"),
+    ("dce-wifi-video --realtime=0 --fifo=0 --stopTime=60 --stack=ns3", "FFMPEG_DCE_FOUND == True", "False"),
 #    ("dce-ccnd-udp-2-nodes", "True", "True"), 
 #    ("dce-ccnd-linear-multiple", "True", "True"),
     ("dce-cradle-simple", "True", "True"),  

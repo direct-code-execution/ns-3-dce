@@ -304,11 +304,9 @@ UnixSocketFd::Setsockopt (int level, int optname,
                 return -1;
               }
             int *val = (int*)optval;
-            if (!m_socket->SetAttributeFailSafe ("SndBufSize", UintegerValue (*val)))
-              {
-                current->err = EINVAL;
-                return -1;
-              }
+            // Only ns-3 TCP sockets have a send buffer attribute; like the
+            // kernel, accept the option on the other socket types.
+            m_socket->SetAttributeFailSafe ("SndBufSize", UintegerValue (*val));
           } break;
         case SO_RCVBUF:
           {

@@ -76,6 +76,7 @@ PYTHON = ""
 VALGRIND_FOUND = True
 BASH_DCE_FOUND = False
 IPERF_DCE_FOUND = False
+FFMPEG_DCE_FOUND = False
 
 #
 # This will be given a prefix and a suffix when the waf config file is
@@ -1199,6 +1200,20 @@ def run_tests():
             break
     if options.verbose:
         print("IPERF_DCE_FOUND == %s" % IPERF_DCE_FOUND)
+
+    #
+    # Check if ffmpeg and the test clip are available for DCE. The
+    # dce-wifi-video example requires a DCE compiled version of ffmpeg
+    # (built by utils/build_kernel_deps.sh) and the video.ts clip that the
+    # build copies from example/dce-wifi-video-sample.ts.
+    #
+    global FFMPEG_DCE_FOUND
+    for d in iperf_search_dirs:
+        if os.path.isfile(os.path.join(d, "ffmpeg")) and os.path.isfile(os.path.join(d, "video.ts")):
+            FFMPEG_DCE_FOUND = True
+            break
+    if options.verbose:
+        print("FFMPEG_DCE_FOUND == %s" % FFMPEG_DCE_FOUND)
 
     #
     # Get the information from the build status file.

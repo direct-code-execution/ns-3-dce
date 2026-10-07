@@ -283,3 +283,10 @@ int dce_scandir (const char *dirp, struct dirent ***namelist,
 
   return ret;
 }
+
+// readdir64 is what glibc's readdir() resolves to when _FILE_OFFSET_BITS=64;
+// on 64-bit targets struct dirent and struct dirent64 have the same layout.
+struct dirent * dce_readdir64 (DIR *dirp)
+{
+  return dce_readdir (dirp);
+}

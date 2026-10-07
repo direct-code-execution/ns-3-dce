@@ -2,8 +2,8 @@
 #
 # Build the programs DCE's kernel-stack tests and examples run (the kernel
 # itself is LKL, built by utils/build_lkl.sh):
-#   - DCE-compatible (PIE) builds of ip, iperf, thttpd, wget, ping/ping6
-#     and the quagga routing daemons
+#   - DCE-compatible (PIE) builds of ip, iperf, thttpd, wget, ping/ping6,
+#     the quagga routing daemons and a minimal ffmpeg (dce-wifi-video)
 #   - the ns-3-dce-quagga module sources, patched for current ns-3
 #
 # Usage: ./utils/build_kernel_deps.sh [deps_dir]
@@ -31,6 +31,8 @@ IPERF_VERSION="2.0.5"
 THTTPD_VERSION="2.25b"
 WGET_VERSION="1.15"
 QUAGGA_VERSION="0.99.20"
+# 5.1 is the last ffmpeg whose command line tool works without threads.
+FFMPEG_REV="n5.1.6"
 
 # Old C code: keep building with GCC >= 10 (-fcommon) and GCC >= 14, which
 # turned these warnings into errors. -U_FORTIFY_SOURCE: DCE does not provide
@@ -143,6 +145,40 @@ fetch_git https://github.com/iputils/iputils.git "${IPUTILS_REV}" iputils
     make CFLAGS="-fpic -D_GNU_SOURCE -g ${LEGACY_CFLAGS}" LDFLAGS="-pie -rdynamic" ping ping6 > /dev/null
 )
 cp "${SRC}/iputils/ping" "${SRC}/iputils/ping6" "${BIN_DCE}/"
+
+echo "== ffmpeg ${FFMPEG_REV}"
+fetch_git https://github.com/FFmpeg/FFmpeg.git "${FFMPEG_REV}" ffmpeg
+(
+    cd "${SRC}/ffmpeg"
+    # Single threaded (DCE schedules one task at a time), no assembly, and
+    # only what the dce-wifi-video example needs: file/UDP/RTP I/O, MPEG-TS
+    # in and out, and the parsers and decoders needed to probe the streams
+    # being copied. -fno-stack-protector/-U_FORTIFY_SOURCE: DCE provides
+    # neither __stack_chk_fail nor the fortified libc entry points.
+    ./configure \
+        --disable-everything --disable-autodetect --disable-doc \
+        --disable-pthreads --disable-w32threads --disable-os2threads \
+        --disable-asm --disable-stripping --disable-iconv \
+        --disable-ffplay --disable-ffprobe --enable-ffmpeg \
+        --disable-avdevice --disable-postproc \
+        --enable-protocol=file,udp,rtp,tcp,pipe \
+        --enable-demuxer=mpegts,rtp \
+        --enable-muxer=mpegts,rtp,rtp_mpegts,null \
+        --enable-parser=h264,aac,mpegaudio,mpegvideo \
+        --enable-decoder=h264,aac,mpeg2video,mp2,mp3 \
+        --enable-filter=null,anull \
+        --enable-pic \
+        --extra-cflags="-fPIC -g -U_FORTIFY_SOURCE -fno-stack-protector" \
+        --extra-ldflags="-pie -rdynamic" > /dev/null
+    # DCE has no aligned allocators and no sched_getaffinity: use plain
+    # malloc() and sysconf() instead.
+    sed -i -e 's/^#define HAVE_POSIX_MEMALIGN 1/#define HAVE_POSIX_MEMALIGN 0/' \
+           -e 's/^#define HAVE_MEMALIGN 1/#define HAVE_MEMALIGN 0/' \
+           -e 's/^#define HAVE_ALIGNED_MALLOC 1/#define HAVE_ALIGNED_MALLOC 0/' \
+           -e 's/^#define HAVE_SCHED_GETAFFINITY 1/#define HAVE_SCHED_GETAFFINITY 0/' config.h
+    make -j"${JOBS}" ffmpeg > /dev/null 2>&1
+)
+cp "${SRC}/ffmpeg/ffmpeg" "${BIN_DCE}/"
 
 echo "== quagga ${QUAGGA_VERSION}"
 fetch_tar "https://src.fedoraproject.org/repo/pkgs/quagga/quagga-${QUAGGA_VERSION}.tar.gz/64cc29394eb8a4e24649d19dac868f64/quagga-${QUAGGA_VERSION}.tar.gz" "quagga-${QUAGGA_VERSION}" \

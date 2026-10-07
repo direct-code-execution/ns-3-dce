@@ -11,6 +11,7 @@ extern "C" {
 #endif
 
 sighandler_t dce_signal (int signum, sighandler_t handler);
+sighandler_t dce___sysv_signal (int signum, sighandler_t handler);
 int dce_sigaction (int signum, const struct sigaction *act,
                    struct sigaction *oldact);
 int dce_kill (pid_t pid, int sig);

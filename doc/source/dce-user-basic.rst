@@ -12,5 +12,6 @@ Basic Use Cases
    dce-user-submodule
    dce-user-config
    dce-cradle 
+   dce-wifi-video
    dce-user-aspect-trace
 

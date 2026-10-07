@@ -18,6 +18,7 @@
  * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  */
 #include "ns3-socket-fd-factory.h"
+#include <fcntl.h>
 #include "unix-fd.h"
 #include "unix-socket-fd.h"
 #include "unix-datagram-socket-fd.h"
@@ -104,6 +105,10 @@ Ns3SocketFdFactory::CreateSocket (int domain, int type, int protocol)
 {
   UnixSocketFd *socket = 0;
   Ptr<Socket> sock;
+  // socket(2) accepts SOCK_NONBLOCK and SOCK_CLOEXEC or'ed into the type
+  // (ffmpeg, for example, always passes SOCK_CLOEXEC).
+  bool nonBlock = type & SOCK_NONBLOCK;
+  type &= ~(SOCK_NONBLOCK | SOCK_CLOEXEC);
 
   if (domain == PF_INET)
     {
@@ -240,6 +245,10 @@ Ns3SocketFdFactory::CreateSocket (int domain, int type, int protocol)
       return 0;
     }
 
+  if (socket != 0 && nonBlock)
+    {
+      socket->Fcntl (F_SETFL, O_NONBLOCK);
+    }
   return socket;
 }
 

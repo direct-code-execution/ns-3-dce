@@ -7,6 +7,7 @@
 #include "file-usage.h"
 #include "ns3/log.h"
 #include <errno.h>
+#include <string.h>
 #include <limits.h>
 
 
@@ -151,5 +152,31 @@ int dce_rename (const char *oldpath, const char *newpath)
       current->err = errno;
       return -1;
     }
+  return 0;
+}
+
+// mkstemp64 is what glibc's mkstemp() resolves to when _FILE_OFFSET_BITS=64.
+int dce_mkstemp64 (char *temp)
+{
+  return dce_mkstemp (temp);
+}
+
+// The POSIX (XSI) strerror_r, which glibc's strerror_r() resolves to when
+// _GNU_SOURCE is not defined: fills buf and returns 0 or an errno value.
+int dce___xpg_strerror_r (int errnum, char *buf, size_t buflen)
+{
+  if (buf == 0 || buflen == 0)
+    {
+      return ERANGE;
+    }
+  const char *msg = strerror (errnum);
+  size_t len = strlen (msg);
+  if (len >= buflen)
+    {
+      memcpy (buf, msg, buflen - 1);
+      buf[buflen - 1] = 0;
+      return ERANGE;
+    }
+  memcpy (buf, msg, len + 1);
   return 0;
 }

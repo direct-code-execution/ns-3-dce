@@ -174,6 +174,9 @@ TaskManager::GarbageCollectDeadTasks (void)
       Task *task = m_deadTasks.front ();
       m_deadTasks.pop_front ();
       NS_LOG_DEBUG ("delete " << task);
+      // Defensive: make sure a pointer to the task cannot remain in the
+      // run queue after it is deleted.
+      m_scheduler->Dequeue (task);
       if (task->m_fiber)
         {
           m_fiberManager->Delete (task->m_fiber);
@@ -310,8 +313,13 @@ TaskManager::Wakeup (Task *task)
 {
   NS_LOG_FUNCTION (this << task << task->m_state);
   if (task->m_state == Task::ACTIVE
-      || task->m_state == Task::RUNNING)
+      || task->m_state == Task::RUNNING
+      || task->m_state == Task::DEAD)
     {
+      // A dead task (exited, waiting for garbage collection) can still be
+      // referenced by a wait queue, e.g. when a process exits from a signal
+      // handler while blocked on a socket that its exit then closes. It must
+      // never be put back in the run queue: it is about to be deleted.
       return;
     }
   task->m_state = Task::ACTIVE;
