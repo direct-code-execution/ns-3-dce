@@ -27,7 +27,7 @@
 #include "ns3/ipv4-global-routing-helper.h"
 #include "ns3/ipv4-interface.h"
 #include "ns3/arp-l3-protocol.h"
-#include "ns3/ipv4-global-routing.h"
+#include "ns3/global-routing.h"
 #include "ns3/ipv4-routing-table-entry.h"
 #include "linux-stack-helper.h"
 #include "linux-ipv4-raw-socket-factory-impl.h"
@@ -378,10 +378,6 @@ Ipv4Linux::SelectSourceAddress (Ptr<const NetDevice> device,
       for (uint32_t j = 0; j < GetNAddresses (i); j++)
         {
           iaddr = GetAddress (i, j);
-          if (iaddr.IsSecondary ())
-            {
-              continue;
-            }
           if (iaddr.GetScope () > scope)
             {
               continue;
@@ -408,10 +404,6 @@ Ipv4Linux::SelectSourceAddress (Ptr<const NetDevice> device,
       for (uint32_t j = 0; j < GetNAddresses (i); j++)
         {
           iaddr = GetAddress (i, j);
-          if (iaddr.IsSecondary ())
-            {
-              continue;
-            }
           if (iaddr.GetScope () != Ipv4InterfaceAddress::LINK
               && iaddr.GetScope () <= scope)
             {

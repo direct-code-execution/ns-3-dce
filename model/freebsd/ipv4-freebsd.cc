@@ -26,7 +26,7 @@
 #include "ns3/ipv4-global-routing-helper.h"
 #include "ns3/ipv4-interface.h"
 #include "ns3/arp-l3-protocol.h"
-#include "ns3/ipv4-global-routing.h"
+#include "ns3/global-routing.h"
 #include "ns3/ipv4-routing-table-entry.h"
 #include "dce-application-helper.h"
 #include "freebsd-socket-fd-factory.h"
@@ -398,10 +398,6 @@ Ipv4FreeBSD::SelectSourceAddress (Ptr<const NetDevice> device,
       for (uint32_t j = 0; j < GetNAddresses (i); j++)
         {
           iaddr = GetAddress (i, j);
-          if (iaddr.IsSecondary ())
-            {
-              continue;
-            }
           if (iaddr.GetScope () > scope)
             {
               continue;
@@ -428,10 +424,6 @@ Ipv4FreeBSD::SelectSourceAddress (Ptr<const NetDevice> device,
       for (uint32_t j = 0; j < GetNAddresses (i); j++)
         {
           iaddr = GetAddress (i, j);
-          if (iaddr.IsSecondary ())
-            {
-              continue;
-            }
           if (iaddr.GetScope () != Ipv4InterfaceAddress::LINK
               && iaddr.GetScope () <= scope)
             {
