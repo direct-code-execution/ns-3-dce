@@ -7,6 +7,10 @@
 #include "socket-fd-factory.h"
 #include "waiter.h"
 #include "dce-fcntl.h"
+#include "host-socket-fd.h"
+#include "local-stream-socket-fd.h"
+#include <sys/un.h>
+#include <stddef.h>
 #include "dce-unistd.h"
 #include "dce-poll.h"
 #include "dce-stdio.h"
@@ -422,6 +426,10 @@ int dce_socket (int domain, int type, int protocol)
 
   Ptr<SocketFdFactory>  factory = 0;
 
+  // socket(2) accepts SOCK_NONBLOCK and SOCK_CLOEXEC or'ed into the type.
+  bool nonBlock = type & SOCK_NONBLOCK;
+  type &= ~(SOCK_NONBLOCK | SOCK_CLOEXEC);
+
   if (domain != AF_UNIX)
     {
       factory = manager->GetObject<SocketFdFactory> ();
@@ -453,6 +461,10 @@ int dce_socket (int domain, int type, int protocol)
     }
   socket->IncFdCount ();
   current->process->openFiles[fd] = new FileUsage (fd, socket);
+  if (nonBlock)
+    {
+      socket->Fcntl (F_SETFL, socket->Fcntl (F_GETFL, 0) | O_NONBLOCK);
+    }
 
   return fd;
 }
@@ -521,6 +533,52 @@ int dce_connect (int fd, const struct sockaddr *my_addr, socklen_t addrlen)
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << my_addr << addrlen);
   NS_ASSERT (current != 0);
+
+  // An AF_UNIX stream socket connecting to a host service (DceHostUnixSocketPaths,
+  // e.g. the X server): replace our never-connected local socket by a host one.
+  if (my_addr != 0 && my_addr->sa_family == AF_UNIX
+      && addrlen > offsetof (struct sockaddr_un, sun_path))
+    {
+      const struct sockaddr_un *sun = (const struct sockaddr_un *)my_addr;
+      size_t maxLen = addrlen - offsetof (struct sockaddr_un, sun_path);
+      std::string path;
+      if (sun->sun_path[0] == 0 && maxLen > 1)
+        {
+          path = std::string (sun->sun_path + 1, maxLen - 1); // abstract socket
+        }
+      else
+        {
+          path = std::string (sun->sun_path, strnlen (sun->sun_path, maxLen));
+        }
+      if (UtilsIsHostUnixSocketPath (path))
+        {
+          std::map<int, FileUsage *>::iterator it = current->process->openFiles.find (fd);
+          if (it == current->process->openFiles.end () || it->second->IsClosed ())
+            {
+              current->err = EBADF;
+              return -1;
+            }
+          FileUsage *fu = it->second;
+          UnixFd *local = fu->GetFile ();
+          if (dynamic_cast<LocalStreamSocketFd *> (local) != 0)
+            {
+              HostSocketFd *host = HostSocketFd::ConnectHost (my_addr, addrlen);
+              if (host == 0)
+                {
+                  current->err = errno;
+                  return -1;
+                }
+              NS_LOG_INFO ("fd " << fd << " connected to host socket " << path);
+              // keep the flags the application already set on the descriptor
+              host->Fcntl (F_SETFL, local->Fcntl (F_GETFL, 0));
+              host->Fcntl (F_SETFD, local->Fcntl (F_GETFD, 0));
+              delete fu; // drops the local socket
+              host->IncFdCount ();
+              current->process->openFiles[fd] = new FileUsage (fd, host);
+              return 0;
+            }
+        }
+    }
 
   OPENED_FD_METHOD (int, Connect (my_addr, addrlen))
 }
@@ -930,4 +988,14 @@ int dce_fcntl64 (int fd, int cmd, ...)
   unsigned long arg = va_arg (vl, unsigned long);
   va_end (vl);
   return dce_fcntl (fd, cmd, arg);
+}
+
+// Fortified read() of glibc, used by libraries built with _FORTIFY_SOURCE.
+ssize_t dce___read_chk (int fd, void *buf, size_t nbytes, size_t buflen)
+{
+  if (nbytes > buflen)
+    {
+      NS_FATAL_ERROR ("read: buffer overflow detected");
+    }
+  return dce_read (fd, buf, nbytes);
 }

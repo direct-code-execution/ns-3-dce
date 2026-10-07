@@ -77,6 +77,7 @@ VALGRIND_FOUND = True
 BASH_DCE_FOUND = False
 IPERF_DCE_FOUND = False
 FFMPEG_DCE_FOUND = False
+X11_DCE_FOUND = False
 
 #
 # This will be given a prefix and a suffix when the waf config file is
@@ -1214,6 +1215,19 @@ def run_tests():
             break
     if options.verbose:
         print("FFMPEG_DCE_FOUND == %s" % FFMPEG_DCE_FOUND)
+
+    #
+    # Check if the x11-hello DCE client was built (needs libx11-dev). The
+    # dce-x11-hello example also needs an X server: DISPLAY must be set
+    # (e.g. run test.py under xvfb-run).
+    #
+    global X11_DCE_FOUND
+    for d in iperf_search_dirs:
+        if os.path.isfile(os.path.join(d, "x11-hello")):
+            X11_DCE_FOUND = True
+            break
+    if options.verbose:
+        print("X11_DCE_FOUND == %s" % X11_DCE_FOUND)
 
     #
     # Get the information from the build status file.

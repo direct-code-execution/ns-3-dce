@@ -108,6 +108,15 @@
 #include <iconv.h>
 #include <glob.h>
 #include <malloc.h>
+#include <sys/shm.h>
+#include <sys/file.h>
+#include <sys/random.h>
+#include <grp.h>
+#include <err.h>
+#include <wchar.h>
+#include <wctype.h>
+#include <stdint.h>
+#include <pwd.h>
 #include <cstdarg>
 
 extern void __cxa_finalize (void *d);
@@ -154,6 +163,29 @@ __THROW;
 extern int __obstack_vprintf_chk (struct obstack *, int, const char *,
                                   __gnuc_va_list) __THROW;
 extern void __stack_chk_fail (void);
+// fortified string/memory/select helpers and C23 scanf variants of glibc,
+// used by system libraries (X11) loaded by DCE applications
+extern "C" {
+extern long int __fdelt_chk (long int d);
+extern void *__memmove_chk (void *dest, const void *src, size_t len, size_t destlen);
+extern void *__memset_chk (void *dest, int c, size_t len, size_t destlen);
+extern char *__strcat_chk (char *dest, const char *src, size_t destlen);
+extern char *__strncpy_chk (char *dest, const char *src, size_t len, size_t destlen);
+extern char *__strncat_chk (char *dest, const char *src, size_t len, size_t destlen);
+extern char *__stpcpy_chk (char *dest, const char *src, size_t destlen);
+extern ssize_t __read_chk (int fd, void *buf, size_t nbytes, size_t buflen);
+extern int __isoc23_sscanf (const char *s, const char *format, ...);
+extern int __isoc23_fscanf (FILE *stream, const char *format, ...);
+extern int __isoc23_vsscanf (const char *s, const char *format, __gnuc_va_list arg);
+extern long int __isoc23_strtol (const char *nptr, char **endptr, int base);
+extern long long int __isoc23_strtoll (const char *nptr, char **endptr, int base);
+extern unsigned long int __isoc23_strtoul (const char *nptr, char **endptr, int base);
+extern unsigned long long int __isoc23_strtoull (const char *nptr, char **endptr, int base);
+extern intmax_t __isoc23_strtoimax (const char *nptr, char **endptr, int base);
+extern uintmax_t __isoc23_strtoumax (const char *nptr, char **endptr, int base);
+extern size_t __mbstowcs_chk (wchar_t *dst, const char *src, size_t len, size_t dstlen);
+extern int __register_atfork (void (*prepare) (void), void (*parent) (void), void (*child) (void), void *dso_handle);
+}
 extern int _IO_getc(_IO_FILE * __fp);
 extern int _IO_putc(int __c, _IO_FILE * __fp);
 

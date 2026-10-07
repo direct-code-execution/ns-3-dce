@@ -194,3 +194,17 @@ sighandler_t dce___sysv_signal (int signum, sighandler_t handler)
 {
   return dce_signal (signum, handler);
 }
+
+int dce_raise (int sig)
+{
+  Thread *current = Current ();
+  NS_ASSERT (current != 0);
+  return dce_kill (current->process->pid, sig);
+}
+
+// pthread_atfork() registration used by libraries (libbsd): DCE processes
+// do not fork the simulator, so there is nothing to register.
+int dce___register_atfork (void (*prepare) (void), void (*parent) (void), void (*child) (void), void *dso_handle)
+{
+  return 0;
+}

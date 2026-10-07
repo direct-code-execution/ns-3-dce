@@ -64,6 +64,9 @@ The example is built as ``build/bin/dce-wifi-video``. Its main options are:
   Distance between the AP and the client station, in meters (default 10).
 ``--ping``
   Also run a real ``ping`` from the client to the server (default true).
+``--viewer``
+  Display the received video in an X11 window drawn by the receiving
+  ffmpeg from inside the simulation (default false, see below).
 
 To watch the video live while it crosses the simulated network::
 
@@ -77,6 +80,48 @@ The standard output of the example reports the frames received by the
 client station every second. The output of each DCE process is in
 ``files-{0,2}/var/log/<pid>/{stdout,stderr}``, and the 802.11 frames seen by
 the AP are captured in ``dce-wifi-video-*.pcap``.
+
+Watching from inside the simulation (X11)
+-----------------------------------------
+
+With ``--viewer=1`` the receiving ``ffmpeg`` does not write a file: it
+decodes the stream and displays it in an X11 window, using its ``xv``
+output device, while running inside the simulated client station::
+
+   $ ./bin/dce-wifi-video --viewer=1
+
+This works because DCE can now hand a host socket to a DCE application.
+The ``DceHostUnixSocketPaths`` global value lists AF_UNIX socket path
+prefixes (the example sets it to ``/tmp/.X11-unix/`` when the viewer is
+enabled); when a DCE process connects a stream socket to a matching path,
+DCE replaces its simulated socket by a connected socket of the host
+(``model/host-socket-fd.h``). The X11 client libraries (libX11, libxcb,
+libXext, libXv...) are loaded by DCE like any other dependency of the
+application and run against DCE's libc, only the bytes exchanged with the X
+server leave the simulation. The host socket is kept non-blocking and its
+readiness is re-checked every millisecond while a DCE task waits on it, so
+this needs the real-time simulator, which ``--viewer=1`` enables. The
+receiver finds its X authority file as ``/.Xauthority`` in its own file
+system (``files-2/``), copied there from ``$XAUTHORITY``.
+
+The ``DceX11Helper`` class (``helper/dce-x11-helper.h``) does the three
+things a simulation needs for this: ``Enable()`` adds ``/tmp/.X11-unix/``
+to ``DceHostUnixSocketPaths``, ``InstallAuthority(node)`` writes the host's
+X authority cookies into the node's file system as wildcard entries (the
+hostname a DCE application sees is its node's, so host-bound entries would
+not match), and ``SetEnvironment(dce)`` sets ``DISPLAY``, ``XAUTHORITY`` and
+``HOME`` for the applications to install.
+
+The same mechanism works for any single-process X11 client built for DCE
+(``-fPIC -pie -rdynamic``) that is started with ``DISPLAY`` in its
+environment. ``example/x11-hello.cc`` is such a client (built when
+libx11-dev is installed) and ``dce-x11-hello`` runs it on a simulated node
+for a few seconds; ``test.py`` runs it when ``DISPLAY`` is set, under
+``xvfb-run`` in CI. It is not meant for multi-process or heavily threaded
+applications (web browsers, VLC), which DCE cannot run. The viewer has no
+sound: audio would need a PulseAudio/PipeWire client library running under
+DCE (eventfd, a mainloop thread, shared memory), which is not supported;
+``--player`` with a host player plays the audio.
 
 Regression test
 ---------------

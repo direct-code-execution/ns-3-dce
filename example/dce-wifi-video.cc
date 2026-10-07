@@ -22,6 +22,13 @@
 //     vlc --play-and-exit - < files-2/stream.ts
 //
 // or by the example itself: --player="vlc --play-and-exit - < {}".
+//
+// With --viewer=1 the receiving ffmpeg does not write a file at all: it
+// decodes the stream and displays it in an X11 window (ffmpeg's xv output
+// device), from inside the simulation. The X11 client libraries run under
+// DCE and the connection to the X server goes through the host socket
+// passthrough of DCE (DceHostUnixSocketPaths, see model/host-socket-fd.h).
+//
 // With --realtime=1 (default) ns-3 runs in real-time mode, so the ffmpeg
 // pacing inside the simulation matches the wall clock and the video plays
 // at normal speed. With --realtime=0 --fifo=0 the example runs as fast as
@@ -212,6 +219,7 @@ main (int argc, char *argv[])
   uint16_t port = 5004;
   bool pcap = true;
   bool ping = true;
+  bool viewer = false;
   std::string fiber = "ucontext";
   std::string txArgs = "";
   std::string rxArgs = "";
@@ -230,9 +238,29 @@ main (int argc, char *argv[])
   cmd.AddValue ("rxInArgs", "Extra ffmpeg input options for the receiver, inserted before -i", rxInArgs);
   cmd.AddValue ("rxArgs", "Extra ffmpeg options for the receiver, inserted before the output file", rxArgs);
   cmd.AddValue ("fiber", "DCE fiber manager: ucontext or pthread", fiber);
+  cmd.AddValue ("viewer", "Display the received video in an X11 window drawn by the receiving ffmpeg itself, "
+                "from inside the simulation, instead of writing it to files-2/stream.ts (needs --realtime=1 and $DISPLAY)", viewer);
   cmd.AddValue ("ping", "Run a real ping from the client to the server before streaming", ping);
   cmd.AddValue ("pcap", "Capture 802.11 frames seen by the AP to dce-wifi-video-*.pcap", pcap);
   cmd.Parse (argc, argv);
+
+
+  if (viewer)
+    {
+      if (!realtime)
+        {
+          std::cout << "--viewer=1: switching to real-time mode, the X server lives in wall-clock time" << std::endl;
+          realtime = true;
+        }
+      if (getenv ("DISPLAY") == 0)
+        {
+          std::cerr << "--viewer=1 needs DISPLAY to be set" << std::endl;
+          return 1;
+        }
+      // Let the receiver's X11 client library reach the host X server.
+      DceX11Helper::Enable ();
+      fifo = false;
+    }
 
   if (realtime)
     {
@@ -280,11 +308,17 @@ main (int argc, char *argv[])
       return 1;
     }
 
+
   NodeContainer nodes;
   nodes.Create (3);
   Ptr<Node> server = nodes.Get (0);
   Ptr<Node> ap = nodes.Get (1);
   Ptr<Node> client = nodes.Get (2);
+  if (viewer)
+    {
+      // The receiver reads its X authority cookies in its own file system.
+      DceX11Helper::InstallAuthority (client);
+    }
 
   // --- 802.11n infrastructure BSS on channel 36 ---------------------------
   YansWifiChannelHelper channel = YansWifiChannelHelper::Default ();
@@ -391,12 +425,27 @@ main (int argc, char *argv[])
   AddArguments (dce, rxInArgs);
   dce.AddArgument ("-i");
   dce.AddArgument (listenUrl.str ());
-  dce.AddArgument ("-c");
-  dce.AddArgument ("copy");
-  dce.AddArgument ("-f");
-  dce.AddArgument ("mpegts");
-  AddArguments (dce, rxArgs);
-  dce.AddArgument ("/stream.ts");
+  if (viewer)
+    {
+      // Decode and draw in an X11 window (no audio device in the simulation).
+      DceX11Helper::SetEnvironment (dce);
+      dce.AddArgument ("-an");
+      dce.AddArgument ("-f");
+      dce.AddArgument ("xv");
+      dce.AddArgument ("-window_title");
+      dce.AddArgument ("ffmpeg inside ns-3 DCE: video received over simulated Wi-Fi");
+      AddArguments (dce, rxArgs);
+      dce.AddArgument ("xv-window");
+    }
+  else
+    {
+      dce.AddArgument ("-c");
+      dce.AddArgument ("copy");
+      dce.AddArgument ("-f");
+      dce.AddArgument ("mpegts");
+      AddArguments (dce, rxArgs);
+      dce.AddArgument ("/stream.ts");
+    }
   apps = dce.Install (client);
   apps.Start (Seconds (2.0));
 
@@ -432,8 +481,9 @@ main (int argc, char *argv[])
   Simulator::Schedule (Seconds (1.0), &Progress, Seconds (1.0));
 
   std::cout << "Server STA " << serverIp.str () << " streams " << resolved << std::endl
-            << "Client STA " << clientIp.str () << " writes files-2/stream.ts"
-            << (fifo ? " (named pipe: open it with a player to watch live)" : "") << std::endl
+            << "Client STA " << clientIp.str ()
+            << (viewer ? " displays the stream in an X11 window on " + std::string (getenv ("DISPLAY"))
+                : std::string (" writes files-2/stream.ts") + (fifo ? " (named pipe: open it with a player to watch live)" : "")) << std::endl
             << "Process output: files-{0,2}/var/log/<pid>/{stdout,stderr}" << std::endl;
 
   // Optionally start a host player on the pipe (e.g. --player=vlc).
@@ -467,9 +517,9 @@ main (int argc, char *argv[])
       waitpid (playerPid, &status, 0);
     }
 
-  if (fifo)
+  if (fifo || viewer)
     {
-      return 0; // the stream went to a player; nothing left to compare
+      return 0; // the stream went to a player or a window; nothing left to compare
     }
   return CompareStreams (resolved, "files-2/stream.ts") ? 0 : 1;
 }

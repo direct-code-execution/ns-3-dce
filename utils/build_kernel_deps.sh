@@ -152,21 +152,26 @@ fetch_git https://github.com/FFmpeg/FFmpeg.git "${FFMPEG_REV}" ffmpeg
     cd "${SRC}/ffmpeg"
     # Single threaded (DCE schedules one task at a time), no assembly, and
     # only what the dce-wifi-video example needs: file/UDP/RTP I/O, MPEG-TS
-    # in and out, and the parsers and decoders needed to probe the streams
-    # being copied. -fno-stack-protector/-U_FORTIFY_SOURCE: DCE provides
-    # neither __stack_chk_fail nor the fortified libc entry points.
+    # in and out, the parsers and decoders needed to probe the streams being
+    # copied, and the xv (XVideo) output device of --viewer=1 when the X11
+    # headers are there. -fno-stack-protector/-U_FORTIFY_SOURCE: DCE
+    # provides neither __stack_chk_fail nor the fortified libc entry points.
+    XV_OPTIONS="--disable-avdevice"
+    if [ -f /usr/include/X11/extensions/Xvlib.h ]; then
+        XV_OPTIONS="--enable-avdevice --enable-xlib --enable-outdev=xv --enable-encoder=wrapped_avframe"
+    fi
     ./configure \
         --disable-everything --disable-autodetect --disable-doc \
         --disable-pthreads --disable-w32threads --disable-os2threads \
         --disable-asm --disable-stripping --disable-iconv \
         --disable-ffplay --disable-ffprobe --enable-ffmpeg \
-        --disable-avdevice --disable-postproc \
+        --disable-postproc ${XV_OPTIONS} \
         --enable-protocol=file,udp,rtp,tcp,pipe \
         --enable-demuxer=mpegts,rtp \
         --enable-muxer=mpegts,rtp,rtp_mpegts,null \
         --enable-parser=h264,aac,mpegaudio,mpegvideo \
         --enable-decoder=h264,aac,mpeg2video,mp2,mp3 \
-        --enable-filter=null,anull \
+        --enable-filter=null,anull,scale,format \
         --enable-pic \
         --extra-cflags="-fPIC -g -U_FORTIFY_SOURCE -fno-stack-protector" \
         --extra-ldflags="-pie -rdynamic" > /dev/null

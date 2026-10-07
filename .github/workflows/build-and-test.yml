@@ -57,7 +57,11 @@ jobs:
             xz-utils \
             libssl-dev \
             libdb-dev \
-            libsctp-dev
+            libsctp-dev \
+            libx11-dev \
+            libxext-dev \
+            libxv-dev \
+            xvfb
 
       - name: Configure git safe directory
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE/ns-3-dce"
@@ -161,7 +165,8 @@ jobs:
         working-directory: ns-3-dce
         env:
           LD_LIBRARY_PATH: ${{ github.workspace }}/build/lib:${{ github.workspace }}/build/lib64
-        run: python3 test.py -r
+        # xvfb-run provides the X server used by dce-x11-hello
+        run: xvfb-run -a python3 test.py -r
 
       - name: Remove sockets from test output
         if: always()

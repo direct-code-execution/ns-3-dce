@@ -26,6 +26,9 @@ cpp_examples = [
     # the example fails if the received streams differ from the sent ones.
     ("dce-wifi-video --realtime=0 --fifo=0 --stopTime=60", "FFMPEG_DCE_FOUND == True", "False"),
     ("dce-wifi-video --realtime=0 --fifo=0 --stopTime=60 --stack=ns3", "FFMPEG_DCE_FOUND == True", "False"),
+    # An X11 client drawing a window from inside the simulation through the
+    # host socket passthrough; needs an X server (DISPLAY), e.g. xvfb-run.
+    ("dce-x11-hello --seconds=2", "X11_DCE_FOUND == True and os.getenv('DISPLAY') is not None", "False"),
 #    ("dce-ccnd-udp-2-nodes", "True", "True"), 
 #    ("dce-ccnd-linear-multiple", "True", "True"),
     ("dce-cradle-simple", "True", "True"),  

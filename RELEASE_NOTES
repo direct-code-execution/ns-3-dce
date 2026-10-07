@@ -16,15 +16,25 @@ New user-visible features
   works as a regression test: the received elementary streams must be
   identical to the sent ones. utils/build_kernel_deps.sh builds the DCE
   version of ffmpeg, and example/dce-wifi-video-sample.ts is the clip.
+- DCE applications can reach a service of the host over an AF_UNIX socket:
+  the DceHostUnixSocketPaths global value lists the socket path prefixes
+  (e.g. /tmp/.X11-unix/) for which connect() is redirected to a real host
+  socket (model/host-socket-fd.h). This lets X11 clients built for DCE,
+  such as ffmpeg's xv output device (dce-wifi-video --viewer=1), open a
+  window on the host display from inside the simulation. Real-time
+  simulator only.
 - Many libm functions, fcntl64/readdir64/mkstemp64, getrlimit64/setrlimit64,
-  clock, __sysv_signal and the POSIX strerror_r are now provided to DCE
-  applications.
+  clock, __sysv_signal, the POSIX strerror_r, the glibc fortified and C23
+  (__isoc23_*) entry points, SysV shared memory, getpw*_r/getgr*_r and
+  other functions needed by the X11 client libraries are now provided to
+  DCE applications.
 
 Bugs fixed
 ----------
 - open64() passed garbage as the file creation mode.
-- socket() with SOCK_NONBLOCK/SOCK_CLOEXEC and setsockopt(SO_SNDBUF) failed
-  on the ns-3 stack.
+- socket() with SOCK_NONBLOCK/SOCK_CLOEXEC failed (EINVAL for AF_UNIX,
+  "missing socket type" on the ns-3 stack), as did setsockopt(SO_SNDBUF)
+  on ns-3 UDP sockets.
 - A task could be rescheduled after its process had exited: TaskManager
   now refuses to wake up dead tasks.
 

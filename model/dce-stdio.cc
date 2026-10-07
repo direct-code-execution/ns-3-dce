@@ -782,3 +782,14 @@ int dce_vsnprintf (char *s, size_t si, const char *f, va_list ap)
 {
   return ::vsnprintf (s, si, f, ap);
 }
+
+// Fortified asprintf() of glibc (libbsd); the string must come from the
+// DCE allocator since the application frees it.
+int dce___asprintf_chk (char **strp, int flag, const char *fmt, ...)
+{
+  va_list ap;
+  va_start (ap, fmt);
+  int r = dce_vasprintf (strp, fmt, ap);
+  va_end (ap);
+  return r;
+}
