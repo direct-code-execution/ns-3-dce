@@ -25,7 +25,8 @@
 #include "ns3/ipv4-static-routing-helper.h"
 #include "ns3/ipv4-global-routing-helper.h"
 #include "ns3/ipv4-interface.h"
-#include "ns3/ipv4-global-routing.h"
+#include "ns3/arp-l3-protocol.h"
+#include "ns3/global-routing.h"
 #include "ns3/ipv4-routing-table-entry.h"
 #include "dce-application-helper.h"
 #include "freebsd-socket-fd-factory.h"
@@ -98,7 +99,9 @@ Ipv4FreeBSD::AddInterface (Ptr<NetDevice> device)
 {
   NS_LOG_FUNCTION (this << &device);
 
+  Ptr<Node> node = GetObject<Node> ();
   Ptr<Ipv4Interface> interface = CreateObject<Ipv4Interface> ();
+  interface->SetNode (node);
   interface->SetDevice (device);
   interface->SetForwarding (m_ipForward);
   return AddIpv4Interface (interface);
@@ -395,10 +398,6 @@ Ipv4FreeBSD::SelectSourceAddress (Ptr<const NetDevice> device,
       for (uint32_t j = 0; j < GetNAddresses (i); j++)
         {
           iaddr = GetAddress (i, j);
-          if (iaddr.IsSecondary ())
-            {
-              continue;
-            }
           if (iaddr.GetScope () > scope)
             {
               continue;
@@ -425,10 +424,6 @@ Ipv4FreeBSD::SelectSourceAddress (Ptr<const NetDevice> device,
       for (uint32_t j = 0; j < GetNAddresses (i); j++)
         {
           iaddr = GetAddress (i, j);
-          if (iaddr.IsSecondary ())
-            {
-              continue;
-            }
           if (iaddr.GetScope () != Ipv4InterfaceAddress::LINK
               && iaddr.GetScope () <= scope)
             {
@@ -561,6 +556,13 @@ Ipv4FreeBSD::InstallNode (Ptr<Node> node)
   factory.SetTypeId ("ns3::Ipv4FreeBSD");
   Ptr<Object> protocol = factory.Create <Object> ();
   node->AggregateObject (protocol);
+  // ns3::Ipv4Interface creates an ARP cache for devices that need ARP once it
+  // knows its node. The FreeBSD kernel does ARP itself, so this ArpL3Protocol
+  // is never registered as a protocol handler and stays inert.
+  if (!node->GetObject<ArpL3Protocol> ())
+    {
+      node->AggregateObject (CreateObject<ArpL3Protocol> ());
+    }
   Ipv4GlobalRoutingHelper globalRouting;
   // Set routing
   Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> ();

@@ -54,7 +54,8 @@ cpp_examples = [
     ("dce-ping-mt1 --kernel=1", "True", "True"),
     ("dce-mt2 --kernel=1", "True", "True"),
     ("dce-mt3 --kernel=1", "True", "True"),
-    ("dce-xfrm", "False", "False"),
+    # Runs, but libos 4.4 cannot install IPsec states (ENOSYS)
+    ("dce-xfrm", "True", "True"),
 #    ("dce-ltp", "True", "True"),
     ("dce-cradle-mptcp", "True", "True"),
     ("dce-iperf-mptcp", "IPERF_DCE_FOUND == True", "IPERF_DCE_FOUND == True"),

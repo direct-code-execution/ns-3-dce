@@ -446,6 +446,23 @@ const char * dce_inet_ntop (int af, const void *src,
     }
   return retval;
 }
+// glibc keeps getopt parsing state (e.g. the position inside a cluster of
+// short options) in a hidden static shared by all simulated processes.
+// optind = 0 makes glibc reinitialize it: always on a process' first call,
+// and when another process used getopt last and this one is at the start
+// of its arguments.
+static void
+ResetGetoptIfOtherProcess (Process *process)
+{
+  static Process *lastProcess = 0;
+  if (!process->getoptStarted || (lastProcess != process && optind <= 1))
+    {
+      optind = 0;
+    }
+  process->getoptStarted = true;
+  lastProcess = process;
+}
+
 int dce_getopt (int argc, char * const argv[], const char *optstring)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << argc << argv << optstring);
@@ -464,6 +481,7 @@ int dce_getopt (int argc, char * const argv[], const char *optstring)
   optind = *process->poptind;
   opterr = *process->popterr;
   optopt = *process->poptopt;
+  ResetGetoptIfOtherProcess (process);
   int retval = getopt (argc, argv, optstring);
   *process->poptarg = optarg;
   *process->poptind = optind;
@@ -495,6 +513,7 @@ int dce_getopt_long (int argc, char * const argv[], const char *optstring,
   optind = *process->poptind;
   opterr = *process->popterr;
   optopt = *process->poptopt;
+  ResetGetoptIfOtherProcess (process);
   int retval = getopt_long (argc, argv, optstring, longopts, longindex);
   *process->poptarg = optarg;
   *process->poptind = optind;
