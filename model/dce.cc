@@ -694,7 +694,10 @@ unsigned dce_if_nametoindex (const char *ifname)
   Ptr<SocketFdFactory> factory = 0;
   factory = current->process->manager->GetObject<SocketFdFactory> ();
 
-  if (factory->GetInstanceTypeId () == TypeId::LookupByName ("ns3::LinuxSocketFdFactory"))
+  // Kernel stacks know their interfaces; ask them.
+  TypeId tid = factory->GetInstanceTypeId ();
+  if (tid == TypeId::LookupByName ("ns3::LinuxSocketFdFactory")
+      || tid.GetName () == "ns3::LklSocketFdFactory")
     {
       struct ifreq ifr;
       int fd = dce_socket (AF_INET, SOCK_DGRAM, 0);
@@ -704,10 +707,11 @@ unsigned dce_if_nametoindex (const char *ifname)
         }
 
       strncpy (ifr.ifr_name, ifname, sizeof (ifr.ifr_name));
-      if (dce_ioctl (fd, SIOCGIFINDEX, (char *)&ifr) < 0)
+      int ret = dce_ioctl (fd, SIOCGIFINDEX, (char *)&ifr);
+      dce_close (fd);
+      if (ret < 0)
         {
-          current->err = errno;
-          return -1;
+          return 0;
         }
       return ifr.ifr_ifindex;
     }
@@ -739,7 +743,9 @@ char * dce_if_indextoname (unsigned ifindex, char *ifname)
     }
 
   ifr.ifr_ifindex = ifindex;
-  if (dce_ioctl (fd, SIOCGIFNAME, (char *)&ifr) < 0)
+  int ret = dce_ioctl (fd, SIOCGIFNAME, (char *)&ifr);
+  dce_close (fd);
+  if (ret < 0)
     {
       return 0;
     }

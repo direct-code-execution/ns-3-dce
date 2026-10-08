@@ -59,6 +59,23 @@ int dce_getaddrinfo (const char *node, const char *service,
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << ((NULL == node) ? "" : node) << ((NULL == service) ? "" : service) << hints << res);
   NS_ASSERT (Current () != 0);
   struct addrinfo *tmp = 0;
+  // AI_ADDRCONFIG (also the default without hints) would check the
+  // addresses of the host, not of the node: without IPv6 on the host, IPv6
+  // addresses would not resolve.
+  struct addrinfo nodeHints;
+  memset (&nodeHints, 0, sizeof (nodeHints));
+  if (hints == 0)
+    {
+      nodeHints.ai_family = AF_UNSPEC;
+      nodeHints.ai_flags = AI_V4MAPPED;
+      hints = &nodeHints;
+    }
+  else if (hints->ai_flags & AI_ADDRCONFIG)
+    {
+      nodeHints = *hints;
+      nodeHints.ai_flags &= ~AI_ADDRCONFIG;
+      hints = &nodeHints;
+    }
   int status = ::getaddrinfo (node, service, hints, &tmp);
   // copy outgoing data structure so that the memory is allocated from the calling process memory pool.
   struct addrinfo *cur, *prev, *head;
