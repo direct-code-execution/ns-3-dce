@@ -17,16 +17,25 @@ env:
 
 jobs:
   build:
-    name: Build on ${{ matrix.distro }}
+    name: Build on ${{ matrix.distro }} (${{ matrix.stack }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
+        # stack: the Linux kernel of ns3::LinuxSocketFdFactory
+        #   lkl:   Linux 6.12 (LKL)
+        #   libos: Linux 4.4 (net-next-nuse), with FreeBSD; LKL is
+        #          ns3::LklSocketFdFactory
         include:
           - distro: ubuntu-24.04
             image: ubuntu:24.04
+            stack: lkl
           - distro: debian-trixie
             image: debian:trixie
+            stack: lkl
+          - distro: ubuntu-24.04
+            image: ubuntu:24.04
+            stack: libos
     container:
       image: ${{ matrix.image }}
     steps:
@@ -101,8 +110,9 @@ jobs:
         working-directory: ns-${{ env.NS3_VER }}
         run: ./ns3 install
 
-      # Linux/FreeBSD kernel libraries, DCE builds of ip, iperf, thttpd,
-      # wget, ping and quagga, and the ns-3-dce-quagga module.
+      # DCE builds of ip, iperf, thttpd, wget, ping and quagga, the
+      # ns-3-dce-quagga module and, for libos, the Linux 4.4 and FreeBSD
+      # kernel libraries.
       - name: Cache kernel stack dependencies
         id: cache-kernel-deps
         uses: actions/cache@v4
@@ -111,14 +121,31 @@ jobs:
             deps/bin_dce
             deps/kernel
             deps/ns-3-dce-quagga
-          key: kernel-deps-${{ matrix.distro }}-${{ hashFiles('ns-3-dce/utils/build_kernel_deps.sh', 'ns-3-dce/utils/*.patch') }}
+          key: kernel-deps-${{ matrix.distro }}-${{ matrix.stack }}-${{ hashFiles('ns-3-dce/utils/build_kernel_deps.sh', 'ns-3-dce/utils/*.patch') }}
 
       - name: Build kernel stack dependencies
         if: steps.cache-kernel-deps.outputs.cache-hit != 'true'
         working-directory: ns-3-dce
+        env:
+          LIBOS: ${{ matrix.stack == 'libos' && '1' || '0' }}
         run: |
           ./utils/build_kernel_deps.sh "$GITHUB_WORKSPACE/deps"
           rm -rf "$GITHUB_WORKSPACE/deps/src"
+
+      # Linux 6.12 kernel library (LKL) and its headers.
+      - name: Cache LKL
+        id: cache-lkl
+        uses: actions/cache@v4
+        with:
+          path: deps/lkl
+          key: lkl-${{ matrix.distro }}-${{ hashFiles('ns-3-dce/utils/build_lkl.sh', 'ns-3-dce/utils/lkl-patches/*.patch', 'ns-3-dce/utils/lkl-dce.config') }}
+
+      - name: Build LKL
+        if: steps.cache-lkl.outputs.cache-hit != 'true'
+        working-directory: ns-3-dce
+        run: |
+          ./utils/build_lkl.sh "$GITHUB_WORKSPACE/lkl-src" "$GITHUB_WORKSPACE/deps/lkl"
+          rm -rf "$GITHUB_WORKSPACE/lkl-src" "$GITHUB_WORKSPACE/deps/lkl/liblkl.so.debug"
 
       - name: Add Quagga module
         run: cp -a deps/ns-3-dce-quagga ns-3-dce/myscripts/
@@ -126,10 +153,15 @@ jobs:
       - name: Configure DCE
         working-directory: ns-3-dce
         run: |
+          # Without --enable-kernel-stack, LKL is the Linux stack.
+          if [ "${{ matrix.stack }}" = libos ]; then
+            KERNEL_STACK="--enable-kernel-stack=$GITHUB_WORKSPACE/deps/kernel"
+          fi
           ./waf configure \
             --with-ns3="$GITHUB_WORKSPACE/build" \
             --prefix="$GITHUB_WORKSPACE/build" \
-            --enable-kernel-stack="$GITHUB_WORKSPACE/deps/kernel" \
+            ${KERNEL_STACK} \
+            --with-lkl="$GITHUB_WORKSPACE/deps/lkl" \
             --enable-opt
 
       - name: Build DCE
@@ -140,6 +172,7 @@ jobs:
         working-directory: ns-3-dce
         run: |
           cp -a "$GITHUB_WORKSPACE/deps/bin_dce/." build/bin_dce/
+          cp "$GITHUB_WORKSPACE/deps/lkl/liblkl.so" build/bin_dce/
           ./utils/build_bash.sh build/bin_dce
 
       - name: Run DCE tests
@@ -157,6 +190,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: testpy-output-${{ matrix.distro }}
+          name: testpy-output-${{ matrix.distro }}-${{ matrix.stack }}
           path: ns-3-dce/testpy-output
           if-no-files-found: ignore
