@@ -11,11 +11,13 @@
 # Usage: ./utils/build_kernel_deps.sh [deps_dir]
 #   deps_dir: output directory (default: ../dce-kernel-deps)
 #   JOBS:     parallel make jobs (default: nproc)
+#   LIBOS:    0 skips net-next-nuse and freebsd-sim, for builds whose Linux
+#             stack is LKL (utils/build_lkl.sh) (default: 1)
 #
 # Outputs (sources and build trees stay in <deps_dir>/src, which can be
 # deleted afterwards):
 #   <deps_dir>/bin_dce/          binaries and libraries for DCE_PATH
-#   <deps_dir>/kernel/           argument for --enable-kernel-stack
+#   <deps_dir>/kernel/           argument for --enable-kernel-stack (LIBOS=1)
 #   <deps_dir>/ns-3-dce-quagga/  module to copy into myscripts/
 #
 
@@ -26,10 +28,11 @@ DEPS_DIR="$(mkdir -p "${1:-${DCE_DIR}/../dce-kernel-deps}" && cd "${1:-${DCE_DIR
 BIN_DCE="${DEPS_DIR}/bin_dce"
 SRC="${DEPS_DIR}/src"
 JOBS="${JOBS:-$(nproc)}"
+LIBOS="${LIBOS:-1}"
 
 NUSE_REV="libos-v4.4-fix1"
 FREEBSD_REV="sim-ns3-dev-branch"
-IPROUTE2_REV="v4.4.0"
+IPROUTE2_REV="v6.12.0" # matches LKL's kernel; has "ip mptcp"
 IPUTILS_REV="s20101006"
 QUAGGA_MODULE_REV="b57e0f3184e34107c7e452b3c41807e0aff5b5ce"
 IPERF_VERSION="2.0.5"
@@ -66,60 +69,63 @@ fetch_tar () {
     fi
 }
 
-echo "== net-next-nuse (Linux 4.4 libos)"
-fetch_git https://github.com/libos-nuse/net-next-nuse.git "${NUSE_REV}" net-next-nuse
-(
-    cd "${SRC}/net-next-nuse"
-    make defconfig ARCH=lib > /dev/null
-    # Generate objs.mk serially: under -j, GNU Make >= 4.4 runs this rule
-    # twice concurrently and the output file gets interleaved.
-    make ARCH=lib arch/lib/objs.mk > /dev/null
-    # The NUSE/rump tools fail to build and are not used by DCE; only the
-    # libsim-linux library from arch/lib/tools is required.
-    make library ARCH=lib -j"${JOBS}" -k > build.log 2>&1 || true
-    test -f arch/lib/tools/libsim-linux-4.4.0.so || { tail -50 build.log; exit 1; }
-)
-cp "${SRC}/net-next-nuse/arch/lib/tools/libsim-linux-4.4.0.so" "${BIN_DCE}/"
-ln -sf libsim-linux-4.4.0.so "${BIN_DCE}/liblinux.so"
-# DCE only needs the libos API headers from the kernel tree.
-rm -rf "${DEPS_DIR}/kernel"
-mkdir -p "${DEPS_DIR}/kernel/lib"
-cp -a "${SRC}/net-next-nuse/arch/lib/include" "${DEPS_DIR}/kernel/lib/"
-
-echo "== freebsd-sim"
-fetch_git https://github.com/direct-code-execution/freebsd-sim.git "${FREEBSD_REV}" freebsd-sim
-(
-    cd "${SRC}/freebsd-sim"
-    git apply --check "${DCE_DIR}/utils/freebsd-sim-dce.patch" 2> /dev/null \
-        && git apply "${DCE_DIR}/utils/freebsd-sim-dce.patch"
-    cd sys/sim
-    # The kernel config tool and generated headers must exist before the
-    # parallel kernel build; the Makefile does not order this correctly.
-    make -f Makefile.config clean > /dev/null
-    make -f Makefile.config CC="gcc ${LEGACY_CFLAGS}" > /dev/null
-    rm -rf compile && mkdir -p compile
-    (cd conf && ../config -C DCE > /dev/null)
+if [ "${LIBOS}" = 1 ]; then
+    echo "== net-next-nuse (Linux 4.4 libos)"
+    fetch_git https://github.com/libos-nuse/net-next-nuse.git "${NUSE_REV}" net-next-nuse
     (
-        cd compile/DCE
-        for m in device_if cpufreq_if bus_if linker_if clock_if; do
-            awk -f ../../../tools/makeobjops.awk ../../../kern/$m.m -h
-        done
-        awk -f ../../../tools/vnode_if.awk ../../../kern/vnode_if.src -q -p -h -c
+        cd "${SRC}/net-next-nuse"
+        make defconfig ARCH=lib > /dev/null
+        # Generate objs.mk serially: under -j, GNU Make >= 4.4 runs this rule
+        # twice concurrently and the output file gets interleaved.
+        make ARCH=lib arch/lib/objs.mk > /dev/null
+        # The NUSE/rump tools fail to build and are not used by DCE; only the
+        # libsim-linux library from arch/lib/tools is required.
+        make library ARCH=lib -j"${JOBS}" -k > build.log 2>&1 || true
+        test -f arch/lib/tools/libsim-linux-4.4.0.so || { tail -50 build.log; exit 1; }
     )
-    touch config
-    make buildkernel -j"${JOBS}" CC="gcc ${LEGACY_CFLAGS}" > build.log 2>&1 || { tail -50 build.log; exit 1; }
-)
-cp "${SRC}/freebsd-sim/libsim-freebsd.git.so" "${BIN_DCE}/"
-ln -sf libsim-freebsd.git.so "${BIN_DCE}/libfreebsd.so"
+    cp "${SRC}/net-next-nuse/arch/lib/tools/libsim-linux-4.4.0.so" "${BIN_DCE}/"
+    ln -sf libsim-linux-4.4.0.so "${BIN_DCE}/liblinux.so"
+    # DCE only needs the libos API headers from the kernel tree.
+    rm -rf "${DEPS_DIR}/kernel"
+    mkdir -p "${DEPS_DIR}/kernel/lib"
+    cp -a "${SRC}/net-next-nuse/arch/lib/include" "${DEPS_DIR}/kernel/lib/"
+
+    echo "== freebsd-sim"
+    fetch_git https://github.com/direct-code-execution/freebsd-sim.git "${FREEBSD_REV}" freebsd-sim
+    (
+        cd "${SRC}/freebsd-sim"
+        git apply --check "${DCE_DIR}/utils/freebsd-sim-dce.patch" 2> /dev/null \
+            && git apply "${DCE_DIR}/utils/freebsd-sim-dce.patch"
+        cd sys/sim
+        # The kernel config tool and generated headers must exist before the
+        # parallel kernel build; the Makefile does not order this correctly.
+        make -f Makefile.config clean > /dev/null
+        make -f Makefile.config CC="gcc ${LEGACY_CFLAGS}" > /dev/null
+        rm -rf compile && mkdir -p compile
+        (cd conf && ../config -C DCE > /dev/null)
+        (
+            cd compile/DCE
+            for m in device_if cpufreq_if bus_if linker_if clock_if; do
+                awk -f ../../../tools/makeobjops.awk ../../../kern/$m.m -h
+            done
+            awk -f ../../../tools/vnode_if.awk ../../../kern/vnode_if.src -q -p -h -c
+        )
+        touch config
+        make buildkernel -j"${JOBS}" CC="gcc ${LEGACY_CFLAGS}" > build.log 2>&1 || { tail -50 build.log; exit 1; }
+    )
+    cp "${SRC}/freebsd-sim/libsim-freebsd.git.so" "${BIN_DCE}/"
+    ln -sf libsim-freebsd.git.so "${BIN_DCE}/libfreebsd.so"
+fi
 
 echo "== iproute2 ${IPROUTE2_REV}"
 fetch_git https://git.kernel.org/pub/scm/network/iproute2/iproute2.git "${IPROUTE2_REV}" iproute2
 (
     cd "${SRC}/iproute2"
     ./configure > /dev/null
-    # glibc has setns(); the configure probe for it fails under GCC 14.
-    make -j"${JOBS}" "CCOPTS=-fpic -D_GNU_SOURCE -O0 -g -DUINT16_MAX=65535 -DHAVE_SETNS ${LEGACY_CFLAGS}" \
-        "LDFLAGS=-pie -rdynamic" > /dev/null 2>&1
+    # Only ip, linked with libc only (configure finds none of the optional
+    # libraries in a plain build environment).
+    make -j"${JOBS}" SUBDIRS="lib ip" "CCOPTS=-fpic -D_GNU_SOURCE -O0 -g -U_FORTIFY_SOURCE" \
+        "LDFLAGS=-pie -rdynamic" > build.log 2>&1 || { tail -50 build.log; exit 1; }
 )
 cp "${SRC}/iproute2/ip/ip" "${BIN_DCE}/"
 

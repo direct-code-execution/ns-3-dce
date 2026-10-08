@@ -84,6 +84,9 @@ int main (int argc, char *argv[])
   routers.Create (1);
 
   DceManagerHelper dceManager;
+  // The applications' TCP sockets are MPTCP sockets (Linux MPTCP v1: only
+  // with LKL; libos has no MPTCP).
+  Config::SetDefaultFailSafe ("ns3::LklSocketFdFactory::Mptcp", BooleanValue (true));
   dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory",
                               "Library", StringValue ("liblinux.so"));
   LinuxStackHelper stack;
@@ -185,6 +188,11 @@ int main (int argc, char *argv[])
       cmd_oss.str ("");
       cmd_oss << "route add 10.1.0.0/16 via " << if1.GetAddress (0, 0) << " dev sim0";
       LinuxStackHelper::RunIp (routers.Get (0), Seconds (0.2), cmd_oss.str ().c_str ());
+      // MPTCP: a subflow over WiFi
+      cmd_oss.str ("");
+      cmd_oss << "mptcp endpoint add " << if1.GetAddress (0, 0) << " dev sim"
+              << devices1.Get (0)->GetIfIndex () << " subflow";
+      LinuxStackHelper::RunIp (nodes.Get (0), Seconds (0.5), cmd_oss.str ().c_str ());
 
       // Global default route
       if (disLte)
@@ -237,7 +245,11 @@ int main (int argc, char *argv[])
   LinuxStackHelper::RunIp (nodes.Get (1), Seconds (5.1), "route show table all");
 
   // debug
-  stack.SysctlSet (nodes, ".net.mptcp.mptcp_debug", "1");
+  for (uint32_t n = 0; n < 2; n++)
+    {
+      LinuxStackHelper::RunIp (nodes.Get (n), Seconds (0.5), "mptcp limits set subflows 4 add_addr_accepted 4");
+    }
+  stack.SysctlSet (routers, ".net.ipv4.conf.all.forwarding", "1");
 
 #if 1
   LinuxStackHelper::SysctlGet (nodes.Get (0), NanoSeconds (0),
@@ -309,9 +321,9 @@ int main (int argc, char *argv[])
   dce.SetBinary ("iperf");
   dce.ResetArguments ();
   dce.ResetEnvironment ();
+  // Not -P 1: Linux MPTCP accepts the subflows of a connection on its
+  // listener.
   dce.AddArgument ("-s");
-  dce.AddArgument ("-P");
-  dce.AddArgument ("1");
 #if 0
   if (bufSize.length () != 0)
     {

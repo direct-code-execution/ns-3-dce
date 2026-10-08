@@ -178,7 +178,7 @@ main (int argc, char *argv[])
     {
       LinuxStackHelper::PopulateRoutingTables ();
       dceManager.Install (nodes);
-      stack.SysctlSet (nodes, ".net.ipv4.conf.default.forwarding", "1");
+      stack.SysctlSet (nodes, ".net.ipv4.conf.all.forwarding", "1");
     }
 
   // dceManager.RunIp (lefts.Get (0), Seconds (0.2), "route add default via 10.0.0.2");

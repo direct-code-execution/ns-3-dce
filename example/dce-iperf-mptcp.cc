@@ -8,6 +8,24 @@
 #include "ns3/constant-position-mobility-model.h"
 
 using namespace ns3;
+
+// Bytes the server received from each address of the client.
+static std::map<Ipv4Address, uint64_t> g_received;
+
+static void
+ServerRx (Ptr<const Packet> p)
+{
+  Ptr<Packet> packet = p->Copy ();
+  PppHeader ppp;
+  Ipv4Header ip;
+  packet->RemoveHeader (ppp);
+  if (ppp.GetProtocol () == 0x0021) // IPv4
+    {
+      packet->RemoveHeader (ip);
+      g_received[ip.GetSource ()] += packet->GetSize ();
+    }
+}
+
 void setPos (Ptr<Node> n, int x, int y, int z)
 {
   Ptr<ConstantPositionMobilityModel> loc = CreateObject<ConstantPositionMobilityModel> ();
@@ -26,6 +44,10 @@ int main (int argc, char *argv[])
   NodeContainer nodes, routers;
   nodes.Create (2);
   routers.Create (nRtrs);
+
+  // The applications' TCP sockets are MPTCP sockets (Linux MPTCP v1: only
+  // with LKL; libos has no MPTCP).
+  Config::SetDefaultFailSafe ("ns3::LklSocketFdFactory::Mptcp", BooleanValue (true));
 
   DceManagerHelper dceManager;
   dceManager.SetTaskManagerAttribute ("FiberManagerType",
@@ -99,14 +121,25 @@ int main (int argc, char *argv[])
   LinuxStackHelper::RunIp (nodes.Get (1), Seconds (0.1), "route add default via 10.2.0.2 dev sim0");
   LinuxStackHelper::RunIp (nodes.Get (0), Seconds (0.1), "rule show");
 
-  // Schedule Up/Down (XXX: didn't work...)
-  LinuxStackHelper::RunIp (nodes.Get (1), Seconds (1.0), "link set dev sim0 multipath off");
-  LinuxStackHelper::RunIp (nodes.Get (1), Seconds (15.0), "link set dev sim0 multipath on");
-  LinuxStackHelper::RunIp (nodes.Get (1), Seconds (30.0), "link set dev sim0 multipath off");
+  stack.SysctlSet (routers, ".net.ipv4.conf.all.forwarding", "1");
 
-
-  // debug
-  stack.SysctlSet (nodes, ".net.mptcp.mptcp_debug", "1");
+  // MPTCP: up to 4 subflows per connection; the client opens subflows from
+  // its other addresses, the server announces its other addresses.
+  for (uint32_t n = 0; n < 2; n++)
+    {
+      LinuxStackHelper::RunIp (nodes.Get (n), Seconds (0.5), "mptcp limits set subflows 4 add_addr_accepted 4");
+    }
+  for (uint32_t i = 1; i < nRtrs; i++)
+    {
+      cmd_oss.str ("");
+      cmd_oss << "mptcp endpoint add 10.1." << i << ".1 dev sim" << i << " subflow fullmesh";
+      LinuxStackHelper::RunIp (nodes.Get (0), Seconds (0.5), cmd_oss.str ().c_str ());
+      cmd_oss.str ("");
+      cmd_oss << "mptcp endpoint add 10.2." << i << ".1 dev sim" << i << " signal";
+      LinuxStackHelper::RunIp (nodes.Get (1), Seconds (0.5), cmd_oss.str ().c_str ());
+    }
+  Config::ConnectWithoutContext ("/NodeList/1/DeviceList/*/$ns3::PointToPointNetDevice/PhyRxEnd",
+                                 MakeCallback (&ServerRx));
 
   DceApplicationHelper dce;
   ApplicationContainer apps;
@@ -132,9 +165,9 @@ int main (int argc, char *argv[])
   dce.SetBinary ("iperf");
   dce.ResetArguments ();
   dce.ResetEnvironment ();
+  // Not -P 1: the server stops listening after that many connections,
+  // and Linux MPTCP accepts the subflows of a connection on its listener.
   dce.AddArgument ("-s");
-  dce.AddArgument ("-P");
-  dce.AddArgument ("1");
   apps = dce.Install (nodes.Get (1));
 
   pointToPoint.EnablePcapAll ("iperf-mptcp", false);
@@ -148,5 +181,19 @@ int main (int argc, char *argv[])
   Simulator::Run ();
   Simulator::Destroy ();
 
+  bool ok = true;
+  for (uint32_t i = 0; i < nRtrs; i++)
+    {
+      std::ostringstream addr;
+      addr << "10.1." << i << ".1";
+      uint64_t bytes = g_received[Ipv4Address (addr.str ().c_str ())];
+      std::cout << "received from " << addr.str () << ": " << bytes << " bytes" << std::endl;
+      ok = ok && bytes > 0;
+    }
+#ifdef LKL_LINUX
+  // With MPTCP, every path carries data.
+  return ok ? 0 : 1;
+#else
   return 0;
+#endif
 }

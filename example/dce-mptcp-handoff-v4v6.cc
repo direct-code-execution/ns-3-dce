@@ -32,7 +32,7 @@
 #include "ns3/core-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/dce-module.h"
-#include "ns3/point-to-point-helper.h"
+#include "ns3/point-to-point-module.h"
 #include "ns3/wifi-module.h"
 #include "ns3/yans-wifi-helper.h"
 #include "ns3/mobility-module.h"
@@ -40,6 +40,35 @@
 
 
 using namespace ns3;
+
+// Bytes the server received from each address of the mobile node.
+static std::map<std::string, uint64_t> g_received;
+
+static void
+ServerRx (Ptr<const Packet> p)
+{
+  Ptr<Packet> packet = p->Copy ();
+  PppHeader ppp;
+  packet->RemoveHeader (ppp);
+  std::ostringstream source;
+  if (ppp.GetProtocol () == 0x0057) // IPv6
+    {
+      Ipv6Header ip;
+      packet->RemoveHeader (ip);
+      source << ip.GetSource ();
+    }
+  else if (ppp.GetProtocol () == 0x0021) // IPv4
+    {
+      Ipv4Header ip;
+      packet->RemoveHeader (ip);
+      source << ip.GetSource ();
+    }
+  else
+    {
+      return;
+    }
+  g_received[source.str ()] += packet->GetSize ();
+}
 
 
 static void AddAddress (Ptr<Node> node, Time at, const char *name, const char *address)
@@ -139,6 +168,10 @@ int main (int argc, char *argv[])
   wifi.Install (phy, mac, ar.Get (1));
 
 
+  // The applications' TCP sockets are MPTCP sockets (Linux MPTCP v1: only
+  // with LKL; libos has no MPTCP).
+  Config::SetDefaultFailSafe ("ns3::LklSocketFdFactory::Mptcp", BooleanValue (true));
+
   DceManagerHelper dceMng;
   DceApplicationHelper dce;
   LinuxStackHelper stack;
@@ -179,6 +212,7 @@ int main (int argc, char *argv[])
   LinuxStackHelper::RunIp (router.Get (0), Seconds (3.15), "-6 route add 2001:1:2:4::/64 via 2001:1:2:1::2 dev sim1");
   LinuxStackHelper::RunIp (router.Get (0), Seconds (3.15), "-6 route add 2001:1:2:7::/64 via 2001:1:2:2::2 dev sim2");
   stack.SysctlSet (router, ".net.ipv6.conf.all.forwarding", "1");
+  stack.SysctlSet (router, ".net.ipv4.conf.all.forwarding", "1");
 
   // For AR1 (the intermediate node)
   AddAddress (ar.Get (0), Seconds (0.1), "sim0", "2001:1:2:1::2/64");
@@ -199,6 +233,7 @@ int main (int argc, char *argv[])
   AddAddress (ar.Get (1), Seconds (0.12), "sim1", "2001:1:2:7::2/64");
   LinuxStackHelper::RunIp (ar.Get (1), Seconds (0.13), "link set sim1 up");
   stack.SysctlSet (ar, ".net.ipv6.conf.all.forwarding", "1");
+  stack.SysctlSet (ar, ".net.ipv4.conf.all.forwarding", "1");
 
   // For MN
   LinuxStackHelper::RunIp (mn.Get (0), Seconds (0.11), "link set lo up");
@@ -229,8 +264,19 @@ int main (int argc, char *argv[])
   LinuxStackHelper::RunIp (mn.Get (0), Seconds (10.0), "route show table all");
   LinuxStackHelper::RunIp (mn.Get (0), Seconds (10.1), "route get 2001:1:2:3::1 from 2001:1:2:4:200:ff:fe00:7");
 
-  stack.SysctlSet (mn, ".net.mptcp.mptcp_debug", "1");
-  stack.SysctlSet (sv, ".net.mptcp.mptcp_debug", "1");
+  // MPTCP: up to 4 subflows per connection; the mobile node opens a
+  // subflow from each of its addresses (Linux MPTCP does not by itself),
+  // and the server announces its address of the other family.
+  LinuxStackHelper::RunIp (mn.Get (0), Seconds (0.5), "mptcp limits set subflows 4 add_addr_accepted 4");
+  LinuxStackHelper::RunIp (sv.Get (0), Seconds (0.5), "mptcp limits set subflows 4 add_addr_accepted 4");
+  LinuxStackHelper::RunIp (sv.Get (0), Seconds (0.5),
+                           std::string ("mptcp endpoint add ") + (v6Primary ? "192.168.0.1" : "2001:1:2:3::1") + " dev sim0 signal");
+  LinuxStackHelper::RunIp (mn.Get (0), Seconds (9.0), "mptcp endpoint add 192.168.2.2 dev sim0 subflow");
+  LinuxStackHelper::RunIp (mn.Get (0), Seconds (9.0), "mptcp endpoint add 2001:1:2:4:200:ff:fe00:7 dev sim0 subflow");
+  LinuxStackHelper::RunIp (mn.Get (0), Seconds (9.0), "mptcp endpoint add 2001:1:2:7:200:ff:fe00:9 dev sim1 subflow");
+  Config::ConnectWithoutContext ("/NodeList/" + std::to_string (sv.Get (0)->GetId ())
+                                 + "/DeviceList/0/$ns3::PointToPointNetDevice/PhyRxEnd",
+                                 MakeCallback (&ServerRx));
 
   {
     ApplicationContainer apps;
@@ -241,10 +287,10 @@ int main (int argc, char *argv[])
     dce.SetBinary ("iperf");
     dce.ResetArguments ();
     dce.ResetEnvironment ();
+    // Not -P 1: the server stops listening after that many connections,
+    // and Linux MPTCP accepts the subflows of a connection on its listener.
     dce.AddArgument ("-V");
     dce.AddArgument ("-s");
-    dce.AddArgument ("-P");
-    dce.AddArgument ("1");
     apps = dce.Install (sv);
     apps.Start (Seconds (4));
     //    apps.Stop (Seconds (45.0));
@@ -285,5 +331,11 @@ int main (int argc, char *argv[])
   Simulator::Run ();
   Simulator::Destroy ();
 
+  // Which addresses of the mobile node carried data depends on which access
+  // points it reaches from where it was placed.
+  for (std::map<std::string, uint64_t>::iterator i = g_received.begin (); i != g_received.end (); ++i)
+    {
+      std::cout << "received from " << i->first << ": " << i->second << " bytes" << std::endl;
+    }
   return 0;
 }

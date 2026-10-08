@@ -160,6 +160,9 @@ int main (int argc, char *argv[])
   DceManagerHelper dceMng;
   DceApplicationHelper dce;
   LinuxStackHelper stack;
+  // The applications' TCP sockets are MPTCP sockets (Linux MPTCP v1: only
+  // with LKL; libos has no MPTCP).
+  Config::SetDefaultFailSafe ("ns3::LklSocketFdFactory::Mptcp", BooleanValue (true));
   dceMng.SetNetworkStack ("ns3::LinuxSocketFdFactory",
                           "Library", StringValue ("liblinux.so"));
   // dceMng.SetLoader ("ns3::DlmLoaderFactory");
@@ -280,8 +283,12 @@ int main (int argc, char *argv[])
   LinuxStackHelper::RunIp (mn.Get (0), Seconds (10.0), "route show table all");
   LinuxStackHelper::RunIp (mn.Get (0), Seconds (10.1), "route get 2001:1:2:3::1 from 2001:1:2:4:200:ff:fe00:a");
 
-  stack.SysctlSet (mn, ".net.mptcp.mptcp_debug", "1");
-  stack.SysctlSet (sv, ".net.mptcp.mptcp_debug", "1");
+  // MPTCP: a subflow from the address the mobile node gets on its second
+  // interface (Linux MPTCP does not open subflows from new addresses by
+  // itself).
+  LinuxStackHelper::RunIp (mn.Get (0), Seconds (0.5), "mptcp limits set subflows 4 add_addr_accepted 4");
+  LinuxStackHelper::RunIp (sv.Get (0), Seconds (0.5), "mptcp limits set subflows 4 add_addr_accepted 4");
+  LinuxStackHelper::RunIp (mn.Get (0), Seconds (9.0), "mptcp endpoint add 2001:1:2:4:200:ff:fe00:a dev sim1 subflow");
 
   {
     ApplicationContainer apps;
@@ -293,9 +300,9 @@ int main (int argc, char *argv[])
     dce.ResetArguments ();
     dce.ResetEnvironment ();
     dce.AddArgument ("-V");
+    // Not -P 1: Linux MPTCP accepts the subflows of a connection on its
+    // listener.
     dce.AddArgument ("-s");
-    dce.AddArgument ("-P");
-    dce.AddArgument ("1");
     dce.AddArgument ("-i");
     dce.AddArgument ("1");
     apps = dce.Install (sv);
