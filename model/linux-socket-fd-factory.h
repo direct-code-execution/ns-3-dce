@@ -1,6 +1,26 @@
 #ifndef LINUX_SOCKET_FD_FACTORY_H
 #define LINUX_SOCKET_FD_FACTORY_H
 
+#ifdef LKL_LINUX
+
+#include "lkl-socket-fd-factory.h"
+
+namespace ns3 {
+
+/**
+ * Without libos (configure --with-lkl only), the Linux network stack is
+ * LKL; see LklSocketFdFactory.
+ */
+class LinuxSocketFdFactory : public LklSocketFdFactory
+{
+public:
+  static TypeId GetTypeId (void);
+};
+
+} // namespace ns3
+
+#else
+
 #include "kernel-socket-fd-factory.h"
 #include <vector>
 
@@ -35,5 +55,7 @@ private:
 };
 
 } // namespace ns3
+
+#endif /* LKL_LINUX */
 
 #endif /* LINUX_SOCKET_FD_FACTORY_H */

@@ -63,7 +63,7 @@ int main (int argc, char *argv[])
     }
   else if (stack == "linux")
     {
-#ifdef KERNEL_STACK
+#ifdef LINUX_STACK
       dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
       dceManager.Install (nodes);
       LinuxStackHelper stack;
@@ -76,7 +76,7 @@ int main (int argc, char *argv[])
     }
   else if (stack == "freebsd")
     {
-#ifdef KERNEL_STACK
+#ifdef LINUX_STACK
       dceManager.SetNetworkStack ("ns3::FreeBSDSocketFdFactory", "Library", StringValue ("libfreebsd.so"));
       dceManager.Install (nodes);
       FreeBSDStackHelper stack;
@@ -98,7 +98,7 @@ int main (int argc, char *argv[])
 
   // setup ip routes
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
-#ifdef KERNEL_STACK
+#ifdef LINUX_STACK
   if (stack == "linux")
     {
       LinuxStackHelper::PopulateRoutingTables ();

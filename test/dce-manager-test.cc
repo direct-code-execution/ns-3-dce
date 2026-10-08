@@ -264,7 +264,12 @@ DceManagerTestSuite::DceManagerTestSuite ()
   // linux stack
   TypeId tid;
   bool kern_linux = TypeId::LookupByNameFailSafe ("ns3::LinuxSocketFdFactory", &tid);
+#ifdef LKL_LINUX
+  // ns3::LinuxSocketFdFactory is LKL
+  std::string filePath = SearchExecFile ("DCE_PATH", "liblkl.so", 0);
+#else
   std::string filePath = SearchExecFile ("DCE_PATH", "liblinux.so", 0);
+#endif
   if (kern_linux && (filePath.length () > 0))
     {
       for (unsigned int i = 0; i < sizeof(tests) / sizeof(testPair); i++)

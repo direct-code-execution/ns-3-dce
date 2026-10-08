@@ -468,7 +468,20 @@ diff -ruN a/test/dce-quagga-test.cc b/test/dce-quagga-test.cc
    };
   
    ::system ("/bin/rm -rf files-*/usr/local/etc/*.pid");
-@@ -452,7 +461,7 @@
+@@ -442,7 +451,12 @@
+   TypeId tid;
+   bool kern = TypeId::LookupByNameFailSafe ("ns3::LinuxSocketFdFactory", &tid);
+   // for the moment: not supported quagga for freebsd
++#ifdef LKL_LINUX
++  // ns3::LinuxSocketFdFactory is LKL
++  std::string filePath = SearchExecFile ("DCE_PATH", "liblkl.so", 0);
++#else
+   std::string filePath = SearchExecFile ("DCE_PATH", "liblinux.so", 0);
++#endif
+   for (unsigned int i = 0; i < sizeof(tests) / sizeof(testPair); i++)
+     {
+       if (filePath.length () <= 0 && (kern && tests[i].useKernel))
+@@ -452,7 +466,7 @@
        AddTestCase (new DceQuaggaTestCase (std::string (tests[i].name),
                                            Seconds (tests[i].duration), tests[i].useKernel,
                                            (!kern && tests[i].useKernel)),

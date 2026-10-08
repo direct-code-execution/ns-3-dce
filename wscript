@@ -19,6 +19,10 @@ def options(opt):
                    help=('Path to the prefix where the kernel wrapper headers are installed'),
                    default=None,
                    dest='kernel_stack', type="string")
+    opt.add_option('--with-lkl',
+                   help=('Path to the output of utils/build_lkl.sh, or to an LKL source tree built with it'),
+                   default=None,
+                   dest='with_lkl', type="string")
     opt.add_option('--enable-mpi',
                    help=('Enable MPI and distributed simulation support'),
                    dest='enable_mpi', action='store_true',
@@ -168,6 +172,22 @@ def configure(conf):
                    includes=os.path.join(kernel_stack_dir, 'include'))
         conf.env['KERNEL_STACK'] = kernel_stack_dir
         conf.env.append_value ('DEFINES', 'KERNEL_STACK=Y')
+        conf.env.append_value ('DEFINES', 'LINUX_STACK=Y')
+
+    if Options.options.with_lkl:
+        lkl_dir = os.path.abspath(Options.options.with_lkl)
+        lkl_include = os.path.join(lkl_dir, 'include')
+        if not os.path.isfile(os.path.join(lkl_include, 'lkl', 'asm', 'host_ops.h')):
+            lkl_include = os.path.join(lkl_dir, 'tools', 'lkl', 'include')
+        conf.check(header_name='lkl/asm/host_ops.h', includes=lkl_include)
+        conf.env['LKL_INCLUDE'] = lkl_include
+        conf.env.append_value('DEFINES', 'LKL_STACK=Y')
+        if not conf.env['KERNEL_STACK']:
+            # Without libos, LKL is the Linux stack: it provides
+            # ns3::LinuxSocketFdFactory.
+            conf.env['LKL_LINUX'] = True
+            conf.env.append_value('DEFINES', 'LKL_LINUX=Y')
+            conf.env.append_value('DEFINES', 'LINUX_STACK=Y')
 
     conf.env['ENABLE_PYTHON_BINDINGS'] = False
     conf.env['EXAMPLE_DIRECTORIES'] = '.'
@@ -270,7 +290,7 @@ def build_dce_tests(module, bld):
     tests_source = [
         'test/dce-manager-test.cc',
     ]
-    if bld.env['KERNEL_STACK']:
+    if bld.env['KERNEL_STACK'] or bld.env['LKL_LINUX']:
         tests_source += [
             'test/dce-cradle-test.cc',
             'test/dce-mptcp-test.cc',
@@ -517,9 +537,10 @@ def build_dce_kernel_examples(module, bld):
                            target='bin/dce-sctp-simple',
                            source=['example/dce-sctp-simple.cc'])
 
-    module.add_example(needed = ['core', 'network', 'dce', 'wifi', 'point-to-point', 'csma', 'mobility' ],
-                       target='bin/dce-freebsd',
-                       source=['example/dce-freebsd.cc'])
+    if bld.env['KERNEL_STACK']:
+        module.add_example(needed = ['core', 'network', 'dce', 'wifi', 'point-to-point', 'csma', 'mobility' ],
+                           target='bin/dce-freebsd',
+                           source=['example/dce-freebsd.cc'])
 
 
 # Add a script to build system
@@ -619,10 +640,28 @@ def build(bld):
             'model/linux/linux-socket-impl.h',
             ]
         kernel_includes = [bld.env['KERNEL_STACK']]
+    elif bld.env['LKL_LINUX']:
+        kernel_source = [
+            'model/lkl/lkl-linux-socket-fd-factory.cc',
+            'model/linux/linux-socket-impl.cc',
+            ]
+        kernel_headers = [
+            'model/linux-socket-fd-factory.h',
+            'model/linux/linux-socket-impl.h',
+            ]
+        kernel_includes = ['model/lkl']
     else:
         kernel_source = []
         kernel_headers = []
         kernel_includes = []
+
+    if bld.env['LKL_INCLUDE']:
+        kernel_source += ['model/lkl/lkl-kernel.cc',
+                          'model/lkl/lkl-socket-fd.cc',
+                          'model/lkl/lkl-socket-fd-factory.cc']
+        kernel_headers += ['model/lkl/lkl-kernel.h',
+                           'model/lkl/lkl-socket-fd-factory.h']
+        kernel_includes += [bld.env['LKL_INCLUDE']]
 
     module_source = [
         'model/dce-manager.cc',
@@ -787,8 +826,17 @@ def build(bld):
                            source=['test/netlink-socket-test.cc'],
                            name='netlink')
 
-    if bld.env['KERNEL_STACK']:
+    if bld.env['KERNEL_STACK'] or bld.env['LKL_LINUX']:
         build_dce_kernel_examples(module, bld)
+
+    if bld.env['LKL_INCLUDE']:
+        module.add_example(needed = ['core', 'network', 'dce'],
+                           target='bin/dce-lkl-boot',
+                           includes=[bld.env['LKL_INCLUDE']],
+                           source=['example/dce-lkl-boot.cc'])
+        module.add_example(needed = ['core', 'network', 'dce', 'point-to-point'],
+                           target='bin/dce-lkl-p2p',
+                           source=['example/dce-lkl-p2p.cc'])
     
     # build test-runner
     module.add_example(target='bin/test-runner',

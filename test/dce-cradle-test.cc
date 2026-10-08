@@ -160,7 +160,12 @@ DceCradleTestSuite::DceCradleTestSuite ()
   };
 
   // for the moment: not supported mptcp for freebsd
+#ifdef LKL_LINUX
+  // ns3::LinuxSocketFdFactory is LKL
+  std::string filePath = SearchExecFile ("DCE_PATH", "liblkl.so", 0);
+#else
   std::string filePath = SearchExecFile ("DCE_PATH", "liblinux.so", 0);
+#endif
   for (unsigned int i = 0; i < sizeof(tests)/sizeof(testPair); i++)
     {
       if (filePath.length () <= 0)
