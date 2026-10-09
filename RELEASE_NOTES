@@ -23,10 +23,34 @@ New user-visible features
   such as ffmpeg's xv output device (dce-wifi-video --viewer=1), open a
   window on the host display from inside the simulation. Real-time
   simulator only.
-- New example dce-browser: the Dillo web browser (built for DCE by
-  utils/build_kernel_deps.sh when the FLTK headers are installed) browses,
-  on the host display, a web site served by thttpd on another Wi-Fi
-  station. See doc/source/dce-x11.rst.
+- New example dce-browser: the Dillo web browser (FLTK) or Northstar (GTK4,
+  JavaScript), built for DCE by utils/build_kernel_deps.sh when their
+  development packages are installed, browse on the host display a web
+  site served by thttpd on another Wi-Fi station. See doc/source/dce-x11.rst.
+- DceX11Helper::UseSessionBus and UsePulseAudio let DCE applications use
+  the host's D-Bus session bus and PulseAudio server through the host
+  socket passthrough; dce-wifi-video --viewer=1 plays the sound.
+- DcePcapCheck reads ns-3 captures back (802.11 with A-MPDU, Ethernet, raw
+  IP); dce-wifi-video and dce-browser check the traffic they expect in the
+  capture before exiting. dce-browser also runs numbers-server, a tiny HTTP
+  server whose page polls it from JavaScript, and serves the video sample,
+  also as an MPEG-1 program stream that Northstar's <video> player plays
+  (with sound through PulseAudio when built with its SDL2 mixer).
+- dlsym(RTLD_DEFAULT, ...) now searches the modules loaded for the DCE
+  process rather than the simulator's own (SDL2 crashed in glibc's
+  pthread_setname_np otherwise); programs with their own thread local
+  variables must be linked so that they use dynamic TLS (see the Northstar
+  recipe in utils/build_kernel_deps.sh).
+- Thread switches no longer walk the whole heap of the process (one list
+  entry per 32 KB) unless it was fork()ed: a big win for large programs.
+- With the real-time simulator, a poll() that finds nothing ready with a
+  zero timeout lets the simulated clock catch up with the wall clock
+  instead of advancing it by 1 us. Programs that spin on zero-timeout GLib
+  sources (Northstar while a page loads) no longer drag the whole
+  simulation behind real time, after which it raced to catch up.
+- calloc() skips clearing large blocks, which are fresh, already zeroed
+  anonymous mappings (GTK's software renderer allocates one per frame).
+- malloc() returns 16 byte aligned memory; anonymous mmap() is supported.
 - New example dce-x11-hello and the DceX11Helper class for X11 clients.
 - eventfd(2), epoll(7), pipe2(2) and futex(2) (through syscall(2), as GLib
   and Rust use it) are now provided to DCE applications, with test-eventfd,

@@ -27,7 +27,8 @@ NS_LOG_COMPONENT_DEFINE ("DceKingsleyAlloc");
 
 
 KingsleyAlloc::KingsleyAlloc ()
-  : m_defaultMmapSize (1 << 15)
+  : m_defaultMmapSize (1 << 15),
+    m_cloned (false)
 {
   NS_LOG_FUNCTION (this);
   memset (m_buckets, 0, sizeof(m_buckets));
@@ -86,6 +87,10 @@ KingsleyAlloc::Clone (void)
   NS_LOG_FUNCTION (this << "begin");
   KingsleyAlloc *clone = new KingsleyAlloc ();
   *clone->m_buckets = *m_buckets;
+  // from now on, both heaps live in the same buffers and must be swapped
+  // in and out at every context switch (see SwitchTo).
+  m_cloned = true;
+  clone->m_cloned = true;
   for (std::list<struct KingsleyAlloc::MmapChunk>::iterator i = m_chunks.begin ();
        i != m_chunks.end (); ++i)
     {
@@ -112,6 +117,13 @@ void
 KingsleyAlloc::SwitchTo (void)
 {
   NS_LOG_FUNCTION (this);
+  if (!m_cloned)
+    {
+      // Nothing to swap: a heap that was never fork()ed owns its buffers.
+      // Walking the chunk list (one entry per 32 KB) at every thread switch
+      // dominated the run time of programs with large heaps (web browsers).
+      return;
+    }
   for (std::list<struct KingsleyAlloc::MmapChunk>::const_iterator i = m_chunks.begin ();
        i != m_chunks.end (); ++i)
     {
@@ -142,7 +154,7 @@ KingsleyAlloc::MmapFree (uint8_t *buffer, uint32_t size)
   NS_ASSERT_MSG (status == 0, "Unable to release mmaped buffer");
 }
 void
-KingsleyAlloc::MmapAlloc (uint32_t size)
+KingsleyAlloc::MmapAlloc (uint32_t size, bool large)
 {
   NS_LOG_FUNCTION (this << size);
   struct Mmap *mmap_struct = new Mmap ();
@@ -157,7 +169,16 @@ KingsleyAlloc::MmapAlloc (uint32_t size)
   chunk.brk = 0;
   chunk.copy = 0; // no clone yet, no copy yet.
 
-  m_chunks.push_front (chunk);
+  // Small objects are carved out of the chunk at the front, large blocks
+  // each own a chunk at the back.
+  if (large)
+    {
+      m_chunks.push_back (chunk);
+    }
+  else
+    {
+      m_chunks.push_front (chunk);
+    }
   NS_LOG_DEBUG ("mmap alloced=" << size << " at=" << (void*)mmap_struct->buffer);
   MARK_UNDEFINED (mmap_struct->buffer, size);
 }
@@ -166,21 +187,19 @@ uint8_t *
 KingsleyAlloc::Brk (uint32_t needed)
 {
   NS_LOG_FUNCTION (this << needed);
-  for (std::list<struct KingsleyAlloc::MmapChunk>::iterator i = m_chunks.begin ();
-       i != m_chunks.end (); ++i)
+  // Bump allocation in the newest small chunk only: walking every chunk of
+  // the heap for a free tail made each allocation O(heap size), which
+  // dominated large programs (a web browser has thousands of chunks).
+  if (m_chunks.empty () || m_chunks.front ().mmap->size - m_chunks.front ().brk < needed)
     {
-      NS_ASSERT (i->mmap->size >= i->brk);
-      if (i->mmap->size - i->brk >= needed)
-        {
-          uint8_t *buffer = i->mmap->buffer + i->brk;
-          i->brk += needed;
-          NS_LOG_DEBUG ("brk: needed=" << needed << ", left=" << i->mmap->size - i->brk);
-          return buffer;
-        }
+      NS_ASSERT_MSG (needed <= m_defaultMmapSize, needed << " " << m_defaultMmapSize);
+      MmapAlloc (m_defaultMmapSize, false);
     }
-  NS_ASSERT_MSG (needed <= m_defaultMmapSize, needed << " " << m_defaultMmapSize);
-  MmapAlloc (m_defaultMmapSize);
-  return Brk (needed);
+  struct MmapChunk &chunk = m_chunks.front ();
+  uint8_t *buffer = chunk.mmap->buffer + chunk.brk;
+  chunk.brk += needed;
+  NS_LOG_DEBUG ("brk: needed=" << needed << ", left=" << chunk.mmap->size - chunk.brk);
+  return buffer;
 }
 uint8_t
 KingsleyAlloc::SizeToBucket (uint32_t sz)
@@ -231,10 +250,11 @@ KingsleyAlloc::Malloc (uint32_t size)
     }
   else
     {
-      MmapAlloc (size);
-      uint8_t *buffer = Brk (size);
-      REPORT_MALLOC (buffer, size);
-      return buffer;
+      MmapAlloc (size, true);
+      struct MmapChunk &chunk = m_chunks.back ();
+      chunk.brk = size;
+      REPORT_MALLOC (chunk.mmap->buffer, size);
+      return chunk.mmap->buffer;
     }
 }
 void
@@ -252,14 +272,15 @@ KingsleyAlloc::Free (uint8_t *buffer, uint32_t size)
     }
   else
     {
-      for (std::list<struct KingsleyAlloc::MmapChunk>::iterator i = m_chunks.begin ();
-           i != m_chunks.end (); ++i)
+      // large blocks are at the back, most recent last
+      for (std::list<struct KingsleyAlloc::MmapChunk>::reverse_iterator r = m_chunks.rbegin ();
+           r != m_chunks.rend (); ++r)
         {
-          if (i->mmap->buffer == buffer && i->mmap->size == size)
+          if (r->mmap->buffer == buffer && r->mmap->size == size)
             {
               REPORT_FREE (buffer);
               MmapFree (buffer, size);
-              m_chunks.erase (i);
+              m_chunks.erase (std::next (r).base ());
               return;
             }
         }

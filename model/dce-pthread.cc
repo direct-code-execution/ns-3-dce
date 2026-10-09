@@ -375,7 +375,8 @@ int dce_pthread_key_delete (pthread_key_t key)
               break;
             }
         }
-      NS_ASSERT (found);
+      // a thread which never set a value for the key has no entry
+      (void) found;
     }
   return 0;
 }

@@ -171,6 +171,7 @@ FILE * dce_fdopen (int fildes, const char *mode)
   fp->_fileno = fildes;
   FILE *file = fopencookie(fp, mode, my_func);
   current->process->openStreams.push_back (file);
+  current->process->streamFds[file] = fildes;
   dce_fseek (file, dce_lseek (fildes, 0, SEEK_CUR), SEEK_SET);
 
   return file;
@@ -278,6 +279,7 @@ remove_stream (FILE *fp)
 {
   Thread *current = Current ();
   bool found = false;
+  current->process->streamFds.erase (fp);
   for (std::vector<FILE*>::iterator  i = current->process->openStreams.begin ();
        i != current->process->openStreams.end (); ++i)
     {
@@ -422,8 +424,13 @@ int dce_fileno (FILE *stream)
       return 2;
   }
 
-  // FIXME: Handle fopencookie things to. We need to detect those FILE*
-  // and return cookie->_fileno instead... But how?
+  // streams created by fdopen()/fopen() are fopencookie streams: their
+  // descriptor is the one recorded when they were created
+  std::map<FILE *, int>::iterator it = current->process->streamFds.find (stream);
+  if (it != current->process->streamFds.end ())
+    {
+      return it->second;
+    }
 
   int status = fileno (stream);
   if (status == -1)

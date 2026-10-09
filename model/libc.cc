@@ -1,7 +1,12 @@
 
 #include "libc.h"
 
-struct Libc g_libc;
+// Hidden: the forwarding trampolines below jump through it directly.
+__attribute__ ((visibility ("hidden"))) struct Libc g_libc;
+
+// glibc 2.32 flag read by libstdc++ and others to skip atomic reference
+// counting in single threaded programs: DCE applications may have threads.
+extern "C" char __libc_single_threaded = 0;
 
 // macros stolen from glibc.
 #define weak_alias(name, aliasname) \
@@ -21,6 +26,23 @@ extern "C" {
 
 #define GCC_BT_NUM_ARGS 128
 
+#if defined (__x86_64__)
+// Tail jump through the table: the arguments (registers, stack, the
+// vector register count of variadic calls) and the return value are left
+// to the target untouched. __builtin_apply copied a 128 byte argument
+// block and the registers on every call, which made calls to short libc
+// functions (strlen, strcmp, memcpy) many times slower than the functions
+// themselves.
+#define GCC_BUILTIN_APPLY(export_symbol, func_to_call) \
+  __attribute__ ((naked)) void export_symbol (...) { \
+    __asm__ volatile ("jmp *%0" : : "m" (g_libc.func_to_call ## _fn)); \
+  }
+
+#define GCC_BUILTIN_APPLYT(rtype, export_symbol, func_to_call) \
+  __attribute__ ((naked)) rtype export_symbol (...) { \
+    __asm__ volatile ("jmp *%0" : : "m" (g_libc.func_to_call ## _fn)); \
+  }
+#else
 #define GCC_BUILTIN_APPLY(export_symbol, func_to_call) \
   void export_symbol (...) { \
     void *args =  __builtin_apply_args (); \
@@ -34,6 +56,7 @@ extern "C" {
     void *result = __builtin_apply ((void (*) (...)) g_libc.func_to_call ## _fn, args, GCC_BT_NUM_ARGS); \
     __builtin_return (result); \
   }
+#endif
 
 
 #define DCE(name)                                                               \

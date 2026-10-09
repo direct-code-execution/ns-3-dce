@@ -19,6 +19,7 @@
  *
  */
 #include "dce-dirent.h"
+#include <errno.h>
 #include "dce-fcntl.h"
 #include "dce-unistd.h"
 #include "unix-fd.h"
@@ -245,6 +246,11 @@ int dce_scandir (const char *dirp, struct dirent ***namelist,
 
   struct dirent **nl = 0;
   int ret = scandir (vPath.c_str (), &nl, filter, compar);
+  if (ret == -1)
+    {
+      Current ()->err = errno;
+      return -1;
+    }
 
   if ((ret > 0) && nl)
     {

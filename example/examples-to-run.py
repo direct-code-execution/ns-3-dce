@@ -35,6 +35,9 @@ cpp_examples = [
     # A web browser fetching a page from thttpd over Wi-Fi and drawing on the
     # X display, for 8 s (the browser does not exit by itself).
     ("dce-browser --stopTime=8", "DILLO_DCE_FOUND == True and X11_DCE_FOUND == True and os.getenv('DISPLAY') is not None", "False"),
+    ("dce-browser --browser=northstar --stopTime=12", "NORTHSTAR_DCE_FOUND == True and X11_DCE_FOUND == True and os.getenv('DISPLAY') is not None and os.getenv('DBUS_SESSION_BUS_ADDRESS') is not None", "False"),
+    # JavaScript in the browser polling a server inside the simulation twice a second
+    ("dce-browser --browser=northstar --numbers=1 --stopTime=16 --minRequests=8", "NORTHSTAR_DCE_FOUND == True and X11_DCE_FOUND == True and os.getenv('DISPLAY') is not None and os.getenv('DBUS_SESSION_BUS_ADDRESS') is not None", "False"),
 #    ("dce-ccnd-udp-2-nodes", "True", "True"), 
 #    ("dce-ccnd-linear-multiple", "True", "True"),
     ("dce-cradle-simple", "True", "True"),  

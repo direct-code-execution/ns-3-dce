@@ -54,6 +54,29 @@ public:
 
   /** \return the display the clients connect to: $DISPLAY of the host. */
   static std::string GetDisplay (void);
+
+  /**
+   * Let the applications the helper installs use the host's D-Bus session
+   * bus: the AF_UNIX path of $DBUS_SESSION_BUS_ADDRESS is added to
+   * DceHostUnixSocketPaths and the variable is set in the applications'
+   * environment. GApplication based programs (GTK) need a bus to register
+   * on, and GIO would otherwise try to spawn dbus-launch.
+   * \return false if the host has no unix:path= session bus address
+   */
+  static bool UseSessionBus (DceApplicationHelper &dce);
+
+  /**
+   * Let the applications the helper installs play sound on the host's
+   * PulseAudio (or PipeWire) server: its native socket
+   * ($XDG_RUNTIME_DIR/pulse/native, or $PULSE_SERVER) is added to
+   * DceHostUnixSocketPaths, the authentication cookie is copied into the
+   * node's file system (files-<node>/.config/pulse/cookie, HOME is /), and
+   * a client configuration without shared memory transport is written
+   * (the server and the application do not share memory).
+   * \param node the node whose applications will play sound
+   * \return false if the host has no PulseAudio socket
+   */
+  static bool UsePulseAudio (Ptr<Node> node, DceApplicationHelper &dce);
 };
 
 } // namespace ns3

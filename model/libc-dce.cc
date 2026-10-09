@@ -70,6 +70,14 @@
 #include <string.h>
 #include <syslog.h>
 #include <sys/auxv.h>
+#include <sys/signalfd.h>
+#include <sys/personality.h>
+#include <sys/resource.h>
+#include <mqueue.h>
+#include <printf.h>
+#include <ucontext.h>
+#include <sys/random.h>
+#include <malloc.h>
 #include <sys/xattr.h>
 #include <sys/statvfs.h>
 #include <sys/prctl.h>
@@ -128,6 +136,8 @@
 #include <glob.h>
 #include <malloc.h>
 #include <sys/shm.h>
+#include <sys/sem.h>
+#include <sys/sendfile.h>
 #include <setjmp.h>
 #include <ctype.h>
 #include <libintl.h>
@@ -215,6 +225,12 @@ extern char *__realpath_chk (const char *path, char *resolved, size_t resolvedle
 extern size_t __strlcpy_chk (char *dst, const char *src, size_t n, size_t dstlen);
 extern void __longjmp_chk (jmp_buf env, int val) __attribute__ ((noreturn));
 extern void __syslog_chk (int priority, int flag, const char *format, ...);
+extern void __vsyslog_chk (int priority, int flag, const char *format, __gnuc_va_list ap);
+extern int __openat64_2 (int fd, const char *file, int oflag);
+extern ssize_t __readlinkat_chk (int fd, const char *path, char *buf, size_t len, size_t buflen);
+extern size_t parse_printf_format (const char *fmt, size_t n, int *argtypes);
+extern int capget (void *hdrp, void *datap);
+extern int capset (void *hdrp, const void *datap);
 extern int __open64_2 (const char *file, int oflag);
 extern int __openat_2 (int fd, const char *file, int oflag);
 extern char *__getcwd_chk (char *buf, size_t size, size_t buflen);

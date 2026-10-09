@@ -17,6 +17,10 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <time.h>
+#include <pthread.h>
+#include <sched.h>
+#include <sys/epoll.h>
+#include <fcntl.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -79,6 +83,40 @@ int dce_recvmmsg (int fd, struct mmsghdr *msgvec, unsigned int vlen, int flags, 
 char * dce___getcwd_chk (char *buf, size_t size, size_t buflen);
 char * dce___fgets_unlocked_chk (char *buf, size_t size, int n, FILE *stream);
 int dce___vsprintf_chk (char *s, int flag, size_t slen, const char *fmt, va_list ap);
+int dce_pthread_getattr_np (pthread_t thread, pthread_attr_t *attr);
+int dce_pthread_getaffinity_np (pthread_t thread, size_t cpusetsize, cpu_set_t *cpuset);
+ssize_t dce_sendfile (int out_fd, int in_fd, off_t *offset, size_t count);
+int dce_pthread_setaffinity_np (pthread_t thread, size_t cpusetsize, const cpu_set_t *cpuset);
+void dce__Exit (int status);
+int dce_fdatasync (int fd);
+ssize_t dce_pread64 (int fd, void *buf, size_t count, off64_t offset);
+ssize_t dce_pwrite64 (int fd, const void *buf, size_t count, off64_t offset);
+int dce_mallopt (int param, int value);
+int dce_epoll_pwait2 (int epfd, struct epoll_event *events, int maxevents,
+                      const struct timespec *timeout, const sigset_t *sigmask);
+int dce_fstatvfs64 (int fd, struct statvfs64 *buf);
+long dce_fpathconf (int fd, int name);
+int dce_fremovexattr (int fd, const char *name);
+int dce_mkdirat (int dirfd, const char *pathname, mode_t mode);
+int dce___openat64_2 (int dirfd, const char *path, int flags);
+ssize_t dce_readlinkat (int dirfd, const char *pathname, char *buf, size_t bufsiz);
+ssize_t dce___readlinkat_chk (int dirfd, const char *pathname, char *buf, size_t bufsiz, size_t buflen);
+int dce_signalfd (int fd, const sigset_t *mask, int flags);
+int dce_name_to_handle_at (int dirfd, const char *pathname, struct file_handle *handle, int *mount_id, int flags);
+int dce_personality (unsigned long persona);
+int dce_capget (void *hdrp, void *datap);
+int dce_capset (void *hdrp, const void *datap);
+int dce_setpriority (int which, id_t who, int prio);
+int dce_pthread_setschedparam (pthread_t thread, int policy, const struct sched_param *param);
+int dce_pthread_getschedparam (pthread_t thread, int *policy, struct sched_param *param);
+int dce_fseeko64 (FILE *stream, off64_t offset, int whence);
+off64_t dce_ftello64 (FILE *stream);
+int dce_pthread_setcanceltype (int type, int *oldtype);
+int dce_sched_getparam (pid_t pid, struct sched_param *param);
+int dce_sched_getscheduler (pid_t pid);
+int dce_sched_setscheduler (pid_t pid, int policy, const struct sched_param *param);
+int dce_sigtimedwait (const sigset_t *set, siginfo_t *info, const struct timespec *timeout);
+pid_t dce_vfork (void);
 
 #ifdef __cplusplus
 }

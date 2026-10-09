@@ -761,6 +761,16 @@ void * dce_mmap64 (void *start, size_t length, int prot, int flags,
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << start << length << prot << flags << fd << offset);
   NS_ASSERT (current != 0);
 
+  if (flags & MAP_ANONYMOUS)
+    {
+      // plain memory: nothing to do with the node's files
+      void *p = ::mmap (start, length, prot, flags, -1, offset);
+      if (p == MAP_FAILED)
+        {
+          current->err = errno;
+        }
+      return p;
+    }
   OPENED_FD_METHOD_ERR (MAP_FAILED, void *, Mmap (start, length, prot, flags, offset))
 }
 int dce_munmap (void *start, size_t length)

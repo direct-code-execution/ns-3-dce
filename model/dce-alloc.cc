@@ -59,8 +59,10 @@ void * dce_calloc (size_t nmemb, size_t size)
       return 0;
     }
   void *ptr = dce_malloc (nmemb * size);
-  if (ptr != 0)
+  if (ptr != 0 && !current->process->alloc->IsFreshMapping (nmemb * size + HEADER + 16))
     {
+      // Large blocks are fresh anonymous mappings, already zero: clearing
+      // them again cost GTK's software renderer a large share of each frame.
       memset (ptr, 0, nmemb * size);
     }
   return ptr;

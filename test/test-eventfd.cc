@@ -87,11 +87,37 @@ test_blocking_read (void)
   TEST_ASSERT_EQUAL (close (fd), 0);
 }
 
+static void
+test_poll_woken_by_other_thread (void)
+{
+  // GLib's main loop blocks in poll() on its wake-up eventfd with no
+  // timeout and another thread writes to it (g_main_context_wakeup).
+  int fd = eventfd (0, EFD_NONBLOCK);
+  TEST_ASSERT (fd >= 0);
+  pthread_t thread;
+  TEST_ASSERT_EQUAL (pthread_create (&thread, 0, writer, &fd), 0);
+  struct pollfd p = { fd, POLLIN, 0 };
+  TEST_ASSERT_EQUAL (poll (&p, 1, -1), 1); // 100 ms later
+  TEST_ASSERT (p.revents & POLLIN);
+  uint64_t v = 0;
+  TEST_ASSERT_EQUAL (read (fd, &v, sizeof (v)), (ssize_t) sizeof (v));
+  TEST_ASSERT_EQUAL (v, 5);
+  TEST_ASSERT_EQUAL (pthread_join (thread, 0), 0);
+  // same with a timeout longer than the writer's delay
+  TEST_ASSERT_EQUAL (pthread_create (&thread, 0, writer, &fd), 0);
+  p.revents = 0;
+  TEST_ASSERT_EQUAL (poll (&p, 1, 5000), 1);
+  TEST_ASSERT_EQUAL (read (fd, &v, sizeof (v)), (ssize_t) sizeof (v));
+  TEST_ASSERT_EQUAL (pthread_join (thread, 0), 0);
+  TEST_ASSERT_EQUAL (close (fd), 0);
+}
+
 int
 main (int argc, char *argv[])
 {
   test_counter ();
   test_nonblock_and_semaphore ();
   test_blocking_read ();
+  test_poll_woken_by_other_thread ();
   return 0;
 }

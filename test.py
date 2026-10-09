@@ -80,6 +80,7 @@ FFMPEG_DCE_FOUND = False
 X11_DCE_FOUND = False
 GTK4_DCE_FOUND = False
 DILLO_DCE_FOUND = False
+NORTHSTAR_DCE_FOUND = False
 
 #
 # This will be given a prefix and a suffix when the waf config file is
@@ -1248,6 +1249,15 @@ def run_tests():
             break
     if options.verbose:
         print("DILLO_DCE_FOUND == %s" % DILLO_DCE_FOUND)
+
+    # dce-browser --browser=northstar needs the DCE build of Northstar.
+    global NORTHSTAR_DCE_FOUND
+    for d in iperf_search_dirs:
+        if os.path.isfile(os.path.join(d, "northstar")):
+            NORTHSTAR_DCE_FOUND = True
+            break
+    if options.verbose:
+        print("NORTHSTAR_DCE_FOUND == %s" % NORTHSTAR_DCE_FOUND)
 
     #
     # Get the information from the build status file.

@@ -384,8 +384,14 @@ PipeFd::Fcntl (int cmd, unsigned long arg)
       m_statusFlags = arg;
       return 0;
       break;
+    case F_GETFD:
+      return m_fdFlags;
+    case F_SETFD:
+      m_fdFlags = arg;
+      return 0;
     default:
-      NS_FATAL_ERROR ("fcntl not implemented on pipe");
+      NS_LOG_WARN ("fcntl command " << cmd << " not implemented on pipe");
+      Current ()->err = EINVAL;
       return -1;
     }
 }

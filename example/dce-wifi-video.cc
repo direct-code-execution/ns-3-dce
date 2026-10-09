@@ -44,6 +44,7 @@
 #include "ns3/mobility-module.h"
 
 #include <sys/stat.h>
+#include <netinet/in.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <limits.h>
@@ -220,10 +221,12 @@ main (int argc, char *argv[])
   bool pcap = true;
   bool ping = true;
   bool viewer = false;
+  bool audio = true;
   std::string fiber = "ucontext";
   std::string txArgs = "";
   std::string rxArgs = "";
   std::string rxInArgs = "";
+  std::string rxEnv = "";
 
   CommandLine cmd (__FILE__);
   cmd.AddValue ("video", "MPEG-TS file streamed by the server (any container ffmpeg can read as-is)", video);
@@ -235,11 +238,13 @@ main (int argc, char *argv[])
   cmd.AddValue ("distance", "Distance in meters between the AP and the client STA", distance);
   cmd.AddValue ("stopTime", "Simulation duration in seconds", stopTime);
   cmd.AddValue ("txArgs", "Extra ffmpeg options for the sender, inserted before the output URL", txArgs);
+  cmd.AddValue ("rxEnv", "Extra environment for the receiver, comma separated KEY=VALUE pairs", rxEnv);
   cmd.AddValue ("rxInArgs", "Extra ffmpeg input options for the receiver, inserted before -i", rxInArgs);
   cmd.AddValue ("rxArgs", "Extra ffmpeg options for the receiver, inserted before the output file", rxArgs);
   cmd.AddValue ("fiber", "DCE fiber manager: ucontext or pthread", fiber);
   cmd.AddValue ("viewer", "Display the received video in an X11 window drawn by the receiving ffmpeg itself, "
                 "from inside the simulation, instead of writing it to files-2/stream.ts (needs --realtime=1 and $DISPLAY)", viewer);
+  cmd.AddValue ("audio", "With --viewer=1, also play the sound on the host PulseAudio server (through the passthrough)", audio);
   cmd.AddValue ("ping", "Run a real ping from the client to the server before streaming", ping);
   cmd.AddValue ("pcap", "Capture 802.11 frames seen by the AP to dce-wifi-video-*.pcap", pcap);
   cmd.Parse (argc, argv);
@@ -425,17 +430,52 @@ main (int argc, char *argv[])
   AddArguments (dce, rxInArgs);
   dce.AddArgument ("-i");
   dce.AddArgument (listenUrl.str ());
+  {
+    std::istringstream is (rxEnv);
+    std::string pair;
+    while (std::getline (is, pair, ','))
+      {
+        size_t eq = pair.find ('=');
+        if (eq != std::string::npos && eq > 0)
+          {
+            dce.AddEnvironment (pair.substr (0, eq), pair.substr (eq + 1));
+          }
+      }
+  }
   if (viewer)
     {
-      // Decode and draw in an X11 window (no audio device in the simulation).
+      // Decode and draw in an X11 window; the sound goes to the host's
+      // PulseAudio server through the passthrough when available.
       DceX11Helper::SetEnvironment (dce);
-      dce.AddArgument ("-an");
+      bool sound = audio && DceX11Helper::UsePulseAudio (client, dce);
+      if (audio && !sound)
+        {
+          std::cout << "No PulseAudio socket on the host: the viewer will be silent" << std::endl;
+        }
+      dce.AddArgument ("-map");
+      dce.AddArgument ("0:v");
       dce.AddArgument ("-f");
       dce.AddArgument ("xv");
       dce.AddArgument ("-window_title");
       dce.AddArgument ("ffmpeg inside ns-3 DCE: video received over simulated Wi-Fi");
       AddArguments (dce, rxArgs);
       dce.AddArgument ("xv-window");
+      if (sound)
+        {
+          dce.AddArgument ("-map");
+          dce.AddArgument ("0:a");
+          dce.AddArgument ("-c:a");
+          dce.AddArgument ("pcm_s16le");
+          dce.AddArgument ("-ac");
+          dce.AddArgument ("2");
+          dce.AddArgument ("-ar");
+          dce.AddArgument ("48000");
+          dce.AddArgument ("-f");
+          dce.AddArgument ("pulse");
+          dce.AddArgument ("-name");
+          dce.AddArgument ("dce-wifi-video");
+          dce.AddArgument ("default");
+        }
     }
   else
     {
@@ -517,9 +557,23 @@ main (int argc, char *argv[])
       waitpid (playerPid, &status, 0);
     }
 
+  bool ok = true;
+  if (pcap)
+    {
+      // the capture at the AP must show the UDP stream between the stations
+      DcePcapCheck capture ("dce-wifi-video-1-0.pcap");
+      uint32_t datagrams = capture.Count (IPPROTO_UDP, port);
+      std::cout << "Capture dce-wifi-video-1-0.pcap: " << datagrams << " UDP datagrams to port " << port
+                << ", " << capture.PayloadBytes (IPPROTO_UDP, port) << " payload bytes" << std::endl;
+      if (!capture.Ok () || datagrams == 0)
+        {
+          std::cout << "FAIL: no video traffic in the capture" << std::endl;
+          ok = false;
+        }
+    }
   if (fifo || viewer)
     {
-      return 0; // the stream went to a player or a window; nothing left to compare
+      return ok ? 0 : 1; // the stream went to a player or a window; nothing left to compare
     }
-  return CompareStreams (resolved, "files-2/stream.ts") ? 0 : 1;
+  return (CompareStreams (resolved, "files-2/stream.ts") && ok) ? 0 : 1;
 }

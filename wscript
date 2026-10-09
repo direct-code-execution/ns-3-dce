@@ -360,6 +360,7 @@ def build_dce_examples(module, bld):
                     ['udp-echo-client', []],
                     ['dccp-server', []],
                     ['dccp-client', []],
+                    ['numbers-server', []],
 #                    ['little-cout', []],
                     ]
 
@@ -518,7 +519,7 @@ def build_dce_kernel_examples(module, bld):
         module.add_example(needed = ['core', 'network', 'internet', 'dce'],
                            target='bin/dce-x11-hello',
                            source=['example/dce-x11-hello.cc'])
-        module.add_example(needed = ['core', 'network', 'internet', 'dce', 'wifi', 'mobility'],
+        module.add_example(needed = ['core', 'network', 'internet', 'dce', 'wifi', 'mobility', 'csma', 'tap-bridge'],
                            target='bin/dce-browser',
                            source=['example/dce-browser.cc'])
     # The clip streamed by dce-wifi-video, installed with the DCE binaries so
@@ -759,6 +760,7 @@ def build(bld):
         'helper/dce-manager-helper.cc',
         'helper/dce-application-helper.cc',
         'helper/dce-x11-helper.cc',
+        'helper/dce-pcap-check.cc',
         'helper/ccn-client-helper.cc',
         'helper/linux-stack-helper.cc',
         ]
@@ -791,6 +793,7 @@ def build(bld):
         'helper/dce-manager-helper.h',
         'helper/dce-application-helper.h',
         'helper/dce-x11-helper.h',
+        'helper/dce-pcap-check.h',
         'helper/ccn-client-helper.h',
         'helper/ipv4-dce-routing-helper.h',
         'helper/linux-stack-helper.h',

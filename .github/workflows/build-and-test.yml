@@ -61,13 +61,30 @@ jobs:
             libx11-dev \
             libxext-dev \
             libxv-dev \
+            libpulse-dev \
+            libsdl2-dev \
             libfltk1.3-dev \
             libpng-dev \
             libjpeg-dev \
             autoconf \
             automake \
             libtool \
-            xvfb
+            meson \
+            libgtk-4-dev \
+            libuchardet-dev \
+            libpsl-dev \
+            libseccomp-dev \
+            libharfbuzz-dev \
+            libfribidi-dev \
+            libcairo2-dev \
+            libfontconfig-dev \
+            libfreetype-dev \
+            xvfb \
+            dbus \
+            libdav1d-dev \
+            libvpx-dev \
+            libopenh264-dev \
+            libopus-dev
 
       - name: Configure git safe directory
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE/ns-3-dce"
@@ -171,8 +188,10 @@ jobs:
         working-directory: ns-3-dce
         env:
           LD_LIBRARY_PATH: ${{ github.workspace }}/build/lib:${{ github.workspace }}/build/lib64
-        # xvfb-run provides the X server used by dce-x11-hello
-        run: xvfb-run -a python3 test.py -r
+        # xvfb-run provides the X server used by dce-x11-hello and the
+        # browsers; dbus-run-session the session bus GApplication (Northstar)
+        # registers on.
+        run: xvfb-run -a dbus-run-session -- python3 test.py -r
 
       # Sockets cannot be uploaded; symlinks would be followed (dce-browser
       # links its browser's /usr and /etc to the host's).

@@ -118,10 +118,10 @@ environment. ``example/x11-hello.cc`` is such a client (built when
 libx11-dev is installed) and ``dce-x11-hello`` runs it on a simulated node
 for a few seconds; ``test.py`` runs it when ``DISPLAY`` is set, under
 ``xvfb-run`` in CI. It is not meant for multi-process or heavily threaded
-applications (web browsers, VLC), which DCE cannot run. The viewer has no
-sound: audio would need a PulseAudio/PipeWire client library running under
-DCE (eventfd, a mainloop thread, shared memory), which is not supported;
-``--player`` with a host player plays the audio.
+applications (web browsers, VLC), which DCE cannot run. The viewer plays
+the sound on the host's PulseAudio server through the same passthrough
+(``DceX11Helper::UsePulseAudio``, ``--audio=0`` to disable); see
+:doc:`dce-x11`.
 
 Regression test
 ---------------

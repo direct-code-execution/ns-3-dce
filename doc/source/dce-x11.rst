@@ -31,9 +31,13 @@ host-bound cookies would not match, and ``SetEnvironment(dce)`` sets
 installs.
 
 Applications are built like any DCE application (``-fPIC``, ``-pie
--rdynamic``, no fortified libc calls or stack protector); the X11 client
-libraries of the host (libX11, libxcb, libXext, libXv, libXft, FLTK...)
-are loaded as they are.
+-rdynamic``, no fortified libc calls or stack protector, and
+``-ftls-model=global-dynamic`` if the program itself has thread local
+variables: DCE loads a program like a shared object, so the fixed ``%fs``
+offsets of the local-exec model an executable normally uses would point
+into the simulator's own thread local storage); the X11 client libraries
+of the host (libX11, libxcb, libXext, libXv, libXft, FLTK...) are loaded
+as they are.
 
 Examples
 --------
@@ -64,13 +68,71 @@ Examples
   ``utils/build_kernel_deps.sh`` builds Dillo 3.1.1 for DCE (single
   process, no threaded DNS, no TLS) when the FLTK headers are installed.
 
+``dce-browser --browser=northstar``
+  Northstar, a GTK4 web browser with its own engine, CSS, JavaScript
+  (QuickJS) and software rendering, built for DCE by
+  ``utils/build_kernel_deps.sh`` when the GTK4 development packages and
+  meson are installed (against a minimal static libcurl, with ``-fPIC`` and
+  without LTO: a PIE compiled executable gets copy relocations of
+  stdin/stdout/stderr that DCE's per-process stdio cannot reach, and its
+  ``main`` exported from the project's version script). The example runs it
+  with ``NS_NO_SANDBOX=1 --no-watchdog`` (its Landlock/seccomp sandbox would
+  apply to the simulator, and its supervisor process cannot be spawned),
+  the GTK4 environment above, and the host's D-Bus session bus through the
+  passthrough (``DceX11Helper::UseSessionBus``): GApplication registers on
+  the bus, and GIO would otherwise try to spawn dbus-launch.
+
+Sound
+-----
+
+The same passthrough carries sound: ``DceX11Helper::UsePulseAudio(node,
+dce)`` adds the host's PulseAudio (or PipeWire) native socket to
+``DceHostUnixSocketPaths``, copies the authentication cookie into the
+node's file system and writes a client configuration without shared memory
+transport, and the application plays through libpulse running inside DCE.
+``dce-wifi-video --viewer=1`` plays the soundtrack this way with ffmpeg's
+``pulse`` output device (``--audio=0`` to stay silent). The passthrough
+rewrites the ``SCM_CREDENTIALS`` libpulse sends to the simulator's real
+credentials, which is what the server authenticates.
+
+Checking the traffic
+--------------------
+
+The examples that generate traffic capture it at the access point
+(``<example>-1-0.pcap``) and check it before exiting, so that they fail as
+tests when the expected traffic is missing: ``DcePcapCheck``
+(``helper/dce-pcap-check.h``) reads an ns-3 pcap back (802.11 frames, with
+or without QoS control and A-MPDU aggregation, Ethernet, raw IPv4) and
+counts TCP/UDP packets, payload bytes and HTTP request lines.
+``dce-wifi-video`` requires the UDP stream to the receiver's port,
+``dce-browser`` at least ``--minRequests`` HTTP requests (1 by default; the
+test of the JavaScript page asks for 8 in 16 s).
+
+``dce-browser`` also starts ``numbers-server`` (``example/numbers-server.cc``,
+a tiny HTTP server built as a DCE application) on the server station: its
+page, ``http://10.1.1.1:8080/``, polls ``/next`` from JavaScript twice a
+second and shows the Fibonacci numbers the server answers, each request an
+HTTP exchange over the simulated link. The site also serves the video
+sample of ``dce-wifi-video``, as the MPEG-TS file and, on
+``http://10.1.1.1/video.html``, in an HTML5 ``<video>`` element as an MPEG-1
+program stream (``bin_dce/video.mpg``, made from the sample by the DCE
+ffmpeg at build time), the format Northstar's own player decodes.
+Northstar's ``<video>`` element is picture only, so the page also puts the
+same file in an ``<audio>`` element: with the SDL2 audio mixer built in, the
+MP2 track plays on the host through PulseAudio (SDL2 itself runs inside
+the simulation, its mixer thread a DCE fiber). The page starts the sound
+when the picture starts and keeps the picture on the sound's clock. The
+clip is 320x180 at 24 frames per second because Northstar decodes a whole
+clip into memory up front and stops at 256 MB of frames::
+
+   $ ./bin/dce-browser --browser=northstar --url=http://10.1.1.1/video.html
+
 Limits
 ------
 
 This path only works for single-process clients whose threads, if any, go
 through pthreads (cooperative fibers in DCE). Multi-process browsers
-(Firefox, Chromium, Servo, Ladybird) and VLC are out of reach. There is no
-sound: it would need a PulseAudio/PipeWire client running under DCE.
+(Firefox, Chromium, Servo, Ladybird) and VLC are out of reach.
 
 GTK4 applications
 -----------------

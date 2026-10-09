@@ -15,6 +15,8 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <sys/un.h>
+#include <vector>
+#include <unistd.h>
 
 NS_LOG_COMPONENT_DEFINE ("DceHostSocketFd");
 
@@ -265,6 +267,30 @@ HostSocketFd::Sendmsg (const struct msghdr *msg, int flags)
   Thread *current = Current ();
   NS_ASSERT (current != 0);
   bool nonBlocking = (m_statusFlags & O_NONBLOCK) || (flags & MSG_DONTWAIT);
+  // SCM_CREDENTIALS carry the sender's pid/uid/gid, which the host kernel
+  // checks against the real process: the DCE process has its own simulated
+  // pid and uid, so substitute the simulator's (that is what the host
+  // service, e.g. PulseAudio, authenticates anyway).
+  struct msghdr copy = *msg;
+  std::vector<uint8_t> control;
+  if (msg->msg_control != 0 && msg->msg_controllen > 0)
+    {
+      control.assign ((uint8_t *)msg->msg_control, (uint8_t *)msg->msg_control + msg->msg_controllen);
+      copy.msg_control = &control[0];
+      for (struct cmsghdr *c = CMSG_FIRSTHDR (&copy); c != 0; c = CMSG_NXTHDR (&copy, c))
+        {
+          if (c->cmsg_level == SOL_SOCKET && c->cmsg_type == SCM_CREDENTIALS
+              && c->cmsg_len >= CMSG_LEN (sizeof (struct ucred)))
+            {
+              struct ucred creds;
+              creds.pid = ::getpid ();
+              creds.uid = ::getuid ();
+              creds.gid = ::getgid ();
+              memcpy (CMSG_DATA (c), &creds, sizeof (creds));
+            }
+        }
+    }
+  msg = &copy;
   while (true)
     {
       ssize_t r = ::sendmsg (PeekRealFd (), msg, flags | MSG_DONTWAIT | MSG_NOSIGNAL);

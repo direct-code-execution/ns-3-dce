@@ -7,7 +7,7 @@
 #include "dce-global-variables.h"
 #include "libc.h"
 
-extern Libc g_libc; // this is initialized in libc.c
+extern __attribute__ ((visibility ("hidden"))) Libc g_libc; // this is initialized in libc.c
 
 extern char *__progname;
 //extern char *program_invocation_name;

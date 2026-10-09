@@ -140,6 +140,8 @@ struct Process
   // Key is the fd
   std::map<int,FileUsage *> openFiles;
   std::vector<FILE *> openStreams;
+  // descriptor behind each stream of openStreams (fopencookie streams have no fileno)
+  std::map<FILE *, int> streamFds;
   std::vector<DIR *> openDirs;
   std::vector<SignalHandler> signalHandlers;
   std::vector<Thread *> threads;
