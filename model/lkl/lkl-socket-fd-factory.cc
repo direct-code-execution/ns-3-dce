@@ -57,6 +57,7 @@ struct lkl_netdev_args
 }
 #define LKL_DEV_NET_POLL_RX  1
 #define LKL_DEV_NET_POLL_HUP 4
+#define LKL_VIRTIO_NET_F_MRG_RXBUF 15
 
 namespace ns3 {
 
@@ -474,6 +475,11 @@ LklSocketFdFactory::AddDevice (Ptr<NetDevice> device)
   struct lkl_netdev_args args;
   memset (&args, 0, sizeof (args));
   args.mac = mac;
+  // The kernel's receive buffers are sized for a 1500 byte MTU; ns-3
+  // devices have larger ones (Wi-Fi: 2296). With mergeable receive buffers
+  // a frame spans as many buffers as it needs; without them NetRx would
+  // truncate it and the kernel would drop it.
+  args.offload = 1u << LKL_VIRTIO_NET_F_MRG_RXBUF;
 
   typedef int (*NetdevAdd)(struct lkl_netdev *, struct lkl_netdev_args *);
   NetdevAdd netdevAdd = (NetdevAdd) m_kernel->Lookup ("lkl_netdev_add");
