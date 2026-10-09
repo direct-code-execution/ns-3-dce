@@ -88,7 +88,6 @@ cpp_examples = [
     ("dce-httpd", "True", "True"),
 #    ("dce-wifi-ccnx", "True", "True"),
     ("dce-sctp-simple", "True", "True"),
-    ("dce-freebsd", "True", "True"),
     # Linux kernels from LKL (configure --with-lkl)
     ("dce-lkl-boot", "True", "True"),
     ("dce-lkl-p2p --loopback", "True", "True"),

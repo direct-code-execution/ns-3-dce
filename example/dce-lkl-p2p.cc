@@ -6,8 +6,7 @@
  * with status 0.
  *
  * With --loopback, a single node runs the TCP client and server over its
- * loopback device instead (like dce-linux-simple). --stack=linux runs the
- * same programs on the libos (Linux 4.4) stack, for comparison.
+ * loopback device instead (like dce-linux-simple).
  */
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
@@ -70,9 +69,7 @@ main (int argc, char *argv[])
 {
   bool loopback = false;
   bool pcap = false;
-  std::string stack = "lkl";
   CommandLine cmd;
-  cmd.AddValue ("stack", "Kernel: lkl (Linux 6.12) or linux (libos, Linux 4.4)", stack);
   cmd.AddValue ("loopback", "Use one node and its loopback device", loopback);
   cmd.AddValue ("pcap", "Write pcap traces of the link", pcap);
   cmd.Parse (argc, argv);
@@ -91,14 +88,7 @@ main (int argc, char *argv[])
         }
     }
   DceManagerHelper dceManager;
-  if (stack == "linux")
-    {
-      dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
-    }
-  else
-    {
-      dceManager.SetNetworkStack ("ns3::LklSocketFdFactory");
-    }
+  dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory");
   dceManager.Install (nodes);
 
   for (uint32_t i = 0; i < nodes.GetN (); i++)

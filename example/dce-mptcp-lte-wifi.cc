@@ -84,9 +84,8 @@ int main (int argc, char *argv[])
   routers.Create (1);
 
   DceManagerHelper dceManager;
-  // The applications' TCP sockets are MPTCP sockets (Linux MPTCP v1: only
-  // with LKL; libos has no MPTCP).
-  Config::SetDefaultFailSafe ("ns3::LklSocketFdFactory::Mptcp", BooleanValue (true));
+  // The applications' TCP sockets are MPTCP sockets (Linux MPTCP).
+  Config::SetDefault ("ns3::LklSocketFdFactory::Mptcp", BooleanValue (true));
   dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory",
                               "Library", StringValue ("liblinux.so"));
   LinuxStackHelper stack;

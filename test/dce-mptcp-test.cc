@@ -105,7 +105,7 @@ DceMptcpTestCase::DoBasicRun (void)
   g_rcv0 = false;
   g_rcv1 = false;
   isMptcpEnabled = false;
-  Config::SetDefaultFailSafe ("ns3::LklSocketFdFactory::Mptcp", BooleanValue (true));
+  Config::SetDefault ("ns3::LklSocketFdFactory::Mptcp", BooleanValue (true));
 
   uint32_t nRtrs = 2;
   std::string m_rate = "200Bps";
@@ -225,7 +225,7 @@ DceMptcpTestCase::DoBasicRun (void)
     " bytes";
   std::cout << std::endl;
   Simulator::Destroy ();
-  Config::SetDefaultFailSafe ("ns3::LklSocketFdFactory::Mptcp", BooleanValue (false));
+  Config::SetDefault ("ns3::LklSocketFdFactory::Mptcp", BooleanValue (false));
 
   if (!isMptcpEnabled)
     {
@@ -243,7 +243,7 @@ DceMptcpTestCase::DoAddrTestRun (void)
   g_rcv0 = false;
   g_rcv1 = false;
   isMptcpEnabled = false;
-  Config::SetDefaultFailSafe ("ns3::LklSocketFdFactory::Mptcp", BooleanValue (true));
+  Config::SetDefault ("ns3::LklSocketFdFactory::Mptcp", BooleanValue (true));
 
   double stopTime = 15.0;
   std::string p2pdelay = "10ms";
@@ -332,7 +332,7 @@ DceMptcpTestCase::DoAddrTestRun (void)
   Simulator::Stop (Seconds (stopTime));
   Simulator::Run ();
   Simulator::Destroy ();
-  Config::SetDefaultFailSafe ("ns3::LklSocketFdFactory::Mptcp", BooleanValue (false));
+  Config::SetDefault ("ns3::LklSocketFdFactory::Mptcp", BooleanValue (false));
 
   if (!isMptcpEnabled)
     {
@@ -391,13 +391,7 @@ DceMptcpTestSuite::DceMptcpTestSuite ()
   };
 
   Packet::EnablePrinting ();
-  // for the moment: not supported dce cradle for freebsd
-#ifdef LKL_LINUX
-  // ns3::LinuxSocketFdFactory is LKL
   std::string filePath = SearchExecFile ("DCE_PATH", "liblkl.so", 0);
-#else
-  std::string filePath = SearchExecFile ("DCE_PATH", "liblinux.so", 0);
-#endif
   for (unsigned int i = 0; i < sizeof(tests)/sizeof(testPair); i++)
     {
       if (filePath.length () <= 0)

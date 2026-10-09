@@ -45,9 +45,8 @@ int main (int argc, char *argv[])
   nodes.Create (2);
   routers.Create (nRtrs);
 
-  // The applications' TCP sockets are MPTCP sockets (Linux MPTCP v1: only
-  // with LKL; libos has no MPTCP).
-  Config::SetDefaultFailSafe ("ns3::LklSocketFdFactory::Mptcp", BooleanValue (true));
+  // The applications' TCP sockets are MPTCP sockets (Linux MPTCP).
+  Config::SetDefault ("ns3::LklSocketFdFactory::Mptcp", BooleanValue (true));
 
   DceManagerHelper dceManager;
   dceManager.SetTaskManagerAttribute ("FiberManagerType",
@@ -177,10 +176,6 @@ int main (int argc, char *argv[])
       std::cout << "received from " << addr.str () << ": " << bytes << " bytes" << std::endl;
       ok = ok && bytes > 0;
     }
-#ifdef LKL_LINUX
   // With MPTCP, every path carries data.
   return ok ? 0 : 1;
-#else
-  return 0;
-#endif
 }

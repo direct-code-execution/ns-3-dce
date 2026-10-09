@@ -113,18 +113,6 @@ DceManagerTestCase::DoRun (void)
           stack.SetRoutingHelper (ipv4RoutingHelper);
           stack.Install (nodes);
         }
-      else if (m_netstack == "freebsd")
-        {
-          dceManager.SetNetworkStack ("ns3::FreeBSDSocketFdFactory", "Library", StringValue ("libfreebsd.so"));
-          dceManager.Install (nodes);
-
-          dce.SetBinary ("freebsd-iproute");
-          dce.SetStackSize (1 << 16);
-          dce.ResetArguments ();
-          dce.ParseArguments ("lo0 127.0.0.1 255.0.0.0");
-          apps = dce.Install (nodes.Get (0));
-          apps.Start (Seconds (2.0));
-        }
     }
   else
     {
@@ -161,9 +149,9 @@ private:
 } g_processTests;
 //
 
-#define NS3_STACK      (1 << 0)
-#define LINUX_STACK    (1 << 1)
-#define FREEBSD_STACK  (1 << 2)
+// The stacks a test runs on (LINUX_STACK is the build's macro).
+#define NS3_MASK       (1 << 0)
+#define LINUX_MASK     (1 << 1)
 
 DceManagerTestSuite::DceManagerTestSuite ()
   : TestSuite ("dce-process-manager", Type::UNIT)
@@ -179,44 +167,44 @@ DceManagerTestSuite::DceManagerTestSuite ()
   } testPair;
 
   const testPair tests[] = {
-    { "test-empty", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-sleep", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-pthread", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-mutex", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-once", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-pthread-key", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-sem", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-malloc", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-malloc-2", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-fd-simple", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-strerror", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-stdio", 0, "/etc/passwd",false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-string", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-iostream", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-netdb", 3600, "", true, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-env", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-cond", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-timer-fd", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-stdlib", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-fork", 0, "", false, true, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-select", 3600, "", true, false, NS3_STACK|LINUX_STACK}, // freebsd-sim has no sock_poll
-    {  "test-nanosleep", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-random", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-local-socket", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-poll", 3200, "", true, false, NS3_STACK|LINUX_STACK}, // freebsd-sim has no sock_poll
-    {  "test-tcp-socket", 320, "", true, false, NS3_STACK|LINUX_STACK},
-    {  "test-exec", 0, "", false, true, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-raw-socket", 320, "", true, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-iperf", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-name", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-pipe", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-dirent", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-socket", 30, "", true, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-bug-multi-select", 30, "", true, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-tsearch", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-clock-gettime", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-gcc-builtin-apply", 0, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
-    {  "test-signal", 30, "", false, false, NS3_STACK|LINUX_STACK|FREEBSD_STACK},
+    { "test-empty", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-sleep", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-pthread", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-mutex", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-once", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-pthread-key", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-sem", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-malloc", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-malloc-2", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-fd-simple", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-strerror", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-stdio", 0, "/etc/passwd",false, false, NS3_MASK|LINUX_MASK},
+    {  "test-string", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-iostream", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-netdb", 3600, "", true, false, NS3_MASK|LINUX_MASK},
+    {  "test-env", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-cond", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-timer-fd", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-stdlib", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-fork", 0, "", false, true, NS3_MASK|LINUX_MASK},
+    {  "test-select", 3600, "", true, false, NS3_MASK|LINUX_MASK},
+    {  "test-nanosleep", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-random", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-local-socket", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-poll", 3200, "", true, false, NS3_MASK|LINUX_MASK},
+    {  "test-tcp-socket", 320, "", true, false, NS3_MASK|LINUX_MASK},
+    {  "test-exec", 0, "", false, true, NS3_MASK|LINUX_MASK},
+    {  "test-raw-socket", 320, "", true, false, NS3_MASK|LINUX_MASK},
+    {  "test-iperf", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-name", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-pipe", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-dirent", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-socket", 30, "", true, false, NS3_MASK|LINUX_MASK},
+    {  "test-bug-multi-select", 30, "", true, false, NS3_MASK|LINUX_MASK},
+    {  "test-tsearch", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-clock-gettime", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-gcc-builtin-apply", 0, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-signal", 30, "", false, false, NS3_MASK|LINUX_MASK},
   };
 
   // Prepare directories and files for test-stdio
@@ -255,7 +243,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
                                            tests[i].stdinfile,
                                            tests[i].useNet,
                                            "ns3",
-                                           (tests[i].stackMask & NS3_STACK) ?
+                                           (tests[i].stackMask & NS3_MASK) ?
                                            (isUctxFiber ? tests[i].skipUctx : false) : true
                                            ),
                    Duration::QUICK);
@@ -264,12 +252,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
   // linux stack
   TypeId tid;
   bool kern_linux = TypeId::LookupByNameFailSafe ("ns3::LinuxSocketFdFactory", &tid);
-#ifdef LKL_LINUX
-  // ns3::LinuxSocketFdFactory is LKL
   std::string filePath = SearchExecFile ("DCE_PATH", "liblkl.so", 0);
-#else
-  std::string filePath = SearchExecFile ("DCE_PATH", "liblinux.so", 0);
-#endif
   if (kern_linux && (filePath.length () > 0))
     {
       for (unsigned int i = 0; i < sizeof(tests) / sizeof(testPair); i++)
@@ -278,25 +261,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
                                                tests[i].stdinfile,
                                                tests[i].useNet,
                                                "linux",
-                                               (tests[i].stackMask & LINUX_STACK) ?
-                                               (isUctxFiber ? tests[i].skipUctx : false) : true
-                                               ),
-                       Duration::QUICK);
-        }
-    }
-
-  // FreeBSD
-  bool kern_freebsd = TypeId::LookupByNameFailSafe ("ns3::FreeBSDSocketFdFactory", &tid);
-  filePath = SearchExecFile ("DCE_PATH", "libfreebsd.so", 0);
-  if (kern_freebsd && (filePath.length () > 0))
-    {
-      for (unsigned int i = 0; i < sizeof(tests) / sizeof(testPair); i++)
-        {
-          AddTestCase (new DceManagerTestCase (tests[i].name,  Seconds (tests[i].duration),
-                                               tests[i].stdinfile,
-                                               tests[i].useNet,
-                                               "freebsd",
-                                               (tests[i].stackMask & FREEBSD_STACK) ?
+                                               (tests[i].stackMask & LINUX_MASK) ?
                                                (isUctxFiber ? tests[i].skipUctx : false) : true
                                                ),
                        Duration::QUICK);

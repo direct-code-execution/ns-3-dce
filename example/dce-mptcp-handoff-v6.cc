@@ -167,9 +167,8 @@ int main (int argc, char *argv[])
   wifi.Install (phy, mac, ar.Get (1));
 
 
-  // The applications' TCP sockets are MPTCP sockets (Linux MPTCP v1: only
-  // with LKL; libos has no MPTCP).
-  Config::SetDefaultFailSafe ("ns3::LklSocketFdFactory::Mptcp", BooleanValue (true));
+  // The applications' TCP sockets are MPTCP sockets (Linux MPTCP).
+  Config::SetDefault ("ns3::LklSocketFdFactory::Mptcp", BooleanValue (true));
 
   DceManagerHelper dceMng;
   DceApplicationHelper dce;

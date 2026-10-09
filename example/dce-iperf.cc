@@ -37,7 +37,7 @@ int main (int argc, char *argv[])
   bool useUdp = 0;
   std::string bandWidth = "1m";
   CommandLine cmd;
-  cmd.AddValue ("stack", "Name of IP stack: ns3/linux/freebsd.", stack);
+  cmd.AddValue ("stack", "Name of IP stack: ns3/linux.", stack);
   cmd.AddValue ("udp", "Use UDP. Default false (0)", useUdp);
   cmd.AddValue ("bw", "BandWidth. Default 1m.", bandWidth);
   cmd.Parse (argc, argv);
@@ -70,19 +70,6 @@ int main (int argc, char *argv[])
       stack.Install (nodes);
 #else
       NS_LOG_ERROR ("Linux kernel stack for DCE is not available. build with dce-linux module.");
-      // silently exit
-      return 0;
-#endif
-    }
-  else if (stack == "freebsd")
-    {
-#ifdef LINUX_STACK
-      dceManager.SetNetworkStack ("ns3::FreeBSDSocketFdFactory", "Library", StringValue ("libfreebsd.so"));
-      dceManager.Install (nodes);
-      FreeBSDStackHelper stack;
-      stack.Install (nodes);
-#else
-      NS_LOG_ERROR ("FreeBSD kernel stack for DCE is not available. build with dce-freebsd module.");
       // silently exit
       return 0;
 #endif

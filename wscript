@@ -15,12 +15,9 @@ def options(opt):
     opt.load('compiler_c')
     opt.load('compiler_cxx')
     ns3waf.options(opt)
-    opt.add_option('--enable-kernel-stack',
-                   help=('Path to the prefix where the kernel wrapper headers are installed'),
-                   default=None,
-                   dest='kernel_stack', type="string")
     opt.add_option('--with-lkl',
-                   help=('Path to the output of utils/build_lkl.sh, or to an LKL source tree built with it'),
+                   help=('Path to the output of utils/build_lkl.sh, or to an LKL source tree built with it: '
+                         'the Linux kernel network stack (ns3::LinuxSocketFdFactory)'),
                    default=None,
                    dest='with_lkl', type="string")
     opt.add_option('--enable-mpi',
@@ -150,30 +147,6 @@ def configure(conf):
     # Enable C++-20 support
     conf.env.append_value('CXXFLAGS', '-std=c++20')
 
-    if Options.options.kernel_stack:
-        if not os.path.isdir(Options.options.kernel_stack):
-            Logs.error( "\"%s\" is not a directory: please fix your --enable-kernel-stack parameter." % (Options.options.kernel_stack))
-            raise SystemExit(1)
-
-        # look for kernel dir from 1) {KERNEL_DIR}/sim, then 2) {KERNEL_DIR}/lib.
-        architectures = ["sim", "lib"]
-        kernel_stack_dir = None
-        for subdir in architectures:
-            subdir = os.path.join(Options.options.kernel_stack, subdir)
-            if os.path.isdir(subdir):
-                kernel_stack_dir = subdir
-                break
-
-        if not kernel_stack_dir:
-            Logs.error("Could not find any of the [%s] architecture. Make sure you use the net-next-sim kernel or fix your --enabled-kernel-stack parameter" % ','.join(architectures))
-            raise SystemExit(1)
-
-        conf.check(header_name='sim.h',
-                   includes=os.path.join(kernel_stack_dir, 'include'))
-        conf.env['KERNEL_STACK'] = kernel_stack_dir
-        conf.env.append_value ('DEFINES', 'KERNEL_STACK=Y')
-        conf.env.append_value ('DEFINES', 'LINUX_STACK=Y')
-
     if Options.options.with_lkl:
         lkl_dir = os.path.abspath(Options.options.with_lkl)
         lkl_include = os.path.join(lkl_dir, 'include')
@@ -181,13 +154,9 @@ def configure(conf):
             lkl_include = os.path.join(lkl_dir, 'tools', 'lkl', 'include')
         conf.check(header_name='lkl/asm/host_ops.h', includes=lkl_include)
         conf.env['LKL_INCLUDE'] = lkl_include
-        conf.env.append_value('DEFINES', 'LKL_STACK=Y')
-        if not conf.env['KERNEL_STACK']:
-            # Without libos, LKL is the Linux stack: it provides
-            # ns3::LinuxSocketFdFactory.
-            conf.env['LKL_LINUX'] = True
-            conf.env.append_value('DEFINES', 'LKL_LINUX=Y')
-            conf.env.append_value('DEFINES', 'LINUX_STACK=Y')
+        # LKL provides ns3::LinuxSocketFdFactory.
+        conf.env['LINUX_STACK'] = True
+        conf.env.append_value('DEFINES', 'LINUX_STACK=Y')
 
     conf.env['ENABLE_PYTHON_BINDINGS'] = False
     conf.env['EXAMPLE_DIRECTORIES'] = '.'
@@ -290,7 +259,7 @@ def build_dce_tests(module, bld):
     tests_source = [
         'test/dce-manager-test.cc',
     ]
-    if bld.env['KERNEL_STACK'] or bld.env['LKL_LINUX']:
+    if bld.env['LINUX_STACK']:
         tests_source += [
             'test/dce-cradle-test.cc',
             'test/dce-mptcp-test.cc',
@@ -369,7 +338,6 @@ def build_dce_examples(module, bld):
                     ['udp-echo-client', []],
                     ['dccp-server', []],
                     ['dccp-client', []],
-                    ['freebsd-iproute', []],
 #                    ['little-cout', []],
                     ]
 
@@ -537,11 +505,6 @@ def build_dce_kernel_examples(module, bld):
                            target='bin/dce-sctp-simple',
                            source=['example/dce-sctp-simple.cc'])
 
-    if bld.env['KERNEL_STACK']:
-        module.add_example(needed = ['core', 'network', 'dce', 'wifi', 'point-to-point', 'csma', 'mobility' ],
-                           target='bin/dce-freebsd',
-                           source=['example/dce-freebsd.cc'])
-
 
 # Add a script to build system
 def build_a_script(bld, name, needed = [], **kw):
@@ -625,43 +588,26 @@ def build(bld):
     bld.add_group('ns3modulebuild')
     build_netlink(bld)
 
-    if bld.env['KERNEL_STACK']:
+    if bld.env['LINUX_STACK']:
         kernel_source = [
-            'model/kernel-socket-fd-factory.cc',
-            'model/kernel-socket-fd.cc',
-            'model/linux-socket-fd-factory.cc',
-            'model/freebsd-socket-fd-factory.cc',
-            'model/linux/linux-socket-impl.cc',
-            ]
-        kernel_headers = [
-            'model/kernel-socket-fd-factory.h',
-            'model/linux-socket-fd-factory.h',
-            'model/freebsd-socket-fd-factory.h',
-            'model/linux/linux-socket-impl.h',
-            ]
-        kernel_includes = [bld.env['KERNEL_STACK']]
-    elif bld.env['LKL_LINUX']:
-        kernel_source = [
+            'model/lkl/lkl-kernel.cc',
+            'model/lkl/lkl-socket-fd.cc',
+            'model/lkl/lkl-socket-fd-factory.cc',
             'model/lkl/lkl-linux-socket-fd-factory.cc',
             'model/linux/linux-socket-impl.cc',
             ]
         kernel_headers = [
+            'model/lkl/lkl-kernel.h',
+            'model/lkl/lkl-socket-fd-factory.h',
             'model/linux-socket-fd-factory.h',
             'model/linux/linux-socket-impl.h',
             ]
-        kernel_includes = ['model/lkl']
+        kernel_includes = ['model/lkl', bld.env['LKL_INCLUDE']]
     else:
         kernel_source = []
         kernel_headers = []
         kernel_includes = []
 
-    if bld.env['LKL_INCLUDE']:
-        kernel_source += ['model/lkl/lkl-kernel.cc',
-                          'model/lkl/lkl-socket-fd.cc',
-                          'model/lkl/lkl-socket-fd-factory.cc']
-        kernel_headers += ['model/lkl/lkl-kernel.h',
-                           'model/lkl/lkl-socket-fd-factory.h']
-        kernel_includes += [bld.env['LKL_INCLUDE']]
 
     module_source = [
         'model/dce-manager.cc',
@@ -732,7 +678,6 @@ def build(bld):
         'model/exec-utils.cc',
         'model/linux/ipv4-linux.cc',
         'model/linux/ipv6-linux.cc',
-        'model/freebsd/ipv4-freebsd.cc',
         'model/dce-vfs.cc',
         'model/elf-ldd.cc',
         'model/dce-termio.cc',
@@ -763,7 +708,6 @@ def build(bld):
         'helper/dce-application-helper.cc',
         'helper/ccn-client-helper.cc',
         'helper/linux-stack-helper.cc',
-        'helper/freebsd-stack-helper.cc',
         ]
     module_headers = [
         'model/dce-manager.h',
@@ -775,7 +719,6 @@ def build(bld):
         'model/ipv4-dce-routing.h',
         'model/linux/ipv4-linux.h',
         'model/linux/ipv6-linux.h',
-        'model/freebsd/ipv4-freebsd.h',
         'model/process-delay-model.h',
         'model/exec-utils.h',
         'model/utils.h',
@@ -797,7 +740,6 @@ def build(bld):
         'helper/ccn-client-helper.h',
         'helper/ipv4-dce-routing-helper.h',
         'helper/linux-stack-helper.h',
-        'helper/freebsd-stack-helper.h',
         ]
 
     module_source = module_source + kernel_source
@@ -826,10 +768,8 @@ def build(bld):
                            source=['test/netlink-socket-test.cc'],
                            name='netlink')
 
-    if bld.env['KERNEL_STACK'] or bld.env['LKL_LINUX']:
+    if bld.env['LINUX_STACK']:
         build_dce_kernel_examples(module, bld)
-
-    if bld.env['LKL_INCLUDE']:
         module.add_example(needed = ['core', 'network', 'dce'],
                            target='bin/dce-lkl-boot',
                            includes=[bld.env['LKL_INCLUDE']],

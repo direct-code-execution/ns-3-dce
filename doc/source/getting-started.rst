@@ -200,7 +200,8 @@ In this case you need to install the single packages one by one. You may want to
 More detailed information on installation requirements can be found on the `ns-3 wiki <https://www.nsnam.org/wiki/Installation>`_.
  
  
-Then you can download and install *net-next-nuse and DCE (*net-next-nuse* includes the linux stack module):
+Then you can download and install DCE and the Linux kernel library (LKL),
+which provides the Linux network stack:
  
 * GIT_DCE= |git_dce|
 
@@ -208,23 +209,24 @@ Then you can download and install *net-next-nuse and DCE (*net-next-nuse* includ
     :caption: Kernel and DCE installation 
     :linenos:
 
-    # Clone net-next-nuse
-    git clone https://github.com/libos-nuse/net-next-nuse.git
-    cd net-next-nuse
-    # Select a kernel version
-    git checkout libos-v4.4
-    # Configure and build
-    make defconfig OPT=yes ARCH=sim
-    make library OPT=yes ARCH=sim
-    cd ..
+    # Download DCE
+    git clone GIT_DCE ns-3-dce
+    cd ns-3-dce
 
-    # Download, configure, build and install DCE
-    git clone GIT_DCE
+    # Build the Linux kernel library (Linux 6.12) into ../lkl/dce
+    ./utils/build_lkl.sh ../lkl ../lkl/dce
+
+    # Configure, build and install DCE
     ./waf configure --with-ns3=$HOME/dce/build --enable-opt \
-                    --enable-kernel-stack=$HOME/dce/net-next-nuse/arch \
+                    --with-lkl=../lkl/dce \
                     --prefix=$HOME/dce/install
     ./waf build
     ./waf install
+    cp ../lkl/dce/liblkl.so build/bin_dce/
+
+``utils/build_kernel_deps.sh`` builds the programs the kernel examples
+run (ip, iperf, ping, quagga, ...); copy its ``bin_dce`` directory to
+``build/bin_dce`` too.
 
 
 Examples
