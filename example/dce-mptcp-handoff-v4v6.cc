@@ -98,7 +98,7 @@ int main (int argc, char *argv[])
   positionAlloc->Add (Vector (50.0, -75.0, 0.0)); // SV
   positionAlloc->Add (Vector (50.0, -50.0, 0.0)); // R
   positionAlloc->Add (Vector (0.0, 10.0, 0.0)); // AR1
-  positionAlloc->Add (Vector (100.0, 10.0, 0.0)); // AR2
+  positionAlloc->Add (Vector (80.0, 10.0, 0.0)); // AR2
   mobility.SetPositionAllocator (positionAlloc);
   mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
   mobility.Install (sv);
@@ -120,6 +120,9 @@ int main (int argc, char *argv[])
                              "Pause", StringValue ("ns3::ConstantRandomVariable[Constant=0.2]"));
   mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
   mobility.Install (mn);
+  // Within reach of both access points (ns-3 no longer detects frames
+  // below -82 dBm, about 50 m away here).
+  mn.Get (0)->GetObject<MobilityModel> ()->SetPosition (Vector (40.0, 10.0, 0.0));
 
 
   // backend
@@ -245,8 +248,9 @@ int main (int argc, char *argv[])
   LinuxStackHelper::RunIp (mn.Get (0), Seconds (2.0), "link set sim1 up");
   LinuxStackHelper::RunIp (mn.Get (0), Seconds (0.20), "-6 rule add from 2001:1:2:7:200:ff:fe00:9 table 3");
   //  LinuxStackHelper::RunIp (mn.Get (0), Seconds (0.20), "route add default via fe80::200:ff:fe00:a dev sim1");
-  LinuxStackHelper::RunIp (mn.Get (0), Seconds (0.20), "route add default via fe80::200:ff:fe00:a dev sim1 table 3");
-  LinuxStackHelper::RunIp (mn.Get (0), Seconds (0.20), "route add default via fe80::200:ff:fe00:a dev sim1");
+  // Once sim1 is up.
+  LinuxStackHelper::RunIp (mn.Get (0), Seconds (2.10), "route add default via fe80::200:ff:fe00:a dev sim1 table 3");
+  LinuxStackHelper::RunIp (mn.Get (0), Seconds (2.10), "route add default via fe80::200:ff:fe00:a dev sim1");
 
   // disable default injection from ra
   stack.SysctlSet (mn, ".net.ipv6.conf.sim0.accept_ra_defrtr", "0");
@@ -302,7 +306,9 @@ int main (int argc, char *argv[])
     dce.AddArgument ("-c");
     if (!v6Primary)
       {
-        dce.AddArgument (sv_sim0_v4.replace (sv_sim0_v4.find ("/"), 3, "\0  "));
+        // The IPv4-mapped IPv6 address: an IPv6 MPTCP socket, which can
+        // have IPv6 subflows besides the initial IPv4 one.
+        dce.AddArgument ("::ffff:" + sv_sim0_v4.replace (sv_sim0_v4.find ("/"), 3, "\0  "));
       }
     else
       {
