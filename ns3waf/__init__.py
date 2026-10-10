@@ -372,7 +372,7 @@ def _build_headers(bld, name, headers):
     # when a header changes.
     copies = [os.path.join(out_relpath, 'include', 'ns3', os.path.basename(h))
               for h in headers]
-    bld(rule=run, source=headers, target=[target] + copies)
+    bld(rule=run, source=headers, target=[target] + copies, name=target)
     bld(use=[target], target='NS3_HEADERS_%s' % name.upper(),
         export_includes=['include'])
     bld.install_files(os.path.join('${PREFIX}', 'include', 'ns3'), headers + [target])
