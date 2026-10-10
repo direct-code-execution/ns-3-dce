@@ -226,6 +226,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
     {  "test-gcc-builtin-apply", 0, "", false, false, NS3_MASK|LINUX_MASK},
     {  "test-signal", 30, "", false, false, NS3_MASK|LINUX_MASK},
     {  "test-ifindex", 30, "", true, false, NS3_MASK|LINUX_MASK},
+    {  "test-emfile", 30, "", true, false, NS3_MASK|LINUX_MASK},
   };
 
   // Prepare directories and files for test-stdio
