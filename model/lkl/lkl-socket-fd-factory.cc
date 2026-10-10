@@ -71,6 +71,7 @@ struct LklNetDevice
   struct lkl_netdev nd; // must stay first: LKL passes &nd to the operations
   LklSocketFdFactory *factory;
   Ptr<NetDevice> device;
+  Mac48Address mac; // the kernel device's address
   std::deque<std::vector<uint8_t> > rx; // received Ethernet frames
   Task *poller;
   bool hup;
@@ -469,6 +470,7 @@ LklSocketFdFactory::AddDevice (Ptr<NetDevice> device)
   Mac48Address mac48 = Mac48Address::IsMatchingType (address)
     ? Mac48Address::ConvertFrom (address) : Mac48Address::Allocate ();
   mac48.CopyTo (mac);
+  dev->mac = mac48;
   struct lkl_netdev_args args;
   memset (&args, 0, sizeof (args));
   args.mac = mac;
@@ -518,8 +520,13 @@ LklSocketFdFactory::AddDevice (Ptr<NetDevice> device)
     }
   Call (__lkl__NR_close, s);
 
+  // LTE devices do not support promiscuous mode: they deliver received
+  // packets only to the non-promiscuous handlers.
+  TypeId lte;
+  bool promiscuous = !(TypeId::LookupByNameFailSafe ("ns3::LteNetDevice", &lte)
+                       && device->GetInstanceTypeId ().IsChildOf (lte));
   GetObject<Node> ()->RegisterProtocolHandler (MakeCallback (&LklSocketFdFactory::RxFromDevice, this),
-                                               0, device, true);
+                                               0, device, promiscuous);
 }
 
 void
@@ -541,8 +548,10 @@ LklSocketFdFactory::RxFromDevice (Ptr<NetDevice> device, Ptr<const Packet> p, ui
     }
   // Rebuild the Ethernet frame the kernel expects.
   std::vector<uint8_t> frame (ETH_HEADER + p->GetSize ());
+  // Devices with other address types (e.g. LTE's Mac64Address) have a kernel
+  // device address of their own.
   Mac48Address dest = Mac48Address::IsMatchingType (to)
-    ? Mac48Address::ConvertFrom (to) : Mac48Address::ConvertFrom (device->GetAddress ());
+    ? Mac48Address::ConvertFrom (to) : dev->mac;
   Mac48Address source = Mac48Address::IsMatchingType (from)
     ? Mac48Address::ConvertFrom (from) : Mac48Address ("00:00:00:00:00:00");
   dest.CopyTo (&frame[0]);
