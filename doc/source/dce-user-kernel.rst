@@ -49,13 +49,18 @@ time) and writes ``liblkl.so``, its debug information
 (``liblkl.so.debug``) and the headers DCE is built with.
 
 Then configure DCE with it, and make ``liblkl.so`` visible through
-*DCE_PATH* (e.g. by copying it to ``build/bin_dce``):
+*DCE_PATH* (e.g. by copying it to ``build/bin_dce``), with
+``liblkl.so.debug`` next to it for gdb. The programs the examples run,
+such as ``ip``, are built by ``utils/build_kernel_deps.sh``; copy them
+too:
 
 ::
 
     $ ./waf configure --with-ns3=$HOME/dce/build --with-lkl=../lkl/dce
     $ ./waf build
-    $ cp ../lkl/dce/liblkl.so build/bin_dce/
+    $ cp ../lkl/dce/liblkl.so ../lkl/dce/liblkl.so.debug build/bin_dce/
+    $ ./utils/build_kernel_deps.sh ../dce-kernel-deps
+    $ cp -a ../dce-kernel-deps/bin_dce/. build/bin_dce/
 
 3. Write user space application to use this protocol
 ----------------------------------------------------

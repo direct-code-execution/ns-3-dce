@@ -216,17 +216,21 @@ which provides the Linux network stack:
     # Build the Linux kernel library (Linux 6.12) into ../lkl/dce
     ./utils/build_lkl.sh ../lkl ../lkl/dce
 
+    # Build the programs the kernel examples run (ip, iperf, ping, quagga,
+    # ...) into ../dce-kernel-deps, and add its ns-3-dce-quagga module
+    ./utils/build_kernel_deps.sh ../dce-kernel-deps
+    cp -a ../dce-kernel-deps/ns-3-dce-quagga myscripts/
+
     # Configure, build and install DCE
     ./waf configure --with-ns3=$HOME/dce/build --enable-opt \
                     --with-lkl=../lkl/dce \
                     --prefix=$HOME/dce/install
     ./waf build
     ./waf install
-    cp ../lkl/dce/liblkl.so build/bin_dce/
 
-``utils/build_kernel_deps.sh`` builds the programs the kernel examples
-run (ip, iperf, ping, quagga, ...); copy its ``bin_dce`` directory to
-``build/bin_dce`` too.
+    # Put the programs and the kernel library where DCE finds them
+    cp -a ../dce-kernel-deps/bin_dce/. build/bin_dce/
+    cp ../lkl/dce/liblkl.so ../lkl/dce/liblkl.so.debug build/bin_dce/
 
 
 Examples
