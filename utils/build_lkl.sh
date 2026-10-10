@@ -35,6 +35,10 @@ if [ ! -d "${LKL_DIR}" ]; then
     git -C "${LKL_DIR}" -c advice.detachedHead=false checkout -q FETCH_HEAD
 fi
 LKL_DIR="$(cd "${LKL_DIR}" && pwd)"
+if [ "$(git -C "${LKL_DIR}" rev-parse HEAD)" != "${LKL_REV}" ]; then
+    echo "${LKL_DIR} is not at ${LKL_REV}: delete it to fetch it again." >&2
+    exit 1
+fi
 
 for patch in "${DCE_DIR}"/utils/lkl-patches/*.patch; do
     if git -C "${LKL_DIR}" apply --reverse --check "${patch}" 2> /dev/null; then
