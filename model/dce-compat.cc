@@ -342,7 +342,8 @@ char * dce___fgets_unlocked_chk (char *buf, size_t size, int n, FILE *stream)
 }
 int dce___vsprintf_chk (char *s, int flag, size_t slen, const char *fmt, va_list ap)
 {
-  return dce_vsnprintf (s, slen, fmt, ap);
+  // See __sprintf_chk in libc.cc: an unknown size is (size_t) -1.
+  return dce_vsnprintf (s, slen > INT_MAX ? INT_MAX : slen, fmt, ap);
 }
 
 // The stack of a DCE thread is not described by a pthread_attr_t; the

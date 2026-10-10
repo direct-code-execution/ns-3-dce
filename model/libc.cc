@@ -174,11 +174,15 @@ int __snprintf (char *s, size_t si, const char *f, ...)
 }
 // glibc: int __sprintf_chk (char *s, int flag, size_t slen, const char *format, ...)
 // slen is the size of s known to the compiler, or (size_t) -1 when unknown.
+// An unknown size must not reach vsnprintf as such: glibc's vsnprintf works
+// out the end of the buffer as s + slen, which wraps around, and then writes
+// a single character (OpenSSL's TLS key log came out as "LABEL 7"). printf
+// cannot write more than INT_MAX characters anyway.
 int __sprintf_chk (char *s, int flag, size_t slen, const char *f, ...)
 {
   va_list vl;
   va_start (vl, f);
-  int r =  g_libc.vsnprintf_fn (s, slen, f, vl);
+  int r =  g_libc.vsnprintf_fn (s, slen > __INT_MAX__ ? __INT_MAX__ : slen, f, vl);
   va_end (vl);
 
   return r;
