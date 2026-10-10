@@ -446,6 +446,9 @@ main (int argc, char *argv[])
   apps = dce.Install (client);
   apps.Start (Seconds (2.0));
 
+  // Radiotap headers: ns-3 then strips each A-MPDU subframe's delimiter and
+  // padding, which plain 802.11 captures keep and Wireshark cannot parse.
+  phy.SetPcapDataLinkType (WifiPhyHelper::DLT_IEEE802_11_RADIO);
   phy.EnablePcap ("dce-browser", apDevice.Get (0));
 
   std::cout << "thttpd on " << interfaces.GetAddress (0) << " serves files-0/browser/, "
