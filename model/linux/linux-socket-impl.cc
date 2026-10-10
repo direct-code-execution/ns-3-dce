@@ -669,15 +669,17 @@ LinuxSocketImpl::Poll ()
                 {
                   // Some protocols (e.g. DCCP) report the socket writable
                   // while sends fail with EAGAIN, and a failed send wakes
-                  // the socket again: notify again only once time went on.
-                  if (!m_sendBlocked || Simulator::Now () > m_sendBlockedAt)
+                  // the socket again: notify again only once time went on,
+                  // retrying a little later if the socket does not wake.
+                  bool notify = !m_sendBlocked || Simulator::Now () > m_sendBlockedAt;
+                  if (notify)
                     {
                       m_sendBlocked = false;
                       Simulator::ScheduleWithContext (m_node->GetId (), Seconds (0.0),
                                                       MakeEvent (&LinuxSocketImpl::NotifySend, this, 0));
                     }
                   NS_LOG_INFO ("wait send for next poll event");
-                  table->Wait (Seconds (0));
+                  table->Wait (notify ? Seconds (0) : MilliSeconds (1));
                   NS_LOG_INFO ("awaken");
                 }
             }

@@ -36,6 +36,15 @@ std::string sock_factory = "ns3::LinuxTcpSocketFactory";
 int m_seed = 1;
 double startTime = 4.0;
 double stopTime = 20.0;
+
+// When each sink last received data: a flow that stalls stops early.
+static std::vector<Time> g_lastRx;
+
+static void
+SinkRx (uint32_t i, Ptr<const Packet> p, const Address &from)
+{
+  g_lastRx[i] = Simulator::Now ();
+}
 int m_nNodes = 2;
 bool enablePcap = false;
 std::string m_pktSize = "1024";
@@ -232,6 +241,11 @@ main (int argc, char *argv[])
                                             InetSocketAddress (Ipv4Address::GetAny (), 2000));
   apps = sink.Install (rights);
   apps.Start (Seconds (3.9999));
+  g_lastRx.resize (m_nNodes);
+  for (uint32_t i = 0; i < m_nNodes; i++)
+    {
+      apps.Get (i)->TraceConnectWithoutContext ("Rx", MakeBoundCallback (&SinkRx, i));
+    }
 
   if (enablePcap)
     {
@@ -256,6 +270,22 @@ main (int argc, char *argv[])
   std::cout << " total = " << total * 8 / (stopTime - startTime) << " bps";
   std::cout << std::endl;
 
+  // The flows keep sending, and use a good part of the 2 Mbps bottleneck
+  // (from 0.48 to 0.69 Mbps, depending on the stack and application).
+  bool ok = total * 8 / (stopTime - startTime) > 300000;
+  for (uint32_t i = 0; i < m_nNodes; i++)
+    {
+      if (g_lastRx[i] < Seconds (stopTime - 1))
+        {
+          std::cout << "flow " << i << " stalled at " << g_lastRx[i].GetSeconds () << " s" << std::endl;
+          ok = false;
+        }
+    }
+  if (!ok)
+    {
+      std::cout << "FAILED" << std::endl;
+    }
+
   Simulator::Destroy ();
-  return 0;
+  return ok ? 0 : 1;
 }
