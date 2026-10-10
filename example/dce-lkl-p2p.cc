@@ -38,7 +38,11 @@ Finished (std::string name, uint32_t node, uint16_t pid, int status)
       std::ifstream file (path.str ());
       std::stringstream out;
       out << file.rdbuf ();
-      ok = out.str ().find ("did read all buffers") != std::string::npos;
+      // tcp-server reads until the end of the connection: check that it
+      // got the 1000 kB tcp-client sends. udp-server reads 1000 datagrams.
+      std::string done = name.find ("tcp") != std::string::npos
+        ? "did read all buffers tot:1024000\n" : "did read all buffers";
+      ok = out.str ().find (done) != std::string::npos;
     }
   std::cout << Simulator::Now ().GetSeconds () << "s " << name << " exited with " << status
             << (ok ? "" : " FAILED") << std::endl;

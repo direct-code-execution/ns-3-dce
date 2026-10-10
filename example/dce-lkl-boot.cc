@@ -31,6 +31,10 @@ CheckNode (Ptr<Node> node)
   long ret = kernel->Syscall (__lkl__NR_uname, params);
   std::cout << "node " << node->GetId () << ": uname=" << ret << " "
             << uts[0] << " " << uts[2] << std::endl;
+  if (ret != 0)
+    {
+      g_failures++;
+    }
 
   struct
   {
@@ -45,8 +49,9 @@ CheckNode (Ptr<Node> node)
   double wall = std::chrono::duration<double> (std::chrono::steady_clock::now () - wallBefore).count ();
   std::cout << "node " << node->GetId () << ": nanosleep(10s)=" << ret
             << " simulated " << slept.GetNanoSeconds () << " ns, wall " << wall << " s" << std::endl;
-  // Linux adds the task's timer slack (50 us by default) to the sleep.
-  if (ret != 0 || slept < Seconds (10) || slept > Seconds (10) + MilliSeconds (1))
+  // Linux adds the task's timer slack (50 us by default) to the sleep. The
+  // host must not sleep.
+  if (ret != 0 || slept < Seconds (10) || slept > Seconds (10) + MilliSeconds (1) || wall > 5)
     {
       g_failures++;
     }
@@ -73,6 +78,11 @@ main (int argc, char *argv[])
   CommandLine cmd;
   cmd.AddValue ("nodes", "Number of nodes", nNodes);
   cmd.Parse (argc, argv);
+  if (nNodes == 0)
+    {
+      std::cerr << "--nodes must be at least 1" << std::endl;
+      return 1;
+    }
 
   NodeContainer nodes;
   nodes.Create (nNodes);
@@ -85,7 +95,8 @@ main (int argc, char *argv[])
       Simulator::ScheduleWithContext (i, Seconds (1.0 + 0.5 * i), &StartCheck, nodes.Get (i));
     }
 
-  Simulator::Stop (Seconds (30));
+  // The last node starts at 1 + 0.5 (n - 1) s, and sleeps 10 s.
+  Simulator::Stop (Seconds (15 + 0.5 * nNodes));
   Simulator::Run ();
   Simulator::Destroy ();
 
