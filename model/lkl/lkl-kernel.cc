@@ -8,6 +8,7 @@
 #include "ns3/simulator.h"
 #include "ns3/string.h"
 #include "ns3/event-impl.h"
+#include "ns3/make-event.h"
 #include <lkl/asm/host_ops.h>
 #include <list>
 #include <map>
@@ -361,8 +362,10 @@ TimerSetOneshot (void *t, unsigned long delta)
 {
   LklTimer *timer = (LklTimer *)t;
   timer->event.Cancel ();
-  // Called from the node's own tasks, so the event keeps the node context.
-  timer->event = Simulator::Schedule (NanoSeconds (delta), &TimerExpire, timer);
+  // Called from the node's own tasks, which may run on threads of their own
+  // (PthreadFiberManager): schedule from the simulator's thread. The event
+  // keeps the node context.
+  timer->event = Manager ()->ScheduleMain (NanoSeconds (delta), MakeEvent (&TimerExpire, timer));
   return 0;
 }
 
