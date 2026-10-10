@@ -319,6 +319,7 @@ def build_dce_tests(module, bld):
              ['test-signal', ['PTHREAD']],
              ['test-ifindex', []],
              ['test-emfile', []],
+             ['test-ipv6-pktinfo', []],
              ['test-clock-gettime', []],
              ['test-gcc-builtin-apply', []],
              ['test-iostream', []],

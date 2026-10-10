@@ -227,6 +227,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
     {  "test-signal", 30, "", false, false, NS3_MASK|LINUX_MASK},
     {  "test-ifindex", 30, "", true, false, NS3_MASK|LINUX_MASK},
     {  "test-emfile", 30, "", true, false, NS3_MASK|LINUX_MASK},
+    {  "test-ipv6-pktinfo", 30, "", true, false, NS3_MASK|LINUX_MASK},
   };
 
   // Prepare directories and files for test-stdio

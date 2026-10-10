@@ -297,12 +297,23 @@ UnixDatagramSocketFd::DoSendmsg (const struct msghdr *msg, int flags)
   Ptr<NetDevice> outDev = 0;
   for (struct cmsghdr *c = CMSG_FIRSTHDR (msg); c != 0; c = CMSG_NXTHDR ((struct msghdr *)msg, c))
     {
+      if (c->cmsg_len < sizeof (struct cmsghdr)
+          || (uint8_t *)c + c->cmsg_len > (uint8_t *)msg->msg_control + msg->msg_controllen)
+        {
+          current->err = EINVAL;
+          return -1;
+        }
       if (c->cmsg_level == SOL_IPV6 && c->cmsg_type == IPV6_PKTINFO
           && c->cmsg_len >= CMSG_LEN (sizeof (struct in6_pktinfo)))
         {
           struct in6_pktinfo *pkt6 = (struct in6_pktinfo *)CMSG_DATA (c);
           Ptr<Node> node = current->process->manager->GetObject<Node> ();
-          if (pkt6->ipi6_ifindex >= 1 && pkt6->ipi6_ifindex <= node->GetNDevices ())
+          if (pkt6->ipi6_ifindex > node->GetNDevices ())
+            {
+              current->err = ENODEV;
+              return -1;
+            }
+          if (pkt6->ipi6_ifindex >= 1)
             {
               outDev = node->GetDevice (pkt6->ipi6_ifindex - 1);
             }
@@ -390,7 +401,7 @@ UnixDatagramSocketFd::DoSendmsg (const struct msghdr *msg, int flags)
           TaskManager *manager = TaskManager::Current ();
           result = -1;
           manager->ExecOnMain (MakeEvent (&UnixDatagramSocketFd::MainSend,
-                                          this, &result, packet));
+                                          this, &result, packet, outDev));
         }
       if (result == -1)
         {
@@ -483,8 +494,16 @@ UnixDatagramSocketFd::MainSendTo (int *r, Ptr<Packet> p, uint32_t f, Address ad,
   m_socket->BindToNetDevice (bound);
 }
 void
-UnixDatagramSocketFd::MainSend (int *r, Ptr<Packet> p)
+UnixDatagramSocketFd::MainSend (int *r, Ptr<Packet> p, Ptr<NetDevice> dev)
 {
+  if (!dev)
+    {
+      *r = m_socket->Send (p);
+      return;
+    }
+  Ptr<NetDevice> bound = m_socket->GetBoundNetDevice ();
+  m_socket->BindToNetDevice (dev);
   *r = m_socket->Send (p);
+  m_socket->BindToNetDevice (bound);
 }
 } // namespace ns3
