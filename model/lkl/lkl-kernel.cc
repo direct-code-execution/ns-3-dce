@@ -21,6 +21,7 @@
 #include <sstream>
 #include <fstream>
 #include <sys/stat.h>
+#include <unistd.h>
 
 NS_LOG_COMPONENT_DEFINE ("DceLklKernel");
 
@@ -656,6 +657,24 @@ LklKernel::Load (void)
   std::string copy = dir.str () + "/" + m_library;
   CreateDirectory (dir.str ());
   CopyFile (path, copy);
+  // gdb looks for the library's debug information (see utils/build_lkl.sh)
+  // next to the copy.
+  std::string debug = path + ".debug";
+  struct stat st;
+  if (stat (debug.c_str (), &st) == 0)
+    {
+      char *absolute = realpath (debug.c_str (), 0);
+      if (absolute)
+        {
+          std::string link = copy + ".debug";
+          unlink (link.c_str ());
+          if (symlink (absolute, link.c_str ()) != 0)
+            {
+              NS_LOG_DEBUG ("Cannot link " << link << " to " << absolute);
+            }
+          free (absolute);
+        }
+    }
   m_handle = dlopen (copy.c_str (), RTLD_NOW | RTLD_LOCAL);
   NS_ASSERT_MSG (m_handle, "Cannot load " << copy << ": " << dlerror ());
   m_init = (int (*)(struct lkl_host_operations *)) dlsym (m_handle, "lkl_init");
