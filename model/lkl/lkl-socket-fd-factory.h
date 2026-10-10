@@ -23,8 +23,9 @@ struct LklNetDevice;
  * DceManagerHelper::SetNetworkStack ("ns3::LklSocketFdFactory").
  *
  * The kernel boots when the simulation starts. Every ns-3 NetDevice of the
- * node becomes a kernel network device named sim<n>, in device order;
- * sockets of DCE applications are kernel sockets.
+ * node but its loopback device (the kernel has its own) becomes a kernel
+ * network device named sim<n>, in device order; sockets of DCE
+ * applications are kernel sockets.
  */
 class LklSocketFdFactory : public SocketFdFactory
 {

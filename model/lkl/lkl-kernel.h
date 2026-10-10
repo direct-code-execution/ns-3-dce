@@ -3,7 +3,6 @@
 #define LKL_KERNEL_H
 
 #include "ns3/object.h"
-#include "ns3/event-id.h"
 #include <map>
 #include <set>
 #include <string>

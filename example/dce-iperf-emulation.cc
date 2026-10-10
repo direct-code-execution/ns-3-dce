@@ -139,7 +139,7 @@ int main (int argc, char *argv[])
       LinuxStackHelper stack;
       stack.Install (nodes);
 #else
-      NS_LOG_ERROR ("Linux kernel stack for DCE is not available. build with dce-linux module.");
+      NS_LOG_ERROR ("Linux kernel stack for DCE is not available: configure DCE --with-lkl.");
       // silently exit
       return 0;
 #endif
