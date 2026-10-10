@@ -382,6 +382,23 @@ void *
 CoojaLoader::Lookup (void *module, std::string symbol)
 {
   NS_LOG_FUNCTION (this << module << symbol);
+  if (module == RTLD_DEFAULT || module == RTLD_NEXT)
+    {
+      // dlsym (RTLD_DEFAULT, ...) would search the simulator's own
+      // namespace and hand the program a host symbol (SDL2 looks up
+      // pthread_setname_np this way and then crashes in glibc): search
+      // the modules loaded for this process instead, DCE's libc first.
+      for (std::list<struct Module *>::const_iterator i = m_modules.begin (); i != m_modules.end (); ++i)
+        {
+          void *p = dlsym ((*i)->module->handle, symbol.c_str ());
+          if (p)
+            {
+              return p;
+            }
+        }
+      NS_LOG_WARN ("symbol " << symbol << " not found in the process's modules");
+      return 0;
+    }
   void *p = dlsym (module, symbol.c_str ());
   if (!p)
     {

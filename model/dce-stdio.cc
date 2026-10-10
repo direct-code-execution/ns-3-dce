@@ -171,6 +171,7 @@ FILE * dce_fdopen (int fildes, const char *mode)
   fp->_fileno = fildes;
   FILE *file = fopencookie(fp, mode, my_func);
   current->process->openStreams.push_back (file);
+  current->process->streamFds[file] = fildes;
   dce_fseek (file, dce_lseek (fildes, 0, SEEK_CUR), SEEK_SET);
 
   return file;
@@ -278,6 +279,7 @@ remove_stream (FILE *fp)
 {
   Thread *current = Current ();
   bool found = false;
+  current->process->streamFds.erase (fp);
   for (std::vector<FILE*>::iterator  i = current->process->openStreams.begin ();
        i != current->process->openStreams.end (); ++i)
     {
@@ -422,8 +424,13 @@ int dce_fileno (FILE *stream)
       return 2;
   }
 
-  // FIXME: Handle fopencookie things to. We need to detect those FILE*
-  // and return cookie->_fileno instead... But how?
+  // streams created by fdopen()/fopen() are fopencookie streams: their
+  // descriptor is the one recorded when they were created
+  std::map<FILE *, int>::iterator it = current->process->streamFds.find (stream);
+  if (it != current->process->streamFds.end ())
+    {
+      return it->second;
+    }
 
   int status = fileno (stream);
   if (status == -1)
@@ -781,4 +788,30 @@ int dce_vasprintf (char **strp, const char *fmt, va_list ap)
 int dce_vsnprintf (char *s, size_t si, const char *f, va_list ap)
 {
   return ::vsnprintf (s, si, f, ap);
+}
+
+// Fortified asprintf() of glibc (libbsd); the string must come from the
+// DCE allocator since the application frees it.
+int dce___asprintf_chk (char **strp, int flag, const char *fmt, ...)
+{
+  va_list ap;
+  va_start (ap, fmt);
+  int r = dce_vasprintf (strp, fmt, ap);
+  va_end (ap);
+  return r;
+}
+
+// Fortified fgets()/fread() of glibc.
+char * dce___fgets_chk (char *buf, size_t size, int n, FILE *stream)
+{
+  return dce_fgets (buf, n, stream);
+}
+size_t dce___fread_chk (void *ptr, size_t ptrlen, size_t size, size_t n, FILE *stream)
+{
+  return dce_fread (ptr, size, n, stream);
+}
+
+int dce___vasprintf_chk (char **strp, int flag, const char *fmt, va_list ap)
+{
+  return dce_vasprintf (strp, fmt, ap);
 }

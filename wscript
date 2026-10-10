@@ -15,10 +15,11 @@ def options(opt):
     opt.load('compiler_c')
     opt.load('compiler_cxx')
     ns3waf.options(opt)
-    opt.add_option('--enable-kernel-stack',
-                   help=('Path to the prefix where the kernel wrapper headers are installed'),
+    opt.add_option('--with-lkl',
+                   help=('Path to the output of utils/build_lkl.sh, or to an LKL source tree built with it: '
+                         'the Linux kernel network stack (ns3::LinuxSocketFdFactory)'),
                    default=None,
-                   dest='kernel_stack', type="string")
+                   dest='with_lkl', type="string")
     opt.add_option('--enable-mpi',
                    help=('Enable MPI and distributed simulation support'),
                    dest='enable_mpi', action='store_true',
@@ -146,28 +147,16 @@ def configure(conf):
     # Enable C++-20 support
     conf.env.append_value('CXXFLAGS', '-std=c++20')
 
-    if Options.options.kernel_stack:
-        if not os.path.isdir(Options.options.kernel_stack):
-            Logs.error( "\"%s\" is not a directory: please fix your --enable-kernel-stack parameter." % (Options.options.kernel_stack))
-            raise SystemExit(1)
-
-        # look for kernel dir from 1) {KERNEL_DIR}/sim, then 2) {KERNEL_DIR}/lib.
-        architectures = ["sim", "lib"]
-        kernel_stack_dir = None
-        for subdir in architectures:
-            subdir = os.path.join(Options.options.kernel_stack, subdir)
-            if os.path.isdir(subdir):
-                kernel_stack_dir = subdir
-                break
-
-        if not kernel_stack_dir:
-            Logs.error("Could not find any of the [%s] architecture. Make sure you use the net-next-sim kernel or fix your --enabled-kernel-stack parameter" % ','.join(architectures))
-            raise SystemExit(1)
-
-        conf.check(header_name='sim.h',
-                   includes=os.path.join(kernel_stack_dir, 'include'))
-        conf.env['KERNEL_STACK'] = kernel_stack_dir
-        conf.env.append_value ('DEFINES', 'KERNEL_STACK=Y')
+    if Options.options.with_lkl:
+        lkl_dir = os.path.abspath(Options.options.with_lkl)
+        lkl_include = os.path.join(lkl_dir, 'include')
+        if not os.path.isfile(os.path.join(lkl_include, 'lkl', 'asm', 'host_ops.h')):
+            lkl_include = os.path.join(lkl_dir, 'tools', 'lkl', 'include')
+        conf.check(header_name='lkl/asm/host_ops.h', includes=lkl_include)
+        conf.env['LKL_INCLUDE'] = lkl_include
+        # LKL provides ns3::LinuxSocketFdFactory.
+        conf.env['LINUX_STACK'] = True
+        conf.env.append_value('DEFINES', 'LINUX_STACK=Y')
 
     conf.env['ENABLE_PYTHON_BINDINGS'] = False
     conf.env['EXAMPLE_DIRECTORIES'] = '.'
@@ -225,6 +214,20 @@ def configure(conf):
                                     have_sctp_tools,
                                     "sctp-tools (netinet/sctp.h) not found")
 
+    have_x11 = conf.check(header_name='X11/Xlib.h', lib='X11', uselib_store='X11',
+                          define_name='HAVE_X11', mandatory=False)
+    conf.env['X11_FOUND'] = have_x11 is not None
+    ns3waf._report_optional_feature(conf, "x11", "X11 client (x11-hello, dce-wifi-video --viewer)",
+                                    have_x11,
+                                    "libx11-dev (X11/Xlib.h) not found")
+
+    have_gtk4 = conf.check_cfg(package='gtk4', args=['--cflags', '--libs'], uselib_store='GTK4',
+                               mandatory=False)
+    conf.env['GTK4_FOUND'] = have_gtk4 is not None
+    ns3waf._report_optional_feature(conf, "gtk4", "GTK4 client (gtk4-hello)",
+                                    have_gtk4,
+                                    "libgtk-4-dev not found")
+
     conf.recurse(os.path.join('utils'))
     conf.recurse('bindings/python')
     ns3waf.print_feature_summary(conf)
@@ -269,8 +272,9 @@ def dce_kw(**kw):
 def build_dce_tests(module, bld):
     tests_source = [
         'test/dce-manager-test.cc',
+        'test/ipv4-dce-routing-test.cc',
     ]
-    if bld.env['KERNEL_STACK']:
+    if bld.env['LINUX_STACK']:
         tests_source += [
             'test/dce-cradle-test.cc',
             'test/dce-mptcp-test.cc',
@@ -307,6 +311,9 @@ def build_dce_tests(module, bld):
              ['test-env', []],
              ['test-cond', ['PTHREAD']],
              ['test-timer-fd', []],
+             ['test-eventfd', ['PTHREAD']],
+             ['test-epoll', ['PTHREAD']],
+             ['test-futex', ['PTHREAD']],
              ['test-stdlib', []],
              ['test-select', ['PTHREAD']],
              ['test-random', []],
@@ -326,7 +333,11 @@ def build_dce_tests(module, bld):
              ['test-socket', []],
              ['test-bug-multi-select', []],
              ['test-tsearch', []],
-             ['test-signal', []],
+             ['test-signal', ['PTHREAD']],
+             ['test-ifindex', []],
+             ['test-emfile', []],
+             ['test-ipv6-pktinfo', []],
+             ['test-icmp6-filter', []],
              ['test-clock-gettime', []],
              ['test-gcc-builtin-apply', []],
              ['test-iostream', []],
@@ -349,7 +360,7 @@ def build_dce_examples(module, bld):
                     ['udp-echo-client', []],
                     ['dccp-server', []],
                     ['dccp-client', []],
-                    ['freebsd-iproute', []],
+                    ['numbers-server', []],
 #                    ['little-cout', []],
                     ]
 
@@ -358,6 +369,15 @@ def build_dce_examples(module, bld):
                     ['sctp-server', ['sctp']],
                     ['sctp-client', ['sctp']],
         ]
+    if bld.env['X11_FOUND']:
+        dce_examples += [
+                    ['x11-hello', ['X11']],
+        ]
+    if bld.env['GTK4_FOUND']:
+        module.add_example(**dce_kw(target = 'bin_dce/gtk4-hello',
+                                    source = ['example/gtk4-hello.cc'],
+                                    use = ['GTK4']))
+        bld.install_files('${PREFIX}/bin_dce', 'bin_dce/gtk4-hello', chmod=Utils.O755)
 
     for name,lib in dce_examples:
         module.add_example(**dce_kw(target = 'bin_dce/' + name, 
@@ -492,6 +512,21 @@ def build_dce_kernel_examples(module, bld):
                        target='bin/dce-mptcp-lte-wifi',
                        source=['example/dce-mptcp-lte-wifi.cc'])
 
+    module.add_example(needed = ['core', 'network', 'internet', 'dce', 'wifi', 'mobility'],
+                       target='bin/dce-wifi-video',
+                       source=['example/dce-wifi-video.cc'])
+    if bld.env['X11_FOUND']:
+        module.add_example(needed = ['core', 'network', 'internet', 'dce'],
+                           target='bin/dce-x11-hello',
+                           source=['example/dce-x11-hello.cc'])
+        module.add_example(needed = ['core', 'network', 'internet', 'dce', 'wifi', 'mobility', 'csma', 'tap-bridge'],
+                           target='bin/dce-browser',
+                           source=['example/dce-browser.cc'])
+    # The clip streamed by dce-wifi-video, installed with the DCE binaries so
+    # that the example finds it through DCE_PATH.
+    bld(rule='cp ${SRC} ${TGT}', source='example/dce-wifi-video-sample.ts',
+        target='bin_dce/video.ts', name='dce-wifi-video-sample')
+
     module.add_example(needed = ['core', 'network', 'dce', 'point-to-point', 'mobility', 'wifi', 'lte', 'dce-quagga'],
                        target='bin/dce-mptcp-lte-wifi-v6',
                        source=['example/dce-mptcp-lte-wifi-v6.cc'])
@@ -516,10 +551,6 @@ def build_dce_kernel_examples(module, bld):
         module.add_example(needed = ['core', 'network', 'dce', 'point-to-point' ],
                            target='bin/dce-sctp-simple',
                            source=['example/dce-sctp-simple.cc'])
-
-    module.add_example(needed = ['core', 'network', 'dce', 'wifi', 'point-to-point', 'csma', 'mobility' ],
-                       target='bin/dce-freebsd',
-                       source=['example/dce-freebsd.cc'])
 
 
 # Add a script to build system
@@ -604,25 +635,26 @@ def build(bld):
     bld.add_group('ns3modulebuild')
     build_netlink(bld)
 
-    if bld.env['KERNEL_STACK']:
+    if bld.env['LINUX_STACK']:
         kernel_source = [
-            'model/kernel-socket-fd-factory.cc',
-            'model/kernel-socket-fd.cc',
-            'model/linux-socket-fd-factory.cc',
-            'model/freebsd-socket-fd-factory.cc',
+            'model/lkl/lkl-kernel.cc',
+            'model/lkl/lkl-socket-fd.cc',
+            'model/lkl/lkl-socket-fd-factory.cc',
+            'model/lkl/lkl-linux-socket-fd-factory.cc',
             'model/linux/linux-socket-impl.cc',
             ]
         kernel_headers = [
-            'model/kernel-socket-fd-factory.h',
+            'model/lkl/lkl-kernel.h',
+            'model/lkl/lkl-socket-fd-factory.h',
             'model/linux-socket-fd-factory.h',
-            'model/freebsd-socket-fd-factory.h',
             'model/linux/linux-socket-impl.h',
             ]
-        kernel_includes = [bld.env['KERNEL_STACK']]
+        kernel_includes = ['model/lkl', bld.env['LKL_INCLUDE']]
     else:
         kernel_source = []
         kernel_headers = []
         kernel_includes = []
+
 
     module_source = [
         'model/dce-manager.cc',
@@ -633,6 +665,12 @@ def build(bld):
         'model/utils.cc',
         'model/unix-fd.cc',
         'model/unix-file-fd.cc',
+        'model/host-socket-fd.cc',
+        'model/event-fd.cc',
+        'model/epoll-fd.cc',
+        'model/dce-epoll.cc',
+        'model/dce-futex.cc',
+        'model/dce-compat.cc',
         'model/unix-socket-fd.cc',
         'model/unix-datagram-socket-fd.cc',
         'model/unix-stream-socket-fd.cc',
@@ -693,7 +731,6 @@ def build(bld):
         'model/exec-utils.cc',
         'model/linux/ipv4-linux.cc',
         'model/linux/ipv6-linux.cc',
-        'model/freebsd/ipv4-freebsd.cc',
         'model/dce-vfs.cc',
         'model/elf-ldd.cc',
         'model/dce-termio.cc',
@@ -722,9 +759,10 @@ def build(bld):
         'helper/ipv4-dce-routing-helper.cc',
         'helper/dce-manager-helper.cc',
         'helper/dce-application-helper.cc',
+        'helper/dce-x11-helper.cc',
+        'helper/dce-pcap-check.cc',
         'helper/ccn-client-helper.cc',
         'helper/linux-stack-helper.cc',
-        'helper/freebsd-stack-helper.cc',
         ]
     module_headers = [
         'model/dce-manager.h',
@@ -736,7 +774,6 @@ def build(bld):
         'model/ipv4-dce-routing.h',
         'model/linux/ipv4-linux.h',
         'model/linux/ipv6-linux.h',
-        'model/freebsd/ipv4-freebsd.h',
         'model/process-delay-model.h',
         'model/exec-utils.h',
         'model/utils.h',
@@ -755,10 +792,11 @@ def build(bld):
         'model/linux/linux-sctp6-socket-factory.h',
         'helper/dce-manager-helper.h',
         'helper/dce-application-helper.h',
+        'helper/dce-x11-helper.h',
+        'helper/dce-pcap-check.h',
         'helper/ccn-client-helper.h',
         'helper/ipv4-dce-routing-helper.h',
         'helper/linux-stack-helper.h',
-        'helper/freebsd-stack-helper.h',
         ]
 
     module_source = module_source + kernel_source
@@ -787,8 +825,15 @@ def build(bld):
                            source=['test/netlink-socket-test.cc'],
                            name='netlink')
 
-    if bld.env['KERNEL_STACK']:
+    if bld.env['LINUX_STACK']:
         build_dce_kernel_examples(module, bld)
+        module.add_example(needed = ['core', 'network', 'dce'],
+                           target='bin/dce-lkl-boot',
+                           includes=[bld.env['LKL_INCLUDE']],
+                           source=['example/dce-lkl-boot.cc'])
+        module.add_example(needed = ['core', 'network', 'dce', 'point-to-point'],
+                           target='bin/dce-lkl-p2p',
+                           source=['example/dce-lkl-p2p.cc'])
     
     # build test-runner
     module.add_example(target='bin/test-runner',

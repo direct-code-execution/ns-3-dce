@@ -69,3 +69,17 @@ dce_vsyslog (int priority, const char *message, va_list args)
   vfprintf (process->syslog, message, args);
   fprintf (process->syslog, "\n");
 }
+
+// Fortified syslog() of glibc.
+void dce___syslog_chk (int priority, int flag, const char *message, ...)
+{
+  va_list args;
+  va_start (args, message);
+  dce_vsyslog (priority, message, args);
+  va_end (args);
+}
+
+void dce___vsyslog_chk (int priority, int flag, const char *message, va_list args)
+{
+  dce_vsyslog (priority, message, args);
+}

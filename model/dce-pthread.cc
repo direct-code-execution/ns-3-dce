@@ -375,7 +375,8 @@ int dce_pthread_key_delete (pthread_key_t key)
               break;
             }
         }
-      NS_ASSERT (found);
+      // a thread which never set a value for the key has no entry
+      (void) found;
     }
   return 0;
 }
@@ -392,9 +393,10 @@ int dce_pthread_kill (pthread_t th, int sig)
     }
 
   sigaddset (&thread->pendingSignals, sig);
-  if (sigismember (&thread->signalMask, sig) == 0)
+  if (sigismember (&thread->signalMask, sig) == 0
+      || sigismember (&thread->sigwaitSet, sig) == 1)
     {
-      // signal not blocked by thread.
+      // signal not blocked by thread, or the thread waits for it in sigwait.
       if (thread->task->IsBlocked ())
         {
           thread->process->manager->Wakeup (thread);

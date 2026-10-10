@@ -29,7 +29,7 @@ namespace ns3 {
 class Node;
 class Packet;
 class Task;
-class KernelSocketFd;
+class UnixFd;
 
 class LinuxSocketImpl : public Socket
 {
@@ -85,7 +85,7 @@ public:
   void SetNs3ToPosixConverter (LinuxSocketImpl::Ns3ToPosixConverter cb);
   void SetPosixToNs3Converter (LinuxSocketImpl::PosixToNs3Converter cb);
 
-  KernelSocketFd *m_kernsock;
+  UnixFd *m_kernsock;
   Task *m_task;
   Ns3ToPosixConverter m_ns3toposix;
   PosixToNs3Converter m_posixtons3;
@@ -117,6 +117,8 @@ private:
   uint16_t m_protocol;
   bool m_listening;
   bool m_conn_inprogress;
+  bool m_sendBlocked;    // the last send failed with EAGAIN
+  Time m_sendBlockedAt;
   uint16_t m_pid;
   EventId m_poll;
 

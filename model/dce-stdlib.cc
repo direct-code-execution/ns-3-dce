@@ -7,7 +7,9 @@
 #include "file-usage.h"
 #include "ns3/log.h"
 #include <errno.h>
+#include <string.h>
 #include <limits.h>
+#include <stdint.h>
 
 
 NS_LOG_COMPONENT_DEFINE ("DceStdlib");
@@ -152,4 +154,68 @@ int dce_rename (const char *oldpath, const char *newpath)
       return -1;
     }
   return 0;
+}
+
+// mkstemp64 is what glibc's mkstemp() resolves to when _FILE_OFFSET_BITS=64.
+int dce_mkstemp64 (char *temp)
+{
+  return dce_mkstemp (temp);
+}
+
+// The POSIX (XSI) strerror_r, which glibc's strerror_r() resolves to when
+// _GNU_SOURCE is not defined: fills buf and returns 0 or an errno value.
+int dce___xpg_strerror_r (int errnum, char *buf, size_t buflen)
+{
+  if (buf == 0 || buflen == 0)
+    {
+      return ERANGE;
+    }
+  const char *msg = strerror (errnum);
+  size_t len = strlen (msg);
+  if (len >= buflen)
+    {
+      memcpy (buf, msg, buflen - 1);
+      buf[buflen - 1] = 0;
+      return ERANGE;
+    }
+  memcpy (buf, msg, len + 1);
+  return 0;
+}
+
+void * dce_reallocarray (void *ptr, size_t nmemb, size_t size)
+{
+  if (size != 0 && nmemb > SIZE_MAX / size)
+    {
+      Current ()->err = ENOMEM;
+      return 0;
+    }
+  return dce_realloc (ptr, nmemb * size);
+}
+
+// glibc 2.38 and later resolve strtol() and friends to these C23 variants.
+long int dce___isoc23_strtol (const char *nptr, char **endptr, int base)
+{
+  return dce_strtol (nptr, endptr, base);
+}
+long long int dce___isoc23_strtoll (const char *nptr, char **endptr, int base)
+{
+  return dce_strtoll (nptr, endptr, base);
+}
+long unsigned int dce___isoc23_strtoul (const char *nptr, char **endptr, int base)
+{
+  return dce_strtoul (nptr, endptr, base);
+}
+long long unsigned int dce___isoc23_strtoull (const char *nptr, char **endptr, int base)
+{
+  return dce_strtoull (nptr, endptr, base);
+}
+
+// There is no shell to run commands in the simulation.
+int dce_system (const char *command)
+{
+  Thread *current = Current ();
+  NS_ASSERT (current != 0);
+  NS_LOG_WARN ("system(\"" << (command ? command : "") << "\") is not supported");
+  current->err = ENOSYS;
+  return -1;
 }

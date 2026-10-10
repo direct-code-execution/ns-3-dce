@@ -74,15 +74,28 @@ ReceivedBytes (std::string context, Ptr<const Packet> originalPacket)
     }
 }
 
+// Linux MPTCP (upstream, v1): the test runs if the kernel has it.
 bool isMptcpEnabled = false;
 static void
 SetMptcpEnabled (std::string key, std::string value)
 {
   std::cout << key << "=" << value << std::endl;
-  if (key == ".net.mptcp.mptcp_debug" &&
+  if (key == ".net.mptcp.enabled" &&
       value.find ("1") != std::string::npos)
     {
       isMptcpEnabled = true;
+    }
+}
+
+// Let each connection have more subflows and accept the addresses its
+// peer announces. The applications' TCP sockets are made MPTCP sockets
+// (LklSocketFdFactory::Mptcp) at the start of each test.
+static void
+EnableMptcp (NodeContainer nodes)
+{
+  for (uint32_t i = 0; i < nodes.GetN (); i++)
+    {
+      LinuxStackHelper::RunIp (nodes.Get (i), Seconds (0.5), "mptcp limits set subflows 4 add_addr_accepted 4");
     }
 }
 
@@ -91,6 +104,8 @@ DceMptcpTestCase::DoBasicRun (void)
 {
   g_rcv0 = false;
   g_rcv1 = false;
+  isMptcpEnabled = false;
+  Config::SetDefault ("ns3::LklSocketFdFactory::Mptcp", BooleanValue (true));
 
   uint32_t nRtrs = 2;
   std::string m_rate = "200Bps";
@@ -110,7 +125,8 @@ DceMptcpTestCase::DoBasicRun (void)
   dceManager.Install (routers);
 
   LinuxStackHelper::SysctlGet (nodes.Get (0), Seconds (1.0),
-                               ".net.mptcp.mptcp_debug", &SetMptcpEnabled);
+                               ".net.mptcp.enabled", &SetMptcpEnabled);
+  EnableMptcp (nodes);
 
   PointToPointHelper pointToPoint;
   NetDeviceContainer devices1, devices2;
@@ -141,6 +157,13 @@ DceMptcpTestCase::DoBasicRun (void)
       cmd_oss.str ("");
       cmd_oss << "route add 10.1.0.0/16 via " << if1.GetAddress (1, 0) << " dev sim0";
       LinuxStackHelper::RunIp (routers.Get (i), Seconds (0.2), cmd_oss.str ().c_str ());
+      if (i > 0)
+        {
+          // a subflow from each other address of the client
+          cmd_oss.str ("");
+          cmd_oss << "mptcp endpoint add " << if1.GetAddress (0, 0) << " dev sim" << i << " subflow";
+          LinuxStackHelper::RunIp (nodes.Get (0), Seconds (0.6), cmd_oss.str ().c_str ());
+        }
 
       // delete address at 20sec
       LinuxStackHelper::RunIp (nodes.Get (0), Seconds (20), "-f inet addr delete 10.1.1.1/24 dev sim1");
@@ -171,9 +194,7 @@ DceMptcpTestCase::DoBasicRun (void)
   LinuxStackHelper::RunIp (nodes.Get (0), Seconds (0.1), "route add default via 10.1.0.2 dev sim0");
   LinuxStackHelper::RunIp (nodes.Get (1), Seconds (0.1), "route add default via 10.2.0.2 dev sim0");
   LinuxStackHelper::RunIp (nodes.Get (0), Seconds (0.1), "rule show");
-
-  // debug
-  stack.SysctlSet (nodes, ".net.mptcp.mptcp_debug", "1");
+  stack.SysctlSet (routers, ".net.ipv4.conf.all.forwarding", "1");
 
   ApplicationContainer apps;
   OnOffHelper onoff = OnOffHelper (m_sockf,
@@ -204,6 +225,7 @@ DceMptcpTestCase::DoBasicRun (void)
     " bytes";
   std::cout << std::endl;
   Simulator::Destroy ();
+  Config::SetDefault ("ns3::LklSocketFdFactory::Mptcp", BooleanValue (false));
 
   if (!isMptcpEnabled)
     {
@@ -220,6 +242,8 @@ DceMptcpTestCase::DoAddrTestRun (void)
 {
   g_rcv0 = false;
   g_rcv1 = false;
+  isMptcpEnabled = false;
+  Config::SetDefault ("ns3::LklSocketFdFactory::Mptcp", BooleanValue (true));
 
   double stopTime = 15.0;
   std::string p2pdelay = "10ms";
@@ -238,7 +262,8 @@ DceMptcpTestCase::DoAddrTestRun (void)
   dceManager.Install (nodes);
 
   LinuxStackHelper::SysctlGet (nodes.Get (0), Seconds (1.0),
-                               ".net.mptcp.mptcp_debug", &SetMptcpEnabled);
+                               ".net.mptcp.enabled", &SetMptcpEnabled);
+  EnableMptcp (nodes);
 
   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("100Kb/s"));
   pointToPoint.SetChannelAttribute ("Delay", StringValue (p2pdelay));
@@ -268,18 +293,15 @@ DceMptcpTestCase::DoAddrTestRun (void)
   LinuxStackHelper::RunIp (nodes.Get (0), Seconds (3.4), "rule add from 10.1.1.0/24 lookup 1");
   LinuxStackHelper::RunIp (nodes.Get (0), Seconds (3.3), "route add default via 10.1.1.10 dev sim0 table 1");
   LinuxStackHelper::RunIp (nodes.Get (0), Seconds (3.1), "route add 10.1.1.0/24 dev sim0 table 1");
+  // the new address gets a subflow
+  LinuxStackHelper::RunIp (nodes.Get (0), Seconds (3.5), "mptcp endpoint add 10.1.1.1 dev sim0 subflow");
 
   /*Setup Gateway Addresses*/
   LinuxStackHelper::RunIp (nodes.Get (1), Seconds (0.1), "link set up dev sim1");
   LinuxStackHelper::RunIp (nodes.Get (1), Seconds (0.2), "addr add 10.1.0.10/24 dev sim1");
   LinuxStackHelper::RunIp (nodes.Get (1), Seconds (3), "addr add 10.1.1.10/24 dev sim1");
 
-  /*Enable Multipath and debugging etc*/
-  stack.SysctlSet (nodes, ".net.ipv4.conf.default.forwarding", "1");
-  stack.SysctlSet (nodes, ".net.mptcp.mptcp_debug", "1");
-  stack.SysctlSet (nodes, ".net.mptcp.mptcp_enabled", "1");
-  stack.SysctlSet (nodes, ".net.mptcp.mptcp_path_manager", "fullmesh");
-  stack.SysctlSet (nodes, ".net.ipv4.tcp_congestion_control", "olia");
+  stack.SysctlSet (nodes, ".net.ipv4.conf.all.forwarding", "1");
 
   DceApplicationHelper dce;
   ApplicationContainer apps;
@@ -310,6 +332,7 @@ DceMptcpTestCase::DoAddrTestRun (void)
   Simulator::Stop (Seconds (stopTime));
   Simulator::Run ();
   Simulator::Destroy ();
+  Config::SetDefault ("ns3::LklSocketFdFactory::Mptcp", BooleanValue (false));
 
   if (!isMptcpEnabled)
     {
@@ -368,8 +391,7 @@ DceMptcpTestSuite::DceMptcpTestSuite ()
   };
 
   Packet::EnablePrinting ();
-  // for the moment: not supported dce cradle for freebsd
-  std::string filePath = SearchExecFile ("DCE_PATH", "liblinux.so", 0);
+  std::string filePath = SearchExecFile ("DCE_PATH", "liblkl.so", 0);
   for (unsigned int i = 0; i < sizeof(tests)/sizeof(testPair); i++)
     {
       if (filePath.length () <= 0)

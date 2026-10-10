@@ -5,6 +5,80 @@ This file contains Direct Code Execution release notes (most recent releases fir
 
 Please refer the page https://www.nsnam.org/projects/direct-code-execution/ for detailed instructions
 
+Changes since dce-1.12 (development, ns-3.49)
+==============================================
+
+New user-visible features
+-------------------------
+- New example dce-wifi-video: real ffmpeg streaming video over simulated
+  802.11n (STA - AP - STA) with the Linux kernel stack or the ns-3 stack,
+  and the stream can be watched live with a player on the host. It also
+  works as a regression test: the received elementary streams must be
+  identical to the sent ones. utils/build_kernel_deps.sh builds the DCE
+  version of ffmpeg, and example/dce-wifi-video-sample.ts is the clip.
+- DCE applications can reach a service of the host over an AF_UNIX socket:
+  the DceHostUnixSocketPaths global value lists the socket path prefixes
+  (e.g. /tmp/.X11-unix/) for which connect() is redirected to a real host
+  socket (model/host-socket-fd.h). This lets X11 clients built for DCE,
+  such as ffmpeg's xv output device (dce-wifi-video --viewer=1), open a
+  window on the host display from inside the simulation. Real-time
+  simulator only.
+- New example dce-browser: the Dillo web browser (FLTK) or Northstar (GTK4,
+  JavaScript), built for DCE by utils/build_kernel_deps.sh when their
+  development packages are installed, browse on the host display a web
+  site served by thttpd on another Wi-Fi station. See doc/source/dce-x11.rst.
+- DceX11Helper::UseSessionBus and UsePulseAudio let DCE applications use
+  the host's D-Bus session bus and PulseAudio server through the host
+  socket passthrough; dce-wifi-video --viewer=1 plays the sound.
+- DcePcapCheck reads ns-3 captures back (802.11 with A-MPDU, Ethernet, raw
+  IP); dce-wifi-video and dce-browser check the traffic they expect in the
+  capture before exiting. dce-browser also runs numbers-server, a tiny HTTP
+  server whose page polls it from JavaScript, and serves the video sample,
+  also as an MPEG-1 program stream that Northstar's <video> player plays
+  (with sound through PulseAudio when built with its SDL2 mixer).
+- dlsym(RTLD_DEFAULT, ...) now searches the modules loaded for the DCE
+  process rather than the simulator's own (SDL2 crashed in glibc's
+  pthread_setname_np otherwise); programs with their own thread local
+  variables must be linked so that they use dynamic TLS (see the Northstar
+  recipe in utils/build_kernel_deps.sh).
+- Thread switches no longer walk the whole heap of the process (one list
+  entry per 32 KB) unless it was fork()ed: a big win for large programs.
+- With the real-time simulator, a poll() that finds nothing ready with a
+  zero timeout lets the simulated clock catch up with the wall clock
+  instead of advancing it by 1 us. Programs that spin on zero-timeout GLib
+  sources (Northstar while a page loads) no longer drag the whole
+  simulation behind real time, after which it raced to catch up.
+- calloc() skips clearing large blocks, which are fresh, already zeroed
+  anonymous mappings (GTK's software renderer allocates one per frame).
+- malloc() returns 16 byte aligned memory; anonymous mmap() is supported.
+- New example dce-x11-hello and the DceX11Helper class for X11 clients.
+- eventfd(2), epoll(7), pipe2(2) and futex(2) (through syscall(2), as GLib
+  and Rust use it) are now provided to DCE applications, with test-eventfd,
+  test-epoll and test-futex in the test suite. GLib/GIO/GTK4 applications
+  run inside DCE (example/gtk4-hello.cc, run by dce-x11-hello).
+- malloc() and friends return 16 byte aligned memory, like glibc, and
+  posix_memalign/memalign/aligned_alloc are implemented.
+- dce-browser --browserArgs passes options to the browser.
+- Many libm functions, fcntl64/readdir64/mkstemp64, getrlimit64/setrlimit64,
+  clock, __sysv_signal, the POSIX strerror_r, the glibc fortified and C23
+  (__isoc23_*) entry points, SysV shared memory, getpw*_r/getgr*_r and
+  other functions needed by the X11 client libraries are now provided to
+  DCE applications.
+
+Bugs fixed
+----------
+- open64() passed garbage as the file creation mode.
+- socket() with SOCK_NONBLOCK/SOCK_CLOEXEC failed (EINVAL for AF_UNIX,
+  "missing socket type" on the ns-3 stack), as did setsockopt(SO_SNDBUF)
+  on ns-3 UDP sockets.
+- Closing a pipe end whose other end was already closed failed with EBADF.
+- realpath() leaked host paths when the node file system had symbolic links
+  to host directories.
+- The fortified __sprintf_chk() took the buffer size as the format string
+  (crash in FLTK).
+- A task could be rescheduled after its process had exited: TaskManager
+  now refuses to wake up dead tasks.
+
 Release dce-1.12
 ================
 In order to use DCE, please use the bake tool to install DCE.  DCE 1.12

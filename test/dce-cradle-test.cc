@@ -159,8 +159,7 @@ DceCradleTestSuite::DceCradleTestSuite ()
     {"sctp6", "ns3::LinuxSctp6SocketFactory", 20, false},
   };
 
-  // for the moment: not supported mptcp for freebsd
-  std::string filePath = SearchExecFile ("DCE_PATH", "liblinux.so", 0);
+  std::string filePath = SearchExecFile ("DCE_PATH", "liblkl.so", 0);
   for (unsigned int i = 0; i < sizeof(tests)/sizeof(testPair); i++)
     {
       if (filePath.length () <= 0)

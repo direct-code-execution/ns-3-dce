@@ -10,8 +10,11 @@ extern "C" {
 
 int dce_open (const char *path, int flags, ...);
 int dce_open64 (const char *path, int flags, ...);
+int dce___open_2 (const char *path, int flags);
+int dce_posix_fadvise (int fd, off_t offset, off_t len, int advice);
 int dce_creat (const char *path, mode_t mode);
 int dce_fcntl (int fd, int cmd, ...);
+int dce_fcntl64 (int fd, int cmd, ...);
 int dce_unlinkat (int dirfd, const char *pathname, int flags);
 int dce_openat (int dirfd, const char *pathname, int flags, ...);
 int dce_posix_fallocate(int fd, off_t offset, off_t len);

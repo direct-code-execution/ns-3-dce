@@ -24,7 +24,7 @@
 #include "ns3/uinteger.h"
 #include "ns3/event-id.h"
 #include "linux-socket-fd-factory.h"
-#include "kernel-socket-fd.h"
+#include "unix-fd.h"
 #include "linux-socket-impl.h"
 #include "dce-manager.h"
 #include "process.h"
@@ -33,6 +33,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <poll.h>
+#include <sys/ioctl.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <net/if.h>
@@ -143,6 +144,7 @@ LinuxSocketImpl::LinuxSocketImpl ()
   NS_LOG_FUNCTION_NOARGS ();
   m_listening = false;
   m_conn_inprogress = false;
+  m_sendBlocked = false;
   m_pid = -1;
   SetNs3ToPosixConverter (MakeCallback (&LinuxSocketImpl::Ns3AddressToPosixAddress, this));
   SetPosixToNs3Converter (MakeCallback (&LinuxSocketImpl::PosixAddressToNs3Address, this));
@@ -319,6 +321,13 @@ LinuxSocketImpl::Connect (const Address & address)
       m_conn_inprogress = true;
     }
   LeaveFakeTask (pid);
+  if (ret == 0)
+    {
+      // Connectionless sockets (UDP, raw) connect immediately; notify like
+      // ns-3's own sockets do, since applications such as OnOffApplication
+      // only start sending from the connection-succeeded callback.
+      NotifyConnectionSucceeded ();
+    }
   return ret;
 }
 
@@ -350,6 +359,11 @@ LinuxSocketImpl::Send (Ptr<Packet> p, uint32_t flags)
   if (ret < 0)
     {
       NS_LOG_INFO ("send returns " << ret << " errno " << Current ()->err);
+      if (Current ()->err == EAGAIN)
+        {
+          m_sendBlocked = true;
+          m_sendBlockedAt = Simulator::Now ();
+        }
     }
   delete[] buf;
   LeaveFakeTask (pid);
@@ -578,10 +592,6 @@ LinuxSocketImpl::Poll ()
       mask &= (POLLIN | POLLOUT | POLLERR | POLLHUP | POLLRDHUP);
       if (mask)
         {
-          Ptr<LinuxSocketFdFactory> factory = 0;
-          Ptr<Node> node = GetNode ();
-          Ptr<DceManager> manager = node->GetObject<DceManager> ();
-          factory = manager->GetObject<LinuxSocketFdFactory> ();
           if (m_listening)
             {
               struct sockaddr_storage my_addr;
@@ -601,9 +611,9 @@ LinuxSocketImpl::Poll ()
                 {
                   NS_LOG_INFO ("accept error");
                 }
-              KernelSocketFd *kern_sock;
+              UnixFd *kern_sock;
               FileUsage *fu = Current ()->process->openFiles[sock];
-              kern_sock = (KernelSocketFd *)fu->GetFileInc ();
+              kern_sock = fu->GetFileInc ();
               kern_sock->IncFdCount ();
               kern_sock->Fcntl (F_SETFL, O_NONBLOCK);
 
@@ -628,8 +638,20 @@ LinuxSocketImpl::Poll ()
             }
           else
             {
+              // Data that arrived with the end of the connection is
+              // still to be read.
+              int pending = 0;
+              if (mask & POLLIN)
+                {
+                  pid = EnterFakeTask ();
+                  if (this->m_kernsock->Ioctl (FIONREAD, (char *)&pending) < 0)
+                    {
+                      pending = 0;
+                    }
+                  LeaveFakeTask (pid);
+                }
               // FIXME: handle closed socket
-              if (mask & POLLRDHUP || mask & POLLHUP || mask & POLLERR)
+              if ((mask & POLLRDHUP || mask & POLLHUP || mask & POLLERR) && pending == 0)
                 {
                   NS_LOG_FUNCTION ("socket has closed ?" << mask);
                   // FIXME: may need m_closed flag
@@ -645,10 +667,19 @@ LinuxSocketImpl::Poll ()
                 }
               else if (mask & POLLOUT)
                 {
-                  Simulator::ScheduleWithContext (m_node->GetId (), Seconds (0.0),
-                                                  MakeEvent (&LinuxSocketImpl::NotifySend, this, 0));
+                  // Some protocols (e.g. DCCP) report the socket writable
+                  // while sends fail with EAGAIN, and a failed send wakes
+                  // the socket again: notify again only once time went on,
+                  // retrying a little later if the socket does not wake.
+                  bool notify = !m_sendBlocked || Simulator::Now () > m_sendBlockedAt;
+                  if (notify)
+                    {
+                      m_sendBlocked = false;
+                      Simulator::ScheduleWithContext (m_node->GetId (), Seconds (0.0),
+                                                      MakeEvent (&LinuxSocketImpl::NotifySend, this, 0));
+                    }
                   NS_LOG_INFO ("wait send for next poll event");
-                  table->Wait (Seconds (0));
+                  table->Wait (notify ? Seconds (0) : MilliSeconds (1));
                   NS_LOG_INFO ("awaken");
                 }
             }
@@ -702,8 +733,7 @@ LinuxSocketImpl::CreateSocket ()
   NS_LOG_FUNCTION_NOARGS ();
   uint16_t pid = EnterFakeTask ();
   Ptr<LinuxSocketFdFactory> factory = m_node->GetObject<LinuxSocketFdFactory> ();
-  KernelSocketFd *kern_sock = (KernelSocketFd *)
-    factory->CreateSocket (m_family, m_socktype, m_protocol);
+  UnixFd *kern_sock = factory->CreateSocket (m_family, m_socktype, m_protocol);
   LeaveFakeTask (pid);
   if (!kern_sock)
     {

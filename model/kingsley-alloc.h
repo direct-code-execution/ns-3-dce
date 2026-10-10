@@ -7,6 +7,12 @@
 class KingsleyAlloc
 {
 public:
+  // true when Malloc (size) hands out a fresh anonymous mapping, which the
+  // kernel has already zeroed (calloc() then needs no memset).
+  bool IsFreshMapping (uint32_t size) const
+  {
+    return size >= m_defaultMmapSize;
+  }
   KingsleyAlloc (void);
   ~KingsleyAlloc ();
 
@@ -41,7 +47,7 @@ private:
   {
     struct Available *next;
   };
-  void MmapAlloc (uint32_t size);
+  void MmapAlloc (uint32_t size, bool large);
   void MmapFree (uint8_t *buffer, uint32_t size);
   uint8_t * Brk (uint32_t needed);
   uint8_t SizeToBucket (uint32_t size);
@@ -50,6 +56,7 @@ private:
   std::list<struct KingsleyAlloc::MmapChunk> m_chunks;
   struct Available *m_buckets[32];
   uint32_t m_defaultMmapSize;
+  bool m_cloned; // true once the heap is shared with a fork()ed clone
 };
 
 

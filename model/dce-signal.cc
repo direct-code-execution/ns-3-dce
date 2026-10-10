@@ -106,13 +106,34 @@ int dce_sigwait (const sigset_t *set, int *sig)
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << set << sig);
   NS_ASSERT (current != 0);
 
-  int ret = 0;
-  // NEED TO WORK!!
-  // XXX: we need to add signal num notiifcation
-  current->process->manager->Wait ();
-  //  sigdelset (&current->pendingSignals, numnum);
-
-  return ret;
+  while (true)
+    {
+      for (int s = 1; s < NSIG; s++)
+        {
+          if (sigismember (set, s) != 1)
+            {
+              continue;
+            }
+          if (sigismember (&current->pendingSignals, s) == 1
+              || sigismember (&current->process->pendingSignals, s) == 1)
+            {
+              // Consume one occurrence: the thread-directed one first.
+              if (sigismember (&current->pendingSignals, s) == 1)
+                {
+                  sigdelset (&current->pendingSignals, s);
+                }
+              else
+                {
+                  sigdelset (&current->process->pendingSignals, s);
+                }
+              sigemptyset (&current->sigwaitSet);
+              *sig = s;
+              return 0;
+            }
+        }
+      current->sigwaitSet = *set;
+      current->process->manager->Wait ();
+    }
 }
 int dce_sigprocmask (int how, const sigset_t *set, sigset_t *oldset)
 {
@@ -163,5 +184,27 @@ int dce_sigprocmask (int how, const sigset_t *set, sigset_t *oldset)
         return -1;
       }
     }
+  return 0;
+}
+
+// __sysv_signal is what glibc's signal() resolves to in strict ISO C /
+// POSIX mode (no _GNU_SOURCE/_DEFAULT_SOURCE). SysV reset-to-default
+// semantics are not modelled; DCE's own signal() behaviour is used.
+sighandler_t dce___sysv_signal (int signum, sighandler_t handler)
+{
+  return dce_signal (signum, handler);
+}
+
+int dce_raise (int sig)
+{
+  Thread *current = Current ();
+  NS_ASSERT (current != 0);
+  return dce_kill (current->process->pid, sig);
+}
+
+// pthread_atfork() registration used by libraries (libbsd): DCE processes
+// do not fork the simulator, so there is nothing to register.
+int dce___register_atfork (void (*prepare) (void), void (*parent) (void), void (*child) (void), void *dso_handle)
+{
   return 0;
 }

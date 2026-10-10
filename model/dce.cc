@@ -446,6 +446,23 @@ const char * dce_inet_ntop (int af, const void *src,
     }
   return retval;
 }
+// glibc keeps getopt parsing state (e.g. the position inside a cluster of
+// short options) in a hidden static shared by all simulated processes.
+// optind = 0 makes glibc reinitialize it: always on a process' first call,
+// and when another process used getopt last and this one is at the start
+// of its arguments.
+static void
+ResetGetoptIfOtherProcess (Process *process)
+{
+  static Process *lastProcess = 0;
+  if (!process->getoptStarted || (lastProcess != process && optind <= 1))
+    {
+      optind = 0;
+    }
+  process->getoptStarted = true;
+  lastProcess = process;
+}
+
 int dce_getopt (int argc, char * const argv[], const char *optstring)
 {
   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << argc << argv << optstring);
@@ -464,6 +481,7 @@ int dce_getopt (int argc, char * const argv[], const char *optstring)
   optind = *process->poptind;
   opterr = *process->popterr;
   optopt = *process->poptopt;
+  ResetGetoptIfOtherProcess (process);
   int retval = getopt (argc, argv, optstring);
   *process->poptarg = optarg;
   *process->poptind = optind;
@@ -495,6 +513,7 @@ int dce_getopt_long (int argc, char * const argv[], const char *optstring,
   optind = *process->poptind;
   opterr = *process->popterr;
   optopt = *process->poptopt;
+  ResetGetoptIfOtherProcess (process);
   int retval = getopt_long (argc, argv, optstring, longopts, longindex);
   *process->poptarg = optarg;
   *process->poptind = optind;
@@ -675,7 +694,10 @@ unsigned dce_if_nametoindex (const char *ifname)
   Ptr<SocketFdFactory> factory = 0;
   factory = current->process->manager->GetObject<SocketFdFactory> ();
 
-  if (factory->GetInstanceTypeId () == TypeId::LookupByName ("ns3::LinuxSocketFdFactory"))
+  // Kernel stacks know their interfaces; ask them.
+  TypeId tid = factory->GetInstanceTypeId ();
+  if (tid == TypeId::LookupByName ("ns3::LinuxSocketFdFactory")
+      || tid.GetName () == "ns3::LklSocketFdFactory")
     {
       struct ifreq ifr;
       int fd = dce_socket (AF_INET, SOCK_DGRAM, 0);
@@ -685,26 +707,25 @@ unsigned dce_if_nametoindex (const char *ifname)
         }
 
       strncpy (ifr.ifr_name, ifname, sizeof (ifr.ifr_name));
-      if (dce_ioctl (fd, SIOCGIFINDEX, (char *)&ifr) < 0)
+      int ret = dce_ioctl (fd, SIOCGIFINDEX, (char *)&ifr);
+      dce_close (fd);
+      if (ret < 0)
         {
-          current->err = errno;
-          return -1;
+          return 0;
         }
       return ifr.ifr_ifindex;
     }
   else
     {
-      int index = 0;
+      // Interface indexes are NetDevice indexes + 1, as in netlink
+      // messages and socket options.
       Ptr<Node> node = Current ()->process->manager->GetObject<Node> ();
-      Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> ();
-
       for (uint32_t i = 0; i < node->GetNDevices (); ++i)
         {
           Ptr<NetDevice> dev = node->GetDevice (i);
           if (ifname == Names::FindName (dev))
             {
-              index = ipv4->GetInterfaceForDevice (dev);
-              return index;
+              return dev->GetIfIndex () + 1;
             }
         }
       return 0;
@@ -720,7 +741,9 @@ char * dce_if_indextoname (unsigned ifindex, char *ifname)
     }
 
   ifr.ifr_ifindex = ifindex;
-  if (dce_ioctl (fd, SIOCGIFNAME, (char *)&ifr) < 0)
+  int ret = dce_ioctl (fd, SIOCGIFNAME, (char *)&ifr);
+  dce_close (fd);
+  if (ret < 0)
     {
       return 0;
     }
