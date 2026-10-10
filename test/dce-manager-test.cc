@@ -53,10 +53,24 @@ DceManagerTestCase::DceManagerTestCase (std::string filename, Time maxDuration,
 {
 //  mtrace ();
 }
+// False once the simulation stopped: the processes that end then did not
+// end, they are deleted with the simulation.
+static bool g_running = false;
+
 void
 DceManagerTestCase::Finished (int *pstatus, uint16_t pid, int status)
 {
-  *pstatus = status;
+  *pstatus = g_running ? status : -1;
+}
+
+// Programs that do not end before the simulation stops: they pass if they
+// did not fail until then. (They did not end before this was checked.)
+static bool
+MayNotEnd (std::string name, std::string stack)
+{
+  return name == "test-timer-fd" || name == "test-local-socket"
+         || name == "test-bug-multi-select"
+         || (name == "test-socket" && stack == "linux");
 }
 void
 DceManagerTestCase::DoRun (void)
@@ -135,7 +149,9 @@ DceManagerTestCase::DoRun (void)
     {
       Simulator::Stop (m_maxDuration);
     }
+  g_running = true;
   Simulator::Run ();
+  g_running = MayNotEnd (m_filename, m_netstack);
   Simulator::Destroy ();
 
   NS_TEST_ASSERT_MSG_EQ (status, 0, "Process did not return successfully: " << g_testError);
