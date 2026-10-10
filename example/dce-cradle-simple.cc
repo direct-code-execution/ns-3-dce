@@ -134,7 +134,7 @@ main (int argc, char *argv[])
                            InetSocketAddress (interfaces.GetAddress (1), 9));
       if (m_proto.find ("6", 0) != std::string::npos)
         {
-          bulk.SetAttribute ("Remote", AddressValue (Inet6SocketAddress (interfaces6.GetAddress (0, 1), 9)));
+          bulk.SetAttribute ("Remote", AddressValue (Inet6SocketAddress (interfaces6.GetAddress (1, 1), 9)));
         }
 
       // Set the amount of data to send in bytes.  Zero is unlimited.
@@ -171,15 +171,18 @@ main (int argc, char *argv[])
 
   Ptr<PacketSink> pktsink;
   pktsink = apps.Get (0)->GetObject<PacketSink> ();
+  // Every flow must carry data.
+  bool ok = pktsink->GetTotalRx () > 0;
   std::cout << "Total Rx(0) = " << pktsink->GetTotalRx ()
             << " bytes";
   if (m_dual)
     {
       pktsink = apps.Get (1)->GetObject<PacketSink> ();
+      ok = ok && pktsink->GetTotalRx () > 0;
       std::cout << " Total Rx(1) = " << pktsink->GetTotalRx ()
                 << " bytes";
     }
   std::cout << std::endl;
   Simulator::Destroy ();
-  return 0;
+  return ok ? 0 : 1;
 }

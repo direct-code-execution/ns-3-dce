@@ -438,11 +438,9 @@ int dce_socket (int domain, int type, int protocol)
   int fd = UtilsAllocateFd ();
   if (fd == -1)
     {
+      socket->Close ();
+      socket->Unref ();
       current->err = EMFILE;
-      return -1;
-    }
-  if (!socket)
-    {
       return -1;
     }
   socket->IncFdCount ();

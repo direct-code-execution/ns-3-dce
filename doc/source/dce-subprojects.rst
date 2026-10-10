@@ -44,19 +44,15 @@ The `umip <http://umip.org>`_ (Usagi-Patched Mobile IPv6 stack) support on DCE e
 
 For more information, see the latest support `document <http://ns-3-dce-umip.readthedocs.io/en/latest/>`_.
 
-Linux kernel (from 2.6.36 to 3.14 version)
-============================================
-Linux kernel support is built with a separate 'dce-linux' module, 
-available on `github
-<https://github.com/direct-code-execution/net-next-sim>`_. Many
+Linux kernel (6.12)
+===================
+Linux kernel support uses the `Linux Kernel Library (LKL)
+<https://github.com/lkl/linux>`_, built by ``utils/build_lkl.sh``. Many
 protocols implemented in kernel space such as TCP, IPv4/IPv6, Mobile
-IPv6, Multipath-TCP, SCTP, DCCP, etc, are available with ns-3.
-
-FreeBSD kernel (10.0.0 version)
-=========================================
-`FreeBSD kernel support <https://github.com/direct-code-execution/freebsd-sim>`_ is based on Linux kernel module of DCE. A few
-protocols implemented in kernel space such as TCP, IPv4, etc, are
-available with ns-3.
+IPv6, Multipath TCP, SCTP, DCCP, etc, are available with ns-3. It
+replaces the former net-next-sim/libos (Linux up to 4.4) kernel modules;
+the FreeBSD kernel support, which was built on them, was removed with
+them.
 
 
 thttpd

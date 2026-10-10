@@ -37,9 +37,71 @@
 #include "ns3/netanim-module.h"
 #include "ns3/constant-position-mobility-model.h"
 #include "ns3/config-store-module.h"
+#include "ns3/ppp-header.h"
 
 using namespace ns3;
 NS_LOG_COMPONENT_DEFINE ("DceMptcpLteWifi");
+
+// TCP payload bytes the server received from each address of the client.
+static std::map<std::string, uint64_t> g_received;
+
+static void
+ServerRx (Ptr<const Packet> p)
+{
+  Ptr<Packet> packet = p->Copy ();
+  PppHeader ppp;
+  packet->RemoveHeader (ppp);
+  std::ostringstream source;
+  if (ppp.GetProtocol () == 0x0021) // IPv4
+    {
+      Ipv4Header ip;
+      packet->RemoveHeader (ip);
+      if (ip.GetProtocol () != 6)
+        {
+          return;
+        }
+      source << ip.GetSource ();
+    }
+  else if (ppp.GetProtocol () == 0x0057) // IPv6
+    {
+      Ipv6Header ip;
+      packet->RemoveHeader (ip);
+      if (ip.GetNextHeader () != 6)
+        {
+          return;
+        }
+      source << ip.GetSource ();
+    }
+  else
+    {
+      return;
+    }
+  TcpHeader tcp;
+  packet->RemoveHeader (tcp);
+  g_received[source.str ()] += packet->GetSize ();
+}
+
+static std::string
+AddressString (Ipv4Address address)
+{
+  std::ostringstream oss;
+  oss << address;
+  return oss.str ();
+}
+
+// With MPTCP, every path carries data.
+static int
+CheckPaths (std::vector<std::string> addresses)
+{
+  bool ok = true;
+  for (uint32_t i = 0; i < addresses.size (); i++)
+    {
+      uint64_t bytes = g_received[addresses[i]];
+      std::cout << "received from " << addresses[i] << ": " << bytes << " bytes" << std::endl;
+      ok = ok && bytes > 0;
+    }
+  return ok ? 0 : 1;
+}
 
 void setPos (Ptr<Node> n, int x, int y, int z)
 {
@@ -84,6 +146,8 @@ int main (int argc, char *argv[])
   routers.Create (1);
 
   DceManagerHelper dceManager;
+  // The applications' TCP sockets are MPTCP sockets (Linux MPTCP).
+  Config::SetDefault ("ns3::LklSocketFdFactory::Mptcp", BooleanValue (true));
   dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory",
                               "Library", StringValue ("liblinux.so"));
   LinuxStackHelper stack;
@@ -104,6 +168,7 @@ int main (int argc, char *argv[])
   address1.SetBase ("10.1.0.0", "255.255.255.0");
   address2.SetBase ("10.2.0.0", "255.255.255.0");
   Ipv4InterfaceContainer if1, if2;
+  std::vector<std::string> paths; // the client's addresses
   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("2Mbps"));
   pointToPoint.SetChannelAttribute ("Delay", StringValue (p2pdelay));
   Ptr<RateErrorModel> em1 =
@@ -130,6 +195,7 @@ int main (int argc, char *argv[])
 
       // Assign ip addresses
       if1 = epcHelper->AssignUeIpv4Address (NetDeviceContainer (ueLteDevs));
+      paths.push_back (AddressString (if1.GetAddress (0, 0)));
       lteHelper->Attach (ueLteDevs.Get(0), enbLteDevs.Get(0));
 
       // setup ip routes
@@ -169,6 +235,7 @@ int main (int argc, char *argv[])
       devices1 = wifi.Install (phy, mac, NodeContainer (nodes.Get (0), routers.Get (0)));
       // Assign ip addresses
       if1 = address1.Assign (devices1);
+      paths.push_back (AddressString (if1.GetAddress (0, 0)));
       address1.NewNetwork ();
       // setup ip routes
       cmd_oss.str ("");
@@ -185,6 +252,11 @@ int main (int argc, char *argv[])
       cmd_oss.str ("");
       cmd_oss << "route add 10.1.0.0/16 via " << if1.GetAddress (0, 0) << " dev sim0";
       LinuxStackHelper::RunIp (routers.Get (0), Seconds (0.2), cmd_oss.str ().c_str ());
+      // MPTCP: a subflow over WiFi
+      cmd_oss.str ("");
+      cmd_oss << "mptcp endpoint add " << if1.GetAddress (0, 0) << " dev sim"
+              << devices1.Get (0)->GetIfIndex () << " subflow";
+      LinuxStackHelper::RunIp (nodes.Get (0), Seconds (0.5), cmd_oss.str ().c_str ());
 
       // Global default route
       if (disLte)
@@ -222,10 +294,19 @@ int main (int argc, char *argv[])
       cmd_oss.str ("");
       cmd_oss << "route add 10.1.0.0/16 via " << if2.GetAddress (1, 0) << " dev sim" << 1 << " table " << (2);
       LinuxStackHelper::RunIp (nodes.Get (1), Seconds (0.1), cmd_oss.str ().c_str ());
+      // The WiFi subflow reaches node 1's LTE-side address (10.2.0.1),
+      // and node 1 replies to it from that address: route the WiFi
+      // network back through the WiFi router.
       cmd_oss.str ("");
-      cmd_oss << "route add 10.2.0.0/16 via " << if2.GetAddress (1, 0) << " dev sim1";
+      cmd_oss << "route add 10.1.0.0/16 via " << if2.GetAddress (1, 0) << " dev sim"
+              << devices2.Get (0)->GetIfIndex ();
+      LinuxStackHelper::RunIp (nodes.Get (1), Seconds (0.1), cmd_oss.str ().c_str ());
+      cmd_oss.str ("");
+      cmd_oss << "route add 10.2.0.0/16 via " << if2.GetAddress (0, 0) << " dev sim1";
       LinuxStackHelper::RunIp (routers.Get (0), Seconds (0.2), cmd_oss.str ().c_str ());
-      setPos (routers.Get (0), 70, 30, 0);
+      // Within WiFi range of node 0: ns-3 no longer detects frames below
+      // -82 dBm, which the farther position (91 m) gave.
+      setPos (routers.Get (0), 0, 30, 0);
     }
 
   // default route
@@ -237,7 +318,11 @@ int main (int argc, char *argv[])
   LinuxStackHelper::RunIp (nodes.Get (1), Seconds (5.1), "route show table all");
 
   // debug
-  stack.SysctlSet (nodes, ".net.mptcp.mptcp_debug", "1");
+  for (uint32_t n = 0; n < 2; n++)
+    {
+      LinuxStackHelper::RunIp (nodes.Get (n), Seconds (0.5), "mptcp limits set subflows 4 add_addr_accepted 4");
+    }
+  stack.SysctlSet (routers, ".net.ipv4.conf.all.forwarding", "1");
 
 #if 1
   LinuxStackHelper::SysctlGet (nodes.Get (0), NanoSeconds (0),
@@ -309,9 +394,9 @@ int main (int argc, char *argv[])
   dce.SetBinary ("iperf");
   dce.ResetArguments ();
   dce.ResetEnvironment ();
+  // Not -P 1: Linux MPTCP accepts the subflows of a connection on its
+  // listener.
   dce.AddArgument ("-s");
-  dce.AddArgument ("-P");
-  dce.AddArgument ("1");
 #if 0
   if (bufSize.length () != 0)
     {
@@ -334,9 +419,13 @@ int main (int argc, char *argv[])
   outputConfig2.ConfigureDefaults ();
   outputConfig2.ConfigureAttributes ();
 
+  Config::ConnectWithoutContext ("/NodeList/" + std::to_string (nodes.Get (1)->GetId ())
+                                 + "/DeviceList/*/$ns3::PointToPointNetDevice/PhyRxEnd",
+                                 MakeCallback (&ServerRx));
+
   Simulator::Stop (Seconds (stopTime));
   Simulator::Run ();
   Simulator::Destroy ();
 
-  return 0;
+  return CheckPaths (paths);
 }

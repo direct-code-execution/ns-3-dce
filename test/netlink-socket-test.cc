@@ -369,6 +369,21 @@ NetlinkSocketTestCase::TestInferfaceInfoMessage ()
 
   NS_TEST_ASSERT_MSG_EQ ((multinlmsg.GetNMessages () > 1) && (multinlmsg.GetMessage (0).GetMsgType () == NETLINK_RTM_NEWLINK),
                          true, "msg might be incorrect");
+
+  // Linux interface indexes start at 1; devices without a parent device
+  // are their own link.
+  for (uint32_t i = 0; i < multinlmsg.GetNMessages (); i++)
+    {
+      if (multinlmsg.GetMessage (i).GetMsgType () != NETLINK_RTM_NEWLINK)
+        {
+          continue;
+        }
+      InterfaceInfoMessage ifi = multinlmsg.GetMessage (i).GetInterfaceInfoMessage ();
+      NS_TEST_ASSERT_MSG_EQ (ifi.GetInterfaceIndex (), (int32_t)(i + 1), "interface index");
+      NetlinkAttribute link;
+      NS_TEST_ASSERT_MSG_EQ (ifi.GetAttributeByType (link, InterfaceInfoMessage::IFL_A_LINK), true, "IFLA_LINK");
+      NS_TEST_ASSERT_MSG_EQ (link.GetAttrPayload ().GetU32 (), (uint32_t)ifi.GetInterfaceIndex (), "IFLA_LINK");
+    }
 }
 
 void

@@ -2,6 +2,12 @@
 Kernel Developer Information
 ****************************
 
+.. note::
+
+   This page describes the former kernel support, net-next-sim and libos
+   (Linux up to 4.4), which DCE no longer uses: DCE now runs the Linux
+   Kernel Library (LKL); see :doc:`dce-user-kernel`.
+
 This technical documentation is intended for developers who want to build a Linux kernel in order to use with DCE.
 A first part will describe the architecture and the second will show how we went from a net-next kernel 2.6 has a Linux kernel-stable 3.4.5.
 
