@@ -34,6 +34,7 @@
 #include "ns3/internet-module.h"
 #include "ns3/dce-module.h"
 #include "ns3/point-to-point-helper.h"
+#include "ns3/ppp-header.h"
 #include "ns3/wifi-module.h"
 #include "ns3/lte-module.h"
 #include "ns3/yans-wifi-helper.h"
@@ -43,6 +44,59 @@
 
 using namespace ns3;
 NS_LOG_COMPONENT_DEFINE ("DceMptcpLteWifiV6");
+
+// TCP payload bytes the server received from each address of the client.
+static std::map<std::string, uint64_t> g_received;
+
+static void
+ServerRx (Ptr<const Packet> p)
+{
+  Ptr<Packet> packet = p->Copy ();
+  PppHeader ppp;
+  packet->RemoveHeader (ppp);
+  std::ostringstream source;
+  if (ppp.GetProtocol () == 0x0021) // IPv4
+    {
+      Ipv4Header ip;
+      packet->RemoveHeader (ip);
+      if (ip.GetProtocol () != 6)
+        {
+          return;
+        }
+      source << ip.GetSource ();
+    }
+  else if (ppp.GetProtocol () == 0x0057) // IPv6
+    {
+      Ipv6Header ip;
+      packet->RemoveHeader (ip);
+      if (ip.GetNextHeader () != 6)
+        {
+          return;
+        }
+      source << ip.GetSource ();
+    }
+  else
+    {
+      return;
+    }
+  TcpHeader tcp;
+  packet->RemoveHeader (tcp);
+  g_received[source.str ()] += packet->GetSize ();
+}
+
+// With MPTCP, every path carries data.
+static int
+CheckPaths (std::vector<std::string> addresses)
+{
+  bool ok = true;
+  for (uint32_t i = 0; i < addresses.size (); i++)
+    {
+      uint64_t bytes = g_received[addresses[i]];
+      std::cout << "received from " << addresses[i] << ": " << bytes << " bytes" << std::endl;
+      ok = ok && bytes > 0;
+    }
+  return ok ? 0 : 1;
+}
 
 
 static void AddAddress (Ptr<Node> node, Time at, const char *name, const char *address)
@@ -150,11 +204,18 @@ int main (int argc, char *argv[])
   mac.SetType ("ns3::StaWifiMac",
                "Ssid", SsidValue (ssid1),
                "ActiveProbing", BooleanValue (false));
-  wifi.Install (phy, mac, mn);
+  NetDeviceContainer mnWifi = wifi.Install (phy, mac, mn);
   // setup ap.
   mac.SetType ("ns3::ApWifiMac",
                "Ssid", SsidValue (ssid1));
-  wifi.Install (phy, mac, ar.Get (0));
+  NetDeviceContainer arWifi = wifi.Install (phy, mac, ar.Get (0));
+
+  // The addresses MN gets from AR1's router advertisements (EUI-64), and
+  // AR1's link-local address: MN's default router.
+  std::ostringstream mnAddr, arLinkLocal;
+  mnAddr << Ipv6Address::MakeAutoconfiguredAddress (mnWifi.Get (0)->GetAddress (),
+                                                    Ipv6Address ("2001:1:2:4::"));
+  arLinkLocal << Ipv6Address::MakeAutoconfiguredLinkLocalAddress (arWifi.Get (0)->GetAddress ());
 
 
   DceManagerHelper dceMng;
@@ -223,6 +284,8 @@ int main (int argc, char *argv[])
   // Assign ip addresses
   Ipv4InterfaceContainer if1;
   if1 = epcHelper->AssignUeIpv4Address (NetDeviceContainer (ueLteDevs));
+  std::ostringstream lteAddr;
+  lteAddr << if1.GetAddress (0, 0);
   lteHelper->Attach (ueLteDevs.Get(0), enbLteDevs.Get(0));
 
   // setup ip routes
@@ -263,9 +326,12 @@ int main (int argc, char *argv[])
   LinuxStackHelper::RunIp (mn.Get (0), Seconds (0.11), "link set lo up");
   LinuxStackHelper::RunIp (mn.Get (0), Seconds (0.11), "link set sim0 up");
   LinuxStackHelper::RunIp (mn.Get (0), Seconds (0.11), "link set sim1 up");
-  LinuxStackHelper::RunIp (mn.Get (0), Seconds (0.20), "-6 rule add from 2001:1:2:4:200:ff:fe00:a table 2");
-  LinuxStackHelper::RunIp (mn.Get (0), Seconds (0.20), "route add default via fe80::200:ff:fe00:b dev sim1 table 2");
-  LinuxStackHelper::RunIp (mn.Get (0), Seconds (0.20), "route add default via fe80::200:ff:fe00:b dev sim1");
+  // The address is also configured statically, so that MN has it when the
+  // server announces its IPv6 address, before AR1's first advertisement.
+  AddAddress (mn.Get (0), Seconds (0.20), "sim1", (mnAddr.str () + "/64").c_str ());
+  LinuxStackHelper::RunIp (mn.Get (0), Seconds (0.20), "-6 rule add from " + mnAddr.str () + " table 2");
+  LinuxStackHelper::RunIp (mn.Get (0), Seconds (0.20), "route add default via " + arLinkLocal.str () + " dev sim1 table 2");
+  LinuxStackHelper::RunIp (mn.Get (0), Seconds (0.20), "route add default via " + arLinkLocal.str () + " dev sim1");
   // disable default injection from ra
   stack.SysctlSet (mn, ".net.ipv6.conf.sim1.accept_ra_defrtr", "0");
 
@@ -280,14 +346,15 @@ int main (int argc, char *argv[])
   LinuxStackHelper::RunIp (mn.Get (0), Seconds (49.0), "route show table all");
   LinuxStackHelper::RunIp (mn.Get (0), Seconds (49.0), "-6 rule show");
   LinuxStackHelper::RunIp (mn.Get (0), Seconds (10.0), "route show table all");
-  LinuxStackHelper::RunIp (mn.Get (0), Seconds (10.1), "route get 2001:1:2:3::1 from 2001:1:2:4:200:ff:fe00:a");
+  LinuxStackHelper::RunIp (mn.Get (0), Seconds (10.1), "route get 2001:1:2:3::1 from " + mnAddr.str ());
 
-  // MPTCP: a subflow from the address the mobile node gets on its second
-  // interface (Linux MPTCP does not open subflows from new addresses by
-  // itself).
+  // MPTCP: an IPv6 subflow over Wi-Fi (Linux MPTCP does not open subflows
+  // from new addresses by itself). The connection starts over IPv4 (LTE):
+  // the server announces its IPv6 address, the peer of that subflow.
   LinuxStackHelper::RunIp (mn.Get (0), Seconds (0.5), "mptcp limits set subflows 4 add_addr_accepted 4");
   LinuxStackHelper::RunIp (sv.Get (0), Seconds (0.5), "mptcp limits set subflows 4 add_addr_accepted 4");
-  LinuxStackHelper::RunIp (mn.Get (0), Seconds (9.0), "mptcp endpoint add 2001:1:2:4:200:ff:fe00:a dev sim1 subflow");
+  LinuxStackHelper::RunIp (sv.Get (0), Seconds (0.5), "mptcp endpoint add 2001:1:2:3::1 dev sim0 signal");
+  LinuxStackHelper::RunIp (mn.Get (0), Seconds (9.0), "mptcp endpoint add " + mnAddr.str () + " dev sim1 subflow");
 
   {
     ApplicationContainer apps;
@@ -313,9 +380,11 @@ int main (int argc, char *argv[])
     dce.ResetEnvironment ();
     dce.AddArgument ("-V");
     dce.AddArgument ("-c");
+    // The IPv4-mapped IPv6 address: an IPv6 MPTCP socket, which can have
+    // IPv6 subflows besides the initial IPv4 one.
     std::string sv_addr = sv_sim0_v4;
     sv_addr.replace (sv_addr.find ("/"), 3, "\0  ");
-    dce.AddArgument (sv_addr);
+    dce.AddArgument ("::ffff:" + sv_addr);
     dce.AddArgument ("-i");
     dce.AddArgument ("1");
     dce.AddArgument ("--time");
@@ -332,9 +401,16 @@ int main (int argc, char *argv[])
   phy.EnablePcapAll ("dce-mptcp-lte-wifi-v6");
   p2p.EnablePcapAll ("dce-mptcp-lte-wifi-v6");
 
+  Config::ConnectWithoutContext ("/NodeList/" + std::to_string (sv.Get (0)->GetId ())
+                                 + "/DeviceList/*/$ns3::PointToPointNetDevice/PhyRxEnd",
+                                 MakeCallback (&ServerRx));
+
   Simulator::Stop (Seconds (50.0));
   Simulator::Run ();
   Simulator::Destroy ();
 
-  return 0;
+  std::vector<std::string> paths;
+  paths.push_back (lteAddr.str ());
+  paths.push_back (mnAddr.str ());
+  return CheckPaths (paths);
 }
