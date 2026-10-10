@@ -96,7 +96,7 @@ int main (int argc, char *argv[])
   positionAlloc->Add (Vector (50.0, -75.0, 0.0)); // SV
   positionAlloc->Add (Vector (50.0, -50.0, 0.0)); // R
   positionAlloc->Add (Vector (0.0, 10.0, 0.0)); // AR1
-  positionAlloc->Add (Vector (100.0, 10.0, 0.0)); // AR2
+  positionAlloc->Add (Vector (80.0, 10.0, 0.0)); // AR2
   mobility.SetPositionAllocator (positionAlloc);
   mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
   mobility.Install (sv);
@@ -118,6 +118,9 @@ int main (int argc, char *argv[])
                              "Pause", StringValue ("ns3::ConstantRandomVariable[Constant=0.2]"));
   mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
   mobility.Install (mn);
+  // Within reach of both access points (ns-3 no longer detects frames
+  // below -82 dBm, about 50 m away here).
+  mn.Get (0)->GetObject<MobilityModel> ()->SetPosition (Vector (40.0, 10.0, 0.0));
 
 
   // backend
@@ -232,7 +235,9 @@ int main (int argc, char *argv[])
   LinuxStackHelper::RunIp (mn.Get (0), Seconds (2.0), "link set sim1 up");
   LinuxStackHelper::RunIp (mn.Get (0), Seconds (0.20), "-6 rule add from 2001:1:2:7:200:ff:fe00:9 table 3");
   //  LinuxStackHelper::RunIp (mn.Get (0), Seconds (0.20), "route add default via fe80::200:ff:fe00:a dev sim1");
-  LinuxStackHelper::RunIp (mn.Get (0), Seconds (0.20), "route add default via fe80::200:ff:fe00:a dev sim1 table 3");
+  // Once sim1 is up.
+  LinuxStackHelper::RunIp (mn.Get (0), Seconds (2.10), "route add default via fe80::200:ff:fe00:a dev sim1 table 3");
+  LinuxStackHelper::RunIp (mn.Get (0), Seconds (15.20), "-6 rule add from 2001:1:2:7::3939 table 3");
   LinuxStackHelper::RunIp (mn.Get (0), Seconds (15.20), "-6 addr change 2001:1:2:7::3939/64 dev sim1");
   LinuxStackHelper::RunIp (mn.Get (0), Seconds (18.20), "-6 addr flush dev sim1");
   // disable default injection from ra
@@ -257,7 +262,8 @@ int main (int argc, char *argv[])
   LinuxStackHelper::RunIp (mn.Get (0), Seconds (0.5), "mptcp limits set subflows 4 add_addr_accepted 4");
   LinuxStackHelper::RunIp (sv.Get (0), Seconds (0.5), "mptcp limits set subflows 4 add_addr_accepted 4");
   LinuxStackHelper::RunIp (mn.Get (0), Seconds (9.0), "mptcp endpoint add 2001:1:2:7:200:ff:fe00:9 dev sim1 subflow");
-  LinuxStackHelper::RunIp (mn.Get (0), Seconds (15.3), "mptcp endpoint add 2001:1:2:7::3939 dev sim1 subflow");
+  // Once duplicate address detection is over (about 1 s).
+  LinuxStackHelper::RunIp (mn.Get (0), Seconds (17.0), "mptcp endpoint add 2001:1:2:7::3939 dev sim1 subflow");
   Config::ConnectWithoutContext ("/NodeList/" + std::to_string (sv.Get (0)->GetId ())
                                  + "/DeviceList/0/$ns3::PointToPointNetDevice/PhyRxEnd",
                                  MakeCallback (&ServerRx));
