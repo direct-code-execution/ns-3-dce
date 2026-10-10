@@ -258,6 +258,7 @@ def dce_kw(**kw):
 def build_dce_tests(module, bld):
     tests_source = [
         'test/dce-manager-test.cc',
+        'test/ipv4-dce-routing-test.cc',
     ]
     if bld.env['LINUX_STACK']:
         tests_source += [

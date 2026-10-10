@@ -70,20 +70,18 @@ Ipv4DceRouting::RouteInput (Ptr<const Packet> p, const Ipv4Header &header, Ptr<c
 {
   NS_LOG_FUNCTION (this << p << header << idev);
 
-  if (Ipv4StaticRouting::RouteInput (p, header, idev, ucb, mcb, lcb, ecb))
-    {
-      return true;
-    }
   // ns-3 only hands packets to raw sockets on local delivery, and
-  // Ipv4StaticRouting does not locally deliver multicast without a multicast
-  // route. Deliver it so that applications such as routing daemons, which
-  // listen on raw sockets for groups like 224.0.0.5, receive it.
+  // Ipv4StaticRouting does not locally deliver multicast: it only forwards
+  // it, with a multicast route. Deliver it too, so that applications such as
+  // routing daemons, which listen on raw sockets for groups like 224.0.0.5,
+  // receive it.
   if (header.GetDestination ().IsMulticast () && !lcb.IsNull ())
     {
       lcb (p, header, m_ipv4->GetInterfaceForDevice (idev));
+      Ipv4StaticRouting::RouteInput (p, header, idev, ucb, mcb, lcb, ecb);
       return true;
     }
-  return false;
+  return Ipv4StaticRouting::RouteInput (p, header, idev, ucb, mcb, lcb, ecb);
 }
 
 void
