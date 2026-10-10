@@ -117,8 +117,15 @@ int dce_sigwait (const sigset_t *set, int *sig)
           if (sigismember (&current->pendingSignals, s) == 1
               || sigismember (&current->process->pendingSignals, s) == 1)
             {
-              sigdelset (&current->pendingSignals, s);
-              sigdelset (&current->process->pendingSignals, s);
+              // Consume one occurrence: the thread-directed one first.
+              if (sigismember (&current->pendingSignals, s) == 1)
+                {
+                  sigdelset (&current->pendingSignals, s);
+                }
+              else
+                {
+                  sigdelset (&current->process->pendingSignals, s);
+                }
               sigemptyset (&current->sigwaitSet);
               *sig = s;
               return 0;

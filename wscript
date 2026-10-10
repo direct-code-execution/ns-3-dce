@@ -315,7 +315,7 @@ def build_dce_tests(module, bld):
              ['test-socket', []],
              ['test-bug-multi-select', []],
              ['test-tsearch', []],
-             ['test-signal', []],
+             ['test-signal', ['PTHREAD']],
              ['test-clock-gettime', []],
              ['test-gcc-builtin-apply', []],
              ['test-iostream', []],
