@@ -4,6 +4,7 @@
 #include "ns3/uinteger.h"
 #include "ns3/boolean.h"
 #include "ns3/string.h"
+#include "ns3/names.h"
 #include "ns3/internet-stack-helper.h"
 #include "ns3/dce-module.h"
 #include "ns3/ipv4-dce-routing-helper.h"
@@ -126,6 +127,8 @@ DceManagerTestCase::DoRun (void)
           Ipv4DceRoutingHelper ipv4RoutingHelper;
           stack.SetRoutingHelper (ipv4RoutingHelper);
           stack.Install (nodes);
+          // Named like the kernel's loopback device.
+          Names::Add ("lo", nodes.Get (0)->GetDevice (0));
         }
     }
   else
@@ -153,6 +156,7 @@ DceManagerTestCase::DoRun (void)
   Simulator::Run ();
   g_running = MayNotEnd (m_filename, m_netstack);
   Simulator::Destroy ();
+  Names::Clear ();
 
   NS_TEST_ASSERT_MSG_EQ (status, 0, "Process did not return successfully: " << g_testError);
 }
@@ -221,6 +225,7 @@ DceManagerTestSuite::DceManagerTestSuite ()
     {  "test-clock-gettime", 0, "", false, false, NS3_MASK|LINUX_MASK},
     {  "test-gcc-builtin-apply", 0, "", false, false, NS3_MASK|LINUX_MASK},
     {  "test-signal", 30, "", false, false, NS3_MASK|LINUX_MASK},
+    {  "test-ifindex", 30, "", true, false, NS3_MASK|LINUX_MASK},
   };
 
   // Prepare directories and files for test-stdio

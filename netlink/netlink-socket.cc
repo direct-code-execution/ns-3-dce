@@ -953,7 +953,8 @@ NetlinkSocket::BuildInterfaceInfoDumpMessage (uint32_t interface_num, uint32_t s
   ifinfomsg.AppendAttribute (NetlinkAttribute (InterfaceInfoMessage::IFL_A_ADDRESS,   ADDRESS, mac));
   ifinfomsg.AppendAttribute (NetlinkAttribute (InterfaceInfoMessage::IFL_A_BROADCAST, ADDRESS, bcast));
   ifinfomsg.AppendAttribute (NetlinkAttribute (InterfaceInfoMessage::IFL_A_MTU,       U32,     mtu));
-  ifinfomsg.AppendAttribute (NetlinkAttribute (InterfaceInfoMessage::IFL_A_LINK,      U32,     interface_num));
+  // The device itself (no parent device), like Linux for unstacked devices.
+  ifinfomsg.AppendAttribute (NetlinkAttribute (InterfaceInfoMessage::IFL_A_LINK,      U32,     interface_num + 1));
   //ifinfomsg.AppendAttribute (NetlinkAttribute (InterfaceInfoMessage::IFL_A_QDISC,     STRING,  ""));
   //ifinfomsg.AppendAttribute (NetlinkAttribute (InterfaceInfoMessage::IFL_A_MASTER,    U32,     0));
   //ifinfomsg.AppendAttribute (NetlinkAttribute (InterfaceInfoMessage::IFL_A_STATS,     UNSPEC,  0));

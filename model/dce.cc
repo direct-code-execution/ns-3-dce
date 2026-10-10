@@ -717,17 +717,15 @@ unsigned dce_if_nametoindex (const char *ifname)
     }
   else
     {
-      int index = 0;
+      // Interface indexes are NetDevice indexes + 1, as in netlink
+      // messages and socket options.
       Ptr<Node> node = Current ()->process->manager->GetObject<Node> ();
-      Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> ();
-
       for (uint32_t i = 0; i < node->GetNDevices (); ++i)
         {
           Ptr<NetDevice> dev = node->GetDevice (i);
           if (ifname == Names::FindName (dev))
             {
-              index = ipv4->GetInterfaceForDevice (dev);
-              return index;
+              return dev->GetIfIndex () + 1;
             }
         }
       return 0;

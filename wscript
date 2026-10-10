@@ -316,6 +316,7 @@ def build_dce_tests(module, bld):
              ['test-bug-multi-select', []],
              ['test-tsearch', []],
              ['test-signal', ['PTHREAD']],
+             ['test-ifindex', []],
              ['test-clock-gettime', []],
              ['test-gcc-builtin-apply', []],
              ['test-iostream', []],
