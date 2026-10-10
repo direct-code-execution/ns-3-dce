@@ -173,6 +173,7 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
       // msg->msg_controllen = 0; // why???
     }
 
+again:
   if (!WaitRecvDoSignal (flags & MSG_DONTWAIT))
     {
       // current->err set by call above.
@@ -198,6 +199,13 @@ UnixDatagramSocketFd::DoRecvmsg (struct msghdr *msg, int flags)
     {
       Ipv6Header ipv6Header;
       packet->RemoveHeader (ipv6Header);
+      // ICMP6_FILTER (the filter is set on ICMPv6 sockets only)
+      uint8_t type;
+      if (m_icmp6FilterSet && !(flags & MSG_PEEK)
+          && packet->CopyData (&type, 1) == 1 && ICMP6_FILTER_WILLBLOCK (type, &m_icmp6Filter))
+        {
+          goto again;
+        }
     }
   if ((PacketSocketAddress::IsMatchingType (from)))
     {

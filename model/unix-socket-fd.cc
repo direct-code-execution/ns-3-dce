@@ -58,7 +58,8 @@ UnixSocketFd::UnixSocketFd (Ptr<Socket> socket)
   : m_socket (socket),
     m_sendTimeout (Seconds (0.0)),
     m_recvTimeout (Seconds (0.0)),
-    m_peekedData (0)
+    m_peekedData (0),
+    m_icmp6FilterSet (false)
 {
   m_socket->SetRecvCallback (MakeCallback (&UnixSocketFd::RecvSocketData, this));
   m_socket->SetSendCallback (MakeCallback (&UnixSocketFd::SendSocketData, this));
@@ -519,15 +520,20 @@ UnixSocketFd::Setsockopt (int level, int optname,
         {
         case ICMP6_FILTER:
           {
+            if (m_socket->GetInstanceTypeId ().GetName () != "ns3::Ipv6RawSocketImpl")
+              {
+                current->err = ENOPROTOOPT;
+                return -1;
+              }
             if (optlen != sizeof (struct icmp6_filter))
               {
                 current->err = EINVAL;
                 return -1;
               }
-            // ns-3 does not expose its ICMPv6 raw socket filter; accept the
-            // option and deliver all ICMPv6 types (applications such as
-            // zebra check the type of every message they read).
-            NS_LOG_WARN ("ICMP6_FILTER accepted but not applied");
+            // ns-3 does not expose its ICMPv6 raw socket filter: applied
+            // when receiving.
+            memcpy (&m_icmp6Filter, optval, sizeof (m_icmp6Filter));
+            m_icmp6FilterSet = true;
           } break;
         default:
           NS_LOG_WARN ("Unsupported setsockopt requested. level: IPPROTO_ICMPV6, optname: " << optname);
@@ -553,6 +559,22 @@ UnixSocketFd::Getsockopt (int level, int optname,
 
   switch (level)
     {
+    case IPPROTO_ICMPV6:
+      if (optname != ICMP6_FILTER || *optlen < (socklen_t) sizeof (struct icmp6_filter))
+        {
+          current->err = optname != ICMP6_FILTER ? ENOPROTOOPT : EINVAL;
+          return -1;
+        }
+      if (m_icmp6FilterSet)
+        {
+          memcpy (optval, &m_icmp6Filter, sizeof (m_icmp6Filter));
+        }
+      else
+        {
+          ICMP6_FILTER_SETPASSALL ((struct icmp6_filter *)optval);
+        }
+      *optlen = sizeof (struct icmp6_filter);
+      break;
     case SOL_RAW:
       switch (optname)
         {
