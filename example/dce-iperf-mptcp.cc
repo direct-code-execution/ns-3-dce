@@ -9,7 +9,7 @@
 
 using namespace ns3;
 
-// Bytes the server received from each address of the client.
+// TCP payload bytes the server received from each address of the client.
 static std::map<Ipv4Address, uint64_t> g_received;
 
 static void
@@ -22,6 +22,12 @@ ServerRx (Ptr<const Packet> p)
   if (ppp.GetProtocol () == 0x0021) // IPv4
     {
       packet->RemoveHeader (ip);
+      if (ip.GetProtocol () != 6)
+        {
+          return;
+        }
+      TcpHeader tcp;
+      packet->RemoveHeader (tcp);
       g_received[ip.GetSource ()] += packet->GetSize ();
     }
 }
@@ -40,6 +46,14 @@ int main (int argc, char *argv[])
   CommandLine cmd;
   cmd.AddValue ("nRtrs", "Number of routers. Default 2", nRtrs);
   cmd.Parse (argc, argv);
+  // The client opens subflows between all its addresses and all the
+  // server's (fullmesh): nRtrs * nRtrs - 1 additional subflows, and Linux
+  // MPTCP allows at most 8.
+  if (nRtrs < 1 || nRtrs > 3)
+    {
+      std::cerr << "nRtrs must be from 1 to 3" << std::endl;
+      return 1;
+    }
 
   NodeContainer nodes, routers;
   nodes.Create (2);
@@ -122,11 +136,13 @@ int main (int argc, char *argv[])
 
   stack.SysctlSet (routers, ".net.ipv4.conf.all.forwarding", "1");
 
-  // MPTCP: up to 4 subflows per connection; the client opens subflows from
-  // its other addresses, the server announces its other addresses.
+  // MPTCP: the client opens subflows from its other addresses, the server
+  // announces its other addresses.
+  cmd_oss.str ("");
+  cmd_oss << "mptcp limits set subflows " << nRtrs * nRtrs - 1 << " add_addr_accepted " << nRtrs - 1;
   for (uint32_t n = 0; n < 2; n++)
     {
-      LinuxStackHelper::RunIp (nodes.Get (n), Seconds (0.5), "mptcp limits set subflows 4 add_addr_accepted 4");
+      LinuxStackHelper::RunIp (nodes.Get (n), Seconds (0.5), cmd_oss.str ().c_str ());
     }
   for (uint32_t i = 1; i < nRtrs; i++)
     {
