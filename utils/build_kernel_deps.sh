@@ -50,15 +50,34 @@ fetch_git () {
             git -C "${SRC}/$3" -c advice.detachedHead=false checkout -q "$2"
         fi
     fi
+    # A source tree from an earlier run must be at the same revision.
+    if [ "$(git -C "${SRC}/$3" rev-parse HEAD)" != \
+         "$(git -C "${SRC}/$3" rev-parse -q --verify "$2^{commit}")" ]; then
+        echo "${SRC}/$3 is not at $2: delete it to fetch it again." >&2
+        exit 1
+    fi
 }
 
 fetch_tar () {
-    # fetch_tar <url> <dir>
+    # fetch_tar <url> <dir> <sha256>
     if [ ! -d "${SRC}/$2" ]; then
         wget -q -O "${SRC}/$2.tar" "$1"
+        if ! echo "$3  ${SRC}/$2.tar" | sha256sum -c --quiet - > /dev/null 2>&1; then
+            echo "Wrong checksum for $1" >&2
+            rm -f "${SRC}/$2.tar"
+            exit 1
+        fi
         tar xf "${SRC}/$2.tar" -C "${SRC}"
         rm -f "${SRC}/$2.tar"
     fi
+}
+
+apply_patch () {
+    # apply_patch <patch>, in the current directory: once.
+    if patch -p1 -R -s -f --dry-run < "$1" > /dev/null 2>&1; then
+        return # already applied
+    fi
+    patch -p1 -s < "$1"
 }
 
 echo "== iproute2 ${IPROUTE2_REV}"
@@ -74,10 +93,11 @@ fetch_git https://git.kernel.org/pub/scm/network/iproute2/iproute2.git "${IPROUT
 cp "${SRC}/iproute2/ip/ip" "${BIN_DCE}/"
 
 echo "== iperf ${IPERF_VERSION}"
-fetch_tar "https://sourceforge.net/projects/iperf/files/iperf-${IPERF_VERSION}.tar.gz/download" "iperf-${IPERF_VERSION}"
+fetch_tar "https://sourceforge.net/projects/iperf/files/iperf-${IPERF_VERSION}.tar.gz/download" "iperf-${IPERF_VERSION}" \
+    636b4eff0431cea80667ea85a67ce4c68698760a9837e1e9d13096d20362265b
 (
     cd "${SRC}/iperf-${IPERF_VERSION}"
-    patch -p1 -N -s < "${DCE_DIR}/utils/iperf_4_dce.patch" || true
+    apply_patch "${DCE_DIR}/utils/iperf_4_dce.patch"
     ./configure -q CFLAGS="-g -fPIC ${LEGACY_CFLAGS}" CXXFLAGS="-g -fPIC -U_FORTIFY_SOURCE" \
         LDFLAGS="-pie -rdynamic" > /dev/null
     make -j"${JOBS}" > /dev/null
@@ -85,7 +105,8 @@ fetch_tar "https://sourceforge.net/projects/iperf/files/iperf-${IPERF_VERSION}.t
 cp "${SRC}/iperf-${IPERF_VERSION}/src/iperf" "${BIN_DCE}/"
 
 echo "== thttpd ${THTTPD_VERSION}"
-fetch_tar "http://www.acme.com/software/thttpd/thttpd-${THTTPD_VERSION}.tar.gz" "thttpd-${THTTPD_VERSION}"
+fetch_tar "https://www.acme.com/software/thttpd/thttpd-${THTTPD_VERSION}.tar.gz" "thttpd-${THTTPD_VERSION}" \
+    07719b08b1cff6a21c08697a7bcb4395425b07ee753106262fb62a03a7d32360
 (
     cd "${SRC}/thttpd-${THTTPD_VERSION}"
     sed -i "s/rm conftest.c/rm -f conftests.c/" configure
@@ -101,7 +122,8 @@ fetch_tar "http://www.acme.com/software/thttpd/thttpd-${THTTPD_VERSION}.tar.gz" 
 cp "${SRC}/thttpd-${THTTPD_VERSION}/thttpd" "${BIN_DCE}/"
 
 echo "== wget ${WGET_VERSION}"
-fetch_tar "https://ftp.gnu.org/gnu/wget/wget-${WGET_VERSION}.tar.gz" "wget-${WGET_VERSION}"
+fetch_tar "https://ftp.gnu.org/gnu/wget/wget-${WGET_VERSION}.tar.gz" "wget-${WGET_VERSION}" \
+    52126be8cf1bddd7536886e74c053ad7d0ed2aa89b4b630f76785bac21695fcd
 (
     cd "${SRC}/wget-${WGET_VERSION}"
     CFLAGS="-fPIC -g ${LEGACY_CFLAGS}" LDFLAGS="-pie -rdynamic" ./configure -q \
@@ -117,13 +139,14 @@ echo "== iputils ${IPUTILS_REV}"
 fetch_git https://github.com/iputils/iputils.git "${IPUTILS_REV}" iputils
 (
     cd "${SRC}/iputils"
-    patch -p1 -N -s < "${DCE_DIR}/utils/iputils-ping6.patch" || true
+    apply_patch "${DCE_DIR}/utils/iputils-ping6.patch"
     make CFLAGS="-fpic -D_GNU_SOURCE -g ${LEGACY_CFLAGS}" LDFLAGS="-pie -rdynamic" ping ping6 > /dev/null
 )
 cp "${SRC}/iputils/ping" "${SRC}/iputils/ping6" "${BIN_DCE}/"
 
 echo "== quagga ${QUAGGA_VERSION}"
-fetch_tar "https://src.fedoraproject.org/repo/pkgs/quagga/quagga-${QUAGGA_VERSION}.tar.gz/64cc29394eb8a4e24649d19dac868f64/quagga-${QUAGGA_VERSION}.tar.gz" "quagga-${QUAGGA_VERSION}"
+fetch_tar "https://src.fedoraproject.org/repo/pkgs/quagga/quagga-${QUAGGA_VERSION}.tar.gz/64cc29394eb8a4e24649d19dac868f64/quagga-${QUAGGA_VERSION}.tar.gz" "quagga-${QUAGGA_VERSION}" \
+    b7a98cc6b022bb0cb405557b3d920cf513150f64384dbd0a2248b5bd248df58b
 (
     cd "${SRC}/quagga-${QUAGGA_VERSION}"
     CFLAGS="-fPIC -g ${LEGACY_CFLAGS}" LDFLAGS="-pie -rdynamic" ./configure -q \
@@ -139,8 +162,8 @@ echo "== ns-3-dce-quagga module"
 fetch_git https://github.com/direct-code-execution/ns-3-dce-quagga.git "${QUAGGA_MODULE_REV}" ns-3-dce-quagga
 (
     cd "${SRC}/ns-3-dce-quagga"
-    git apply --check "${DCE_DIR}/utils/ns-3-dce-quagga-ns3.patch" 2> /dev/null \
-        && git apply "${DCE_DIR}/utils/ns-3-dce-quagga-ns3.patch"
+    git apply --reverse --check "${DCE_DIR}/utils/ns-3-dce-quagga-ns3.patch" 2> /dev/null \
+        || git apply "${DCE_DIR}/utils/ns-3-dce-quagga-ns3.patch"
 )
 rm -rf "${DEPS_DIR}/ns-3-dce-quagga"
 cp -a "${SRC}/ns-3-dce-quagga" "${DEPS_DIR}/ns-3-dce-quagga"
