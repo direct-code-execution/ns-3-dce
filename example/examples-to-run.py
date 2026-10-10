@@ -92,6 +92,8 @@ cpp_examples = [
     ("dce-lkl-boot", "True", "True"),
     ("dce-lkl-p2p --loopback", "True", "True"),
     ("dce-lkl-p2p", "True", "True"),
+    ("dce-lkl-p2p --stop", "True", "True"),
+    ("dce-lkl-p2p --loopback --stop", "True", "True"),
 ]
 
 # A list of Python examples to run in order to ensure that they remain

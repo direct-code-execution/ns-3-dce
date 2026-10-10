@@ -7,6 +7,10 @@
  *
  * With --loopback, a single node runs the TCP client and server over its
  * loopback device instead (like dce-linux-simple).
+ *
+ * With --stop, the servers are stopped while they wait for the clients,
+ * which then send to them: the kernel must keep working (ip runs on the
+ * server node afterwards).
  */
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
@@ -44,7 +48,7 @@ Finished (std::string name, uint32_t node, uint16_t pid, int status)
     }
 }
 
-static void
+static ApplicationContainer
 Run (Ptr<Node> node, Time at, std::string binary, std::string args, bool check = true)
 {
   DceApplicationHelper dce;
@@ -62,15 +66,18 @@ Run (Ptr<Node> node, Time at, std::string binary, std::string args, bool check =
     }
   ApplicationContainer apps = dce.Install (node);
   apps.Start (at);
+  return apps;
 }
 
 int
 main (int argc, char *argv[])
 {
   bool loopback = false;
+  bool stop = false;
   bool pcap = false;
   CommandLine cmd;
   cmd.AddValue ("loopback", "Use one node and its loopback device", loopback);
+  cmd.AddValue ("stop", "Stop the servers while they wait for the clients", stop);
   cmd.AddValue ("pcap", "Write pcap traces of the link", pcap);
   cmd.Parse (argc, argv);
 
@@ -107,16 +114,27 @@ main (int argc, char *argv[])
 
   Ptr<Node> server = nodes.Get (nodes.GetN () - 1);
   std::string serverAddr = loopback ? "127.0.0.1" : "10.0.0.2";
-  Run (server, Seconds (1.0), "tcp-server", "");
-  Run (nodes.Get (0), Seconds (1.5), "tcp-client", serverAddr);
-  if (!loopback)
+  if (stop)
     {
-      Run (server, Seconds (1.0), "udp-server", "");
-      Run (nodes.Get (0), Seconds (1.5), "udp-client", serverAddr);
+      Run (server, Seconds (1.0), "tcp-server", "", false).Stop (Seconds (1.2));
+      Run (server, Seconds (1.0), "udp-server", "", false).Stop (Seconds (1.2));
+      Run (nodes.Get (0), Seconds (1.5), "tcp-client", serverAddr, false);
+      Run (nodes.Get (0), Seconds (1.5), "udp-client", serverAddr, false);
+      Run (server, Seconds (5.0), "ip", "addr show");
+      Simulator::Stop (Seconds (10));
     }
-
-  // udp-client sends one datagram per second, 1000 times.
-  Simulator::Stop (Seconds (1100));
+  else
+    {
+      Run (server, Seconds (1.0), "tcp-server", "");
+      Run (nodes.Get (0), Seconds (1.5), "tcp-client", serverAddr);
+      if (!loopback)
+        {
+          Run (server, Seconds (1.0), "udp-server", "");
+          Run (nodes.Get (0), Seconds (1.5), "udp-client", serverAddr);
+        }
+      // udp-client sends one datagram per second, 1000 times.
+      Simulator::Stop (Seconds (1100));
+    }
   Simulator::Run ();
   Simulator::Destroy ();
 

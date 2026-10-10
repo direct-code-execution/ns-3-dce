@@ -4,6 +4,7 @@
 
 #include "unix-fd.h"
 #include "ns3/ptr.h"
+#include "ns3/nstime.h"
 
 namespace ns3 {
 
@@ -59,6 +60,18 @@ private:
   // Kernel system call; on error, sets the current thread's errno.
   long Call (long no, long a0 = 0, long a1 = 0, long a2 = 0,
              long a3 = 0, long a4 = 0, long a5 = 0) const;
+  // Kernel system call; returns -errno on error.
+  long RawCall (long no, long a0 = 0, long a1 = 0, long a2 = 0,
+                long a3 = 0, long a4 = 0, long a5 = 0) const;
+  // A system call that may block, made without blocking in the kernel;
+  // waits in DCE for the events instead. Returns -errno on error.
+  long BlockingCall (short events, int timeoutOption, long no, long a0 = 0, long a1 = 0,
+                     long a2 = 0, long a3 = 0, long a4 = 0, long a5 = 0);
+  // Waits in DCE for one of the events or the timeout.
+  int WaitEvents (short events, Time timeout);
+  Time GetTimeout (int option) const;
+  // Sets errno from a RawCall result.
+  long Result (long ret) const;
 
   Ptr<LklSocketFdFactory> m_factory;
   int m_fd;

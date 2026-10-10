@@ -166,13 +166,20 @@ ThreadEqual (lkl_thread_t a, lkl_thread_t b)
 
 /* Semaphores and mutexes -------------------------------------------------- */
 
+struct LklWaitList;
+// The wait list each blocked task is on, to forget the tasks DCE stops.
+std::map<Task *, LklWaitList *> g_waiting;
+
 struct LklWaitList
 {
   std::list<Task *> waiters;
   void Wait (void)
   {
-    waiters.push_back (Manager ()->RunningTask ());
+    Task *task = Manager ()->RunningTask ();
+    waiters.push_back (task);
+    g_waiting[task] = this;
     Manager ()->Sleep ();
+    g_waiting.erase (task);
   }
   void WakeOne (void)
   {
@@ -180,6 +187,7 @@ struct LklWaitList
       {
         Task *task = waiters.front ();
         waiters.pop_front ();
+        g_waiting.erase (task);
         Manager ()->Wakeup (task);
       }
   }
@@ -689,6 +697,21 @@ void
 LklKernel::TaskEnd (Task *task, bool running, void *context)
 {
   LklKernel *kernel = (LklKernel *)context;
+  // A stopped task may be waiting: it must not be woken once deleted.
+  std::map<Task *, LklWaitList *>::iterator w = g_waiting.find (task);
+  if (w != g_waiting.end ())
+    {
+      w->second->waiters.remove (task);
+      g_waiting.erase (w);
+    }
+  // The identity given to a task the kernel did not create (kernel threads
+  // drop theirs when they finish).
+  std::map<Task *, LklThread *>::iterator t = g_threads.find (task);
+  if (t != g_threads.end () && t->second->fn == 0)
+    {
+      delete t->second;
+      g_threads.erase (t);
+    }
   TlsDestructors *destructors = new TlsDestructors ();
   for (std::set<void *>::iterator k = kernel->m_tlsKeys.begin (); k != kernel->m_tlsKeys.end (); ++k)
     {
