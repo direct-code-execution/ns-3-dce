@@ -125,6 +125,37 @@ like ``mptcpize`` does on Linux; the subflows are configured with
 
 See ``example/dce-iperf-mptcp.cc`` and ``test/dce-mptcp-test.cc``.
 
+Wi-Fi (mac80211)
+~~~~~~~~~~~~~~~~
+
+``LklWifiHelper`` gives nodes a kernel mac80211 radio, ``wlan<n>``, whose
+frames go on an ns-3 ``WifiPhy``: Linux's own 802.11 stack (station, AP,
+IBSS or 802.11s mesh point) on a channel it can share with ns-3 wifi
+devices, so that pcap captures of the channel show the frames of both. The
+``LklWifiDevice`` behind the radio does what a SoftMAC card does: it
+contends for the medium, acknowledges frames, and retries over the rate
+series chosen by Linux's rate control (minstrel). Legacy rates only
+(802.11a/b/g). The radios are configured with ``iw`` (built by
+``utils/build_kernel_deps.sh``), on the frequency of their PHY:
+
+::
+
+    YansWifiPhyHelper phy;
+    phy.SetChannel (YansWifiChannelHelper::Default ().Create ());
+    phy.Set ("ChannelSettings", StringValue ("{100, 20, BAND_5GHZ, 0}"));
+    LklWifiHelper wifi;
+    NetDeviceContainer devices = wifi.Install (phy, nodes);
+    LklWifiHelper::EnablePcap (phy, "lkl-wifi", devices);
+    ...
+    Run (node, Seconds (0.5), "iw", "dev wlan0 set type mp");
+    LinuxStackHelper::RunIp (node, Seconds (0.6), "link set wlan0 up");
+    Run (node, Seconds (0.7), "iw", "dev wlan0 mesh join mesh freq 5500");
+
+Frames that ns-3's ``WifiMacHeader`` does not serialize back to Linux's bytes
+are reported by the ``HeaderMismatch`` trace source of ``LklWifiDevice``.
+See ``example/dce-lkl-mesh.cc``, Linux and ns-3 802.11s mesh points on one
+channel.
+
 5. Run it
 ---------
 

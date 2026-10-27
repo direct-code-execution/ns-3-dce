@@ -119,6 +119,7 @@ def configure(conf):
     ns3waf.check_modules(conf, ['mpi', 'lte'], mandatory = False)
     ns3waf.check_modules(conf, ['nr', 'antenna'], mandatory = False)
     ns3waf.check_modules(conf, ['visualizer'], mandatory = False)
+    ns3waf.check_modules(conf, ['mesh'], mandatory = False)
     ns3waf.check_modules(conf, ['applications'], mandatory = False)
     ns3waf.check_modules(conf, ['fd-net-device'], mandatory = False)
     conf.check(header_name='stdint.h', define_name='HAVE_STDINT_H', mandatory=False)
@@ -848,6 +849,9 @@ def build(bld):
         module.add_example(needed = ['core', 'network', 'dce', 'point-to-point'],
                            target='bin/dce-lkl-p2p',
                            source=['example/dce-lkl-p2p.cc'])
+        module.add_example(needed = ['core', 'network', 'internet', 'mobility', 'wifi', 'mesh', 'dce'],
+                           target='bin/dce-lkl-mesh',
+                           source=['example/dce-lkl-mesh.cc'])
     
     # build test-runner
     module.add_example(target='bin/test-runner',
