@@ -1,0 +1,623 @@
+From abb4cb400d828589d0408bf0717e0ed628377282 Mon Sep 17 00:00:00 2001
+From: Gabriel Ferreira <gabrielcarvfer@gmail.com>
+Date: Tue, 27 Oct 2026 18:40:53 +0100
+Subject: [PATCH] lkl: add a mac80211 radio whose frames are carried by the
+ host
+
+---
+ arch/lkl/Kconfig                     |   9 +
+ arch/lkl/drivers/Makefile            |   1 +
+ arch/lkl/drivers/wifi.c              | 470 +++++++++++++++++++++++++++
+ arch/lkl/include/asm/unistd.h        |   5 +
+ arch/lkl/include/uapi/asm/host_ops.h |  39 +++
+ arch/lkl/include/uapi/asm/unistd.h   |   1 +
+ arch/lkl/kernel/syscalls.c           |   4 +
+ 7 files changed, 529 insertions(+)
+ create mode 100644 arch/lkl/drivers/wifi.c
+
+diff --git a/arch/lkl/Kconfig b/arch/lkl/Kconfig
+index ffb706aa7..8da0559b2 100644
+--- a/arch/lkl/Kconfig
++++ b/arch/lkl/Kconfig
+@@ -128,6 +128,15 @@ config PCI
+ 	select PCI_MSI_ARCH_FALLBACKS if PCI_MSI
+ 	default y
+ 
++config LKL_WIFI
++	bool "LKL mac80211 radio"
++	depends on MAC80211
++	default y
++	help
++	  A mac80211 radio whose frames are sent and received by the host,
++	  through the wifi_tx and wifi_poll host operations. Radios are
++	  created with the wifi_add system call.
++
+ config LKL_PCI_KUNIT_TEST
+ 	bool "KUnit tests for LKL PCI DMA"
+ 	depends on PCI && KUNIT
+diff --git a/arch/lkl/drivers/Makefile b/arch/lkl/drivers/Makefile
+index 584603104..51d311be1 100644
+--- a/arch/lkl/drivers/Makefile
++++ b/arch/lkl/drivers/Makefile
+@@ -4,3 +4,4 @@ obj-$(CONFIG_PCI) += pci.o
+ obj-$(CONFIG_LKL_PCI_KUNIT_TEST) += pci_test.o
+ obj-$(CONFIG_PCI_MSI) += pci-msi.o
+ obj-$(CONFIG_LKL_PCI_MSI_KUNIT_TEST) += pci-msi-test.o
++obj-$(CONFIG_LKL_WIFI) += wifi.o
+diff --git a/arch/lkl/drivers/wifi.c b/arch/lkl/drivers/wifi.c
+new file mode 100644
+index 000000000..bc45e09d9
+--- /dev/null
++++ b/arch/lkl/drivers/wifi.c
+@@ -0,0 +1,470 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * A mac80211 radio whose frames are carried by the host.
++ *
++ * The host creates radios with the wifi_add system call. Frames given by
++ * mac80211 go to the host through the wifi_tx host operation, as raw 802.11
++ * frames without FCS, with the rate series chosen by rate control. The host
++ * plays the part of the hardware: it contends for the medium, waits for the
++ * acknowledgments and retries, then reports the outcome of each frame, in
++ * order. The host raises the radio's interrupt when it has received frames or
++ * transmission outcomes, which the interrupt fetches with wifi_poll.
++ *
++ * Only legacy (non-HT) rates are offered, at 2.4 and 5 GHz.
++ */
++
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/interrupt.h>
++#include <linux/hrtimer.h>
++#include <linux/skbuff.h>
++#include <linux/etherdevice.h>
++#include <linux/syscalls.h>
++#include <linux/uaccess.h>
++#include <net/mac80211.h>
++#include <asm/host_ops.h>
++
++#define LKL_WIFI_MAX_FRAME 4096
++
++#define CHAN2G(_freq) { .band = NL80211_BAND_2GHZ, .center_freq = (_freq), \
++			.hw_value = (_freq), .max_power = 20 }
++#define CHAN5G(_freq) { .band = NL80211_BAND_5GHZ, .center_freq = (_freq), \
++			.hw_value = (_freq), .max_power = 20 }
++
++static const struct ieee80211_channel lkl_wifi_channels_2ghz[] = {
++	CHAN2G(2412), CHAN2G(2417), CHAN2G(2422), CHAN2G(2427), CHAN2G(2432),
++	CHAN2G(2437), CHAN2G(2442), CHAN2G(2447), CHAN2G(2452), CHAN2G(2457),
++	CHAN2G(2462), CHAN2G(2467), CHAN2G(2472),
++};
++
++static const struct ieee80211_channel lkl_wifi_channels_5ghz[] = {
++	CHAN5G(5180), CHAN5G(5200), CHAN5G(5220), CHAN5G(5240), CHAN5G(5260),
++	CHAN5G(5280), CHAN5G(5300), CHAN5G(5320), CHAN5G(5500), CHAN5G(5520),
++	CHAN5G(5540), CHAN5G(5560), CHAN5G(5580), CHAN5G(5600), CHAN5G(5620),
++	CHAN5G(5640), CHAN5G(5660), CHAN5G(5680), CHAN5G(5700), CHAN5G(5745),
++	CHAN5G(5765), CHAN5G(5785), CHAN5G(5805), CHAN5G(5825),
++};
++
++/* DSSS/CCK rates first: the 5 GHz band uses the OFDM ones only. */
++static const struct ieee80211_rate lkl_wifi_rates[] = {
++	{ .bitrate = 10 },
++	{ .bitrate = 20, .flags = IEEE80211_RATE_SHORT_PREAMBLE },
++	{ .bitrate = 55, .flags = IEEE80211_RATE_SHORT_PREAMBLE },
++	{ .bitrate = 110, .flags = IEEE80211_RATE_SHORT_PREAMBLE },
++	{ .bitrate = 60 },
++	{ .bitrate = 90 },
++	{ .bitrate = 120 },
++	{ .bitrate = 180 },
++	{ .bitrate = 240 },
++	{ .bitrate = 360 },
++	{ .bitrate = 480 },
++	{ .bitrate = 540 },
++};
++
++#define LKL_WIFI_OFDM_RATES 4 /* index of the first OFDM rate */
++
++/*
++ * Every channel above, without the restrictions of the world regulatory
++ * domain (no initiating radiation on most channels), which would forbid
++ * beaconing there: the medium is simulated.
++ */
++static const struct ieee80211_regdomain lkl_wifi_regdom = {
++	.n_reg_rules = 2,
++	.alpha2 = "99",
++	.reg_rules = {
++		REG_RULE(2402, 2494, 40, 0, 20, 0),
++		REG_RULE(5140, 5860, 40, 0, 30, 0),
++	}
++};
++
++struct lkl_wifi {
++	struct ieee80211_hw *hw;
++	struct platform_device *pdev;
++	int id;
++	int irq;
++	bool started;
++	struct ieee80211_channel *channel;
++	/* frames given to the host, waiting for their outcome */
++	struct sk_buff_head pending;
++	struct hrtimer beacon_timer;
++	u64 beacon_int; /* us, 0 without beaconing */
++	u8 frame[LKL_WIFI_MAX_FRAME];
++
++	struct ieee80211_channel channels_2ghz[ARRAY_SIZE(lkl_wifi_channels_2ghz)];
++	struct ieee80211_channel channels_5ghz[ARRAY_SIZE(lkl_wifi_channels_5ghz)];
++	struct ieee80211_rate rates[ARRAY_SIZE(lkl_wifi_rates)];
++	struct ieee80211_supported_band bands[NUM_NL80211_BANDS];
++};
++
++static u64 lkl_wifi_tsf(void)
++{
++	return ktime_to_us(ktime_get_real());
++}
++
++static struct ieee80211_supported_band *
++lkl_wifi_band(struct lkl_wifi *wifi, enum nl80211_band band)
++{
++	return wifi->hw->wiphy->bands[band];
++}
++
++static void lkl_wifi_send(struct lkl_wifi *wifi, struct sk_buff *skb,
++			  bool status)
++{
++	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
++	struct ieee80211_supported_band *sband;
++	struct lkl_wifi_tx_info tx;
++	int i, ret = -1;
++
++	memset(&tx, 0, sizeof(tx));
++	if (wifi->channel) {
++		sband = lkl_wifi_band(wifi, wifi->channel->band);
++		tx.freq = wifi->channel->center_freq;
++		for (i = 0; i < ARRAY_SIZE(tx.rate); i++) {
++			struct ieee80211_tx_rate *rate = &info->control.rates[i];
++
++			if (rate->idx < 0 || !rate->count ||
++			    rate->idx >= sband->n_bitrates)
++				break;
++			tx.rate[i] = sband->bitrates[rate->idx].bitrate;
++			tx.count[i] = rate->count;
++		}
++	}
++	tx.power = wifi->hw->conf.power_level;
++	tx.no_ack = !!(info->flags & IEEE80211_TX_CTL_NO_ACK);
++	tx.no_status = !status;
++
++	if (wifi->started && wifi->channel && tx.rate[0])
++		ret = lkl_ops->wifi_tx(wifi->id, skb->data, skb->len, &tx);
++
++	if (!status) {
++		dev_kfree_skb_any(skb);
++	} else if (ret < 0) {
++		ieee80211_tx_info_clear_status(info);
++		ieee80211_tx_status_irqsafe(wifi->hw, skb);
++	} else {
++		skb_queue_tail(&wifi->pending, skb);
++	}
++}
++
++static void lkl_wifi_tx(struct ieee80211_hw *hw,
++			struct ieee80211_tx_control *control,
++			struct sk_buff *skb)
++{
++	lkl_wifi_send(hw->priv, skb, true);
++}
++
++static void lkl_wifi_tx_status(struct lkl_wifi *wifi,
++			       const struct lkl_wifi_event *ev)
++{
++	struct sk_buff *skb = skb_dequeue(&wifi->pending);
++	struct ieee80211_tx_info *info;
++	int attempts = ev->attempts;
++	int i;
++
++	if (!skb)
++		return; /* dropped by stop */
++	info = IEEE80211_SKB_CB(skb);
++	ieee80211_tx_info_clear_status(info);
++	/* Spread the attempts over the rate series, in order. */
++	for (i = 0; i < IEEE80211_TX_MAX_RATES; i++) {
++		struct ieee80211_tx_rate *rate = &info->status.rates[i];
++
++		if (rate->idx < 0 || !attempts) {
++			rate->idx = -1;
++			rate->count = 0;
++			continue;
++		}
++		if (rate->count > attempts || i == IEEE80211_TX_MAX_RATES - 1)
++			rate->count = attempts;
++		attempts -= rate->count;
++	}
++	if (ev->acked && !(info->flags & IEEE80211_TX_CTL_NO_ACK))
++		info->flags |= IEEE80211_TX_STAT_ACK;
++	ieee80211_tx_status_irqsafe(wifi->hw, skb);
++}
++
++static void lkl_wifi_rx(struct lkl_wifi *wifi, const struct lkl_wifi_event *ev)
++{
++	struct ieee80211_rx_status *status;
++	struct ieee80211_supported_band *sband;
++	struct ieee80211_channel *channel = NULL;
++	enum nl80211_band band;
++	struct sk_buff *skb;
++	int i;
++
++	if (!wifi->started || ev->len < 10 || ev->len > LKL_WIFI_MAX_FRAME)
++		return;
++	band = ev->freq < 5000 ? NL80211_BAND_2GHZ : NL80211_BAND_5GHZ;
++	sband = lkl_wifi_band(wifi, band);
++	for (i = 0; i < sband->n_channels; i++)
++		if (sband->channels[i].center_freq == ev->freq)
++			channel = &sband->channels[i];
++	if (!channel || channel != wifi->channel)
++		return;
++
++	skb = dev_alloc_skb(ev->len);
++	if (!skb)
++		return;
++	skb_put_data(skb, wifi->frame, ev->len);
++	status = IEEE80211_SKB_RXCB(skb);
++	memset(status, 0, sizeof(*status));
++	status->freq = ev->freq;
++	status->band = band;
++	status->signal = ev->signal;
++	status->rate_idx = 0;
++	for (i = 0; i < sband->n_bitrates; i++)
++		if (sband->bitrates[i].bitrate == ev->rate)
++			status->rate_idx = i;
++	ieee80211_rx_irqsafe(wifi->hw, skb);
++}
++
++static irqreturn_t lkl_wifi_interrupt(int irq, void *dev_id)
++{
++	struct lkl_wifi *wifi = dev_id;
++	struct lkl_wifi_event ev;
++
++	for (;;) {
++		memset(&ev, 0, sizeof(ev));
++		if (lkl_ops->wifi_poll(wifi->id, wifi->frame,
++				       sizeof(wifi->frame), &ev) < 0)
++			break;
++		if (ev.type == LKL_WIFI_EV_RX)
++			lkl_wifi_rx(wifi, &ev);
++		else if (ev.type == LKL_WIFI_EV_TX_STATUS)
++			lkl_wifi_tx_status(wifi, &ev);
++	}
++	return IRQ_HANDLED;
++}
++
++static void lkl_wifi_beacon_tx(void *arg, u8 *mac, struct ieee80211_vif *vif)
++{
++	struct lkl_wifi *wifi = arg;
++	struct sk_buff *skb;
++
++	if (vif->type != NL80211_IFTYPE_AP &&
++	    vif->type != NL80211_IFTYPE_MESH_POINT &&
++	    vif->type != NL80211_IFTYPE_ADHOC)
++		return;
++	skb = ieee80211_beacon_get(wifi->hw, vif, 0);
++	if (skb)
++		lkl_wifi_send(wifi, skb, false);
++	while ((skb = ieee80211_get_buffered_bc(wifi->hw, vif)) != NULL)
++		lkl_wifi_send(wifi, skb, true);
++}
++
++static enum hrtimer_restart lkl_wifi_beacon(struct hrtimer *timer)
++{
++	struct lkl_wifi *wifi = container_of(timer, struct lkl_wifi,
++					     beacon_timer);
++
++	if (!wifi->started || !wifi->beacon_int)
++		return HRTIMER_NORESTART;
++	ieee80211_iterate_active_interfaces_atomic(wifi->hw,
++						   IEEE80211_IFACE_ITER_NORMAL,
++						   lkl_wifi_beacon_tx, wifi);
++	hrtimer_forward_now(timer, ns_to_ktime(wifi->beacon_int * NSEC_PER_USEC));
++	return HRTIMER_RESTART;
++}
++
++static void lkl_wifi_beacon_start(struct lkl_wifi *wifi)
++{
++	u64 tsf = lkl_wifi_tsf();
++	u64 until_tbtt;
++
++	if (!wifi->started || !wifi->beacon_int ||
++	    hrtimer_is_queued(&wifi->beacon_timer))
++		return;
++	until_tbtt = wifi->beacon_int - do_div(tsf, wifi->beacon_int);
++	hrtimer_start(&wifi->beacon_timer,
++		      ns_to_ktime(until_tbtt * NSEC_PER_USEC),
++		      HRTIMER_MODE_REL_SOFT);
++}
++
++static int lkl_wifi_start(struct ieee80211_hw *hw)
++{
++	struct lkl_wifi *wifi = hw->priv;
++
++	wifi->started = true;
++	lkl_wifi_beacon_start(wifi);
++	return 0;
++}
++
++static void lkl_wifi_stop(struct ieee80211_hw *hw, bool suspend)
++{
++	struct lkl_wifi *wifi = hw->priv;
++
++	wifi->started = false;
++	hrtimer_cancel(&wifi->beacon_timer);
++	ieee80211_purge_tx_queue(hw, &wifi->pending);
++}
++
++static int lkl_wifi_add_interface(struct ieee80211_hw *hw,
++				  struct ieee80211_vif *vif)
++{
++	return 0;
++}
++
++static void lkl_wifi_remove_interface(struct ieee80211_hw *hw,
++				      struct ieee80211_vif *vif)
++{
++}
++
++static int lkl_wifi_config(struct ieee80211_hw *hw, u32 changed)
++{
++	struct lkl_wifi *wifi = hw->priv;
++
++	wifi->channel = hw->conf.chandef.chan;
++	return 0;
++}
++
++static void lkl_wifi_configure_filter(struct ieee80211_hw *hw,
++				      unsigned int changed_flags,
++				      unsigned int *total_flags, u64 multicast)
++{
++	/* The host gives every frame it receives. */
++	*total_flags &= FIF_ALLMULTI | FIF_BCN_PRBRESP_PROMISC | FIF_OTHER_BSS;
++}
++
++static void lkl_wifi_link_info_changed(struct ieee80211_hw *hw,
++				       struct ieee80211_vif *vif,
++				       struct ieee80211_bss_conf *info,
++				       u64 changed)
++{
++	struct lkl_wifi *wifi = hw->priv;
++
++	if (!(changed & (BSS_CHANGED_BEACON_ENABLED | BSS_CHANGED_BEACON_INT)))
++		return;
++	if (info->enable_beacon && info->beacon_int) {
++		wifi->beacon_int = info->beacon_int * 1024;
++		lkl_wifi_beacon_start(wifi);
++	} else {
++		wifi->beacon_int = 0;
++		hrtimer_cancel(&wifi->beacon_timer);
++	}
++}
++
++static void lkl_wifi_vif_cfg_changed(struct ieee80211_hw *hw,
++				     struct ieee80211_vif *vif, u64 changed)
++{
++}
++
++static u64 lkl_wifi_get_tsf(struct ieee80211_hw *hw, struct ieee80211_vif *vif)
++{
++	return lkl_wifi_tsf();
++}
++
++static const struct ieee80211_ops lkl_wifi_ops = {
++	.tx = lkl_wifi_tx,
++	.wake_tx_queue = ieee80211_handle_wake_tx_queue,
++	.start = lkl_wifi_start,
++	.stop = lkl_wifi_stop,
++	.add_interface = lkl_wifi_add_interface,
++	.remove_interface = lkl_wifi_remove_interface,
++	.config = lkl_wifi_config,
++	.configure_filter = lkl_wifi_configure_filter,
++	.vif_cfg_changed = lkl_wifi_vif_cfg_changed,
++	.link_info_changed = lkl_wifi_link_info_changed,
++	.get_tsf = lkl_wifi_get_tsf,
++	.add_chanctx = ieee80211_emulate_add_chanctx,
++	.remove_chanctx = ieee80211_emulate_remove_chanctx,
++	.change_chanctx = ieee80211_emulate_change_chanctx,
++	.switch_vif_chanctx = ieee80211_emulate_switch_vif_chanctx,
++};
++
++static void lkl_wifi_setup_bands(struct lkl_wifi *wifi)
++{
++	struct ieee80211_supported_band *band;
++
++	memcpy(wifi->channels_2ghz, lkl_wifi_channels_2ghz,
++	       sizeof(lkl_wifi_channels_2ghz));
++	memcpy(wifi->channels_5ghz, lkl_wifi_channels_5ghz,
++	       sizeof(lkl_wifi_channels_5ghz));
++	memcpy(wifi->rates, lkl_wifi_rates, sizeof(lkl_wifi_rates));
++
++	band = &wifi->bands[NL80211_BAND_2GHZ];
++	band->band = NL80211_BAND_2GHZ;
++	band->channels = wifi->channels_2ghz;
++	band->n_channels = ARRAY_SIZE(wifi->channels_2ghz);
++	band->bitrates = wifi->rates;
++	band->n_bitrates = ARRAY_SIZE(wifi->rates);
++	wifi->hw->wiphy->bands[NL80211_BAND_2GHZ] = band;
++
++	band = &wifi->bands[NL80211_BAND_5GHZ];
++	band->band = NL80211_BAND_5GHZ;
++	band->channels = wifi->channels_5ghz;
++	band->n_channels = ARRAY_SIZE(wifi->channels_5ghz);
++	band->bitrates = wifi->rates + LKL_WIFI_OFDM_RATES;
++	band->n_bitrates = ARRAY_SIZE(wifi->rates) - LKL_WIFI_OFDM_RATES;
++	wifi->hw->wiphy->bands[NL80211_BAND_5GHZ] = band;
++}
++
++/*
++ * Creates the radio with the given host id, interrupt and address; returns
++ * 0.
++ */
++SYSCALL_DEFINE3(wifi_add, int, id, unsigned int, irq, const char __user *, umac)
++{
++	struct platform_device *pdev;
++	struct ieee80211_hw *hw;
++	struct lkl_wifi *wifi;
++	u8 mac[ETH_ALEN];
++	int ret;
++
++	if (!lkl_ops->wifi_tx || !lkl_ops->wifi_poll)
++		return -ENODEV;
++	if (copy_from_user(mac, umac, ETH_ALEN))
++		return -EFAULT;
++	if (!is_valid_ether_addr(mac))
++		return -EINVAL;
++
++	pdev = platform_device_register_simple("lkl-wifi", id, NULL, 0);
++	if (IS_ERR(pdev))
++		return PTR_ERR(pdev);
++
++	hw = ieee80211_alloc_hw(sizeof(*wifi), &lkl_wifi_ops);
++	if (!hw) {
++		ret = -ENOMEM;
++		goto err_pdev;
++	}
++	wifi = hw->priv;
++	wifi->hw = hw;
++	wifi->pdev = pdev;
++	wifi->id = id;
++	wifi->irq = irq;
++	skb_queue_head_init(&wifi->pending);
++	hrtimer_init(&wifi->beacon_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL_SOFT);
++	wifi->beacon_timer.function = lkl_wifi_beacon;
++
++	SET_IEEE80211_DEV(hw, &pdev->dev);
++	SET_IEEE80211_PERM_ADDR(hw, mac);
++	ieee80211_hw_set(hw, SIGNAL_DBM);
++	ieee80211_hw_set(hw, REPORTS_TX_ACK_STATUS);
++	ieee80211_hw_set(hw, MFP_CAPABLE);
++	hw->queues = 4;
++	hw->max_rates = 4;
++	hw->max_rate_tries = 11;
++	hw->wiphy->interface_modes = BIT(NL80211_IFTYPE_STATION) |
++				     BIT(NL80211_IFTYPE_ADHOC) |
++				     BIT(NL80211_IFTYPE_AP) |
++				     BIT(NL80211_IFTYPE_MESH_POINT) |
++				     BIT(NL80211_IFTYPE_MONITOR);
++	lkl_wifi_setup_bands(wifi);
++	hw->wiphy->regulatory_flags |= REGULATORY_CUSTOM_REG;
++	wiphy_apply_custom_regulatory(hw->wiphy, &lkl_wifi_regdom);
++
++	ret = request_irq(irq, lkl_wifi_interrupt, 0, "lkl-wifi", wifi);
++	if (ret)
++		goto err_hw;
++	ret = ieee80211_register_hw(hw);
++	if (ret)
++		goto err_irq;
++	return 0;
++
++err_irq:
++	free_irq(irq, wifi);
++err_hw:
++	ieee80211_free_hw(hw);
++err_pdev:
++	platform_device_unregister(pdev);
++	return ret;
++}
+diff --git a/arch/lkl/include/asm/unistd.h b/arch/lkl/include/asm/unistd.h
+index 0ed3f151f..8ef419fc7 100644
+--- a/arch/lkl/include/asm/unistd.h
++++ b/arch/lkl/include/asm/unistd.h
+@@ -2,6 +2,11 @@
+ 
+ __SYSCALL(__NR_virtio_mmio_device_add, sys_virtio_mmio_device_add)
+ __SYSCALL(__NR_new_thread_group_leader, sys_new_thread_group_leader)
++#ifdef CONFIG_LKL_WIFI
++__SYSCALL(__NR_wifi_add, sys_wifi_add)
++#else
++__SYSCALL(__NR_wifi_add, sys_ni_syscall)
++#endif
+ 
+ #define __SC_ASCII(t, a) #t "," #a
+ 
+diff --git a/arch/lkl/include/uapi/asm/host_ops.h b/arch/lkl/include/uapi/asm/host_ops.h
+index 673a05951..68301eb8a 100644
+--- a/arch/lkl/include/uapi/asm/host_ops.h
++++ b/arch/lkl/include/uapi/asm/host_ops.h
+@@ -141,7 +141,41 @@ enum lkl_prot {
+  * @munmap - unmap previously mapped memory
+  *
+  * @pci_ops - pointer to PCI host operations
++ *
++ * @wifi_tx - transmit a raw 802.11 frame (without FCS) on the radio created
++ * by lkl_sys_wifi_add with the given id; the host must later report the
++ * outcome of the frame with a LKL_WIFI_EV_TX_STATUS event, in the order the
++ * frames were given
++ * @wifi_poll - fetch the next event of the radio, into frame (of size len)
++ * and ev; returns 0 with an event, or a negative value when there is none;
++ * called from the radio's interrupt, which the host raises with
++ * lkl_trigger_irq when it has events
+  */
++struct lkl_wifi_tx_info {
++	/* legacy rate in 100 kbps units of each attempt series, 0 ends */
++	unsigned short rate[4];
++	unsigned char count[4];
++	unsigned int freq; /* MHz */
++	int power; /* dBm */
++	unsigned char no_ack;
++	unsigned char no_status; /* the host reports no outcome */
++};
++
++#define LKL_WIFI_EV_RX		1
++#define LKL_WIFI_EV_TX_STATUS	2
++
++struct lkl_wifi_event {
++	int type;
++	/* LKL_WIFI_EV_RX */
++	int len;
++	unsigned int freq; /* MHz */
++	unsigned short rate; /* 100 kbps units */
++	int signal; /* dBm */
++	/* LKL_WIFI_EV_TX_STATUS */
++	unsigned char acked;
++	unsigned char attempts; /* in total, over the rate series */
++};
++
+ struct lkl_host_operations {
+ 	const char *virtio_devices;
+ 
+@@ -201,6 +235,11 @@ struct lkl_host_operations {
+ 				enum lkl_prot prot);
+ 
+ 	struct lkl_dev_pci_ops *pci_ops;
++
++	int (*wifi_tx)(int id, const void *frame, int len,
++		       const struct lkl_wifi_tx_info *info);
++	int (*wifi_poll)(int id, void *frame, int len,
++			 struct lkl_wifi_event *ev);
+ };
+ 
+ /**
+diff --git a/arch/lkl/include/uapi/asm/unistd.h b/arch/lkl/include/uapi/asm/unistd.h
+index 6290c9772..bb9181dc2 100644
+--- a/arch/lkl/include/uapi/asm/unistd.h
++++ b/arch/lkl/include/uapi/asm/unistd.h
+@@ -16,3 +16,4 @@
+ 
+ #define __NR_virtio_mmio_device_add		(__NR_arch_specific_syscall + 0)
+ #define __NR_new_thread_group_leader	(__NR_arch_specific_syscall + 1)
++#define __NR_wifi_add			(__NR_arch_specific_syscall + 2)
+diff --git a/arch/lkl/kernel/syscalls.c b/arch/lkl/kernel/syscalls.c
+index cd4431ff2..fcfd3c8ae 100644
+--- a/arch/lkl/kernel/syscalls.c
++++ b/arch/lkl/kernel/syscalls.c
+@@ -21,6 +21,10 @@ static asmlinkage long sys_virtio_mmio_device_add(long base, long size,
+ 
+ static asmlinkage long sys_new_thread_group_leader(void);
+ 
++#ifdef CONFIG_LKL_WIFI
++asmlinkage long sys_wifi_add(int id, unsigned int irq, const char __user *mac);
++#endif
++
+ typedef long (*syscall_handler_t)(long arg1, ...);
+ 
+ #undef __SYSCALL
+-- 
+2.56.0
+
