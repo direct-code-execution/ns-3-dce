@@ -2,7 +2,7 @@
 #
 # Build the programs DCE's kernel-stack tests and examples run (the kernel
 # itself is LKL, built by utils/build_lkl.sh):
-#   - DCE-compatible (PIE) builds of ip, iperf, thttpd, wget, ping/ping6,
+#   - DCE-compatible (PIE) builds of ip, iw, iperf, thttpd, wget, ping/ping6,
 #     the quagga routing daemons, a minimal ffmpeg (dce-wifi-video) and,
 #     when their development packages are installed, the dillo (FLTK) and
 #     Northstar (GTK4, JavaScript) web browsers (dce-browser)
@@ -27,6 +27,8 @@ SRC="${DEPS_DIR}/src"
 JOBS="${JOBS:-$(nproc)}"
 
 IPROUTE2_REV="v6.12.0" # matches LKL's kernel; has "ip mptcp"
+LIBNL_REV="libnl3_10_0"
+IW_REV="v6.9"
 IPUTILS_REV="s20101006"
 QUAGGA_MODULE_REV="b57e0f3184e34107c7e452b3c41807e0aff5b5ce"
 IPERF_VERSION="2.0.5"
@@ -105,6 +107,29 @@ fetch_git https://git.kernel.org/pub/scm/network/iproute2/iproute2.git "${IPROUT
         "LDFLAGS=-pie -rdynamic" > build.log 2>&1 || { tail -50 build.log; exit 1; }
 )
 cp "${SRC}/iproute2/ip/ip" "${BIN_DCE}/"
+
+echo "== libnl ${LIBNL_REV}"
+fetch_git https://github.com/thom311/libnl.git "${LIBNL_REV}" libnl
+(
+    # Static and position independent, linked into iw.
+    cd "${SRC}/libnl"
+    [ -x configure ] || ./autogen.sh > build.log 2>&1
+    ./configure -q --prefix="${SRC}/libnl/install" --disable-shared --enable-static \
+        --disable-cli --disable-debug CFLAGS="-fPIC -g -U_FORTIFY_SOURCE" > build.log 2>&1 \
+        || { tail -50 build.log; exit 1; }
+    make -j"${JOBS}" install >> build.log 2>&1 || { tail -50 build.log; exit 1; }
+)
+
+echo "== iw ${IW_REV}"
+fetch_git https://git.kernel.org/pub/scm/linux/kernel/git/jberg/iw.git "${IW_REV}" iw
+(
+    # Configures the kernel's mac80211 radios (LklWifiDevice).
+    cd "${SRC}/iw"
+    PKG_CONFIG_PATH="${SRC}/libnl/install/lib/pkgconfig" make -j"${JOBS}" \
+        "CFLAGS=-fPIC -g -O0 -U_FORTIFY_SOURCE" "LDFLAGS=-pie -rdynamic" > build.log 2>&1 \
+        || { tail -50 build.log; exit 1; }
+)
+cp "${SRC}/iw/iw" "${BIN_DCE}/"
 
 echo "== iperf ${IPERF_VERSION}"
 fetch_tar "https://sourceforge.net/projects/iperf/files/iperf-${IPERF_VERSION}.tar.gz/download" "iperf-${IPERF_VERSION}" \
