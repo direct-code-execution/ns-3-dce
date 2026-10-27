@@ -154,6 +154,8 @@ def configure(conf):
         if not os.path.isfile(os.path.join(lkl_include, 'lkl', 'asm', 'host_ops.h')):
             lkl_include = os.path.join(lkl_dir, 'tools', 'lkl', 'include')
         conf.check(header_name='lkl/asm/host_ops.h', includes=lkl_include)
+        # The kernel's mac80211 radios run on ns-3 wifi PHYs.
+        ns3waf.check_modules(conf, ['wifi'], mandatory = True)
         conf.env['LKL_INCLUDE'] = lkl_include
         # LKL provides ns3::LinuxSocketFdFactory.
         conf.env['LINUX_STACK'] = True
@@ -647,15 +649,21 @@ def build(bld):
             'model/kernel-socket-fd-factory.cc',
             'model/linux-socket-fd-factory.cc',
             'model/linux/linux-socket-impl.cc',
+            'model/lkl-wifi-device.cc',
+            'helper/lkl-wifi-helper.cc',
             ]
         kernel_headers = [
             'model/lkl/lkl-kernel.h',
             'model/kernel-socket-fd-factory.h',
             'model/linux-socket-fd-factory.h',
             'model/linux/linux-socket-impl.h',
+            'model/lkl-wifi-device.h',
+            'helper/lkl-wifi-helper.h',
             ]
         kernel_includes = ['model/lkl', bld.env['LKL_INCLUDE']]
+        kernel_modules = ['wifi']
     else:
+        kernel_modules = []
         kernel_source = []
         kernel_headers = []
         kernel_includes = []
@@ -807,7 +815,7 @@ def build(bld):
 
     module_source = module_source + kernel_source
     module_headers = module_headers + kernel_headers
-    uselib = ns3waf.modules_uselib(bld, ['core', 'network', 'internet', 'netlink'])
+    uselib = ns3waf.modules_uselib(bld, ['core', 'network', 'internet', 'netlink'] + kernel_modules)
     module = ns3waf.create_module(bld, name='dce',
                                   source=module_source,
                                   headers=module_headers,

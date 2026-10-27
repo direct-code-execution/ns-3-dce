@@ -10,9 +10,14 @@
 #include <string>
 #include <vector>
 
+struct lkl_wifi_tx_info;
+struct lkl_wifi_event;
+
 namespace ns3 {
 
 class EventImpl;
+class LklWifiDevice;
+struct LklWifiRadio;
 class LklKernel;
 class KernelSocketFd;
 class Task;
@@ -26,6 +31,9 @@ struct LklNetDevice;
  * node but its loopback device (the kernel has its own) becomes a kernel
  * network device named sim<n>, in device order; sockets of DCE
  * applications are kernel sockets.
+ *
+ * Each LklWifiDevice of the node becomes instead a kernel mac80211 radio,
+ * named wlan<n> in device order, configured with iw.
  */
 class KernelSocketFdFactory : public SocketFdFactory
 {
@@ -58,6 +66,29 @@ public:
   /** From now on, wake the socket's poll waiters when its state changes. */
   void Watch (KernelSocketFd *socket);
 
+  /**
+   * The wifi_tx host operation of the kernel radios: queue a frame on the
+   * radio's LklWifiDevice.
+   *
+   * @param id the radio
+   * @param frame the 802.11 frame, without FCS
+   * @param len its size
+   * @param info how to send it
+   * @return 0
+   */
+  static int WifiTx (int id, const void *frame, int len, const struct lkl_wifi_tx_info *info);
+  /**
+   * The wifi_poll host operation of the kernel radios: take the next event
+   * of the radio's LklWifiDevice.
+   *
+   * @param id the radio
+   * @param frame where received frames are copied
+   * @param len the size of frame
+   * @param ev the event
+   * @return 0, or -1 without event
+   */
+  static int WifiPoll (int id, void *frame, int len, struct lkl_wifi_event *ev);
+
 private:
   virtual void DoDispose (void);
   virtual void NotifyNewAggregate (void);
@@ -71,6 +102,10 @@ private:
   static void AddDeviceTrampoline (void *context);
   void RxFromDevice (Ptr<NetDevice> device, Ptr<const Packet> p, uint16_t protocol,
                      const Address &from, const Address &to, NetDevice::PacketType type);
+  void AddWifiDevice (Ptr<LklWifiDevice> device);
+  void NotifyWifiEvent (LklWifiRadio *radio);
+  static void WifiIrqTrampoline (void *context);
+  void WifiIrq (LklWifiRadio *radio);
   static void WatcherTrampoline (void *context);
   void Watcher (void);
   long Call (long no, long a0 = 0, long a1 = 0, long a2 = 0,
@@ -84,6 +119,7 @@ private:
   std::list<Task *> m_bootWaiters;
   std::list<std::pair<std::string, std::string> > m_earlySysctls;
   std::vector<LklNetDevice *> m_devices;
+  std::vector<LklWifiRadio *> m_radios;
   uint32_t m_nextDevice;
   int m_epollFd;
   std::map<int, KernelSocketFd *> m_sockets;

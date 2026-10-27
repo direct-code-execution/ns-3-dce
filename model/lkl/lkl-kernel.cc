@@ -1,5 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 #include "lkl-kernel.h"
+#include "../kernel-socket-fd-factory.h"
 #include "task-manager.h"
 #include "utils.h"
 #include "exec-utils.h"
@@ -647,6 +648,8 @@ LklKernel::InstallHostOps (struct lkl_host_operations *ops)
   ops->shmem_init = 0;
   ops->shmem_mmap = 0;
   ops->pci_ops = 0;
+  ops->wifi_tx = &KernelSocketFdFactory::WifiTx;
+  ops->wifi_poll = &KernelSocketFdFactory::WifiPoll;
 }
 
 void

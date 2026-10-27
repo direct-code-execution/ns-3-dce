@@ -3,6 +3,7 @@
 #include "kernel-socket-fd.h"
 #include "lkl-kernel.h"
 #include "task-manager.h"
+#include "lkl-wifi-device.h"
 #include "ns3/log.h"
 #include "ns3/node.h"
 #include "ns3/packet.h"
@@ -13,6 +14,7 @@
 #include "ns3/loopback-net-device.h"
 #include "ns3/make-event.h"
 #include <lkl/asm/unistd.h>
+#include <lkl/asm/host_ops.h>
 #include <deque>
 #include <cstring>
 #include <cstdio>
@@ -62,6 +64,18 @@ struct lkl_netdev_args
 namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (KernelSocketFdFactory);
+
+/**
+ * A kernel mac80211 radio (LKL's lkl-wifi driver) whose hardware is an
+ * LklWifiDevice.
+ */
+struct LklWifiRadio
+{
+  KernelSocketFdFactory *factory;
+  Ptr<LklWifiDevice> device;
+  int irq;
+  Task *irqTask; // sleeping until the device has events
+};
 
 /**
  * A kernel network device backed by an ns-3 NetDevice. LKL drives it
@@ -230,6 +244,10 @@ KernelSocketFdFactory::~KernelSocketFdFactory ()
     {
       delete *i;
     }
+  for (std::vector<LklWifiRadio *>::iterator i = m_radios.begin (); i != m_radios.end (); ++i)
+    {
+      delete *i;
+    }
 }
 
 void
@@ -238,6 +256,11 @@ KernelSocketFdFactory::DoDispose (void)
   // The devices refer to their node, which refers to this factory.
   for (std::vector<LklNetDevice *>::iterator i = m_devices.begin (); i != m_devices.end (); ++i)
     {
+      (*i)->device = 0;
+    }
+  for (std::vector<LklWifiRadio *>::iterator i = m_radios.begin (); i != m_radios.end (); ++i)
+    {
+      (*i)->device->SetEventCallback (MakeNullCallback<void> ());
       (*i)->device = 0;
     }
   m_kernel = 0;
@@ -456,6 +479,11 @@ KernelSocketFdFactory::AddDevice (Ptr<NetDevice> device)
     {
       return; // the kernel has its own loopback device
     }
+  if (Ptr<LklWifiDevice> wifi = DynamicCast<LklWifiDevice> (device))
+    {
+      AddWifiDevice (wifi);
+      return;
+    }
   LklNetDevice *dev = new LklNetDevice ();
   memset (&dev->nd, 0, sizeof (dev->nd));
   dev->nd.ops = &g_netOps;
@@ -574,6 +602,131 @@ KernelSocketFdFactory::RxFromDevice (Ptr<NetDevice> device, Ptr<const Packet> p,
     {
       m_kernel->GetTaskManager ()->Wakeup (dev->poller);
     }
+}
+
+void
+KernelSocketFdFactory::AddWifiDevice (Ptr<LklWifiDevice> device)
+{
+  NS_LOG_FUNCTION (this << device);
+  LklWifiRadio *radio = new LklWifiRadio ();
+  radio->factory = this;
+  radio->device = device;
+  radio->irqTask = 0;
+  typedef int (*GetFreeIrq)(const char *);
+  GetFreeIrq getFreeIrq = (GetFreeIrq) m_kernel->Lookup ("lkl_get_free_irq");
+  radio->irq = getFreeIrq ("lkl-wifi");
+  NS_ASSERT_MSG (radio->irq > 0, "lkl_get_free_irq failed: " << radio->irq);
+  int id = m_radios.size ();
+  m_radios.push_back (radio);
+
+  uint8_t mac[6];
+  Mac48Address::ConvertFrom (device->GetAddress ()).CopyTo (mac);
+  long ret = Call (__lkl__NR_wifi_add, id, radio->irq, (long)mac);
+  NS_ASSERT_MSG (ret == 0, "wifi_add failed: " << ret);
+  device->SetEventCallback (MakeCallback (&KernelSocketFdFactory::NotifyWifiEvent, this, radio));
+  m_kernel->GetTaskManager ()->Start (&KernelSocketFdFactory::WifiIrqTrampoline, radio, LKL_TASK_STACK);
+}
+
+void
+KernelSocketFdFactory::NotifyWifiEvent (LklWifiRadio *radio)
+{
+  if (radio->irqTask)
+    {
+      Task *task = radio->irqTask;
+      radio->irqTask = 0;
+      m_kernel->GetTaskManager ()->Wakeup (task);
+    }
+}
+
+void
+KernelSocketFdFactory::WifiIrqTrampoline (void *context)
+{
+  LklWifiRadio *radio = (LklWifiRadio *)context;
+  radio->factory->WifiIrq (radio);
+}
+
+void
+KernelSocketFdFactory::WifiIrq (LklWifiRadio *radio)
+{
+  // Like the radio's interrupt line: raised while the device has events,
+  // which the kernel's interrupt handler takes with wifi_poll.
+  typedef int (*TriggerIrq)(int);
+  TriggerIrq triggerIrq = (TriggerIrq) m_kernel->Lookup ("lkl_trigger_irq");
+  TaskManager *manager = m_kernel->GetTaskManager ();
+  while (true)
+    {
+      while (!radio->device->HasEvents ())
+        {
+          radio->irqTask = manager->RunningTask ();
+          manager->Sleep ();
+        }
+      triggerIrq (radio->irq);
+    }
+}
+
+namespace {
+
+KernelSocketFdFactory *
+CurrentFactory (void)
+{
+  LklKernel *kernel = LklKernel::Current ();
+  NS_ASSERT (kernel);
+  return PeekPointer (kernel->GetObject<KernelSocketFdFactory> ());
+}
+
+} // namespace
+
+int
+KernelSocketFdFactory::WifiTx (int id, const void *frame, int len, const struct lkl_wifi_tx_info *info)
+{
+  KernelSocketFdFactory *factory = CurrentFactory ();
+  NS_ASSERT (id >= 0 && id < (int)factory->m_radios.size ());
+  LklWifiDevice::TxInfo tx;
+  for (int i = 0; i < 4; i++)
+    {
+      tx.rate[i] = info->rate[i];
+      tx.count[i] = info->count[i];
+    }
+  tx.freq = info->freq;
+  tx.noAck = info->no_ack;
+  tx.noStatus = info->no_status;
+  const uint8_t *bytes = (const uint8_t *)frame;
+  std::vector<uint8_t> data (bytes, bytes + len);
+  // The device lives in the simulator, not in the kernel's task.
+  TaskManager::Current ()->ExecOnMain (MakeEvent (&LklWifiDevice::Transmit,
+                                                  factory->m_radios[id]->device, data, tx));
+  return 0;
+}
+
+int
+KernelSocketFdFactory::WifiPoll (int id, void *frame, int len, struct lkl_wifi_event *ev)
+{
+  KernelSocketFdFactory *factory = CurrentFactory ();
+  NS_ASSERT (id >= 0 && id < (int)factory->m_radios.size ());
+  LklWifiDevice::Event event;
+  if (!factory->m_radios[id]->device->PopEvent (event))
+    {
+      return -1;
+    }
+  ev->type = event.type;
+  if (event.type == LklWifiDevice::Event::RX)
+    {
+      if ((int)event.frame.size () > len)
+        {
+          return WifiPoll (id, frame, len, ev); // cannot be a valid frame
+        }
+      memcpy (frame, event.frame.data (), event.frame.size ());
+      ev->len = event.frame.size ();
+      ev->freq = event.freq;
+      ev->rate = event.rate;
+      ev->signal = event.signal;
+    }
+  else
+    {
+      ev->acked = event.acked;
+      ev->attempts = event.attempts;
+    }
+  return 0;
 }
 
 UnixFd *
