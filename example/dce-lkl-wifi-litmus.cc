@@ -46,6 +46,7 @@
 #include "ns3/mesh-module.h"
 #include "ns3/spectrum-module.h"
 #include "ns3/dce-module.h"
+#include <iomanip>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -157,9 +158,43 @@ TxPsdu (std::string name, WifiConstPsduMap psdus, WifiTxVector txVector, double 
 {
   for (auto &i : psdus)
     {
-      if (i.second->GetHeader (0).IsData () && !i.second->GetAddr1 ().IsGroup ())
+      const WifiMacHeader &hdr = i.second->GetHeader (0);
+      std::ostringstream at;
+      at << "@" << txVector.GetChannelWidth () << "MHz";
+      if (hdr.IsData () && !i.second->GetAddr1 ().IsGroup ())
         {
-          g_txRates[std::make_pair (name, txVector.GetMode ().GetUniqueName ())]++;
+          std::ostringstream mode;
+          mode << txVector.GetMode ().GetUniqueName () << "/" << +txVector.GetNss () << "ss" << at.str ();
+          g_txRates[std::make_pair (name, mode.str ())]++;
+          if (i.second->GetNMpdus () > 1)
+            {
+              g_txRates[std::make_pair (name, "A-MPDUs")]++;
+              g_txRates[std::make_pair (name, "MPDUs-in-A-MPDUs")] += i.second->GetNMpdus ();
+            }
+          if (hdr.IsMoreFragments () || hdr.GetFragmentNumber () > 0)
+            {
+              g_txRates[std::make_pair (name, "fragments")]++;
+            }
+        }
+      else if (hdr.IsBlockAck ())
+        {
+          g_txRates[std::make_pair (name, "BlockAck")]++;
+        }
+      else if (hdr.IsBlockAckReq ())
+        {
+          g_txRates[std::make_pair (name, "BlockAckReq")]++;
+        }
+      else if (hdr.IsRts ())
+        {
+          g_txRates[std::make_pair (name, "RTS" + at.str ())]++;
+        }
+      else if (hdr.IsCts ())
+        {
+          g_txRates[std::make_pair (name, "CTS" + at.str ())]++;
+        }
+      else if (hdr.IsAction ())
+        {
+          g_txRates[std::make_pair (name, "Action")]++;
         }
     }
 }
@@ -172,6 +207,23 @@ RxDrop (Ptr<const Packet> packet, WifiPhyRxfailureReason reason)
   std::ostringstream s;
   s << reason;
   g_rxDrops[s.str ()]++;
+}
+
+uint64_t g_headerMismatches = 0;
+
+void
+CountMismatch (std::string context, const std::vector<uint8_t> &frame, Ptr<const Packet> sent)
+{
+  if (g_headerMismatches++ < 3)
+    {
+      std::ostringstream linux;
+      for (uint8_t b : frame)
+        {
+          linux << std::hex << std::setw (2) << std::setfill ('0') << +b;
+        }
+      std::cout << Simulator::Now ().GetSeconds () << "s header mismatch " << linux.str ()
+                << std::endl;
+    }
 }
 
 void
@@ -238,6 +290,13 @@ main (int argc, char *argv[])
   uint32_t nLinux = 4;
   uint32_t nNs3 = 4;
   double captureWindow = 16;
+  std::string standard = "ac";
+  std::string direction = "down";
+  uint32_t fragThreshold = 600;
+  double interfererRate = 3;
+  bool wmm = true;
+  bool pcap = true;
+  bool radiotap = true;
   CommandLine cmd;
   cmd.AddValue ("scenario", "promisc, spectrum, rate, dense, pcap or macchange", scenario);
   cmd.AddValue ("channel", "spectrum: single or multi (model spectrum channel)", channelType);
@@ -247,6 +306,15 @@ main (int argc, char *argv[])
   cmd.AddValue ("linux", "dense: Linux mesh points", nLinux);
   cmd.AddValue ("ns3", "dense: ns-3 mesh points", nNs3);
   cmd.AddValue ("captureWindow", "dense: frame capture window (us)", captureWindow);
+  cmd.AddValue ("standard", "ht: n, ac or ax", standard);
+  cmd.AddValue ("direction", "frag-ba: down (ns-3 AP fragments) or up (Linux fragments)", direction);
+  cmd.AddValue ("fragThreshold", "frag-ba: fragmentation threshold (bytes)", fragThreshold);
+  cmd.AddValue ("interfererRate", "thompson-width: load on the secondary channel (Mbps, 0: none)",
+                interfererRate);
+  cmd.AddValue ("wmm", "ht, frag-ba, thompson-width: give Linux the EDCA parameters of the "
+                "ns-3 AP as a WMM element too (LklWifiDevice::WmmFromEdca)", wmm);
+  cmd.AddValue ("pcap", "ht, frag-ba, thompson-width: write pcap files", pcap);
+  cmd.AddValue ("radiotap", "ht, frag-ba, thompson-width: radiotap pcap files (else 802.11)", radiotap);
   cmd.AddValue ("stop", "Simulation time (s)", stop);
   cmd.Parse (argc, argv);
   // Linux drops packets whose checksums ns-3 left out
@@ -551,6 +619,182 @@ main (int argc, char *argv[])
           Run (monitor, Seconds (0.7), "iw", "dev wlan0 set freq 5500");
           Run (monitor, Seconds (1.0), "lkl-sniff", "wlan0 " + std::to_string (stop - 2) + " mon.pcap");
         }
+      Simulator::Schedule (Seconds (stop - 0.5), &PrintStats);
+    }
+  else if (scenario == "ht" || scenario == "frag-ba" || scenario == "thompson-width")
+    {
+      // An ns-3 AP and a Linux STA of the same standard, on a spectrum
+      // channel (per-20 MHz CCA, for the secondary channel).
+      WifiStandard wifiStd = standard == "n" ? WIFI_STANDARD_80211n
+        : standard == "ac" ? WIFI_STANDARD_80211ac : WIFI_STANDARD_80211ax;
+      std::string settings = standard == "n" ? "{38, 40, BAND_5GHZ, 0}" : "{42, 80, BAND_5GHZ, 0}";
+      if (scenario == "frag-ba")
+        {
+          wifiStd = WIFI_STANDARD_80211n;
+          settings = "{36, 20, BAND_5GHZ, 0}";
+        }
+      else if (scenario == "thompson-width")
+        {
+          wifiStd = WIFI_STANDARD_80211ac;
+          settings = "{38, 40, BAND_5GHZ, 0}";
+        }
+      Ptr<MultiModelSpectrumChannel> channel = CreateObject<MultiModelSpectrumChannel> ();
+      channel->AddPropagationLossModel (CreateObject<LogDistancePropagationLossModel> ());
+      channel->SetPropagationDelayModel (CreateObject<ConstantSpeedPropagationDelayModel> ());
+      SpectrumWifiPhyHelper spectrum;
+      spectrum.SetChannel (channel);
+      spectrum.Set ("ChannelSettings", StringValue (settings));
+      spectrum.Set ("Antennas", UintegerValue (2));
+      spectrum.Set ("MaxSupportedTxSpatialStreams", UintegerValue (2));
+      spectrum.Set ("MaxSupportedRxSpatialStreams", UintegerValue (2));
+      spectrum.SetPcapDataLinkType (radiotap ? WifiPhyHelper::DLT_IEEE802_11_RADIO
+                                             : WifiPhyHelper::DLT_IEEE802_11);
+
+      bool interfere = scenario == "thompson-width" && interfererRate > 0;
+      NodeContainer apNode (1), linuxNodes (1), interferers (interfere ? 2 : 0);
+      positions->Add (Vector (0, 0, 0));
+      positions->Add (Vector (distance, 0, 0));
+      positions->Add (Vector (0, 2, 0));
+      positions->Add (Vector (0, 4, 0));
+      mobility.Install (NodeContainer (apNode, linuxNodes, interferers));
+
+      WifiHelper wifi;
+      wifi.SetStandard (wifiStd);
+      WifiMacHelper mac;
+      if (scenario == "thompson-width")
+        {
+          wifi.SetRemoteStationManager ("ns3::ThompsonSamplingWifiManager", "RtsCtsThreshold",
+                                        UintegerValue (0));
+        }
+      if (scenario == "frag-ba")
+        {
+          // #1199: no A-MPDU, fragmentation, and a Block Ack agreement
+          wifi.SetRemoteStationManager ("ns3::IdealWifiManager", "FragmentationThreshold",
+                                        UintegerValue (fragThreshold));
+          mac.SetType ("ns3::ApWifiMac", "Ssid", SsidValue (Ssid ("litmus")), "BE_MaxAmpduSize",
+                       UintegerValue (0), "BE_BlockAckThreshold", UintegerValue (2));
+        }
+      else
+        {
+          mac.SetType ("ns3::ApWifiMac", "Ssid", SsidValue (Ssid ("litmus")));
+        }
+      NetDeviceContainer apDevice = wifi.Install (spectrum, mac, apNode);
+      wifi.AssignStreams (apDevice, 300);
+      if (pcap)
+        {
+          spectrum.EnablePcap ("litmus-" + scenario, apDevice, true);
+        }
+      WatchPhy (DynamicCast<WifiNetDevice> (apDevice.Get (0))->GetPhy (), "ns3-ap");
+
+      lklWifi.SetStandard (wifiStd);
+      Config::SetDefault ("ns3::LklWifiDevice::WmmFromEdca", BooleanValue (wmm));
+      dceManager.Install (linuxNodes);
+      NetDeviceContainer linuxDevices = lklWifi.Install (spectrum, linuxNodes);
+      if (pcap)
+        {
+          LklWifiHelper::EnablePcap (spectrum, "litmus-" + scenario, linuxDevices);
+        }
+      LklWifiHelper::AssignStreams (linuxDevices, 100);
+      WatchPhy (DynamicCast<LklWifiDevice> (linuxDevices.Get (0))->GetPhy (), "linux-sta");
+      Config::Connect ("/NodeList/*/DeviceList/*/$ns3::LklWifiDevice/HeaderMismatch",
+                       MakeCallback (&CountMismatch));
+
+      internet.Install (apNode);
+      address.SetBase ("10.1.1.0", "255.255.255.0", "0.0.0.100");
+      address.Assign (apDevice);
+      Ptr<Node> sta = linuxNodes.Get (0);
+      if (scenario == "frag-ba" && direction == "up")
+        {
+          Run (sta, Seconds (3.0), "iw", "phy#0 set frag " + std::to_string (fragThreshold));
+          Run (sta, Seconds (3.2), "iw", "phy#0 info");
+        }
+      LinuxSta (sta, "litmus", 5180, "10.1.1.1");
+      Run (sta, Seconds (stop - 1), "iw", "dev wlan0 station dump");
+
+      PacketSinkHelper sink ("ns3::UdpSocketFactory",
+                             InetSocketAddress (Ipv4Address::GetAny (), 5001));
+      Ptr<PacketSink> upSink = DynamicCast<PacketSink> (sink.Install (apNode).Get (0));
+      uint64_t *upBytes = new uint64_t (0);
+      double upStart = 4, upStop = 0, downStart = 0, downStop = 0;
+      std::string upRate = "200M", downRate = "200Mbps";
+      if (scenario == "ht")
+        {
+          upStop = 10;
+          downStart = 11;
+          downStop = 17;
+        }
+      else if (scenario == "frag-ba")
+        {
+          upRate = "5M";
+          downRate = "5Mbps";
+          if (direction == "up")
+            {
+              upStop = stop - 2;
+            }
+          else
+            {
+              downStart = 4;
+              downStop = stop - 2;
+            }
+        }
+      else
+        {
+          downStart = 4;
+          downStop = stop - 2;
+        }
+      if (upStop > upStart)
+        {
+          std::ostringstream args;
+          args << "-c 10.1.1.100 -u -b " << upRate << " -l 1400 -t " << upStop - upStart;
+          Run (sta, Seconds (upStart), "iperf", args.str ());
+          Simulator::Schedule (Seconds (upStart), [upSink, upBytes] () { *upBytes = upSink->GetTotalRx (); });
+          Simulator::Schedule (Seconds (upStop + 0.5), [upSink, upBytes, upStart, upStop] () {
+            std::cout << "goodput up (linux->ns-3) " << (upSink->GetTotalRx () - *upBytes) * 8 / (upStop - upStart) / 1e6
+                      << " Mbps, " << (upSink->GetTotalRx () - *upBytes) / 1400 << " datagrams" << std::endl;
+          });
+        }
+      if (downStop > downStart)
+        {
+          OnOffHelper onoff ("ns3::UdpSocketFactory", InetSocketAddress (Ipv4Address ("10.1.1.1"), 9));
+          onoff.SetConstantRate (DataRate (downRate), 1400);
+          ApplicationContainer down = onoff.Install (apNode);
+          down.Start (Seconds (downStart));
+          down.Stop (Seconds (downStop));
+          Ptr<OnOffApplication> app = DynamicCast<OnOffApplication> (down.Get (0));
+          uint64_t *sent = new uint64_t (0);
+          app->TraceConnectWithoutContext ("Tx", MakeBoundCallback (
+            +[] (uint64_t *n, Ptr<const Packet>) { (*n)++; }, sent));
+          Simulator::Schedule (Seconds (downStop + 0.5), [sent] () {
+            std::cout << "down (ns-3->linux) datagrams sent " << *sent << std::endl;
+          });
+          std::ostringstream args;
+          args << "wlan0 " << downStop - downStart + 0.5;
+          Run (sta, Seconds (downStart), "lkl-sniff", args.str ());
+          Run (sta, Seconds (downStop + 0.6), "ip", "-s link show wlan0");
+        }
+      if (interfere)
+        {
+          // A 20 MHz BSS on the secondary channel, close to the AP.
+          SpectrumWifiPhyHelper secondary;
+          secondary.SetChannel (channel);
+          secondary.Set ("ChannelSettings", StringValue ("{40, 20, BAND_5GHZ, 0}"));
+          WifiHelper legacy;
+          legacy.SetStandard (WIFI_STANDARD_80211a);
+          WifiMacHelper adhoc;
+          adhoc.SetType ("ns3::AdhocWifiMac");
+          NetDeviceContainer devices = legacy.Install (secondary, adhoc, interferers);
+          internet.Install (interferers);
+          address.SetBase ("10.3.3.0", "255.255.255.0");
+          address.Assign (devices);
+          OnOffHelper noise ("ns3::UdpSocketFactory", InetSocketAddress (Ipv4Address ("10.3.3.255"), 9));
+          noise.SetConstantRate (DataRate (std::to_string (interfererRate) + "Mbps"), 1000);
+          ApplicationContainer app = noise.Install (interferers.Get (0));
+          app.Start (Seconds (3.5));
+          app.Stop (Seconds (stop - 1));
+        }
+      Simulator::Schedule (Seconds (stop - 0.5), [] () {
+        std::cout << "header mismatches " << g_headerMismatches << std::endl;
+      });
       Simulator::Schedule (Seconds (stop - 0.5), &PrintStats);
     }
   else
