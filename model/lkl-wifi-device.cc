@@ -18,6 +18,7 @@
 #include "ns3/wifi-psdu.h"
 #include "ns3/wifi-mac-header.h"
 #include "ns3/wifi-mac-trailer.h"
+#include "ns3/snr-tag.h"
 #include "ns3/wifi-utils.h"
 #include "ns3/wifi-types.h"
 #include "ns3/wifi-standard-constants.h"
@@ -425,7 +426,7 @@ LklWifiDevice::Receive (Ptr<const WifiPsdu> psdu, RxSignalInfo rxSignalInfo,
           && !(hdr.IsQosData () && hdr.IsQosNoAck ()))
         {
           Simulator::Schedule (m_phy->GetSifs (), &LklWifiDevice::SendAck, this,
-                               hdr.GetAddr2 (), txVector);
+                               hdr.GetAddr2 (), txVector, rxSignalInfo.snr);
         }
       if (psdu->IsAggregate ())
         {
@@ -446,7 +447,7 @@ LklWifiDevice::Receive (Ptr<const WifiPsdu> psdu, RxSignalInfo rxSignalInfo,
 }
 
 void
-LklWifiDevice::SendAck (Mac48Address to, WifiTxVector rxVector)
+LklWifiDevice::SendAck (Mac48Address to, WifiTxVector rxVector, double snr)
 {
   if (m_phy->IsStateTx ())
     {
@@ -472,7 +473,13 @@ LklWifiDevice::SendAck (Mac48Address to, WifiTxVector rxVector)
     {
       ackRate = rate >= 240 ? 240 : rate >= 120 ? 120 : 60;
     }
-  m_phy->Send (Create<WifiPsdu> (Create<Packet> (), ack), GetTxVector (ackRate));
+  // Like ns-3 receivers, tell the SNR of the frame to the rate managers
+  // of ns-3 transmitters that use it (e.g. IdealWifiManager).
+  Ptr<Packet> packet = Create<Packet> ();
+  SnrTag tag;
+  tag.Set (snr);
+  packet->AddPacketTag (tag);
+  m_phy->Send (Create<WifiPsdu> (packet, ack), GetTxVector (ackRate));
 }
 
 void

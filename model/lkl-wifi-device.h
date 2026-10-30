@@ -215,8 +215,9 @@ private:
    *
    * @param to the frame's transmitter
    * @param txVector the TX vector of the frame
+   * @param snr the SNR of the frame
    */
-  void SendAck (Mac48Address to, WifiTxVector txVector);
+  void SendAck (Mac48Address to, WifiTxVector txVector, double snr);
 
   Ptr<Node> m_node;                   ///< the node
   Ptr<WifiPhy> m_phy;                 ///< the PHY
