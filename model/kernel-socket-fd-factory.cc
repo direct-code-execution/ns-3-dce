@@ -661,6 +661,16 @@ KernelSocketFdFactory::WifiIrq (LklWifiRadio *radio)
           manager->Sleep ();
         }
       triggerIrq (radio->irq);
+      if (radio->device->HasEvents ())
+        {
+          // The kernel's CPU is taken by a task waiting for the simulator:
+          // the interrupt stays pending until it is released. Let the
+          // simulator run, until the next event of the device or a while,
+          // rather than raising the interrupt again and again.
+          radio->irqTask = manager->RunningTask ();
+          manager->Sleep (MicroSeconds (10));
+          radio->irqTask = 0;
+        }
     }
 }
 
