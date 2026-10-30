@@ -379,7 +379,7 @@ index 000000000..bc45e09d9
 +				      unsigned int *total_flags, u64 multicast)
 +{
 +	/* The host gives every frame it receives. */
-+	*total_flags &= FIF_ALLMULTI | FIF_BCN_PRBRESP_PROMISC | FIF_OTHER_BSS;
++	*total_flags &= FIF_ALLMULTI | FIF_BCN_PRBRESP_PROMISC | FIF_OTHER_BSS | FIF_CONTROL;
 +}
 +
 +static void lkl_wifi_link_info_changed(struct ieee80211_hw *hw,

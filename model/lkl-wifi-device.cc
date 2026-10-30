@@ -415,19 +415,13 @@ LklWifiDevice::Receive (Ptr<const WifiPsdu> psdu, RxSignalInfo rxSignalInfo,
           continue;
         }
       const WifiMacHeader &hdr = psdu->GetHeader (i);
-      if (hdr.IsAck ())
+      if (hdr.IsAck () && m_sending && m_ackTimeout.IsPending () && hdr.GetAddr1 () == m_address)
         {
-          if (m_sending && m_ackTimeout.IsPending () && hdr.GetAddr1 () == m_address)
-            {
-              FinishHead (true);
-            }
-          continue;
+          FinishHead (true);
         }
-      if (hdr.IsCtl ())
-        {
-          continue; // RTS/CTS and block ACKs are not used
-        }
-      if (hdr.GetAddr1 () == m_address
+      // Control frames go to the kernel too, like the frames of a card that
+      // passes them (FIF_CONTROL): its monitor interfaces show them.
+      if (hdr.GetAddr1 () == m_address && !hdr.IsCtl ()
           && !(hdr.IsQosData () && hdr.IsQosNoAck ()))
         {
           Simulator::Schedule (m_phy->GetSifs (), &LklWifiDevice::SendAck, this,
