@@ -7,6 +7,9 @@
  * Author: Gabriel Ferreira <gabrielcarvfer@gmail.com>
  */
 #include "lkl-wifi-helper.h"
+#include "ns3/ht-configuration.h"
+#include "ns3/vht-configuration.h"
+#include "ns3/he-configuration.h"
 #include "ns3/lkl-wifi-device.h"
 #include "ns3/abort.h"
 #include "ns3/mac48-address.h"
@@ -27,8 +30,9 @@ void
 LklWifiHelper::SetStandard (WifiStandard standard)
 {
   NS_ABORT_MSG_IF (standard != WIFI_STANDARD_80211a && standard != WIFI_STANDARD_80211b
-                   && standard != WIFI_STANDARD_80211g,
-                   "The kernel radios have legacy rates only");
+                   && standard != WIFI_STANDARD_80211g && standard != WIFI_STANDARD_80211n
+                   && standard != WIFI_STANDARD_80211ac && standard != WIFI_STANDARD_80211ax,
+                   "The kernel radios have legacy, HT, VHT and HE (single user) rates");
   m_standard = standard;
 }
 
@@ -42,10 +46,30 @@ LklWifiHelper::Install (const WifiPhyHelper &phyHelper, NodeContainer nodes) con
       Ptr<WifiNetDevice> carrier = CreateObject<WifiNetDevice> ();
       carrier->SetStandard (m_standard);
       carrier->SetNode (node);
+      // The PHYs of these standards look up their configuration on their
+      // device; the kernel radios have two spatial streams.
+      if (m_standard >= WIFI_STANDARD_80211n)
+        {
+          carrier->SetHtConfiguration (CreateObject<HtConfiguration> ());
+        }
+      if (m_standard >= WIFI_STANDARD_80211ac)
+        {
+          carrier->SetVhtConfiguration (CreateObject<VhtConfiguration> ());
+        }
+      if (m_standard >= WIFI_STANDARD_80211ax)
+        {
+          carrier->SetHeConfiguration (CreateObject<HeConfiguration> ());
+        }
       std::vector<Ptr<WifiPhy> > phys = phyHelper.Create (node, carrier);
       NS_ABORT_MSG_IF (phys.size () != 1, "One PHY per radio");
       carrier->SetPhy (phys[0]);
       phys[0]->ConfigureStandard (m_standard);
+      if (m_standard >= WIFI_STANDARD_80211n)
+        {
+          phys[0]->SetNumberOfAntennas (2);
+          phys[0]->SetMaxSupportedTxSpatialStreams (2);
+          phys[0]->SetMaxSupportedRxSpatialStreams (2);
+        }
 
       Ptr<LklWifiDevice> device = CreateObject<LklWifiDevice> ();
       device->SetAddress (Mac48Address::Allocate ());

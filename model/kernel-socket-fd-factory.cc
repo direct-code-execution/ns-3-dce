@@ -621,7 +621,22 @@ KernelSocketFdFactory::AddWifiDevice (Ptr<LklWifiDevice> device)
 
   uint8_t mac[6];
   Mac48Address::ConvertFrom (device->GetAddress ()).CopyTo (mac);
-  long ret = Call (__lkl__NR_wifi_add, id, radio->irq, (long)mac);
+  // Like a card, the radio offers what its PHY does.
+  WifiStandard standard = device->GetPhy ()->GetStandard ();
+  long caps = 0;
+  if (standard >= WIFI_STANDARD_80211n)
+    {
+      caps |= LKL_WIFI_CAP_HT;
+    }
+  if (standard >= WIFI_STANDARD_80211ac)
+    {
+      caps |= LKL_WIFI_CAP_VHT;
+    }
+  if (standard >= WIFI_STANDARD_80211ax)
+    {
+      caps |= LKL_WIFI_CAP_HE;
+    }
+  long ret = Call (__lkl__NR_wifi_add, id, radio->irq, (long)mac, caps);
   NS_ASSERT_MSG (ret == 0, "wifi_add failed: " << ret);
   device->SetEventCallback (MakeCallback (&KernelSocketFdFactory::NotifyWifiEvent, this, radio));
   m_kernel->GetTaskManager ()->Start (&KernelSocketFdFactory::WifiIrqTrampoline, radio, LKL_TASK_STACK);
@@ -664,9 +679,9 @@ KernelSocketFdFactory::WifiIrq (LklWifiRadio *radio)
       if (radio->device->HasEvents ())
         {
           // The kernel's CPU is taken by a task waiting for the simulator:
-          // the interrupt stays pending until it is released. Let the
-          // simulator run, until the next event of the device or a while,
-          // rather than raising the interrupt again and again.
+          // the interrupt is pending until it is released. Let the
+          // simulator run, until the next event or a while, rather than
+          // raising the interrupt again and again.
           radio->irqTask = manager->RunningTask ();
           manager->Sleep (MicroSeconds (10));
           radio->irqTask = 0;
@@ -696,7 +711,13 @@ KernelSocketFdFactory::WifiTx (int id, const void *frame, int len, const struct 
     {
       tx.rate[i] = info->rate[i];
       tx.count[i] = info->count[i];
+      tx.mode[i] = info->mode[i];
+      tx.mcs[i] = info->mcs[i];
+      tx.nss[i] = info->nss[i];
+      tx.width[i] = info->width[i];
+      tx.sgi[i] = info->sgi[i];
     }
+  tx.ampdu = info->ampdu;
   tx.freq = info->freq;
   tx.noAck = info->no_ack;
   tx.noStatus = info->no_status;
@@ -730,6 +751,12 @@ KernelSocketFdFactory::WifiPoll (int id, void *frame, int len, struct lkl_wifi_e
       ev->freq = event.freq;
       ev->rate = event.rate;
       ev->signal = event.signal;
+      ev->mode = event.mode;
+      ev->mcs = event.mcs;
+      ev->nss = event.nss;
+      ev->sgi = event.sgi;
+      ev->width = event.width;
+      ev->ampdu_ref = event.ampduRef;
     }
   else
     {

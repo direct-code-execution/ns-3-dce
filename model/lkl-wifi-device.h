@@ -16,12 +16,15 @@
 #include "ns3/random-variable-stream.h"
 #include "ns3/wifi-phy.h"
 #include <deque>
+#include <map>
+#include <set>
 #include <vector>
 
 namespace ns3 {
 
 class WifiNetDevice;
 class WifiPsdu;
+class WifiMpdu;
 class WifiMacHeader;
 struct RxSignalInfo;
 
@@ -39,7 +42,17 @@ struct RxSignalInfo;
  *
  * KernelSocketFdFactory turns each of these devices of a node into a
  * kernel radio (wlan<n>), configured with iw. The PHY is attached with
- * LklWifiHelper; legacy (non-HT) rates only.
+ * LklWifiHelper.
+ *
+ * Legacy, HT, VHT and HE (single user) rates. Like the hardware, the device
+ * aggregates the frames the kernel lets it aggregate (A-MPDU) and handles
+ * the block acknowledgments of the Block Ack sessions mac80211 sets up: it
+ * answers A-MPDUs and Block Ack requests with a compressed BlockAck from
+ * its receive scoreboard, and reports the outcome of each MPDU of the
+ * A-MPDUs it sends from the BlockAck it gets back. It answers RTS with CTS,
+ * on the width of the RTS. Rate control is the kernel's (minstrel_ht),
+ * except for HE peers, whose frames the kernel has sent as HE SU at the
+ * MCS minstrel_ht chose, as firmware does.
  */
 class LklWifiDevice : public NetDevice
 {
@@ -54,20 +67,41 @@ public:
     } type;
     std::vector<uint8_t> frame; ///< RX: the 802.11 frame, without FCS
     uint16_t freq;              ///< RX: MHz
-    uint16_t rate;              ///< RX: 100 kbps units
+    uint16_t rate;              ///< RX: 100 kbps units (legacy)
     int32_t signal;             ///< RX: dBm
     bool acked;                 ///< TX_STATUS
     uint8_t attempts;           ///< TX_STATUS: in total
+    uint8_t mode;               ///< RX: one of Mode
+    uint8_t mcs;                ///< RX: HT/VHT/HE MCS (HT: 0-7, per stream)
+    uint8_t nss;                ///< RX: spatial streams
+    bool sgi;                   ///< RX: short guard interval
+    uint16_t width;             ///< RX: MHz
+    uint32_t ampduRef;          ///< RX: the A-MPDU of the frame, 0 for none
+  };
+
+  /// Modulation of a rate.
+  enum Mode
+  {
+    LEGACY = 0,
+    HT = 1,
+    VHT = 2,
+    HE = 3,
   };
 
   /// How the kernel wants a frame sent.
   struct TxInfo
   {
-    uint16_t rate[4];  ///< rate series, 100 kbps units; 0 ends the series
-    uint8_t count[4];  ///< attempts at each rate
+    uint16_t rate[4];  ///< legacy rate of each entry of the series, 100 kbps units
+    uint8_t count[4];  ///< attempts at each rate; 0 ends the series
+    uint8_t mode[4];   ///< Mode of each entry
+    uint8_t mcs[4];    ///< MCS of each HT/VHT/HE entry (HT: 0-7, per stream)
+    uint8_t nss[4];    ///< spatial streams of each HT/VHT/HE entry
+    uint16_t width[4]; ///< MHz
+    bool sgi[4];       ///< short guard interval
     uint16_t freq;     ///< MHz
     bool noAck;        ///< sent once, not acknowledged
     bool noStatus;     ///< no TX_STATUS event
+    bool ampdu;        ///< may be aggregated: a Block Ack session is set up
   };
 
   /**
@@ -164,22 +198,109 @@ private:
     uint8_t series;             ///< current entry of the rate series
     uint8_t tries;              ///< attempts at the current rate
     uint8_t attempts;           ///< attempts in total
+    bool done;                  ///< its outcome is known
+    bool acked;                 ///< done: it was acknowledged
+  };
+
+  /// What a recipient of a Block Ack session has received.
+  struct Scoreboard
+  {
+    uint16_t winStart;          ///< first sequence number of the window
+    std::set<uint16_t> received; ///< in the window
   };
 
   /**
-   * Build the PSDU of a frame.
+   * Build the MPDU of a frame.
    *
    * @param frame the 802.11 frame, without FCS
-   * @return the PSDU, or 0 if the header cannot be parsed
+   * @return the MPDU, or 0 if the header cannot be parsed
    */
-  Ptr<WifiPsdu> MakePsdu (const std::vector<uint8_t> &frame) const;
+  Ptr<WifiMpdu> MakeMpdu (const std::vector<uint8_t> &frame) const;
   /**
    * The TX vector of a legacy rate.
    *
    * @param rate the rate, in 100 kbps units
+   * @param width the channel width (non-HT duplicate above 20 MHz)
    * @return the TX vector
    */
-  WifiTxVector GetTxVector (uint16_t rate) const;
+  WifiTxVector GetTxVector (uint16_t rate, MHz_u width = MHz_u{20}) const;
+  /**
+   * The TX vector of an entry of a rate series.
+   *
+   * @param info the rate series
+   * @param series the entry
+   * @return the TX vector
+   */
+  WifiTxVector GetTxVector (const TxInfo &info, uint8_t series) const;
+  /**
+   * The TX vector of a control response (ACK, BlockAck, CTS): the highest
+   * mandatory legacy rate of the modulation of the frame it answers.
+   *
+   * @param rxVector the TX vector of the frame it answers
+   * @param width the channel width
+   * @return the TX vector
+   */
+  WifiTxVector GetResponseTxVector (const WifiTxVector &rxVector, MHz_u width) const;
+  /**
+   * Add the WMM Parameter element equivalent to the EDCA Parameter Set
+   * element of a beacon, probe response or association response.
+   *
+   * @param frame the frame, without FCS
+   * @param hdr its MAC header
+   */
+  void AddWmmFromEdca (std::vector<uint8_t> &frame, const WifiMacHeader &hdr) const;
+  /// @return the center frequency of the primary 20 MHz channel (MHz)
+  uint16_t PrimaryFrequency (void) const;
+  /// @return the index in the queue of the first frame without outcome
+  std::size_t FirstPending (void) const;
+  /**
+   * Account a failed attempt of a frame: move along its rate series, or
+   * give up.
+   *
+   * @param pending the frame
+   */
+  void Failed (Pending &pending);
+  /// Report the outcomes known at the head of the queue, then contend again.
+  void Flush (void);
+  /**
+   * A BlockAck for the A-MPDU in flight was received.
+   *
+   * @param ba the BlockAck
+   */
+  void ReceiveBlockAck (Ptr<const WifiMpdu> ba);
+  /**
+   * Record a frame of a Block Ack session in the scoreboard.
+   *
+   * @param ta its transmitter
+   * @param tid its TID
+   * @param seq its sequence number
+   */
+  void Record (Mac48Address ta, uint8_t tid, uint16_t seq);
+  /**
+   * Answer with a compressed BlockAck after SIFS.
+   *
+   * @param to the originator
+   * @param tid the TID
+   * @param rxVector the TX vector of the frame answered
+   * @param snr the SNR of the frame answered
+   */
+  void SendBlockAck (Mac48Address to, uint8_t tid, WifiTxVector rxVector, double snr);
+  /**
+   * Add the SNR tag of a response, as ns-3 receivers do.
+   *
+   * @param packet the response
+   * @param snr the SNR of the frame answered
+   */
+  static void AddSnrTag (Ptr<Packet> packet, double snr);
+  /**
+   * Answer an RTS with a CTS after SIFS.
+   *
+   * @param to the transmitter of the RTS
+   * @param duration the Duration of the RTS
+   * @param rxVector its TX vector
+   * @param snr its SNR
+   */
+  void SendCts (Mac48Address to, Time duration, WifiTxVector rxVector, double snr);
   /// Start the contention for the frame at the head of the queue.
   void StartAccess (void);
   /// One slot of contention: count it down if the medium is idle.
@@ -232,6 +353,12 @@ private:
   uint32_t m_backoff;                 ///< slots of backoff left
   uint32_t m_idleSlots;               ///< idle slots since the medium was busy
   bool m_sending;                     ///< a frame is on the air or awaits its ACK
+  bool m_expectBlockAck;              ///< the frame on the air is answered with a BlockAck
+  std::vector<std::size_t> m_inflight; ///< queue indexes of the MPDUs on the air
+  std::map<std::pair<Mac48Address, uint8_t>, Scoreboard> m_scoreboards; ///< per TA and TID
+  uint32_t m_ampduRef;                ///< A-MPDUs received
+  bool m_rxAmpduOpen;                 ///< MPDUs of an A-MPDU are being received
+  bool m_wmmFromEdca;                 ///< add WMM elements from EDCA Parameter Sets
   EventId m_access;                   ///< next contention slot
   EventId m_ackTimeout;               ///< acknowledgment timeout
   std::deque<Pending> m_queue;        ///< frames to send, head first

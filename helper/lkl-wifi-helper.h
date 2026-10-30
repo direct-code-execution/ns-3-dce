@@ -24,7 +24,7 @@ class WifiPhyHelper;
  * channel with ns-3 wifi devices.
  *
  * Install before the kernel boots or after: the radio is wlan<n> in the
- * kernel either way. Legacy (non-HT) standards only: 802.11a, b and g.
+ * kernel either way. 802.11a/b/g, n, ac and ax (single user).
  */
 class LklWifiHelper
 {
