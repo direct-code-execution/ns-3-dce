@@ -49,7 +49,7 @@ new file mode 100644
 index 000000000..bc45e09d9
 --- /dev/null
 +++ b/arch/lkl/drivers/wifi.c
-@@ -0,0 +1,470 @@
+@@ -0,0 +1,475 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * A mac80211 radio whose frames are carried by the host.
@@ -211,11 +211,15 @@ index 000000000..bc45e09d9
 +	struct sk_buff *skb = skb_dequeue(&wifi->pending);
 +	struct ieee80211_tx_info *info;
 +	int attempts = ev->attempts;
++	u8 counts[IEEE80211_TX_MAX_RATES];
 +	int i;
 +
 +	if (!skb)
 +		return; /* dropped by stop */
 +	info = IEEE80211_SKB_CB(skb);
++	/* The attempts at each rate, which clearing the status zeroes. */
++	for (i = 0; i < IEEE80211_TX_MAX_RATES; i++)
++		counts[i] = info->status.rates[i].count;
 +	ieee80211_tx_info_clear_status(info);
 +	/* Spread the attempts over the rate series, in order. */
 +	for (i = 0; i < IEEE80211_TX_MAX_RATES; i++) {
@@ -226,6 +230,7 @@ index 000000000..bc45e09d9
 +			rate->count = 0;
 +			continue;
 +		}
++		rate->count = counts[i];
 +		if (rate->count > attempts || i == IEEE80211_TX_MAX_RATES - 1)
 +			rate->count = attempts;
 +		attempts -= rate->count;
