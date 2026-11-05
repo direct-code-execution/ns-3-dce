@@ -229,3 +229,14 @@ int dce_getpagesize (void)
 {
   return sysconf (_SC_PAGESIZE);
 }
+
+// C23, used by GLib with glibc >= 2.43: must reach DCE's heap, as malloc does.
+void dce_free_sized (void *ptr, size_t size)
+{
+  dce_free (ptr);
+}
+
+void dce_free_aligned_sized (void *ptr, size_t alignment, size_t size)
+{
+  dce_free (ptr);
+}

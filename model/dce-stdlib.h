@@ -20,6 +20,8 @@ int dce_posix_memalign (void **memptr, size_t alignment, size_t size);
 void * dce_memalign (size_t alignment, size_t size);
 void * dce_aligned_alloc (size_t alignment, size_t size);
 void dce_free (void *ptr);
+void dce_free_sized (void *ptr, size_t size);
+void dce_free_aligned_sized (void *ptr, size_t alignment, size_t size);
 void * dce_realloc (void *ptr, size_t size);
 int dce_atexit (void (*function)(void));
 char * dce_getenv (const char *name);

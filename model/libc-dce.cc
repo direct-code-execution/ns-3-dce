@@ -122,7 +122,7 @@
 #include <fnmatch.h>
 #include <langinfo.h>
 #include <sys/vfs.h>
-#include <termio.h>
+#include <termios.h>
 #include <math.h>
 #include <assert.h>
 #include <dlfcn.h>
