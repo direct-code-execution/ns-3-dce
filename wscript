@@ -117,6 +117,7 @@ def configure(conf):
     ns3waf.check_modules(conf, ['wifi', 'point-to-point', 'csma', 'mobility'], mandatory = False)
     ns3waf.check_modules(conf, ['point-to-point-layout'], mandatory = False)
     ns3waf.check_modules(conf, ['mpi', 'lte'], mandatory = False)
+    ns3waf.check_modules(conf, ['nr', 'antenna'], mandatory = False)
     ns3waf.check_modules(conf, ['visualizer'], mandatory = False)
     ns3waf.check_modules(conf, ['applications'], mandatory = False)
     ns3waf.check_modules(conf, ['fd-net-device'], mandatory = False)
@@ -522,6 +523,9 @@ def build_dce_kernel_examples(module, bld):
         module.add_example(needed = ['core', 'network', 'internet', 'dce', 'wifi', 'mobility', 'csma', 'tap-bridge'],
                            target='bin/dce-browser',
                            source=['example/dce-browser.cc'])
+        module.add_example(needed = ['core', 'network', 'internet', 'dce', 'mobility', 'csma', 'tap-bridge', 'antenna', 'nr'],
+                           target='bin/dce-browser-nr',
+                           source=['example/dce-browser-nr.cc'])
     # The clip streamed by dce-wifi-video, installed with the DCE binaries so
     # that the example finds it through DCE_PATH.
     bld(rule='cp ${SRC} ${TGT}', source='example/dce-wifi-video-sample.ts',
