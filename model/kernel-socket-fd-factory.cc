@@ -526,11 +526,13 @@ KernelSocketFdFactory::AddDevice (Ptr<NetDevice> device)
     }
   Call (__lkl__NR_close, s);
 
-  // LTE devices do not support promiscuous mode: they deliver received
+  // LTE and NR devices do not support promiscuous mode: they deliver received
   // packets only to the non-promiscuous handlers.
-  TypeId lte;
-  bool promiscuous = !(TypeId::LookupByNameFailSafe ("ns3::LteNetDevice", &lte)
-                       && device->GetInstanceTypeId ().IsChildOf (lte));
+  TypeId cellular;
+  bool promiscuous = !((TypeId::LookupByNameFailSafe ("ns3::LteNetDevice", &cellular)
+                        && device->GetInstanceTypeId ().IsChildOf (cellular))
+                       || (TypeId::LookupByNameFailSafe ("ns3::NrNetDevice", &cellular)
+                           && device->GetInstanceTypeId ().IsChildOf (cellular)));
   GetObject<Node> ()->RegisterProtocolHandler (MakeCallback (&KernelSocketFdFactory::RxFromDevice, this),
                                                0, device, promiscuous);
 }
