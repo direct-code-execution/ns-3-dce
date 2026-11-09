@@ -798,7 +798,7 @@ NetlinkSocket::BuildInterfaceAddressDumpMessages (uint32_t received_seq)
                                 );
       InterfaceAddressMessage ifamsg;
 
-      ifamsg.SetInterfaceIndex (i);
+      ifamsg.SetInterfaceIndex (Ipv4InterfaceToDevice (i));
       ifamsg.SetFamily (AF_INET); //default AF_INET
       ifamsg.SetLength (mask_len);
       ifamsg.SetFlags (0);
@@ -848,7 +848,7 @@ NetlinkSocket::BuildInterfaceAddressDumpMessages (uint32_t received_seq)
             NETLINK_RTM_NEWADDR, NETLINK_MSG_F_MULTI, received_seq, m_Pid);
           InterfaceAddressMessage ifamsg;
 
-          ifamsg.SetInterfaceIndex (i);
+          ifamsg.SetInterfaceIndex (Ipv6InterfaceToDevice (i));
           ifamsg.SetFamily (AF_INET6);
           ifamsg.SetFlags (0);
 
@@ -877,6 +877,18 @@ NetlinkSocket::BuildInterfaceAddressDumpMessages (uint32_t received_seq)
         }
     }
   return nlmsg_dump;
+}
+
+uint32_t
+NetlinkSocket::Ipv4InterfaceToDevice (uint32_t interface) const
+{
+  return m_node->GetObject<Ipv4> ()->GetNetDevice (interface)->GetIfIndex () + 1;
+}
+
+uint32_t
+NetlinkSocket::Ipv6InterfaceToDevice (uint32_t interface) const
+{
+  return m_node->GetObject<Ipv6> ()->GetNetDevice (interface)->GetIfIndex () + 1;
 }
 
 NetlinkMessage
@@ -922,7 +934,8 @@ NetlinkSocket::BuildInterfaceInfoDumpMessage (uint32_t interface_num, uint32_t s
 
   ifinfomsg.SetFamily (0);      // AF_UNSPEC
   ifinfomsg.SetDeviceType (0); // not clear
-  ifinfomsg.SetInterfaceIndex (interface_num);
+  // Linux interface indexes start at 1: NetDevice index + 1.
+  ifinfomsg.SetInterfaceIndex (interface_num + 1);
   ifinfomsg.SetDeviceFlags (flags); // not clear
   ifinfomsg.SetChangeMask (0xffffffff);
 
@@ -997,8 +1010,8 @@ NetlinkSocket::BuildRouteDumpMessages (uint32_t seq)
       // ns3 use local address as the route src address
       //      rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_SRC, ADDRESS, route.GetSource()));
       //      rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_PREFSRC, ADDRESS, route.GetSource()));//not used in ns3
-      rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_IIF, U32, route.GetInterface ()));
-      rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_OIF, U32, route.GetInterface ()));
+      rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_IIF, U32, Ipv4InterfaceToDevice (route.GetInterface ())));
+      rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_OIF, U32, Ipv4InterfaceToDevice (route.GetInterface ())));
       rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_GATEWAY, ADDRESS, route.GetGateway ()));
 
       nlmsg_rt.SetHeader (nhr);
@@ -1032,8 +1045,8 @@ NetlinkSocket::BuildRouteDumpMessages (uint32_t seq)
       //                                          ipv6->GetSourceAddress(route.GetDest ())));
       // rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_PREFSRC, ADDRESS,
       //                                          ipv6->GetSourceAddress(route.GetDest ())));
-      rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_IIF, U32, route.GetInterface ()));
-      rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_OIF, U32, route.GetInterface ()));
+      rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_IIF, U32, Ipv6InterfaceToDevice (route.GetInterface ())));
+      rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_OIF, U32, Ipv6InterfaceToDevice (route.GetInterface ())));
       rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_GATEWAY, ADDRESS, route.GetGateway ()));
 
       nlmsg_rt.SetHeader (nhr);
@@ -1281,6 +1294,32 @@ NetlinkSocket::DoRouteMessage (const NetlinkMessage &nlmsg, uint16_t type, uint8
   Ipv6StaticRoutingHelper routingHelper6;
   Ptr<Ipv6StaticRouting> ipv6Static = routingHelper6.GetStaticRouting (ipv6);
 
+  // Netlink interface indexes are NetDevice indexes + 1, as in link
+  // messages; routing tables are indexed by IP interface.
+  if (attr_flags[RouteMessage::RT_A_OIF])
+    {
+      int32_t ifIndex = -1;
+      if (index >= 1 && index <= m_node->GetNDevices ())
+        {
+          Ptr<NetDevice> dev = m_node->GetDevice (index - 1);
+          if (family == AF_INET && ipv4)
+            {
+              ifIndex = ipv4->GetInterfaceForDevice (dev);
+            }
+          else if (family == AF_INET6 && ipv6)
+            {
+              ifIndex = ipv6->GetInterfaceForDevice (dev);
+            }
+        }
+      if (ifIndex < 0)
+        {
+          NS_LOG_DEBUG ("No IP interface for output device " << index);
+          m_errno = ERROR_ADDRNOTAVAIL;
+          return -1;
+        }
+      index = ifIndex;
+    }
+
   NS_LOG_DEBUG (Simulator::Now ().GetSeconds () << " Route message, type: " << type << "; from " << m_node->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ()
                                                 << " to " << dest << " through " << gateway);
 
@@ -1429,14 +1468,29 @@ NetlinkSocket::DoRouteMessage (const NetlinkMessage &nlmsg, uint16_t type, uint8
             {
               if (!attr_flags[RouteMessage::RT_A_OIF])
                 {
-#ifdef FIXME
-                  if (ipv6->GetIfIndexForDestination (gateway6, index) == false)
+                  // Find the interface on which the gateway is on-link.
+                  bool found = false;
+                  for (uint32_t i = 0; i < ipv6->GetNInterfaces () && !found; i++)
+                    {
+                      for (uint32_t j = 0; j < ipv6->GetNAddresses (i); j++)
+                        {
+                          Ipv6InterfaceAddress ifAddr = ipv6->GetAddress (i, j);
+                          if (attr_flags[RouteMessage::RT_A_GATEWAY]
+                              && !gateway6.IsLinkLocal ()
+                              && ifAddr.GetPrefix ().IsMatch (ifAddr.GetAddress (), gateway6))
+                            {
+                              index = i;
+                              found = true;
+                              break;
+                            }
+                        }
+                    }
+                  if (!found)
                     {
                       NS_LOG_INFO ("No suitable interface to add an route entry");
                       m_errno = ERROR_ADDRNOTAVAIL;
                       return -1;
                     }
-#endif
                 }
 
               Ipv6Prefix pref (dstlen);
@@ -1543,8 +1597,8 @@ NetlinkSocket::DoRouteMessage (const NetlinkMessage &nlmsg, uint16_t type, uint8
                   //ns3 use local address as the route src address
                   // rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_SRC, ADDRESS, ipv4->GetSourceAddress(route.GetDest ())));
                   // rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_PREFSRC, ADDRESS, ipv4->GetSourceAddress(route.GetDest ())));
-                  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_IIF, U32, route.GetInterface ()));
-                  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_OIF, U32, route.GetInterface ()));
+                  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_IIF, U32, Ipv4InterfaceToDevice (route.GetInterface ())));
+                  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_OIF, U32, Ipv4InterfaceToDevice (route.GetInterface ())));
                   rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_GATEWAY, ADDRESS, route.GetGateway ()));
 
                   //fill an netlink message body
@@ -1583,8 +1637,8 @@ NetlinkSocket::DoRouteMessage (const NetlinkMessage &nlmsg, uint16_t type, uint8
                   //ns3 use local address as the route src address
                   // rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_SRC, ADDRESS, ipv6->GetSourceAddress(route.GetDest ())));
                   // rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_PREFSRC, ADDRESS, ipv6->GetSourceAddress(route.GetDest ())));
-                  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_IIF, U32, route.GetInterface ()));
-                  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_OIF, U32, route.GetInterface ()));
+                  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_IIF, U32, Ipv6InterfaceToDevice (route.GetInterface ())));
+                  rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_OIF, U32, Ipv6InterfaceToDevice (route.GetInterface ())));
                   rtmsg.AppendAttribute (NetlinkAttribute (RouteMessage::RT_A_GATEWAY, ADDRESS, route.GetGateway ()));
 
                   //fill an netlink message body

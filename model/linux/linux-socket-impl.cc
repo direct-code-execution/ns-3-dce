@@ -319,6 +319,13 @@ LinuxSocketImpl::Connect (const Address & address)
       m_conn_inprogress = true;
     }
   LeaveFakeTask (pid);
+  if (ret == 0)
+    {
+      // Connectionless sockets (UDP, raw) connect immediately; notify like
+      // ns-3's own sockets do, since applications such as OnOffApplication
+      // only start sending from the connection-succeeded callback.
+      NotifyConnectionSucceeded ();
+    }
   return ret;
 }
 

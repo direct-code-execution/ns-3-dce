@@ -148,6 +148,7 @@ struct Process
   std::vector<Condition *> conditions;
   std::vector<struct AtExitHandler> atExitHandlers;
   std::set<uint16_t> children;
+  bool getoptStarted; // getopt has been called by this process
   sigset_t pendingSignals;
   Time itimerInterval;
   EventId itimer;
@@ -222,6 +223,7 @@ struct Thread
   std::list<struct ThreadKeyValue> keyValues;
   sigset_t signalMask;
   sigset_t pendingSignals;
+  sigset_t sigwaitSet; // Signals this thread waits for in sigwait, empty otherwise
   Time lastTime; // Last time of a possible infinite loop checkpoint.
   Waiter *childWaiter; // Not zero if thread waiting for a child in wait or waitall ...
   PollTable *pollTable; // No 0 if a poll is running on this thread

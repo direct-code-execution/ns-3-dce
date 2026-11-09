@@ -201,9 +201,10 @@ UtilsSendSignal (Process *process, int signum)
        i != process->threads.end (); ++i)
     {
       Thread *thread = *i;
-      if (sigismember (&thread->signalMask, signum) == 0)
+      if (sigismember (&thread->signalMask, signum) == 0
+          || sigismember (&thread->sigwaitSet, signum) == 1)
         {
-          // signal not blocked by thread.
+          // signal not blocked by thread, or the thread waits for it in sigwait.
           if (thread->task->IsBlocked ())
             {
               process->manager->Wakeup (thread);

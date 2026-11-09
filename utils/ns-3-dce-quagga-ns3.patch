@@ -1,0 +1,491 @@
+diff -ruN a/example/dce-quagga-bgpd-caida.cc b/example/dce-quagga-bgpd-caida.cc
+--- a/example/dce-quagga-bgpd-caida.cc
++++ b/example/dce-quagga-bgpd-caida.cc
+@@ -99,7 +99,7 @@
+   topoHelp.SetFileType (format);
+   inFile = topoHelp.GetTopologyReader ();
+ 
+-  if (inFile != 0)
++  if (inFile)
+     {
+       nodes = inFile->Read ();
+     }
+diff -ruN a/example/dce-quagga-bgpd.cc b/example/dce-quagga-bgpd.cc
+--- a/example/dce-quagga-bgpd.cc
++++ b/example/dce-quagga-bgpd.cc
+@@ -111,7 +111,7 @@
+     {
+       //      processManager.SetLoader ("ns3::DlmLoaderFactory");
+       processManager.SetTaskManagerAttribute ("FiberManagerType",
+-                                              EnumValue (0));
++                                              StringValue ("UcontextFiberManager"));
+       processManager.SetNetworkStack ("ns3::LinuxSocketFdFactory",
+                                       "Library", StringValue ("liblinux.so"));
+       processManager.Install (nodes);
+diff -ruN a/example/dce-quagga-ospf6d.cc b/example/dce-quagga-ospf6d.cc
+--- a/example/dce-quagga-ospf6d.cc
++++ b/example/dce-quagga-ospf6d.cc
+@@ -110,7 +110,7 @@
+     {
+       //      processManager.SetLoader ("ns3::DlmLoaderFactory");
+       processManager.SetTaskManagerAttribute ("FiberManagerType",
+-                                              EnumValue (0));
++                                              StringValue ("UcontextFiberManager"));
+       processManager.SetNetworkStack ("ns3::LinuxSocketFdFactory",
+                                       "Library", StringValue ("liblinux.so"));
+       processManager.Install (nodes);
+diff -ruN a/example/dce-quagga-ospfd-rocketfuel.cc b/example/dce-quagga-ospfd-rocketfuel.cc
+--- a/example/dce-quagga-ospfd-rocketfuel.cc
++++ b/example/dce-quagga-ospfd-rocketfuel.cc
+@@ -26,7 +26,7 @@
+ #include "ns3/point-to-point-helper.h"
+ #include "ns3/topology-read-module.h"
+ 
+-#include "ns3/v4ping.h"
++#include "ns3/ping.h"
+ 
+ #include <sys/resource.h>
+ #undef NS3_MPI
+@@ -100,7 +100,7 @@
+   topoHelp.SetFileType (format);
+   inFile = topoHelp.GetTopologyReader ();
+ 
+-  if (inFile != 0)
++  if (inFile)
+     {
+       nodes = inFile->Read ();
+     }
+@@ -198,11 +198,11 @@
+   if (systemId == 0)
+ #endif
+   {
+-    Ptr<V4Ping> app = CreateObject<V4Ping> ();
++    Ptr<Ping> app = CreateObject<Ping> ();
+     //Ptr<Ipv4> ipv4Server = nodes.Get (25)->GetObject<Ipv4> ();
+     Ptr<Ipv4> ipv4Server = nodes.Get (nodes.GetN () - 1)->GetObject<Ipv4> ();
+-    app->SetAttribute ("Remote", Ipv4AddressValue (ipv4Server->GetAddress (1, 0).GetLocal ()));
+-    app->SetAttribute ("Verbose", BooleanValue (true));
++    app->SetAttribute ("Destination", AddressValue (Ipv4Address (ipv4Server->GetAddress (1, 0).GetLocal ())));
++    app->SetAttribute ("VerboseMode", EnumValue (Ping::VerboseMode::VERBOSE));
+     nodes.Get (0)->AddApplication (app);
+     app->SetStartTime (Seconds (20.0));
+     app->SetStopTime (Seconds (stopTime));
+diff -ruN a/example/dce-quagga-ospfd.cc b/example/dce-quagga-ospfd.cc
+--- a/example/dce-quagga-ospfd.cc
++++ b/example/dce-quagga-ospfd.cc
+@@ -109,7 +109,7 @@
+     {
+       //      processManager.SetLoader ("ns3::DlmLoaderFactory");
+       processManager.SetTaskManagerAttribute ("FiberManagerType",
+-                                              EnumValue (0));
++                                              StringValue ("UcontextFiberManager"));
+       processManager.SetNetworkStack ("ns3::LinuxSocketFdFactory",
+                                       "Library", StringValue ("liblinux.so"));
+       processManager.Install (nodes);
+diff -ruN a/example/dce-quagga-radvd.cc b/example/dce-quagga-radvd.cc
+--- a/example/dce-quagga-radvd.cc
++++ b/example/dce-quagga-radvd.cc
+@@ -110,7 +110,7 @@
+     {
+       //      processManager.SetLoader ("ns3::DlmLoaderFactory");
+       processManager.SetTaskManagerAttribute ("FiberManagerType",
+-                                              EnumValue (0));
++                                              StringValue ("UcontextFiberManager"));
+       processManager.SetNetworkStack ("ns3::LinuxSocketFdFactory",
+                                       "Library", StringValue ("liblinux.so"));
+       processManager.Install (nodes);
+diff -ruN a/example/dce-quagga-ripd.cc b/example/dce-quagga-ripd.cc
+--- a/example/dce-quagga-ripd.cc
++++ b/example/dce-quagga-ripd.cc
+@@ -110,7 +110,7 @@
+     {
+       //      processManager.SetLoader ("ns3::DlmLoaderFactory");
+       processManager.SetTaskManagerAttribute ("FiberManagerType",
+-                                              EnumValue (0));
++                                              StringValue ("UcontextFiberManager"));
+       processManager.SetNetworkStack ("ns3::LinuxSocketFdFactory",
+                                       "Library", StringValue ("liblinux.so"));
+       processManager.Install (nodes);
+diff -ruN a/example/dce-quagga-ripngd.cc b/example/dce-quagga-ripngd.cc
+--- a/example/dce-quagga-ripngd.cc
++++ b/example/dce-quagga-ripngd.cc
+@@ -110,7 +110,7 @@
+     {
+       //      processManager.SetLoader ("ns3::DlmLoaderFactory");
+       processManager.SetTaskManagerAttribute ("FiberManagerType",
+-                                              EnumValue (0));
++                                              StringValue ("UcontextFiberManager"));
+       processManager.SetNetworkStack ("ns3::LinuxSocketFdFactory",
+                                       "Library", StringValue ("liblinux.so"));
+       processManager.Install (nodes);
+diff -ruN a/example/dce-zebra-simple.cc b/example/dce-zebra-simple.cc
+--- a/example/dce-zebra-simple.cc
++++ b/example/dce-zebra-simple.cc
+@@ -47,7 +47,7 @@
+   NS_LOG_FUNCTION (node->GetId ());
+ 
+   Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> ();
+-  NS_ASSERT_MSG (ipv4 != 0, "ipv4 should not be null");
++  NS_ASSERT_MSG (ipv4, "ipv4 should not be null");
+ 
+   // The thing I didn't know is that interface status (isUp/isDown) and device status (isLinkUp) are two totally different things.  It is possible to set interface up and down, but there is not an easy way to alter status of device. This similar to reality: it is possible to programmatically disable interface, but to actually disable a link one needs to physically cut the cable
+   ipv4->SetDown (2);
+diff -ruN a/helper/quagga-helper.cc b/helper/quagga-helper.cc
+--- a/helper/quagga-helper.cc
++++ b/helper/quagga-helper.cc
+@@ -58,12 +58,6 @@
+     ;
+     return tid;
+   }
+-  TypeId
+-  GetInstanceTypeId (void) const
+-  {
+-    return GetTypeId ();
+-  }
+-
+   void
+   SetFilename (const std::string &filename)
+   {
+@@ -128,12 +122,6 @@
+     ;
+     return tid;
+   }
+-  TypeId
+-  GetInstanceTypeId (void) const
+-  {
+-    return GetTypeId ();
+-  }
+-
+   void
+   addNetwork (std::string prefix, uint32_t area)
+   {
+@@ -235,12 +223,6 @@
+     ;
+     return tid;
+   }
+-  TypeId
+-  GetInstanceTypeId (void) const
+-  {
+-    return GetTypeId ();
+-  }
+-
+   void
+   SetAsn (uint32_t lasn)
+   {
+@@ -405,12 +387,6 @@
+     ;
+     return tid;
+   }
+-  TypeId
+-  GetInstanceTypeId (void) const
+-  {
+-    return GetTypeId ();
+-  }
+-
+ 
+   void
+   SetFilename (const std::string &filename)
+@@ -495,12 +471,6 @@
+     ;
+     return tid;
+   }
+-  TypeId
+-  GetInstanceTypeId (void) const
+-  {
+-    return GetTypeId ();
+-  }
+-
+ 
+   void
+   SetFilename (const std::string &filename)
+@@ -575,12 +545,6 @@
+     ;
+     return tid;
+   }
+-  TypeId
+-  GetInstanceTypeId (void) const
+-  {
+-    return GetTypeId ();
+-  }
+-
+ 
+   void
+   SetFilename (const std::string &filename)
+@@ -647,7 +611,7 @@
+       Ptr<OspfConfig> ospf_conf = nodes.Get (i)->GetObject<OspfConfig> ();
+       if (!ospf_conf)
+         {
+-          ospf_conf = new OspfConfig ();
++          ospf_conf = CreateObject<OspfConfig> ();
+           nodes.Get (i)->AggregateObject (ospf_conf);
+         }
+ 
+@@ -662,7 +626,7 @@
+   Ptr<OspfConfig> ospf_conf = node->GetObject<OspfConfig> ();
+   if (!ospf_conf)
+     {
+-      ospf_conf = new OspfConfig ();
++      ospf_conf = CreateObject<OspfConfig> ();
+       node->AggregateObject (ospf_conf);
+     }
+   ospf_conf->SetRouterId (routerid);
+@@ -678,7 +642,7 @@
+       Ptr<OspfConfig> ospf_conf = nodes.Get (i)->GetObject<OspfConfig> ();
+       if (!ospf_conf)
+         {
+-          ospf_conf = new OspfConfig ();
++          ospf_conf = CreateObject<OspfConfig> ();
+           nodes.Get (i)->AggregateObject (ospf_conf);
+         }
+       ospf_conf->m_ospfdebug = true;
+@@ -695,7 +659,7 @@
+       Ptr<QuaggaConfig> zebra_conf = nodes.Get (i)->GetObject<QuaggaConfig> ();
+       if (!zebra_conf)
+         {
+-          zebra_conf = new QuaggaConfig ();
++          zebra_conf = CreateObject<QuaggaConfig> ();
+           nodes.Get (i)->AggregateObject (zebra_conf);
+         }
+       zebra_conf->m_zebradebug = true;
+@@ -709,7 +673,7 @@
+   Ptr<QuaggaConfig> zebra_conf = node->GetObject<QuaggaConfig> ();
+   if (!zebra_conf)
+     {
+-      zebra_conf = new QuaggaConfig ();
++      zebra_conf = CreateObject<QuaggaConfig> ();
+       node->AggregateObject (zebra_conf);
+     }
+ 
+@@ -726,7 +690,7 @@
+   Ptr<QuaggaConfig> zebra_conf = node->GetObject<QuaggaConfig> ();
+   if (!zebra_conf)
+     {
+-      zebra_conf = new QuaggaConfig ();
++      zebra_conf = CreateObject<QuaggaConfig> ();
+       node->AggregateObject (zebra_conf);
+     }
+ 
+@@ -743,7 +707,7 @@
+       Ptr<QuaggaConfig> zebra_conf = nodes.Get (i)->GetObject<QuaggaConfig> ();
+       if (!zebra_conf)
+         {
+-          zebra_conf = new QuaggaConfig ();
++          zebra_conf = CreateObject<QuaggaConfig> ();
+           nodes.Get (i)->AggregateObject (zebra_conf);
+         }
+       zebra_conf->m_usemanualconf = true;
+@@ -818,7 +782,7 @@
+       Ptr<Ospf6Config> ospf6_conf = nodes.Get (i)->GetObject<Ospf6Config> ();
+       if (!ospf6_conf)
+         {
+-          ospf6_conf = new Ospf6Config ();
++          ospf6_conf = CreateObject<Ospf6Config> ();
+           nodes.Get (i)->AggregateObject (ospf6_conf);
+         }
+ 
+@@ -837,7 +801,7 @@
+       Ptr<Ospf6Config> ospf6_conf = nodes.Get (i)->GetObject<Ospf6Config> ();
+       if (!ospf6_conf)
+         {
+-          ospf6_conf = new Ospf6Config ();
++          ospf6_conf = CreateObject<Ospf6Config> ();
+           nodes.Get (i)->AggregateObject (ospf6_conf);
+         }
+       ospf6_conf->m_ospf6debug = true;
+@@ -854,7 +818,7 @@
+       Ptr<RipConfig> rip_conf = nodes.Get (i)->GetObject<RipConfig> ();
+       if (!rip_conf)
+         {
+-          rip_conf = new RipConfig ();
++          rip_conf = CreateObject<RipConfig> ();
+           nodes.Get (i)->AggregateObject (rip_conf);
+         }
+ 
+@@ -872,7 +836,7 @@
+       Ptr<RipConfig> rip_conf = nodes.Get (i)->GetObject<RipConfig> ();
+       if (!rip_conf)
+         {
+-          rip_conf = new RipConfig ();
++          rip_conf = CreateObject<RipConfig> ();
+           nodes.Get (i)->AggregateObject (rip_conf);
+         }
+       rip_conf->m_ripdebug = true;
+@@ -889,7 +853,7 @@
+       Ptr<RipngConfig> ripng_conf = nodes.Get (i)->GetObject<RipngConfig> ();
+       if (!ripng_conf)
+         {
+-          ripng_conf = new RipngConfig ();
++          ripng_conf = CreateObject<RipngConfig> ();
+           nodes.Get (i)->AggregateObject (ripng_conf);
+         }
+ 
+@@ -907,7 +871,7 @@
+       Ptr<RipngConfig> ripng_conf = nodes.Get (i)->GetObject<RipngConfig> ();
+       if (!ripng_conf)
+         {
+-          ripng_conf = new RipngConfig ();
++          ripng_conf = CreateObject<RipngConfig> ();
+           nodes.Get (i)->AggregateObject (ripng_conf);
+         }
+       ripng_conf->m_ripngdebug = true;
+@@ -1149,7 +1113,7 @@
+   Ptr<QuaggaConfig> zebra_conf = node->GetObject<QuaggaConfig> ();
+   if (!zebra_conf)
+     {
+-      zebra_conf = new QuaggaConfig ();
++      zebra_conf = CreateObject<QuaggaConfig> ();
+       node->AggregateObject (zebra_conf);
+     }
+   GenerateConfigZebra (node);
+diff -ruN a/test/dce-quagga-test.cc b/test/dce-quagga-test.cc
+--- a/test/dce-quagga-test.cc
++++ b/test/dce-quagga-test.cc
+@@ -24,8 +24,7 @@
+ #include "ns3/dce-module.h"
+ #include "ns3/quagga-helper.h"
+ #include "ns3/csma-helper.h"
+-#include "ns3/v4ping.h"
+-#include "ns3/ping6.h"
++#include "ns3/ping.h"
+ #include "ns3/ethernet-header.h"
+ #include "ns3/icmpv4.h"
+ 
+@@ -156,6 +155,14 @@
+   //
+   std::string routerPort;
+ 
++  // Routers answer for any of their addresses, like Linux does.
++  Config::SetDefault ("ns3::Ipv6::StrongEndSystemModel", BooleanValue (false));
++
++  // IPv6 ping target: node 0's address on its second interface.
++  Ipv6Address target6 ("2001:db8:0:2::1");
++  // IPv6 addresses of node 0 and node 1 on the shared link.
++  std::string link6[2] = {"2001:db8:0:1::1", "2001:db8:0:1::2"};
++
+   NodeContainer nodes;
+   nodes.Create (2);
+ 
+@@ -169,7 +176,7 @@
+ 
+   //  processManager.SetLoader ("ns3::DlmLoaderFactory");
+   processManager.SetTaskManagerAttribute ("FiberManagerType",
+-                                          EnumValue (0));
++                                          StringValue ("UcontextFiberManager"));
+   //
+   // Step 2
+   // Address Configuration
+@@ -188,12 +195,19 @@
+       ipv4AddrHelper.SetBase ("10.0.0.0", "255.255.255.0");
+       ipv4AddrHelper.Assign (devices);
+       ipv6AddrHelper.SetBase ("2001:db8:0:1::", Ipv6Prefix (64));
+-      ipv6AddrHelper.Assign (devices);
++      Ipv6InterfaceContainer linkIfs = ipv6AddrHelper.Assign (devices);
++      for (uint32_t n = 0; n < 2; n++)
++        {
++          std::ostringstream oss;
++          oss << linkIfs.GetAddress (n, 1);
++          link6[n] = oss.str ();
++        }
+ 
+       ipv4AddrHelper.SetBase ("11.0.0.0", "255.255.255.0");
+       ipv4AddrHelper.Assign (dev1);
+       ipv6AddrHelper.NewNetwork ();
+-      ipv6AddrHelper.Assign (dev1);
++      // ns-3 derives the interface identifier from the MAC address.
++      target6 = ipv6AddrHelper.Assign (dev1).GetAddress (0, 1);
+ 
+       ipv4AddrHelper.SetBase ("12.0.0.0", "255.255.255.0");
+       ipv4AddrHelper.Assign (dev2);
+@@ -284,8 +298,8 @@
+   else if (m_testname == "bgpd_v6")
+     {
+       quagga.EnableBgp (nodes);
+-      quagga.BgpAddNeighbor (nodes.Get (0), "2001:db8:0:1::2", quagga.GetAsn (nodes.Get (1)));
+-      quagga.BgpAddNeighbor (nodes.Get (1), "2001:db8:0:1::1", quagga.GetAsn (nodes.Get (0)));
++      quagga.BgpAddNeighbor (nodes.Get (0), link6[1], quagga.GetAsn (nodes.Get (1)));
++      quagga.BgpAddNeighbor (nodes.Get (1), link6[0], quagga.GetAsn (nodes.Get (0)));
+     }
+   else if (m_testname == "radvd")
+     {
+@@ -326,11 +340,11 @@
+         }
+       else
+         {
+-          Ptr<V4Ping> app = CreateObject<V4Ping> ();
+-          app->SetAttribute ("Remote", Ipv4AddressValue ("11.0.0.1"));
++          Ptr<Ping> app = CreateObject<Ping> ();
++          app->SetAttribute ("Destination", AddressValue (Ipv4Address ("11.0.0.1")));
+           if (m_debug)
+             {
+-              app->SetAttribute ("Verbose", BooleanValue (true));
++              app->SetAttribute ("VerboseMode", EnumValue (Ping::VerboseMode::VERBOSE));
+             }
+           nodes.Get (1)->AddApplication (app);
+           app->SetStartTime (Seconds (60.0));
+@@ -352,9 +366,8 @@
+         }
+       else
+         {
+-          Ptr<Ping6> app = CreateObject<Ping6> ();
+-          app->SetAttribute ("RemoteIpv6", Ipv6AddressValue ("2001:db8:0:2::1"));
+-          app->SetIfIndex (0);
++          Ptr<Ping> app = CreateObject<Ping> ();
++          app->SetAttribute ("Destination", AddressValue (target6));
+           nodes.Get (1)->AddApplication (app);
+           app->SetStartTime (Seconds (60.0));
+           app->SetStopTime (m_maxDuration);
+@@ -407,7 +420,7 @@
+ 
+ 
+ DceQuaggaTestSuite::DceQuaggaTestSuite ()
+-  : TestSuite ("dce-quagga", UNIT)
++  : TestSuite ("dce-quagga", Type::UNIT)
+ {
+   typedef struct
+   {
+@@ -417,24 +430,20 @@
+   } testPair;
+ 
+   const testPair tests[] = {
+-#ifdef FIXME
+     { "radvd", 120, false},
+     { "ripd", 120, false},
+     { "ripngd", 120, false},
+     { "ospf6d", 120, false},
+     { "bgpd_v6", 120, false},
+-#endif
+     { "ospfd", 120, false},
+     { "bgpd", 120, false},
+     { "radvd", 120, true},
+     { "ripd", 120, true},
+     { "ripngd", 120, true},
+     { "ospfd", 120, true},
+-#ifdef FIXME
+     { "ospf6d", 120, true},
+     { "bgpd", 120, true},
+     { "bgpd_v6", 120, true},
+-#endif
+   };
+  
+   ::system ("/bin/rm -rf files-*/usr/local/etc/*.pid");
+@@ -452,7 +461,7 @@
+       AddTestCase (new DceQuaggaTestCase (std::string (tests[i].name),
+                                           Seconds (tests[i].duration), tests[i].useKernel,
+                                           (!kern && tests[i].useKernel)),
+-                   TestCase::QUICK);
++                   Duration::QUICK);
+     }
+ }
+ 
+diff -ruN a/wscript b/wscript
+--- a/wscript
++++ b/wscript
+@@ -30,7 +30,7 @@
+ 
+ 
+ def build_dce_tests(module, bld):
+-    module.add_runner_test(needed=['core', 'dce-quagga', 'internet', 'csma'],
++    module.add_runner_test(needed=['core', 'dce-quagga', 'internet', 'internet-apps', 'csma'],
+                            source=['test/dce-quagga-test.cc'])
+ 
+ def build_dce_examples(module):
