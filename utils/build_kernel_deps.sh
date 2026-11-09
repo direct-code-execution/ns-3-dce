@@ -37,9 +37,10 @@ QUAGGA_VERSION="0.99.20"
 FFMPEG_REV="n5.1.6"
 DILLO_REV="v3.1.1"
 CURL_VERSION="8.5.0"
-NORTHSTAR_REPO="https://github.com/nordstjernen-web/northstar-browser.git"
-# main, with Media Source Extensions video and audio streaming (PR #18)
-NORTHSTAR_REV="488121e30687857eaa6ee22af0e8b14fc2030b7a"
+NORTHSTAR_REPO="https://github.com/nordstjernen-web/northstar-web-browser.git"
+# main of 2026-11-09 (Pango replaced by the vendored web-text-lib: the
+# ns-pango subproject of older revisions is no longer published)
+NORTHSTAR_REV="c6aec523518999aaf436f09b386acd1aaade7b12"
 
 # Old C code: keep building with GCC >= 10 (-fcommon) and GCC >= 14, which
 # turned these warnings into errors. -U_FORTIFY_SOURCE: DCE does not provide
@@ -257,9 +258,6 @@ if [ -d /usr/include/gtk-4.0 ] && command -v meson > /dev/null && command -v nin
     fetch_git "${NORTHSTAR_REPO}" "${NORTHSTAR_REV}" northstar
     (
         cd "${SRC}/northstar"
-        # DCE finds the program's main() with dlsym(): export it (the project
-        # localises every symbol of its executables).
-        printf '{\n  global: main;\n  local: *;\n};\n' > src/exe-local.map
         # Link the browser as a shared object: DCE loads it like one, and the
         # linker would otherwise turn its thread local variables into fixed
         # %fs offsets (local-exec TLS) that point into the simulator's TLS.
@@ -272,8 +270,9 @@ if [ -d /usr/include/gtk-4.0 ] && command -v meson > /dev/null && command -v nin
         # 4096 frame (93 ms) device buffer outlasts them, 1024 underruns.
         sed -i "s/cc.get_supported_link_arguments(\['-Wl,-s'\]),/cc.get_supported_link_arguments([]),/" meson.build
         sed -i "s/want.samples = 1024;/want.samples = 4096;/" src/audio/audio.c
-        grep -q "DCE: loaded like a shared object" src/meson.build || sed -i \
-            "s|\(\['-Wl,--version-script=' + meson.current_source_dir() / 'exe-local.map'\]\))|\1) + ['-shared']  # DCE: loaded like a shared object|" src/meson.build
+        # main() stays exported (-rdynamic below): DCE finds it with dlsym().
+        grep -q "DCE: loaded like a shared object" src/gtk/meson.build || sed -i \
+            "s|link_args: northstar_link_args + northstar_gtk_platform_link_args,|link_args: northstar_link_args + northstar_gtk_platform_link_args + ['-shared'],  # DCE: loaded like a shared object|" src/gtk/meson.build
         # -fPIC and no LTO/-fPIE: a PIE compiled executable gets copy
         # relocations of stdin/stdout/stderr that DCE's per-process stdio
         # cannot reach. -ftls-model=global-dynamic: an executable's own
@@ -285,7 +284,7 @@ if [ -d /usr/include/gtk-4.0 ] && command -v meson > /dev/null && command -v nin
         AUDIO=disabled
         [ -f /usr/include/SDL2/SDL.h ] && AUDIO=enabled
         PKG_CONFIG_PATH="${SRC}/curl-install/lib/pkgconfig" meson setup build \
-            -Daudio=${AUDIO} -Davif=disabled \
+            -Daudio=${AUDIO} -Davif=disabled -Dwasm=disabled -Dgstreamer=disabled \
             -Dc_args="-fPIC -ftls-model=global-dynamic -mno-direct-extern-access -g -O1 -U_FORTIFY_SOURCE -fno-stack-protector" \
             -Dcpp_args="-fPIC -ftls-model=global-dynamic -mno-direct-extern-access -g -O1 -U_FORTIFY_SOURCE -fno-stack-protector" \
             -Dc_link_args="-rdynamic" -Dcpp_link_args="-rdynamic" > /dev/null
