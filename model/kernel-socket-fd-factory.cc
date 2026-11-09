@@ -1,73 +1,210 @@
+/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 #include "kernel-socket-fd-factory.h"
 #include "kernel-socket-fd.h"
-#include "loader-factory.h"
-#include "dce-manager.h"
-#include "process.h"
-#include "utils.h"
-#include "wait-queue.h"
+#include "lkl-kernel.h"
 #include "task-manager.h"
-#include "kingsley-alloc.h"
-#include "file-usage.h"
-#include "dce-unistd.h"
-#include "dce-stdlib.h"
-#include "sys/dce-stat.h"
-#include "dce-fcntl.h"
-#include "dce-stdio.h"
-#include "include/sim-init.h"
+#include "lkl-wifi-device.h"
 #include "ns3/log.h"
-#include "ns3/string.h"
-#include "ns3/double.h"
-#include "ns3/pointer.h"
 #include "ns3/node.h"
-#include "ns3/net-device.h"
-#include "ns3/random-variable-stream.h"
-#include "ns3/event-id.h"
-#include "ns3/simulator.h"
-#include "ns3/mac48-address.h"
-#include "ns3/mac64-address.h"
 #include "ns3/packet.h"
-#include "exec-utils.h"
-#include <dlfcn.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "ns3/simulator.h"
+#include "ns3/string.h"
+#include "ns3/boolean.h"
+#include "ns3/mac48-address.h"
+#include "ns3/loopback-net-device.h"
+#include "ns3/make-event.h"
+#include <lkl/asm/unistd.h>
+#include <lkl/asm/host_ops.h>
+#include <deque>
+#include <cstring>
+#include <cstdio>
 #include <errno.h>
-#include <arpa/inet.h>
 #include <fcntl.h>
+#include <net/if.h>
+#include <sys/uio.h>
+#include <sys/epoll.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 NS_LOG_COMPONENT_DEFINE ("DceKernelSocketFdFactory");
 
+/*
+ * LKL's network device interface (tools/lkl/include/lkl_host.h and lkl.h).
+ * Those headers are not valid C++, so the few definitions needed here are
+ * repeated; they must match the LKL version built by utils/build_lkl.sh.
+ */
+extern "C" {
+struct lkl_netdev;
+struct lkl_dev_net_ops
+{
+  int (*tx)(struct lkl_netdev *nd, struct iovec *iov, int cnt);
+  int (*rx)(struct lkl_netdev *nd, struct iovec *iov, int cnt);
+  int (*poll)(struct lkl_netdev *nd);
+  void (*poll_hup)(struct lkl_netdev *nd);
+  void (*free)(struct lkl_netdev *nd);
+};
+struct lkl_netdev
+{
+  struct lkl_dev_net_ops *ops;
+  int id;
+  uint8_t has_vnet_hdr : 1;
+  uint8_t mac[6];
+};
+struct lkl_netdev_args
+{
+  void *mac;
+  unsigned int offload;
+};
+}
+#define LKL_DEV_NET_POLL_RX  1
+#define LKL_DEV_NET_POLL_HUP 4
+#define LKL_VIRTIO_NET_F_MRG_RXBUF 15
+
 namespace ns3 {
 
-// Sadly NetDevice Callback add by method AddLinkChangeCallback take no parameters ..
-// .. so we need to create the following class to link NetDevice and KernelSocketFdFactory together
-// in order to do Warn the factory about which NetDevice is changing .
-class KernelDeviceStateListener : public SimpleRefCount<KernelDeviceStateListener>
+NS_OBJECT_ENSURE_REGISTERED (KernelSocketFdFactory);
+
+/**
+ * A kernel mac80211 radio (LKL's lkl-wifi driver) whose hardware is an
+ * LklWifiDevice.
+ */
+struct LklWifiRadio
 {
-public:
-  KernelDeviceStateListener (Ptr<NetDevice>, Ptr<KernelSocketFdFactory>);
-
-  void NotifyDeviceStateChange ();
-
-private:
-  Ptr<NetDevice> m_netDevice;
-  Ptr<KernelSocketFdFactory> m_factory;
+  KernelSocketFdFactory *factory;
+  Ptr<LklWifiDevice> device;
+  int irq;
+  Task *irqTask; // sleeping until the device has events
 };
 
-KernelDeviceStateListener::KernelDeviceStateListener (Ptr<NetDevice> d,
-                                                    Ptr<KernelSocketFdFactory> f)
-  : m_netDevice (d),
-    m_factory (f)
+/**
+ * A kernel network device backed by an ns-3 NetDevice. LKL drives it
+ * through the network device host operations below.
+ */
+struct LklNetDevice
 {
+  struct lkl_netdev nd; // must stay first: LKL passes &nd to the operations
+  KernelSocketFdFactory *factory;
+  Ptr<NetDevice> device;
+  Mac48Address mac; // the kernel device's address
+  std::deque<std::vector<uint8_t> > rx; // received Ethernet frames
+  Task *poller;
+  bool hup;
+  // The kernel had no receive buffers for the queued frames: it takes them
+  // when it adds buffers, so do not report them again.
+  bool stalled;
+};
+
+namespace {
+
+const uint32_t LKL_TASK_STACK = 1 << 18;
+const uint32_t ETH_HEADER = 14;
+// Received frames waiting for the kernel, like the ring of a network card.
+const uint32_t RX_BACKLOG = 1024;
+
+LklNetDevice *
+DeviceOf (struct lkl_netdev *nd)
+{
+  return (LklNetDevice *)nd;
 }
 
 void
-KernelDeviceStateListener::NotifyDeviceStateChange ()
+SendMain (Ptr<NetDevice> device, Ptr<Packet> p, Mac48Address dest, uint16_t protocol)
 {
-  m_factory->NotifyDeviceStateChange (m_netDevice);
+  device->Send (p, dest, protocol);
 }
 
-NS_OBJECT_ENSURE_REGISTERED (KernelSocketFdFactory);
+// The kernel sends a frame: hand it to the ns-3 device.
+int
+NetTx (struct lkl_netdev *nd, struct iovec *iov, int cnt)
+{
+  LklNetDevice *dev = DeviceOf (nd);
+  std::vector<uint8_t> frame;
+  for (int i = 0; i < cnt; i++)
+    {
+      const uint8_t *base = (const uint8_t *)iov[i].iov_base;
+      frame.insert (frame.end (), base, base + iov[i].iov_len);
+    }
+  if (frame.size () < ETH_HEADER)
+    {
+      return frame.size ();
+    }
+  Mac48Address dest;
+  dest.CopyFrom (&frame[0]);
+  uint16_t protocol = (frame[12] << 8) | frame[13];
+  NS_LOG_DEBUG ("tx " << dev->device << " " << dest << " protocol " << protocol
+                << " " << frame.size () << " bytes");
+  Ptr<Packet> p = Create<Packet> (&frame[ETH_HEADER], frame.size () - ETH_HEADER);
+  TaskManager::Current ()->ExecOnMain (MakeEvent (&SendMain, dev->device, p, dest, protocol));
+  return frame.size ();
+}
+
+// The kernel reads the next received frame, if any.
+int
+NetRx (struct lkl_netdev *nd, struct iovec *iov, int cnt)
+{
+  LklNetDevice *dev = DeviceOf (nd);
+  if (dev->rx.empty ())
+    {
+      return -1;
+    }
+  std::vector<uint8_t> &frame = dev->rx.front ();
+  size_t done = 0;
+  for (int i = 0; i < cnt && done < frame.size (); i++)
+    {
+      size_t n = std::min (iov[i].iov_len, frame.size () - done);
+      memcpy (iov[i].iov_base, &frame[done], n);
+      done += n;
+    }
+  dev->rx.pop_front ();
+  dev->stalled = false;
+  return done;
+}
+
+// Blocks the device's poll task until the kernel can take a received frame.
+// Sending never blocks, so transmission readiness is never reported.
+int
+NetPoll (struct lkl_netdev *nd)
+{
+  LklNetDevice *dev = DeviceOf (nd);
+  TaskManager *manager = TaskManager::Current ();
+  while ((dev->rx.empty () || dev->stalled) && !dev->hup)
+    {
+      dev->poller = manager->RunningTask ();
+      manager->Sleep ();
+    }
+  dev->poller = 0;
+  if (dev->hup)
+    {
+      return LKL_DEV_NET_POLL_HUP;
+    }
+  // Until the kernel takes a frame or another one arrives.
+  dev->stalled = true;
+  return LKL_DEV_NET_POLL_RX;
+}
+
+void
+NetPollHup (struct lkl_netdev *nd)
+{
+  LklNetDevice *dev = DeviceOf (nd);
+  dev->hup = true;
+  if (dev->poller)
+    {
+      TaskManager::Current ()->Wakeup (dev->poller);
+    }
+}
+
+void
+NetFree (struct lkl_netdev *nd)
+{
+  // The factory owns the device.
+}
+
+struct lkl_dev_net_ops g_netOps = {
+  &NetTx, &NetRx, &NetPoll, &NetPollHup, &NetFree
+};
+
+} // namespace
 
 TypeId
 KernelSocketFdFactory::GetTypeId (void)
@@ -75,890 +212,632 @@ KernelSocketFdFactory::GetTypeId (void)
   static TypeId tid = TypeId ("ns3::KernelSocketFdFactory")
     .SetParent<SocketFdFactory> ()
     .AddConstructor<KernelSocketFdFactory> ()
-    .AddAttribute ("ErrorRate", "The error rate of malloc().",
-                   DoubleValue (DoubleValue (0.0)),
-                   MakeDoubleAccessor (&KernelSocketFdFactory::m_rate),
-                   MakeDoubleChecker<double> ())
-    .AddAttribute ("RanVar", "The decision variable attached to this error model.",
-                   StringValue ("ns3::UniformRandomVariable[Min=0.0|Max=1.0]"),
-                   MakePointerAccessor (&KernelSocketFdFactory::m_ranvar),
-                   MakePointerChecker<RandomVariableStream> ())
+    .AddAttribute ("Library", "The LKL shared library to load.",
+                   StringValue ("liblkl.so"),
+                   MakeStringAccessor (&KernelSocketFdFactory::m_library),
+                   MakeStringChecker ())
+    .AddAttribute ("CommandLine", "The kernel command line.",
+                   StringValue ("mem=64M loglevel=4"),
+                   MakeStringAccessor (&KernelSocketFdFactory::m_cmdline),
+                   MakeStringChecker ())
+    .AddAttribute ("Mptcp",
+                   "Create MPTCP sockets for the TCP sockets of applications, "
+                   "like mptcpize: Linux uses MPTCP only when asked for.",
+                   BooleanValue (false),
+                   MakeBooleanAccessor (&KernelSocketFdFactory::m_mptcp),
+                   MakeBooleanChecker ())
   ;
   return tid;
 }
+
 KernelSocketFdFactory::KernelSocketFdFactory ()
-  : m_loader (0),
-    m_exported (0),
-    m_alloc (new KingsleyAlloc ()),
-    m_logFile (0)
+  : m_mptcp (false),
+    m_booted (false),
+    m_nextDevice (0),
+    m_epollFd (-1)
 {
-  TypeId::LookupByNameFailSafe ("ns3::LteUeNetDevice", &m_lteUeTid);
-  m_variable = CreateObject<UniformRandomVariable> ();
 }
 
 KernelSocketFdFactory::~KernelSocketFdFactory ()
 {
-  for (uint32_t i = 0; i < m_devices.size (); i++)
+  for (std::vector<LklNetDevice *>::iterator i = m_devices.begin (); i != m_devices.end (); ++i)
     {
-      // Note: we don't really destroy devices from here
-      // because calling destroy requires a task context
-      // m_exported->dev_destroy(m_devices[i].second);
+      delete *i;
     }
-  delete m_exported;
-  delete m_loader;
-  delete m_alloc;
-  if (m_logFile != 0)
+  for (std::vector<LklWifiRadio *>::iterator i = m_radios.begin (); i != m_radios.end (); ++i)
     {
-      fclose (m_logFile);
+      delete *i;
     }
-  m_exported = 0;
-  m_loader = 0;
-  m_alloc = 0;
-  m_logFile = 0;
 }
 
 void
 KernelSocketFdFactory::DoDispose (void)
 {
-  for (std::list<Task *>::const_iterator i = m_kernelTasks.begin (); i != m_kernelTasks.end (); ++i)
+  // The devices refer to their node, which refers to this factory.
+  for (std::vector<LklNetDevice *>::iterator i = m_devices.begin (); i != m_devices.end (); ++i)
     {
-      m_manager->Stop (*i);
+      (*i)->device = 0;
     }
-  m_kernelTasks.clear ();
-  m_manager = 0;
-  m_listeners.clear ();
-}
-
-int
-KernelSocketFdFactory::Vprintf (struct SimKernel *kernel, const char *str, va_list args)
-{
-  KernelSocketFdFactory *self = (KernelSocketFdFactory *)kernel;
-  return vfprintf (self->m_logFile, str, args);
-}
-
-void *
-KernelSocketFdFactory::Malloc (struct SimKernel *kernel, unsigned long size)
-{
-  KernelSocketFdFactory *self = (KernelSocketFdFactory *)kernel;
-  if (self->m_ranvar->GetValue () < self->m_rate)
+  for (std::vector<LklWifiRadio *>::iterator i = m_radios.begin (); i != m_radios.end (); ++i)
     {
-      NS_LOG_DEBUG ("return null");
-      // Inject fault
-      return NULL;
+      (*i)->device->SetEventCallback (MakeNullCallback<void> ());
+      (*i)->device = 0;
     }
+  m_kernel = 0;
+  SocketFdFactory::DoDispose ();
+}
 
-  size += sizeof (size_t);
-  uint8_t *buffer = self->m_alloc->Malloc (size);
-  memcpy (buffer, &size, sizeof (size_t));
-  buffer += sizeof (size_t);
-  return buffer;
-}
-void
-KernelSocketFdFactory::Free (struct SimKernel *kernel, void *ptr)
+Ptr<LklKernel>
+KernelSocketFdFactory::GetKernel (void) const
 {
-  KernelSocketFdFactory *self = (KernelSocketFdFactory *)kernel;
-  uint8_t *buffer = (uint8_t*)ptr;
-  size_t size;
-  buffer -= sizeof (size_t);
-  memcpy (&size, buffer, sizeof (size_t));
-  self->m_alloc->Free (buffer, size);
+  return m_kernel;
 }
-void *
-KernelSocketFdFactory::Memcpy (struct SimKernel *kernel, void *dst, const void *src, unsigned long size)
-{
-  return memcpy (dst, src, size);
-}
-void *
-KernelSocketFdFactory::Memset (struct SimKernel *kernel, void *dst, char value, unsigned long size)
-{
-  return memset (dst, value, size);
-}
-int
-KernelSocketFdFactory::AtExit (struct SimKernel *kernel, void (*function)(void))
-{
-  NS_LOG_FUNCTION (kernel << function);
-  KernelSocketFdFactory *self = (KernelSocketFdFactory *)kernel;
-  Ptr<DceManager> manager = self->GetObject<DceManager> ();
-  Process *p = manager->SearchProcess (self->m_pid);
 
-  // Register process-level atexit store
-  struct AtExitHandler handler;
-  handler.type = AtExitHandler::NORMAL;
-  handler.value.normal = function;
-  p->atExitHandlers.push_back (handler);
-  return 0;
-}
-int
-KernelSocketFdFactory::Access (struct SimKernel *kernel, const char *pathname, int mode)
-{
-  return dce_access (pathname, mode);
-}
-char*
-KernelSocketFdFactory::Getenv (struct SimKernel *kernel, const char *name)
-{
-  return dce_getenv (name);
-}
-int
-KernelSocketFdFactory::Mkdir (struct SimKernel *kernel, const char *pathname, mode_t mode)
-{
-  return dce_mkdir (pathname, mode);
-}
-int
-KernelSocketFdFactory::Open (struct SimKernel *kernel, const char *pathname, int flags)
-{
-  return dce_open (pathname, flags, 0666);
-}
-int
-KernelSocketFdFactory::__Fxstat (struct SimKernel *kernel, int ver, int fd, void *buf)
-{
-  return dce___fxstat (ver, fd, (struct stat *)buf);
-}
-int
-KernelSocketFdFactory::Fseek (struct SimKernel *kernel, FILE *stream, long offset, int whence)
-{
-  return dce_fseek (stream, offset, whence);
-}
 void
-KernelSocketFdFactory::Setbuf (struct SimKernel *kernel, FILE *stream, char *buf)
+KernelSocketFdFactory::NotifyNewAggregate (void)
 {
-  return dce_setbuf (stream, buf);
-}
-long
-KernelSocketFdFactory::Ftell (struct SimKernel *kernel, FILE *stream)
-{
-  return dce_ftell (stream);
-}
-FILE*
-KernelSocketFdFactory::FdOpen (struct SimKernel *kernel, int fd, const char *mode)
-{
-  return dce_fdopen (fd, mode);
-}
-size_t
-KernelSocketFdFactory::Fread (struct SimKernel *kernel, void *ptr, size_t size, size_t nmemb, FILE *stream)
-{
-  return dce_fread (ptr, size, nmemb, stream);
-}
-size_t
-KernelSocketFdFactory::Fwrite (struct SimKernel *kernel, const void *ptr, size_t size, size_t nmemb, FILE *stream)
-{
-  return dce_fwrite (ptr, size, nmemb, stream);
-}
-int
-KernelSocketFdFactory::Fclose (struct SimKernel *kernel, FILE *fp)
-{
-  return dce_fclose (fp);
-}
-unsigned long
-KernelSocketFdFactory::Random (struct SimKernel *kernel)
-{
-  KernelSocketFdFactory *self = (KernelSocketFdFactory *)kernel;
-  union
-  {
-    uint8_t buffer[sizeof(unsigned long)];
-    unsigned long v;
-  } u;
-  for (uint8_t i = 0; i < sizeof (u.buffer); i++)
+  Ptr<Node> node = GetObject<Node> ();
+  Ptr<TaskManager> manager = GetObject<TaskManager> ();
+  if (node && manager && !m_kernel)
     {
-      u.buffer[i] = self->m_variable->GetInteger (0,255);
+      m_kernel = CreateObject<LklKernel> ();
+      // Scripts written for libos name its library; LKL replaces it.
+      std::string library = m_library == "liblinux.so" ? "liblkl.so" : m_library;
+      m_kernel->SetAttribute ("Library", StringValue (library));
+      m_kernel->SetAttribute ("CommandLine", StringValue (m_cmdline));
+      node->AggregateObject (m_kernel);
+      Simulator::ScheduleWithContext (node->GetId (), Seconds (0),
+                                      &TaskManager::Start, PeekPointer (manager),
+                                      &KernelSocketFdFactory::BootTrampoline, (void *)this,
+                                      LKL_TASK_STACK);
     }
-  return u.v;
-}
-void
-KernelSocketFdFactory::EventTrampoline (void (*fn)(void *context),
-                                       void *context, void (*pre_fn)(void),
-                                       Ptr<EventIdHolder> event)
-{
-  m_loader->NotifyStartExecute ();
-  pre_fn ();
-  fn (context);
-  m_loader->NotifyEndExecute ();
-}
-void *
-KernelSocketFdFactory::EventScheduleNs (struct SimKernel *kernel, __u64 ns, void (*fn)(void *context), void *context,
-                                       void (*pre_fn)(void))
-{
-  KernelSocketFdFactory *self = (KernelSocketFdFactory *)kernel;
-  Ptr<EventIdHolder> ev = Create<EventIdHolder> ();
-  TaskManager *manager = TaskManager::Current ();
-
-  ev->id = manager->ScheduleMain (NanoSeconds (ns),
-                                  MakeEvent (&KernelSocketFdFactory::EventTrampoline, self, fn, context, pre_fn, ev));
-
-  return &ev->id;
-}
-void
-KernelSocketFdFactory::EventCancel (struct SimKernel *kernel, void *ev)
-{
-  EventId *event = (EventId *)ev;
-  Simulator::Remove (*event);
-}
-static __u64 CurrentNs (struct SimKernel *kernel)
-{
-  return Simulator::Now ().GetNanoSeconds ();
+  SocketFdFactory::NotifyNewAggregate ();
 }
 
 void
-KernelSocketFdFactory::TaskSwitch (enum Task::SwitchType type, void *context)
+KernelSocketFdFactory::BootTrampoline (void *context)
 {
-  NS_LOG_FUNCTION (type << context);
-  Loader *loader = (Loader *)context;
-  switch (type)
-    {
-    case Task::TO:
-      loader->NotifyStartExecute ();
-      break;
-    case Task::FROM:
-      loader->NotifyEndExecute ();
-      break;
-    }
-}
-
-struct SimTask *
-KernelSocketFdFactory::TaskStart (struct SimKernel *kernel, void (*callback)(void *), void *context)
-{
-  KernelSocketFdFactory *self = (KernelSocketFdFactory *)kernel;
-  Task *task = self->m_manager->Start (callback, context, 1 << 17);
-  struct SimTask *simTask = self->m_exported->task_create (task, 0);
-  task->SetExtraContext (simTask);
-  task->SetSwitchNotifier (&KernelSocketFdFactory::TaskSwitch, self->m_loader);
-  self->m_kernelTasks.push_back (task);
-  return (struct SimTask *)task->GetExtraContext ();
-}
-struct SimTask *
-KernelSocketFdFactory::TaskCurrent (struct SimKernel *kernel)
-{
-  KernelSocketFdFactory *self = (KernelSocketFdFactory *)kernel;
-  TaskManager *manager = TaskManager::Current ();
-  Task *current = manager->CurrentTask ();
-  if (current->GetExtraContext () == 0)
-    {
-      uint32_t pid = 0;
-      struct Thread *thread = (struct Thread *)current->GetContext ();
-      if (thread != 0)
-        {
-          pid = thread->process->pid;
-        }
-      struct SimTask *simTask = self->m_exported->task_create (current, pid);
-      current->SetExtraContext (simTask);
-    }
-  return (struct SimTask *)current->GetExtraContext ();
-}
-void
-KernelSocketFdFactory::TaskWait (struct SimKernel *kernel)
-{
-  // force initialization of 'current'
-  TaskCurrent (kernel);
-  // now, sleep.
-  TaskManager::Current ()->Sleep ();
-}
-int
-KernelSocketFdFactory::TaskWakeup (struct SimKernel *kernel, struct SimTask *task)
-{
-  KernelSocketFdFactory *self = (KernelSocketFdFactory *)kernel;
-  TaskManager *manager = TaskManager::Current ();
-  if (!manager)
-    {
-      return 1;
-    }
-  Task *other = (Task *)self->m_exported->task_get_private (task);
-  bool isBlocked = other->IsBlocked ();
-  manager->Wakeup (other);
-  return isBlocked ? 1 : 0;
-}
-void
-KernelSocketFdFactory::TaskYield (struct SimKernel *kernel)
-{
-  // force initialization of 'current'
-  TaskCurrent (kernel);
-  // now, yield.
-  TaskManager::Current ()->Yield ();
-}
-void
-KernelSocketFdFactory::SendMain (bool *r, NetDevice *dev, Ptr<Packet> p, const Address& d, uint16_t pro)
-{
-  *r = dev->Send (p, d, pro);
-}
-void
-KernelSocketFdFactory::DevXmit (struct SimKernel *kernel, struct SimDevice *dev, unsigned char *data, int len)
-{
-  NS_LOG_FUNCTION (dev);
-  KernelSocketFdFactory *self = (KernelSocketFdFactory *)kernel;
-  NetDevice *nsDev = (NetDevice *)self->m_exported->dev_get_private (dev);
-  NS_ASSERT (len >= 14);
-
-  struct ethhdr
-  {
-    unsigned char   h_dest[6];
-    unsigned char   h_source[6];
-    uint16_t        h_proto;
-  } *hdr = (struct ethhdr *)data;
-  data += 14;
-  len -= 14;
-  Ptr<Packet> p = Create<Packet> (data, len);
-  uint16_t protocol = ntohs (hdr->h_proto);
-  Mac48Address dest;
-  dest.CopyFrom (hdr->h_dest);
-  TaskManager *manager = TaskManager::Current ();
-  bool r = false;
-
-  manager->ExecOnMain (MakeEvent (&KernelSocketFdFactory::SendMain, &r, nsDev, p, dest, protocol));
-}
-
-void
-KernelSocketFdFactory::SignalRaised (struct SimKernel *kernel, struct SimTask *task, int signalNumber)
-{
-  NS_LOG_FUNCTION ("XXX: Not Yet Implemented " << signalNumber);
-}
-
-struct SimDevice *
-KernelSocketFdFactory::DevToDev (Ptr<NetDevice> device)
-{
-  for (uint32_t i = 0; i < m_devices.size (); i++)
-    {
-      if (m_devices[i].first == device)
-        {
-          struct SimDevice *dev = m_devices[i].second;
-          return dev;
-        }
-    }
-  return 0;
-}
-
-void
-KernelSocketFdFactory::RxFromDevice (Ptr<NetDevice> device, Ptr<const Packet> p,
-                                    uint16_t protocol, const Address & from,
-                                    const Address &to, NetDevice::PacketType type)
-{
-  struct SimDevice *dev = DevToDev (device);
-  if (dev == 0)
-    {
-      return;
-    }
-  m_loader->NotifyStartExecute (); // Restore the memory of the kernel before access it !
-  struct SimDevicePacket packet = m_exported->dev_create_packet (dev, p->GetSize () + 14);
-  p->CopyData (((unsigned char *)packet.buffer) + 14, p->GetSize ());
-  struct ethhdr
-  {
-    unsigned char   h_dest[6];
-    unsigned char   h_source[6];
-    uint16_t        h_proto;
-  } *hdr = (struct ethhdr *)packet.buffer;
-  if (device->GetInstanceTypeId () != m_lteUeTid)
-    {
-      Mac48Address realFrom;
-      if (Mac48Address::IsMatchingType (from))
-        {
-          realFrom = Mac48Address::ConvertFrom (from);
-        }
-      else
-        {
-          // Only handling Mac64Address conversion at this time
-          // See DCE issue #122
-          NS_ASSERT_MSG (Mac64Address::IsMatchingType (from), "Not a Mac64Address");
-          Mac64Address addr = Mac64Address::ConvertFrom (from);
-          uint8_t bytes[8];
-          addr.CopyTo (bytes);
-          uint8_t* newBytes = bytes + 2;  // discard first two bytes
-          realFrom.CopyFrom (newBytes);
-          NS_LOG_DEBUG ("Converting 'from' address from " << from << " to " << realFrom);
-        }
-      realFrom.CopyTo (hdr->h_source);
-    }
-
-  Mac48Address realTo;
-  if (Mac48Address::IsMatchingType (to))
-    {
-      realTo = Mac48Address::ConvertFrom (to);
-    }
-  else
-    {
-      // Only handling Mac64Address conversion at this time
-      // See DCE issue #122
-      NS_ASSERT_MSG (Mac64Address::IsMatchingType (to), "Not a Mac64Address");
-      Mac64Address addr = Mac64Address::ConvertFrom (to);
-      uint8_t bytes[8];     
-      addr.CopyTo (bytes);
-      uint8_t* newBytes = bytes + 2;  // discard first two bytes
-      realTo.CopyFrom (newBytes);
-      NS_LOG_DEBUG ("Converting 'to' address from " << from << " to " << realTo);
-    }
-  realTo.CopyTo (hdr->h_dest);
-  hdr->h_proto = ntohs (protocol);
-  m_exported->dev_rx (dev, packet);
-  m_loader->NotifyEndExecute ();
-}
-
-void
-KernelSocketFdFactory::NotifyDeviceStateChange (Ptr<NetDevice> device)
-{
-  ScheduleTask (MakeEvent (&KernelSocketFdFactory::NotifyDeviceStateChangeTask,
-                           this, device));
-}
-void
-KernelSocketFdFactory::NotifyDeviceStateChangeTask (Ptr<NetDevice> device)
-{
-  NS_LOG_FUNCTION (device);
-  struct SimDevice *dev = DevToDev (device);
-  if (dev == 0)
-    {
-      return;
-    }
-  
-  Mac48Address ad;
-  if (Mac48Address::IsMatchingType (device->GetAddress()))
-    {
-      ad = Mac48Address::ConvertFrom (device->GetAddress ());
-    }
-  else
-    {
-      // Only handling Mac64Address conversion at this time
-      // See DCE issue #122
-      NS_ASSERT_MSG (Mac64Address::IsMatchingType (device->GetAddress ()), "Not a Mac64Address");
-
-      Mac64Address addr = Mac64Address::ConvertFrom (device->GetAddress ());
-      uint8_t bytes[8];
-      addr.CopyTo (bytes);
-      uint8_t* newBytes = bytes + 2;  // discard first two bytes
-      ad.CopyFrom (newBytes);
-      NS_LOG_DEBUG ("Converting device address from " << device->GetAddress () << " to " << ad);
-   }
-  
-  uint8_t buffer[6];
-  ad.CopyTo (buffer);
-  m_loader->NotifyStartExecute (); // Restore the memory of the kernel before access it !
-  m_exported->dev_set_address (dev, buffer);
-  m_exported->dev_set_mtu (dev, device->GetMtu ());
-  m_loader->NotifyEndExecute ();
-}
-
-void
-KernelSocketFdFactory::ScheduleTaskTrampoline (void *context)
-{
-  Task *current = TaskManager::Current ()->CurrentTask ();
-  KernelSocketFdFactory *self = (KernelSocketFdFactory *) current->GetExtraContext ();
-  current->SetExtraContext (0);
-  EventImpl *event = (EventImpl *)context;
-  event->Invoke ();
-  event->Unref ();
-  self->m_kernelTasks.remove (current);
+  ((KernelSocketFdFactory *)context)->Boot ();
   TaskManager::Current ()->Exit ();
+}
+
+void
+KernelSocketFdFactory::Boot (void)
+{
+  NS_LOG_FUNCTION (this);
+  m_kernel->Boot ();
+  // procfs, for sysctls.
+  long ret = Call (__lkl__NR_mkdirat, AT_FDCWD, (long)"/proc", 0555);
+  NS_ASSERT_MSG (ret == 0, "mkdir /proc failed: " << ret);
+  ret = Call (__lkl__NR_mount, (long)"proc", (long)"/proc", (long)"proc", 0, 0);
+  NS_ASSERT_MSG (ret == 0, "mount /proc failed: " << ret);
+  m_epollFd = Call (__lkl__NR_epoll_create1, 0);
+  NS_ASSERT_MSG (m_epollFd >= 0, "epoll_create1 failed: " << m_epollFd);
+  m_kernel->GetTaskManager ()->Start (&KernelSocketFdFactory::WatcherTrampoline, this, LKL_TASK_STACK);
+  // Called right away for the devices the node already has.
+  GetObject<Node> ()->RegisterDeviceAdditionListener (MakeCallback (&KernelSocketFdFactory::NotifyAddDevice, this));
+  m_booted = true;
+  for (std::list<Task *>::iterator i = m_bootWaiters.begin (); i != m_bootWaiters.end (); ++i)
+    {
+      m_kernel->GetTaskManager ()->Wakeup (*i);
+    }
+  m_bootWaiters.clear ();
+  for (std::list<std::pair<std::string, std::string> >::iterator i = m_earlySysctls.begin ();
+       i != m_earlySysctls.end (); ++i)
+    {
+      SetTask (i->first, i->second);
+    }
+  m_earlySysctls.clear ();
+}
+
+namespace {
+std::string
+SysctlFile (std::string path)
+{
+  if (!path.empty () && path[0] == '/')
+    {
+      return path; // any kernel file, e.g. /proc/net/netstat
+    }
+  std::string file = "/proc/sys";
+  if (path.empty () || path[0] != '.')
+    {
+      file += '/';
+    }
+  for (std::string::iterator i = path.begin (); i != path.end (); ++i)
+    {
+      file += *i == '.' ? '/' : *i;
+    }
+  return file;
+}
+} // namespace
+
+void
+KernelSocketFdFactory::Set (std::string path, std::string value)
+{
+  NS_LOG_FUNCTION (this << path << value);
+  if (!m_booted)
+    {
+      m_earlySysctls.push_back (std::make_pair (path, value));
+      return;
+    }
+  ScheduleTask (MakeEvent (&KernelSocketFdFactory::SetTask, this, path, value));
+}
+
+void
+KernelSocketFdFactory::SetTask (std::string path, std::string value)
+{
+  std::string file = SysctlFile (path);
+  long fd = Call (__lkl__NR_openat, AT_FDCWD, (long)file.c_str (), O_WRONLY);
+  if (fd < 0)
+    {
+      NS_LOG_WARN ("sysctl " << path << ": cannot open " << file << ": " << fd);
+      return;
+    }
+  long ret = Call (__lkl__NR_write, fd, (long)value.c_str (), value.size ());
+  if (ret < 0)
+    {
+      NS_LOG_WARN ("sysctl " << path << " = " << value << ": " << ret);
+    }
+  Call (__lkl__NR_close, fd);
+}
+
+std::string
+KernelSocketFdFactory::Get (std::string path)
+{
+  NS_LOG_FUNCTION (this << path);
+  WaitBooted ();
+  std::string file = SysctlFile (path);
+  long fd = Call (__lkl__NR_openat, AT_FDCWD, (long)file.c_str (), O_RDONLY);
+  if (fd < 0)
+    {
+      NS_LOG_WARN ("sysctl " << path << ": cannot open " << file << ": " << fd);
+      return "";
+    }
+  std::string value;
+  char buffer[4096];
+  long n;
+  while ((n = Call (__lkl__NR_read, fd, (long)buffer, sizeof (buffer))) > 0)
+    {
+      value.append (buffer, n);
+    }
+  Call (__lkl__NR_close, fd);
+  return value;
 }
 
 void
 KernelSocketFdFactory::ScheduleTask (EventImpl *event)
 {
-  Task *task = m_manager->Start (&KernelSocketFdFactory::ScheduleTaskTrampoline,
-                                 event, 1 << 17);
-  task->SetExtraContext (this);
-  task->SetSwitchNotifier (&KernelSocketFdFactory::TaskSwitch, m_loader);
-  m_kernelTasks.push_back (task);
+  m_kernel->GetTaskManager ()->Start (&KernelSocketFdFactory::ScheduleTaskTrampoline,
+                                      event, LKL_TASK_STACK);
 }
+
+void
+KernelSocketFdFactory::ScheduleTaskTrampoline (void *context)
+{
+  EventImpl *event = (EventImpl *)context;
+  event->Invoke ();
+  event->Unref ();
+  TaskManager::Current ()->Exit ();
+}
+
+void
+KernelSocketFdFactory::WaitBooted (void)
+{
+  TaskManager *manager = TaskManager::Current ();
+  while (!m_booted)
+    {
+      m_bootWaiters.push_back (manager->RunningTask ());
+      manager->Sleep ();
+    }
+}
+
+long
+KernelSocketFdFactory::Call (long no, long a0, long a1, long a2, long a3, long a4, long a5)
+{
+  long params[6] = { a0, a1, a2, a3, a4, a5 };
+  return m_kernel->Syscall (no, params);
+}
+
+namespace {
+struct AddDeviceContext
+{
+  KernelSocketFdFactory *factory;
+  Ptr<NetDevice> device;
+};
+} // namespace
 
 void
 KernelSocketFdFactory::NotifyAddDevice (Ptr<NetDevice> device)
 {
-  ScheduleTask (MakeEvent (&KernelSocketFdFactory::NotifyAddDeviceTask, this, device));
+  TaskManager *manager = m_kernel->GetTaskManager ();
+  if (TaskManager::Current () == manager && manager->RunningTask ())
+    {
+      AddDevice (device);
+      return;
+    }
+  // Adding a kernel device needs a task.
+  AddDeviceContext *context = new AddDeviceContext ();
+  context->factory = this;
+  context->device = device;
+  manager->Start (&KernelSocketFdFactory::AddDeviceTrampoline, context, LKL_TASK_STACK);
 }
+
 void
-KernelSocketFdFactory::NotifyAddDeviceTask (Ptr<NetDevice> device)
+KernelSocketFdFactory::AddDeviceTrampoline (void *c)
 {
-  NS_LOG_FUNCTION (device);
-  int flags = 0;
-  //NS_ASSERT (!device->IsPointToPoint ());
-  //NS_ASSERT (device->NeedsArp ());
-  //NS_ASSERT (device->IsMulticast ());
-  //NS_ASSERT (device->IsBroadcast ());
-  if (device->IsMulticast ())
+  AddDeviceContext *context = (AddDeviceContext *)c;
+  context->factory->AddDevice (context->device);
+  delete context;
+  TaskManager::Current ()->Exit ();
+}
+
+void
+KernelSocketFdFactory::AddDevice (Ptr<NetDevice> device)
+{
+  NS_LOG_FUNCTION (this << device);
+  if (DynamicCast<LoopbackNetDevice> (device))
     {
-      flags |= SIM_DEV_MULTICAST;
+      return; // the kernel has its own loopback device
     }
-  if (device->IsBroadcast ())
+  if (Ptr<LklWifiDevice> wifi = DynamicCast<LklWifiDevice> (device))
     {
-      flags |= SIM_DEV_BROADCAST;
+      AddWifiDevice (wifi);
+      return;
     }
+  LklNetDevice *dev = new LklNetDevice ();
+  memset (&dev->nd, 0, sizeof (dev->nd));
+  dev->nd.ops = &g_netOps;
+  dev->factory = this;
+  dev->device = device;
+  dev->poller = 0;
+  dev->hup = false;
+  dev->stalled = false;
+  m_devices.push_back (dev);
+
+  uint8_t mac[6];
+  Address address = device->GetAddress ();
+  Mac48Address mac48 = Mac48Address::IsMatchingType (address)
+    ? Mac48Address::ConvertFrom (address) : Mac48Address::Allocate ();
+  mac48.CopyTo (mac);
+  dev->mac = mac48;
+  struct lkl_netdev_args args;
+  memset (&args, 0, sizeof (args));
+  args.mac = mac;
+  // The kernel's receive buffers are sized for a 1500 byte MTU; ns-3
+  // devices have larger ones (Wi-Fi: 2296). With mergeable receive buffers
+  // a frame spans as many buffers as it needs; without them NetRx would
+  // truncate it and the kernel would drop it.
+  args.offload = 1u << LKL_VIRTIO_NET_F_MRG_RXBUF;
+
+  typedef int (*NetdevAdd)(struct lkl_netdev *, struct lkl_netdev_args *);
+  NetdevAdd netdevAdd = (NetdevAdd) m_kernel->Lookup ("lkl_netdev_add");
+  int id = netdevAdd (&dev->nd, &args);
+  NS_ASSERT_MSG (id >= 0, "lkl_netdev_add failed: " << id);
+
+  // Find the new device, named eth<n>, by its address (lkl_netdev_get_ifindex
+  // looks for eth<id>, which the devices renamed below break), and name it
+  // sim<n> like the libos stack, with the MTU of the ns-3 device.
+  long s = Call (__lkl__NR_socket, AF_INET, SOCK_DGRAM, 0);
+  NS_ASSERT (s >= 0);
+  struct ifreq ifr;
+  bool found = false;
+  for (int ifindex = 1; ifindex < 4096 && !found; ifindex++)
+    {
+      memset (&ifr, 0, sizeof (ifr));
+      ifr.ifr_ifindex = ifindex;
+      if (Call (__lkl__NR_ioctl, s, SIOCGIFNAME, (long)&ifr) != 0
+          || strncmp (ifr.ifr_name, "eth", 3) != 0
+          || Call (__lkl__NR_ioctl, s, SIOCGIFHWADDR, (long)&ifr) != 0)
+        {
+          continue;
+        }
+      found = memcmp (ifr.ifr_hwaddr.sa_data, mac, 6) == 0;
+    }
+  NS_ASSERT_MSG (found, "no kernel device for " << mac48);
+  long ret;
+  snprintf (ifr.ifr_newname, IFNAMSIZ, "sim%u", m_nextDevice++);
+  ret = Call (__lkl__NR_ioctl, s, SIOCSIFNAME, (long)&ifr);
+  NS_ASSERT_MSG (ret == 0, "SIOCSIFNAME failed: " << ret);
+  memcpy (ifr.ifr_name, ifr.ifr_newname, IFNAMSIZ);
+  ifr.ifr_mtu = device->GetMtu ();
+  ret = Call (__lkl__NR_ioctl, s, SIOCSIFMTU, (long)&ifr);
+  NS_ASSERT_MSG (ret == 0, "SIOCSIFMTU failed: " << ret);
   if (!device->NeedsArp ())
     {
-      flags |= SIM_DEV_NOARP;
+      // e.g. point-to-point links, which cannot carry ARP: the kernel then
+      // sends to neighbors without resolving them.
+      ret = Call (__lkl__NR_ioctl, s, SIOCGIFFLAGS, (long)&ifr);
+      NS_ASSERT_MSG (ret == 0, "SIOCGIFFLAGS failed: " << ret);
+      ifr.ifr_flags |= IFF_NOARP;
+      ret = Call (__lkl__NR_ioctl, s, SIOCSIFFLAGS, (long)&ifr);
+      NS_ASSERT_MSG (ret == 0, "SIOCSIFFLAGS failed: " << ret);
     }
-  m_loader->NotifyStartExecute (); // Restore the memory of the kernel before access it !
-#if ((LIBOS_API_VERSION == 2))
-  struct SimDevice *dev = m_exported->dev_create ("sim%d", PeekPointer (device), (enum SimDevFlags)flags);
-#else
-  struct SimDevice *dev = m_exported->dev_create (PeekPointer (device), (enum SimDevFlags)flags);
-#endif  // LIBOS_API_VERSION
-  m_loader->NotifyEndExecute ();
-  Ptr<KernelDeviceStateListener> listener = Create <KernelDeviceStateListener> (device, this);
-  m_listeners.push_back (listener);
-  device->AddLinkChangeCallback (MakeCallback (&KernelDeviceStateListener::NotifyDeviceStateChange, listener));
+  Call (__lkl__NR_close, s);
 
-  m_devices.push_back (std::make_pair (device,dev));
-  Ptr<Node> node = GetObject<Node> ();
-  if (device->GetInstanceTypeId () == m_lteUeTid)
+  // LTE and NR devices do not support promiscuous mode: they deliver received
+  // packets only to the non-promiscuous handlers.
+  TypeId cellular;
+  bool promiscuous = !((TypeId::LookupByNameFailSafe ("ns3::LteNetDevice", &cellular)
+                        && device->GetInstanceTypeId ().IsChildOf (cellular))
+                       || (TypeId::LookupByNameFailSafe ("ns3::NrNetDevice", &cellular)
+                           && device->GetInstanceTypeId ().IsChildOf (cellular)));
+  GetObject<Node> ()->RegisterProtocolHandler (MakeCallback (&KernelSocketFdFactory::RxFromDevice, this),
+                                               0, device, promiscuous);
+}
+
+void
+KernelSocketFdFactory::RxFromDevice (Ptr<NetDevice> device, Ptr<const Packet> p, uint16_t protocol,
+                                  const Address &from, const Address &to, NetDevice::PacketType type)
+{
+  LklNetDevice *dev = 0;
+  for (std::vector<LklNetDevice *>::iterator i = m_devices.begin (); i != m_devices.end (); ++i)
     {
-      node->RegisterProtocolHandler (MakeCallback (&KernelSocketFdFactory::RxFromDevice, this),
-                                     0, device, false);
+      if ((*i)->device == device)
+        {
+          dev = *i;
+          break;
+        }
+    }
+  if (!dev || dev->rx.size () >= RX_BACKLOG)
+    {
+      return;
+    }
+  // Rebuild the Ethernet frame the kernel expects.
+  std::vector<uint8_t> frame (ETH_HEADER + p->GetSize ());
+  // Devices with other address types (e.g. LTE's Mac64Address) have a kernel
+  // device address of their own.
+  Mac48Address dest = Mac48Address::IsMatchingType (to)
+    ? Mac48Address::ConvertFrom (to) : dev->mac;
+  Mac48Address source = Mac48Address::IsMatchingType (from)
+    ? Mac48Address::ConvertFrom (from) : Mac48Address ("00:00:00:00:00:00");
+  dest.CopyTo (&frame[0]);
+  source.CopyTo (&frame[6]);
+  frame[12] = protocol >> 8;
+  frame[13] = protocol & 0xff;
+  p->CopyData (&frame[ETH_HEADER], p->GetSize ());
+  NS_LOG_DEBUG ("rx " << device << " protocol " << protocol << " " << frame.size () << " bytes");
+  dev->rx.push_back (frame);
+  dev->stalled = false;
+  if (dev->poller)
+    {
+      m_kernel->GetTaskManager ()->Wakeup (dev->poller);
+    }
+}
+
+void
+KernelSocketFdFactory::AddWifiDevice (Ptr<LklWifiDevice> device)
+{
+  NS_LOG_FUNCTION (this << device);
+  LklWifiRadio *radio = new LklWifiRadio ();
+  radio->factory = this;
+  radio->device = device;
+  radio->irqTask = 0;
+  typedef int (*GetFreeIrq)(const char *);
+  GetFreeIrq getFreeIrq = (GetFreeIrq) m_kernel->Lookup ("lkl_get_free_irq");
+  radio->irq = getFreeIrq ("lkl-wifi");
+  NS_ASSERT_MSG (radio->irq > 0, "lkl_get_free_irq failed: " << radio->irq);
+  int id = m_radios.size ();
+  m_radios.push_back (radio);
+
+  uint8_t mac[6];
+  Mac48Address::ConvertFrom (device->GetAddress ()).CopyTo (mac);
+  // Like a card, the radio offers what its PHY does.
+  WifiStandard standard = device->GetPhy ()->GetStandard ();
+  long caps = 0;
+  if (standard >= WIFI_STANDARD_80211n)
+    {
+      caps |= LKL_WIFI_CAP_HT;
+    }
+  if (standard >= WIFI_STANDARD_80211ac)
+    {
+      caps |= LKL_WIFI_CAP_VHT;
+    }
+  if (standard >= WIFI_STANDARD_80211ax)
+    {
+      caps |= LKL_WIFI_CAP_HE;
+    }
+  long ret = Call (__lkl__NR_wifi_add, id, radio->irq, (long)mac, caps);
+  NS_ASSERT_MSG (ret == 0, "wifi_add failed: " << ret);
+  device->SetEventCallback (MakeCallback (&KernelSocketFdFactory::NotifyWifiEvent, this, radio));
+  m_kernel->GetTaskManager ()->Start (&KernelSocketFdFactory::WifiIrqTrampoline, radio, LKL_TASK_STACK);
+}
+
+void
+KernelSocketFdFactory::NotifyWifiEvent (LklWifiRadio *radio)
+{
+  if (radio->irqTask)
+    {
+      Task *task = radio->irqTask;
+      radio->irqTask = 0;
+      m_kernel->GetTaskManager ()->Wakeup (task);
+    }
+}
+
+void
+KernelSocketFdFactory::WifiIrqTrampoline (void *context)
+{
+  LklWifiRadio *radio = (LklWifiRadio *)context;
+  radio->factory->WifiIrq (radio);
+}
+
+void
+KernelSocketFdFactory::WifiIrq (LklWifiRadio *radio)
+{
+  // Like the radio's interrupt line: raised while the device has events,
+  // which the kernel's interrupt handler takes with wifi_poll.
+  typedef int (*TriggerIrq)(int);
+  TriggerIrq triggerIrq = (TriggerIrq) m_kernel->Lookup ("lkl_trigger_irq");
+  TaskManager *manager = m_kernel->GetTaskManager ();
+  while (true)
+    {
+      while (!radio->device->HasEvents ())
+        {
+          radio->irqTask = manager->RunningTask ();
+          manager->Sleep ();
+        }
+      triggerIrq (radio->irq);
+      if (radio->device->HasEvents ())
+        {
+          // The kernel's CPU is taken by a task waiting for the simulator:
+          // the interrupt is pending until it is released. Let the
+          // simulator run, until the next event or a while, rather than
+          // raising the interrupt again and again.
+          radio->irqTask = manager->RunningTask ();
+          manager->Sleep (MicroSeconds (10));
+          radio->irqTask = 0;
+        }
+    }
+}
+
+namespace {
+
+KernelSocketFdFactory *
+CurrentFactory (void)
+{
+  LklKernel *kernel = LklKernel::Current ();
+  NS_ASSERT (kernel);
+  return PeekPointer (kernel->GetObject<KernelSocketFdFactory> ());
+}
+
+} // namespace
+
+int
+KernelSocketFdFactory::WifiTx (int id, const void *frame, int len, const struct lkl_wifi_tx_info *info)
+{
+  KernelSocketFdFactory *factory = CurrentFactory ();
+  NS_ASSERT (id >= 0 && id < (int)factory->m_radios.size ());
+  LklWifiDevice::TxInfo tx;
+  for (int i = 0; i < 4; i++)
+    {
+      tx.rate[i] = info->rate[i];
+      tx.count[i] = info->count[i];
+      tx.mode[i] = info->mode[i];
+      tx.mcs[i] = info->mcs[i];
+      tx.nss[i] = info->nss[i];
+      tx.width[i] = info->width[i];
+      tx.sgi[i] = info->sgi[i];
+    }
+  tx.ampdu = info->ampdu;
+  tx.freq = info->freq;
+  tx.noAck = info->no_ack;
+  tx.noStatus = info->no_status;
+  const uint8_t *bytes = (const uint8_t *)frame;
+  std::vector<uint8_t> data (bytes, bytes + len);
+  // The device lives in the simulator, not in the kernel's task.
+  TaskManager::Current ()->ExecOnMain (MakeEvent (&LklWifiDevice::Transmit,
+                                                  factory->m_radios[id]->device, data, tx));
+  return 0;
+}
+
+int
+KernelSocketFdFactory::WifiPoll (int id, void *frame, int len, struct lkl_wifi_event *ev)
+{
+  KernelSocketFdFactory *factory = CurrentFactory ();
+  NS_ASSERT (id >= 0 && id < (int)factory->m_radios.size ());
+  LklWifiDevice::Event event;
+  if (!factory->m_radios[id]->device->PopEvent (event))
+    {
+      return -1;
+    }
+  ev->type = event.type;
+  if (event.type == LklWifiDevice::Event::RX)
+    {
+      if ((int)event.frame.size () > len)
+        {
+          return WifiPoll (id, frame, len, ev); // cannot be a valid frame
+        }
+      memcpy (frame, event.frame.data (), event.frame.size ());
+      ev->len = event.frame.size ();
+      ev->freq = event.freq;
+      ev->rate = event.rate;
+      ev->signal = event.signal;
+      ev->mode = event.mode;
+      ev->mcs = event.mcs;
+      ev->nss = event.nss;
+      ev->sgi = event.sgi;
+      ev->width = event.width;
+      ev->ampdu_ref = event.ampduRef;
     }
   else
     {
-      node->RegisterProtocolHandler (MakeCallback (&KernelSocketFdFactory::RxFromDevice, this),
-                                     0, device, true);
+      ev->acked = event.acked;
+      ev->attempts = event.attempts;
     }
-  NotifyDeviceStateChangeTask (device);
-}
-
-
-void
-KernelSocketFdFactory::InitializeStack (void)
-{
-  std::string filePath = SearchExecFile ("DCE_PATH", m_library, 0);
-  if (filePath.length () <= 0)
-    {
-      std::string line = "Stack file '";
-      line += m_library;
-      line += "' not found ! Please check your DCE_PATH environment variable.";
-      NS_ASSERT_MSG (filePath.length () > 0, line.c_str ());
-      return ;
-    }
-  NS_LOG_INFO ("loading " + filePath);
-  void *handle = m_loader->Load (filePath, RTLD_LOCAL);
-  void *symbol = m_loader->Lookup (handle, "sim_init");
-  SimInit init = (SimInit) symbol;
-  if (init == 0)
-    {
-      NS_FATAL_ERROR ("Oops. Can't find initialization function");
-    }
-  m_exported = new struct SimExported ();
-  struct SimImported imported;
-  imported.vprintf = &KernelSocketFdFactory::Vprintf;
-  imported.malloc = &KernelSocketFdFactory::Malloc;
-  imported.free = &KernelSocketFdFactory::Free;
-  imported.memcpy = &KernelSocketFdFactory::Memcpy;
-  imported.memset = &KernelSocketFdFactory::Memset;
-  imported.atexit = &KernelSocketFdFactory::AtExit;
-  imported.access = &KernelSocketFdFactory::Access;
-  imported.getenv = &KernelSocketFdFactory::Getenv;
-  imported.mkdir = &KernelSocketFdFactory::Mkdir;
-  imported.open = &KernelSocketFdFactory::Open;
-  imported.__fxstat = &KernelSocketFdFactory::__Fxstat;
-  imported.fseek = &KernelSocketFdFactory::Fseek;
-  imported.setbuf = &KernelSocketFdFactory::Setbuf;
-  imported.ftell = &KernelSocketFdFactory::Ftell;
-  imported.fdopen = &KernelSocketFdFactory::FdOpen;
-  imported.fread = &KernelSocketFdFactory::Fread;
-  imported.fwrite = &KernelSocketFdFactory::Fwrite;
-  imported.fclose = &KernelSocketFdFactory::Fclose;
-  imported.random = &KernelSocketFdFactory::Random;
-  imported.event_schedule_ns = &KernelSocketFdFactory::EventScheduleNs;
-  imported.event_cancel = &KernelSocketFdFactory::EventCancel;
-  imported.current_ns = &CurrentNs;
-  imported.task_start = &KernelSocketFdFactory::TaskStart;
-  imported.task_wait = &KernelSocketFdFactory::TaskWait;
-  imported.task_current = &KernelSocketFdFactory::TaskCurrent;
-  imported.task_wakeup = &KernelSocketFdFactory::TaskWakeup;
-  imported.task_yield = &KernelSocketFdFactory::TaskYield;
-  imported.dev_xmit = &KernelSocketFdFactory::DevXmit;
-  imported.signal_raised = &KernelSocketFdFactory::SignalRaised;
-  imported.poll_event = &KernelSocketFdFactory::PollEvent;
-  // create internal process
-  Ptr<DceManager> manager = this->GetObject<DceManager> ();
-  m_pid = manager->StartInternalTask ();
-
-  init (m_exported, &imported, (struct SimKernel *)this);
-
-  // update the kernel device list with simulation device list
-  Ptr<Node> node = GetObject<Node> ();
-  node->RegisterDeviceAdditionListener (MakeCallback (&KernelSocketFdFactory::NotifyAddDevice,
-                                                      this));
-  NS_LOG_FUNCTION (this << "m_exported " << m_exported);
+  return 0;
 }
 
 UnixFd *
 KernelSocketFdFactory::CreateSocket (int domain, int type, int protocol)
 {
-  GET_CURRENT (this << domain << type << protocol);
-  struct SimSocket *socket;
-  m_loader->NotifyStartExecute ();
-  int retval = m_exported->sock_socket (domain, type, protocol, &socket);
-  m_loader->NotifyEndExecute ();
-  if (retval < 0)
+  NS_LOG_FUNCTION (this << domain << type << protocol);
+  WaitBooted ();
+  if (m_mptcp && (domain == AF_INET || domain == AF_INET6)
+      && (type & 0xf) == SOCK_STREAM && (protocol == 0 || protocol == IPPROTO_TCP))
+    {
+      protocol = 262; // IPPROTO_MPTCP
+    }
+  long fd = Call (__lkl__NR_socket, domain, type, protocol);
+  if (fd < 0)
     {
       return 0;
     }
-  UnixFd *fd = new KernelSocketFd (this, socket);
-  return fd;
+  return new KernelSocketFd (this, fd);
 }
 
-int
-KernelSocketFdFactory::Close (struct SimSocket *socket)
+void
+KernelSocketFdFactory::Register (KernelSocketFd *socket)
 {
-  GET_CURRENT (socket);
-  m_loader->NotifyStartExecute ();
-  int retval = m_exported->sock_close (socket);
-  m_loader->NotifyEndExecute ();
-  if (retval < 0)
-    {
-      current->err = -retval;
-      return -1;
-    }
-  return retval;
+  m_sockets[socket->GetKernelFd ()] = socket;
 }
-ssize_t
-KernelSocketFdFactory::Recvmsg (struct SimSocket *socket, struct msghdr *msg, int flags)
+
+void
+KernelSocketFdFactory::Unregister (KernelSocketFd *socket)
 {
-  GET_CURRENT (socket << msg << flags);
-  m_loader->NotifyStartExecute ();
-  ssize_t retval = m_exported->sock_recvmsg (socket, msg, flags);
-  m_loader->NotifyEndExecute ();
-  if (retval < 0)
-    {
-      current->err = -retval;
-      return -1;
-    }
-  return retval;
+  m_sockets.erase (socket->GetKernelFd ());
+  m_watched.erase (socket->GetKernelFd ());
 }
-ssize_t
-KernelSocketFdFactory::Sendmsg (struct SimSocket *socket, const struct msghdr *msg, int flags)
+
+void
+KernelSocketFdFactory::Watch (KernelSocketFd *socket)
 {
-  GET_CURRENT (socket << msg << flags);
-  m_loader->NotifyStartExecute ();
-  ssize_t retval = m_exported->sock_sendmsg (socket, msg, flags);
-  m_loader->NotifyEndExecute ();
-  if (retval < 0)
+  // Like a kernel wait queue: once watched, every change of the socket's
+  // state wakes its poll waiters, which check what they wait for.
+  int fd = socket->GetKernelFd ();
+  if (m_watched.count (fd))
     {
-      current->err = -retval;
-      return -1;
+      return;
     }
-  return retval;
+  struct epoll_event event;
+  memset (&event, 0, sizeof (event));
+  event.events = EPOLLIN | EPOLLOUT | EPOLLPRI | EPOLLRDHUP | EPOLLET;
+  event.data.fd = fd;
+  long ret = Call (__lkl__NR_epoll_ctl, m_epollFd, EPOLL_CTL_ADD, fd, (long)&event);
+  NS_ASSERT_MSG (ret == 0, "epoll_ctl failed: " << ret);
+  m_watched.insert (fd);
 }
-int
-KernelSocketFdFactory::Getsockname (struct SimSocket *socket, struct sockaddr *name, socklen_t *namelen)
+
+void
+KernelSocketFdFactory::WatcherTrampoline (void *context)
 {
-  GET_CURRENT (socket << name << namelen);
-  m_loader->NotifyStartExecute ();
-  int retval = m_exported->sock_getsockname (socket, name, (int*)namelen);
-  m_loader->NotifyEndExecute ();
-  if (retval < 0)
-    {
-      current->err = -retval;
-      return -1;
-    }
-  return retval;
+  ((KernelSocketFdFactory *)context)->Watcher ();
 }
-int
-KernelSocketFdFactory::Getpeername (struct SimSocket *socket, struct sockaddr *name, socklen_t *namelen)
+
+void
+KernelSocketFdFactory::Watcher (void)
 {
-  GET_CURRENT (socket << name << namelen);
-  m_loader->NotifyStartExecute ();
-  int retval = m_exported->sock_getpeername (socket, name, (int*)namelen);
-  m_loader->NotifyEndExecute ();
-  if (retval < 0)
+  struct epoll_event events[32];
+  while (true)
     {
-      current->err = -retval;
-      return -1;
-    }
-  return retval;
-}
-int
-KernelSocketFdFactory::Bind (struct SimSocket *socket, const struct sockaddr *my_addr, socklen_t addrlen)
-{
-  GET_CURRENT (socket << my_addr << addrlen);
-  m_loader->NotifyStartExecute ();
-  int retval = m_exported->sock_bind (socket, my_addr, addrlen);
-  m_loader->NotifyEndExecute ();
-  if (retval < 0)
-    {
-      current->err = -retval;
-      return -1;
-    }
-  return retval;
-}
-int
-KernelSocketFdFactory::Connect (struct SimSocket *socket, const struct sockaddr *my_addr,
-                               socklen_t addrlen, int flags)
-{
-  GET_CURRENT (socket << my_addr << addrlen << flags);
-  m_loader->NotifyStartExecute ();
-  int retval = m_exported->sock_connect (socket, my_addr, addrlen, flags);
-  m_loader->NotifyEndExecute ();
-  if (retval < 0)
-    {
-      current->err = -retval;
-      return -1;
-    }
-  return retval;
-}
-int
-KernelSocketFdFactory::Listen (struct SimSocket *socket, int backlog)
-{
-  GET_CURRENT (socket << backlog);
-  m_loader->NotifyStartExecute ();
-  int retval = m_exported->sock_listen (socket, backlog);
-  m_loader->NotifyEndExecute ();
-  if (retval < 0)
-    {
-      current->err = -retval;
-      return -1;
-    }
-  return retval;
-}
-int
-KernelSocketFdFactory::Shutdown (struct SimSocket *socket, int how)
-{
-  GET_CURRENT (socket << how);
-  m_loader->NotifyStartExecute ();
-  int retval = m_exported->sock_shutdown (socket, how);
-  m_loader->NotifyEndExecute ();
-  if (retval < 0)
-    {
-      current->err = -retval;
-      return -1;
-    }
-  return retval;
-}
-int
-KernelSocketFdFactory::Accept (struct SimSocket *socket, struct sockaddr *my_addr, socklen_t *addrlen, int flags)
-{
-  GET_CURRENT (socket << my_addr << addrlen << flags);
-  struct SimSocket *newSocket;
-  m_loader->NotifyStartExecute ();
-  int retval = m_exported->sock_accept (socket, &newSocket, flags);
-  m_loader->NotifyEndExecute ();
-  if (retval < 0)
-    {
-      current->err = -retval;
-      return -1;
-    }
-  if (my_addr != 0)
-    {
-      m_loader->NotifyStartExecute ();
-      retval = m_exported->sock_getpeername (newSocket, my_addr, (int*)addrlen);
-      if (retval < 0)
+      long n = Call (__lkl__NR_epoll_pwait, m_epollFd, (long)events, 32, -1, 0, 8);
+      for (long i = 0; i < n; i++)
         {
-          current->err = -retval;
-          m_exported->sock_close (newSocket);
-          m_loader->NotifyEndExecute ();
-          return -1;
+          std::map<int, KernelSocketFd *>::iterator s = m_sockets.find (events[i].data.fd);
+          if (s != m_sockets.end ())
+            {
+              s->second->NotifyEvents (events[i].events & 0xffff);
+            }
         }
-      m_loader->NotifyEndExecute ();
     }
-  int fd = UtilsAllocateFd ();
-  if (fd == -1)
-    {
-      m_loader->NotifyStartExecute ();
-      m_exported->sock_close (newSocket);
-      current->err = EMFILE;
-      m_loader->NotifyEndExecute ();
-      return -1;
-    }
-
-  UnixFd *unixFd = new KernelSocketFd (this, newSocket);
-  unixFd->IncFdCount ();
-  current->process->openFiles[fd] = new FileUsage (fd, unixFd);
-
-  return fd;
-}
-int
-KernelSocketFdFactory::Ioctl (struct SimSocket *socket, unsigned long request, char *argp)
-{
-  GET_CURRENT (socket << request << argp);
-  m_loader->NotifyStartExecute ();
-  int retval = m_exported->sock_ioctl (socket, request, argp);
-  m_loader->NotifyEndExecute ();
-  if (retval < 0)
-    {
-      current->err = -retval;
-      return -1;
-    }
-  return retval;
-}
-int
-KernelSocketFdFactory::Setsockopt (struct SimSocket *socket, int level, int optname,
-                                  const void *optval, socklen_t optlen)
-{
-  GET_CURRENT (socket << level << optname << optval << optlen);
-  m_loader->NotifyStartExecute ();
-  int retval = m_exported->sock_setsockopt (socket, level, optname, optval, optlen);
-  m_loader->NotifyEndExecute ();
-  if (retval < 0)
-    {
-      current->err = -retval;
-      return -1;
-    }
-  return retval;
-}
-int
-KernelSocketFdFactory::Getsockopt (struct SimSocket *socket, int level, int optname,
-                                  void *optval, socklen_t *optlen)
-{
-  GET_CURRENT (socket << level << optname << optval << optlen);
-  m_loader->NotifyStartExecute ();
-  int retval = m_exported->sock_getsockopt (socket, level, optname, optval, (int*)optlen);
-  m_loader->NotifyEndExecute ();
-  if (retval < 0)
-    {
-      current->err = -retval;
-      return -1;
-    }
-  return retval;
-}
-void
-KernelSocketFdFactory::PollEvent (int flag, void *context)
-{
-  PollTable* ptable = (PollTable*)context;
-  ptable->WakeUpCallback ();
 }
 
-/**
- * Struct used to pass pool table context between DCE and Kernel and back from Kernel to DCE
- *
- * When calling sock_poll we provide in ret field the wanted eventmask, and in the opaque field
- * the DCE poll table
- *
- * if a corresponding event occurs later, the PollEvent will be called by kernel with the DCE
- * poll table in context variable, then we will able to wake up the thread blocked in poll call.
- *
- * Back from sock_poll method the kernel change ret field with the response from poll return of the
- * corresponding kernel socket, and in opaque field there is a reference to the kernel poll table
- * we will use this reference to remove us from the file wait queue when ending the DCE poll call or
- * when ending the DCE process which is currently polling.
- *
- */
-struct poll_table_ref
-{
-  int ret;
-  void *opaque;
-};
-int
-KernelSocketFdFactory::Poll (struct SimSocket *socket, PollTable* ptable)
-{
-  struct poll_table_ref kernelInOut =
-  {
-    0
-  };
-  if (ptable)
-    {
-      // Fill Opaque and ptable.
-      kernelInOut.opaque = ptable;
-      kernelInOut.ret = ptable->GetEventMask ();
-    }
-
-  GET_CURRENT (socket);
-  m_loader->NotifyStartExecute ();
-  m_exported->sock_poll (socket, &kernelInOut);
-  m_loader->NotifyEndExecute ();
-
-  if (ptable)
-    {
-      ptable->PollWait (kernelInOut.opaque, MakeCallback (&KernelSocketFdFactory::PollFreeWait, this));
-    }
-
-  return kernelInOut.ret;
-}
-void
-KernelSocketFdFactory::PollFreeWait (void *ref)
-{
-  m_loader->NotifyStartExecute ();
-  m_exported->sock_pollfreewait (ref);
-  m_loader->NotifyEndExecute ();
-}
 } // namespace ns3

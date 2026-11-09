@@ -7,6 +7,7 @@
 #include "ns3/node-container.h"
 #include "ns3/nstime.h"
 #include <string>
+#include <stddef.h>
 
 namespace ns3 {
 
@@ -194,5 +195,26 @@ private:
 };
 
 } // namespace ns3
+
+namespace ns3 {
+void DceReserveExecutableTls (void *reserve, size_t size);
+}
+
+/**
+ * Reserve, in the simulator's executable, the room the thread local variables
+ * of a program that DCE loads from an executable (a PIE, such as a prebuilt
+ * web browser) need: its code addresses them at fixed offsets below the
+ * thread pointer, where the simulator's executable keeps its own. Use it once,
+ * at file scope, in the simulation's main source file, with a TaskManager
+ * whose PerFiberTls is true; nothing else of the executable may be thread
+ * local.
+ */
+#define DCE_RESERVE_EXECUTABLE_TLS(size)                                          \
+  static __thread char g_dceExecutableTls[size] __attribute__ ((aligned (64)));   \
+  static void DceReserveExecutableTlsAtStart (void) __attribute__ ((constructor)); \
+  static void DceReserveExecutableTlsAtStart (void)                               \
+  {                                                                               \
+    ns3::DceReserveExecutableTls (g_dceExecutableTls, sizeof (g_dceExecutableTls)); \
+  }
 
 #endif /* DCE_MANAGER_HELPER_H */

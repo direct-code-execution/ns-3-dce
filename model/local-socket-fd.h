@@ -24,6 +24,7 @@
 #include "unix-fd.h"
 #include "ns3/ptr.h"
 #include <list>
+#include <vector>
 #include "ns3/nstime.h"
 #include "ns3/object.h"
 
@@ -85,6 +86,12 @@ public:
   virtual bool CanSend (void) const = 0;
   virtual bool HangupReceived (void) const = 0;
 
+  /**
+   * Keep the boundaries of the messages, as SOCK_SEQPACKET: a read returns
+   * one message, a message is received whole or not at all.
+   */
+  void KeepMessageBoundaries (void);
+
 protected:
   void ClearReadBuffer (void);
   virtual void ClearAll (bool andWakeUp) = 0;
@@ -111,6 +118,18 @@ protected:
 
   FifoData m_readBuffer;
   size_t m_readBufferSize;
+  bool m_messages;
+  // Bytes ever received and read, and the descriptors sent with the data
+  // (SCM_RIGHTS), each with the position in the stream of the data it came
+  // with.
+  uint64_t m_received;
+  uint64_t m_consumed;
+  struct PassedFiles
+  {
+    uint64_t offset;
+    std::vector<UnixFd *> files;
+  };
+  std::list<PassedFiles> m_passedFiles;
 
   Time m_sendTimeout;
   Time m_recvTimeout;

@@ -7,6 +7,13 @@
 #include "socket-fd-factory.h"
 #include "waiter.h"
 #include "dce-fcntl.h"
+#include <limits.h>
+#include <vector>
+#include "host-socket-fd.h"
+#include "local-stream-socket-fd.h"
+#include "local-datagram-socket-fd.h"
+#include <sys/un.h>
+#include <stddef.h>
 #include "dce-unistd.h"
 #include "dce-poll.h"
 #include "dce-stdio.h"
@@ -65,28 +72,36 @@ NS_LOG_COMPONENT_DEFINE ("DceFd");
 
 using namespace ns3;
 
+static int dce_open_mode (const char *path, int flags, mode_t mode);
+
 int dce_open64 (const char *path, int flags, ...)
 {
   va_list vl;
   va_start (vl, flags);
-  // hope this trick actually works...
-  int status = dce_open (path, flags, vl);
-  va_end (vl);
-
-  return status;
-}
-
-int dce_open (const char *path, int flags, ...)
-{
-  va_list vl;
-  va_start (vl, flags);
-
   mode_t mode = 0;
   if (flags & O_CREAT)
     {
       mode = va_arg (vl, mode_t);
     }
   va_end (vl);
+  return dce_open_mode (path, flags, mode);
+}
+
+int dce_open (const char *path, int flags, ...)
+{
+  va_list vl;
+  va_start (vl, flags);
+  mode_t mode = 0;
+  if (flags & O_CREAT)
+    {
+      mode = va_arg (vl, mode_t);
+    }
+  va_end (vl);
+  return dce_open_mode (path, flags, mode);
+}
+
+static int dce_open_mode (const char *path, int flags, mode_t mode)
+{
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << path << flags);
   NS_ASSERT (current != 0);
@@ -159,41 +174,32 @@ int dce_openat (int dirfd, const char *pathname, int flags, ...) {
     return dce_open(pathname, flags, mode);
   }
   
-  // If pathname is relative, then it is interpreted relative to the directory 
-  // referred to by the file descriptor dirfd
+  // If pathname is relative, then it is interpreted relative to the directory
+  // referred to by the file descriptor dirfd: a directory of the node's file
+  // system, open on the host.
   Thread *current = Current ();
-  int realFd = getRealFd (dirfd, current);
-
-  struct stat finfo;
-  int error = fstat(realFd, &finfo);
-  if (error)
-  {
-    return -1;
-  }
-
-  // We find the directory referred by dirfd and finally open the dile with dce_open
-  std::stringstream command_cp;    
-  command_cp << "cd files-" << UtilsGetNodeId () << "; find . -inum " << finfo.st_ino;
-
-  const char* cmd = command_cp.str ().c_str ();
-  char buffer[128];
-  std::string ret = "";
-  FILE* pipe = popen(cmd, "r");
-  if (!pipe) throw std::runtime_error("popen() failed!");
-  try {
-    while (fgets(buffer, sizeof buffer, pipe) != NULL) {
-      ret += buffer;
+  int realDirFd = getRealFd (dirfd, current);
+  if (realDirFd < 0)
+    {
+      current->err = EBADF;
+      return -1;
     }
-  } catch (...) {
-    pclose(pipe);
-    throw;
-  }
-  pclose(pipe);
-
-  ret.erase(0,1);
-  ret.erase(ret.length()-1,1);
-  ret = ret + "/" + pathname;
-  return dce_open(ret.c_str(), flags, mode);
+  int fd = UtilsAllocateFd ();
+  if (fd == -1)
+    {
+      current->err = EMFILE;
+      return -1;
+    }
+  int realFd = ::openat (realDirFd, pathname, flags, mode);
+  if (realFd == -1)
+    {
+      current->err = errno;
+      return -1;
+    }
+  UnixFd *unixFd = new UnixFileFd (realFd);
+  unixFd->IncFdCount ();
+  current->process->openFiles[fd] = new FileUsage (fd, unixFd);
+  return fd;
 }
 
 int dce_creat (const char *path, mode_t mode)
@@ -414,13 +420,17 @@ int dce_socket (int domain, int type, int protocol)
 
   Ptr<SocketFdFactory>  factory = 0;
 
+  // socket(2) accepts SOCK_NONBLOCK and SOCK_CLOEXEC or'ed into the type.
+  bool nonBlock = type & SOCK_NONBLOCK;
+  type &= ~(SOCK_NONBLOCK | SOCK_CLOEXEC);
+
   if (domain != AF_UNIX)
     {
       factory = manager->GetObject<SocketFdFactory> ();
     }
   else
     {
-      if (type != SOCK_DGRAM && type != SOCK_STREAM)
+      if (type != SOCK_DGRAM && type != SOCK_STREAM && type != SOCK_SEQPACKET)
         {
           current->err = EINVAL;
           return -1;
@@ -438,15 +448,17 @@ int dce_socket (int domain, int type, int protocol)
   int fd = UtilsAllocateFd ();
   if (fd == -1)
     {
+      socket->Close ();
+      socket->Unref ();
       current->err = EMFILE;
-      return -1;
-    }
-  if (!socket)
-    {
       return -1;
     }
   socket->IncFdCount ();
   current->process->openFiles[fd] = new FileUsage (fd, socket);
+  if (nonBlock)
+    {
+      socket->Fcntl (F_SETFL, socket->Fcntl (F_GETFL, 0) | O_NONBLOCK);
+    }
 
   return fd;
 }
@@ -487,18 +499,42 @@ ssize_t dce_readv (int fd, const struct iovec *iov, int iovcnt)
 }
 int dce_socketpair (int domain, int type, int protocol, int sv[2])
 {
-  sv[0] = dce_socket (domain, type, protocol);
-  if (sv[0] < 0)
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << domain << type << protocol);
+  if (domain != AF_UNIX)
+    {
+      current->err = EOPNOTSUPP;
+      return -1;
+    }
+  int fds[2];
+  fds[0] = dce_socket (domain, type, protocol);
+  if (fds[0] < 0)
     {
       return -1;
     }
-
-  sv[1] = dce_socket (domain, type, protocol);
-  if (sv[1] < 0)
+  fds[1] = dce_socket (domain, type, protocol);
+  if (fds[1] < 0)
     {
+      dce_close (fds[0]);
       return -1;
     }
-
+  // connect them to each other
+  UnixFd *a = current->process->openFiles[fds[0]]->GetFile ();
+  UnixFd *b = current->process->openFiles[fds[1]]->GetFile ();
+  LocalStreamSocketFd *streamA = dynamic_cast<LocalStreamSocketFd *> (a);
+  LocalStreamSocketFd *streamB = dynamic_cast<LocalStreamSocketFd *> (b);
+  LocalDatagramSocketFd *datagramA = dynamic_cast<LocalDatagramSocketFd *> (a);
+  LocalDatagramSocketFd *datagramB = dynamic_cast<LocalDatagramSocketFd *> (b);
+  if (streamA != 0 && streamB != 0)
+    {
+      LocalStreamSocketFd::Pair (streamA, streamB);
+    }
+  else if (datagramA != 0 && datagramB != 0)
+    {
+      LocalDatagramSocketFd::Pair (datagramA, datagramB);
+    }
+  sv[0] = fds[0];
+  sv[1] = fds[1];
   return 0;
 }
 
@@ -515,6 +551,52 @@ int dce_connect (int fd, const struct sockaddr *my_addr, socklen_t addrlen)
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << my_addr << addrlen);
   NS_ASSERT (current != 0);
+
+  // An AF_UNIX stream socket connecting to a host service (DceHostUnixSocketPaths,
+  // e.g. the X server): replace our never-connected local socket by a host one.
+  if (my_addr != 0 && my_addr->sa_family == AF_UNIX
+      && addrlen > offsetof (struct sockaddr_un, sun_path))
+    {
+      const struct sockaddr_un *sun = (const struct sockaddr_un *)my_addr;
+      size_t maxLen = addrlen - offsetof (struct sockaddr_un, sun_path);
+      std::string path;
+      if (sun->sun_path[0] == 0 && maxLen > 1)
+        {
+          path = std::string (sun->sun_path + 1, maxLen - 1); // abstract socket
+        }
+      else
+        {
+          path = std::string (sun->sun_path, strnlen (sun->sun_path, maxLen));
+        }
+      if (UtilsIsHostUnixSocketPath (path))
+        {
+          std::map<int, FileUsage *>::iterator it = current->process->openFiles.find (fd);
+          if (it == current->process->openFiles.end () || it->second->IsClosed ())
+            {
+              current->err = EBADF;
+              return -1;
+            }
+          FileUsage *fu = it->second;
+          UnixFd *local = fu->GetFile ();
+          if (dynamic_cast<LocalStreamSocketFd *> (local) != 0)
+            {
+              HostSocketFd *host = HostSocketFd::ConnectHost (my_addr, addrlen);
+              if (host == 0)
+                {
+                  current->err = errno;
+                  return -1;
+                }
+              NS_LOG_INFO ("fd " << fd << " connected to host socket " << path);
+              // keep the flags the application already set on the descriptor
+              host->Fcntl (F_SETFL, local->Fcntl (F_GETFL, 0));
+              host->Fcntl (F_SETFD, local->Fcntl (F_GETFD, 0));
+              delete fu; // drops the local socket
+              host->IncFdCount ();
+              current->process->openFiles[fd] = new FileUsage (fd, host);
+              return 0;
+            }
+        }
+    }
 
   OPENED_FD_METHOD (int, Connect (my_addr, addrlen))
 }
@@ -695,6 +777,16 @@ void * dce_mmap64 (void *start, size_t length, int prot, int flags,
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << start << length << prot << flags << fd << offset);
   NS_ASSERT (current != 0);
 
+  if (flags & MAP_ANONYMOUS)
+    {
+      // plain memory: nothing to do with the node's files
+      void *p = ::mmap (start, length, prot, flags, -1, offset);
+      if (p == MAP_FAILED)
+        {
+          current->err = errno;
+        }
+      return p;
+    }
   OPENED_FD_METHOD_ERR (MAP_FAILED, void *, Mmap (start, length, prot, flags, offset))
 }
 int dce_munmap (void *start, size_t length)
@@ -739,8 +831,31 @@ int dce_fcntl (int fd, int cmd, ... /*unsigned long arg*/)
   switch (cmd)
     {
     case F_DUPFD:
+    case F_DUPFD_CLOEXEC:
       {
-        return dce_dup (fd);
+        // the lowest free descriptor of the process from arg on
+        if (current->process->openFiles.find (fd) == current->process->openFiles.end ())
+          {
+            current->err = EBADF;
+            return -1;
+          }
+        int newfd = (int) arg;
+        while (newfd < MAX_FDS
+               && current->process->openFiles.find (newfd) != current->process->openFiles.end ())
+          {
+            newfd++;
+          }
+        if (newfd >= MAX_FDS)
+          {
+            current->err = EMFILE;
+            return -1;
+          }
+        newfd = dce_dup2 (fd, newfd);
+        if (newfd >= 0 && cmd == F_DUPFD_CLOEXEC)
+          {
+            dce_fcntl (newfd, F_SETFD, FD_CLOEXEC);
+          }
+        return newfd;
       }
     }
 
@@ -913,4 +1028,134 @@ int dce_fsync (int fd)
   NS_ASSERT (current != 0);
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd);
   OPENED_FD_METHOD (int, Fsync ())
+}
+
+// fcntl64 is what glibc's fcntl() resolves to when _FILE_OFFSET_BITS=64;
+// on 64-bit targets it is identical to fcntl.
+int dce_fcntl64 (int fd, int cmd, ...)
+{
+  va_list vl;
+  va_start (vl, cmd);
+  unsigned long arg = va_arg (vl, unsigned long);
+  va_end (vl);
+  return dce_fcntl (fd, cmd, arg);
+}
+
+// Fortified read() of glibc, used by libraries built with _FORTIFY_SOURCE.
+ssize_t dce___read_chk (int fd, void *buf, size_t nbytes, size_t buflen)
+{
+  if (nbytes > buflen)
+    {
+      NS_FATAL_ERROR ("read: buffer overflow detected");
+    }
+  return dce_read (fd, buf, nbytes);
+}
+
+int dce_pipe2 (int pipefd[2], int flags)
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << flags);
+  NS_ASSERT (current != 0);
+  if (flags & ~(O_NONBLOCK | O_CLOEXEC))
+    {
+      current->err = EINVAL;
+      return -1;
+    }
+  int r = dce_pipe (pipefd);
+  if (r == 0 && (flags & O_NONBLOCK))
+    {
+      for (int i = 0; i < 2; i++)
+        {
+          dce_fcntl (pipefd[i], F_SETFL, dce_fcntl (pipefd[i], F_GETFL, 0) | O_NONBLOCK);
+        }
+    }
+  return r;
+}
+
+// Fortified open() of glibc without a mode argument.
+int dce___open_2 (const char *path, int flags)
+{
+  return dce_open (path, flags);
+}
+
+int dce_posix_fadvise (int fd, off_t offset, off_t len, int advice)
+{
+  return 0; // an advice: nothing to do
+}
+
+ssize_t dce___readlink_chk (const char *p, char *b, size_t bufsize, size_t buflen)
+{
+  return dce_readlink (p, b, bufsize);
+}
+
+// realpath() in the node file system: the canonical absolute path of an
+// existing file. Symbolic links are not resolved: a node file system often
+// has links to directories of the host (files-N/usr -> /usr) that would
+// otherwise leak host paths or loop.
+char * dce_realpath (const char *path, char *resolved)
+{
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << path);
+  NS_ASSERT (current != 0);
+  if (path == 0 || path[0] == 0)
+    {
+      current->err = ENOENT;
+      return 0;
+    }
+  std::string virt = UtilsGetVirtualFilePath (path);
+  // canonicalise: split on '/', drop "" and ".", pop on ".."
+  std::vector<std::string> parts;
+  size_t pos = 0;
+  while (pos <= virt.size ())
+    {
+      size_t next = virt.find ('/', pos);
+      if (next == std::string::npos)
+        {
+          next = virt.size ();
+        }
+      std::string part = virt.substr (pos, next - pos);
+      if (part == "..")
+        {
+          if (!parts.empty ())
+            {
+              parts.pop_back ();
+            }
+        }
+      else if (part != "" && part != ".")
+        {
+          parts.push_back (part);
+        }
+      pos = next + 1;
+    }
+  std::string result;
+  for (std::vector<std::string>::iterator i = parts.begin (); i != parts.end (); ++i)
+    {
+      result += "/" + *i;
+    }
+  if (result == "")
+    {
+      result = "/";
+    }
+  struct stat st;
+  if (::stat (UtilsGetRealFilePath (result).c_str (), &st) != 0)
+    {
+      current->err = errno;
+      return 0;
+    }
+  if (result.size () >= PATH_MAX)
+    {
+      current->err = ENAMETOOLONG;
+      return 0;
+    }
+  if (resolved == 0)
+    {
+      resolved = (char *)dce_malloc (result.size () + 1);
+    }
+  strcpy (resolved, result.c_str ());
+  return resolved;
+}
+
+char * dce___realpath_chk (const char *path, char *resolved, size_t resolvedlen)
+{
+  return dce_realpath (path, resolved);
 }

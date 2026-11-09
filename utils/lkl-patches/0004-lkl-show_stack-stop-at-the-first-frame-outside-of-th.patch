@@ -1,0 +1,46 @@
+From a3df1d4a90b978e4744a18c9936913a30709e5e9 Mon Sep 17 00:00:00 2001
+From: Gabriel Ferreira <gabrielcarvfer@gmail.com>
+Date: Thu, 8 Oct 2026 08:31:24 +0200
+Subject: [PATCH 4/4] lkl: show_stack: stop at the first frame outside of the
+ kernel
+
+With frame pointers, show_stack() follows the frame chain for up to
+THREAD_SIZE frames. Past the kernel, the chain continues into the host
+code that called it, which may not keep frame pointers: the walk then
+dereferences whatever the frame pointer slot holds, and printing a
+warning crashes the host (e.g. ns-3 DCE, whose task stacks hold
+simulator frames above the kernel).
+
+Stop at the first return address that is not kernel text, and at frames
+that do not go up the stack.
+
+TOUPSTREAM
+---
+ arch/lkl/kernel/stacktrace.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/arch/lkl/kernel/stacktrace.c b/arch/lkl/kernel/stacktrace.c
+index 0690fbc00..fb54c93d5 100644
+--- a/arch/lkl/kernel/stacktrace.c
++++ b/arch/lkl/kernel/stacktrace.c
+@@ -31,9 +31,16 @@ void show_stack(struct task_struct *task, unsigned long *sp,
+ 
+ 	while (stack && stack - frame <= THREAD_SIZE) {
+ 		addr = stack->return_address;
++		/*
++		 * The host code that called into the kernel may not keep
++		 * frame pointers: stop at the first frame outside of the
++		 * kernel, and on frames that do not go up the stack.
++		 */
++		if (!__kernel_text_address(addr))
++			break;
+ 		printk("%s #%02d [<0x%016lx>] %pS\n",
+ 			loglvl, cnt++, addr, (void *)addr);
+-		if (stack == stack->next_frame)
++		if (stack->next_frame <= stack)
+ 			break;
+ 		stack = stack->next_frame;
+ 	}
+-- 
+2.53.0
+

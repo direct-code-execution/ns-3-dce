@@ -45,6 +45,7 @@ private:
   struct FileInfo EditBuffer (uint8_t *map, uint32_t selfId) const;
   struct FileInfo EditFile (std::string filename, uint32_t selfId) const;
   void DemoteUniqueSymbols (uint8_t *map, ElfW (Ehdr) *header) const;
+  void UnversionOverridenReferences (uint8_t *map, ElfW (Ehdr) *header) const;
   uint32_t GetDepId (std::string depname) const;
   std::string EnsureCacheDirectory (void) const;
   unsigned long GetBaseAddress (ElfW (Phdr) * phdr, long phnum) const;

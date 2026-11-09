@@ -72,6 +72,7 @@ main (int argc, char **argv)
 
   for (i = 0 ; i < 100 ; i++)
     {
+      flags = 0; // input flags of recvmsg, and output msg_flags
       stat = sctp_recvmsg (connect_sock, (void *)buffer, sizeof (buffer),
                            (struct sockaddr *)NULL, 0, &s_sndrcvinfo, &flags);
       printf ("stat = %d\n", stat);

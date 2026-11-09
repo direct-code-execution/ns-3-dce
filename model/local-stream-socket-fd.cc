@@ -20,6 +20,9 @@
  */
 #include "local-socket-fd.h"
 #include "local-stream-socket-fd.h"
+#include <vector>
+#include <algorithm>
+#include "dce-unistd.h"
 #include "local-socket-fd-factory.h"
 #include "utils.h"
 #include "process.h"
@@ -153,14 +156,12 @@ LocalStreamSocketFd::Write (const void *buf, size_t count)
 
   if (m_state != CONNECTED)
     {
-      if (m_state == REMOTECLOSED)
-        {
-          return 0;
-        }
-      current->err = ENOTCONN;
+      // Linux: EPIPE when the peer is gone. Returning 0 made writers which
+      // retry short writes (Chromium's SyncSocket) loop forever.
+      current->err = (m_state == REMOTECLOSED) ? EPIPE : ENOTCONN;
       return -1;
     }
-  if (m_shutWrite)
+  if (m_shutWrite || (m_peer != 0 && m_peer->m_shutRead))
     {
       current->err = EPIPE;
       return -1;
@@ -272,6 +273,11 @@ LocalStreamSocketFd::Read (void *buf, size_t count)
   while ((filled < count) && ((m_state == CONNECTED) || ((REMOTECLOSED == m_state) && (m_readBufferSize > 0))))
     {
       size_t lg = ReadData ((uint8_t*) buf + filled, count - filled, false);
+      if (0 == lg && m_shutRead)
+        {
+          // shut down for reading: end of file
+          RETURNFREE (filled);
+        }
       if (0 == lg)
         {
           if (m_statusFlags & O_NONBLOCK)
@@ -337,6 +343,9 @@ LocalStreamSocketFd::Read (void *buf, size_t count)
               short po = POLLOUT;
               m_peer->WakeWaiters (&po);
             }
+          // like Linux, a blocking read returns what has arrived (and a
+          // SOCK_SEQPACKET read one message)
+          break;
         }
       else
         {
@@ -351,45 +360,107 @@ ssize_t
 LocalStreamSocketFd::Recvmsg (struct msghdr *msg, int flags)
 {
   Thread *current = Current ();
-  NS_LOG_FUNCTION (this << current << msg << flags);
+  NS_LOG_FUNCTION (this << current);
   NS_ASSERT (current != 0);
 
-  ssize_t retval = 0;
-  for (uint32_t i = 0; i < msg->msg_iovlen; ++i)
+  size_t capacity = 0;
+  for (size_t i = 0; i < msg->msg_iovlen; ++i)
     {
-      uint8_t *buf = (uint8_t *) msg->msg_iov[i].iov_base;
-      ssize_t len = msg->msg_iov[i].iov_len;
-
-      size_t ret = Read (buf, len);
-
-      if ((msg->msg_namelen > 0) && (0 != msg->msg_name))
+      capacity += msg->msg_iov[i].iov_len;
+    }
+  // A read stops before data that came with descriptors, so that they are
+  // received with the first byte of it, as Linux does.
+  for (std::list<PassedFiles>::const_iterator i = m_passedFiles.begin (); i != m_passedFiles.end (); ++i)
+    {
+      if (i->offset > m_consumed)
         {
-          memset (msg->msg_name, 0, msg->msg_namelen);
-        }
-
-      msg->msg_namelen = 0;
-
-      if (ret == 0)
-        {
+          capacity = std::min<uint64_t> (capacity, i->offset - m_consumed);
           break;
         }
-      if (ret > 0)
+    }
+  std::vector<uint8_t> buffer (capacity);
+  int statusFlags = m_statusFlags;
+  if (flags & MSG_DONTWAIT)
+    {
+      m_statusFlags |= O_NONBLOCK;
+    }
+  uint64_t start = m_consumed;
+  ssize_t ret = (flags & MSG_PEEK) ? (ssize_t) ReadData (buffer.data (), capacity, true) : Read (buffer.data (), capacity);
+  m_statusFlags = statusFlags;
+  NS_LOG_DEBUG ("recvmsg capacity=" << capacity << " ret=" << ret << " passed=" << m_passedFiles.size ()
+                << " consumed=" << m_consumed << " received=" << m_received);
+  if (msg->msg_name != 0 && msg->msg_namelen > 0)
+    {
+      memset (msg->msg_name, 0, msg->msg_namelen);
+    }
+  msg->msg_namelen = 0;
+  msg->msg_flags = 0;
+  size_t controlSpace = msg->msg_control != 0 ? msg->msg_controllen : 0;
+  msg->msg_controllen = 0;
+  if (ret <= 0)
+    {
+      return ret;
+    }
+  size_t copied = 0;
+  for (size_t i = 0; i < msg->msg_iovlen && copied < (size_t) ret; ++i)
+    {
+      size_t n = std::min (msg->msg_iov[i].iov_len, (size_t) ret - copied);
+      memcpy (msg->msg_iov[i].iov_base, buffer.data () + copied, n);
+      copied += n;
+    }
+  if (flags & MSG_PEEK)
+    {
+      return ret;
+    }
+  // the descriptors that came with the data read become the process's
+  std::vector<int> fds;
+  while (!m_passedFiles.empty () && m_passedFiles.front ().offset < start + ret)
+    {
+      std::vector<UnixFd *> &files = m_passedFiles.front ().files;
+      for (size_t k = 0; k < files.size (); k++)
         {
-          retval += ret;
+          int fd = UtilsAllocateFd ();
+          if (fd == -1)
+            {
+              files[k]->DecFdCount ();
+              files[k]->Unref ();
+              msg->msg_flags |= MSG_CTRUNC;
+              continue;
+            }
+          current->process->openFiles[fd] = new FileUsage (fd, files[k]);
+          fds.push_back (fd);
+        }
+      m_passedFiles.pop_front ();
+    }
+  if (!fds.empty ())
+    {
+      size_t length = fds.size () * sizeof (int);
+      if (controlSpace < CMSG_SPACE (length))
+        {
+          for (size_t k = 0; k < fds.size (); k++)
+            {
+              dce_close (fds[k]);
+            }
+          msg->msg_flags |= MSG_CTRUNC;
         }
       else
         {
-          return -1;
+          struct cmsghdr *cmsg = (struct cmsghdr *) msg->msg_control;
+          memset (cmsg, 0, CMSG_SPACE (length));
+          cmsg->cmsg_level = SOL_SOCKET;
+          cmsg->cmsg_type = SCM_RIGHTS;
+          cmsg->cmsg_len = CMSG_LEN (length);
+          memcpy (CMSG_DATA (cmsg), fds.data (), length);
+          msg->msg_controllen = CMSG_SPACE (length);
         }
     }
-
-  return retval;
+  return ret;
 }
 ssize_t
 LocalStreamSocketFd::Sendmsg (const struct msghdr *msg, int flags)
 {
   Thread *current = Current ();
-  NS_LOG_FUNCTION (this << current << msg << flags);
+  NS_LOG_FUNCTION (this << current);
   NS_ASSERT (current != 0);
 
   if (msg->msg_name != 0 || msg->msg_namelen != 0)
@@ -397,30 +468,72 @@ LocalStreamSocketFd::Sendmsg (const struct msghdr *msg, int flags)
       current->err = EISCONN;
       return -1;
     }
-
-  ssize_t retval = 0;
-  for (uint32_t i = 0; i < msg->msg_iovlen; ++i)
+  // one write, a message for SOCK_SEQPACKET
+  std::vector<uint8_t> buffer;
+  for (size_t i = 0; i < msg->msg_iovlen; ++i)
     {
-      uint8_t *buf = (uint8_t *) msg->msg_iov[i].iov_base;
-      ssize_t len = msg->msg_iov[i].iov_len;
-
-      size_t ret = Write (buf, len);
-
-      if (ret == 0)
+      const uint8_t *base = (const uint8_t *) msg->msg_iov[i].iov_base;
+      buffer.insert (buffer.end (), base, base + msg->msg_iov[i].iov_len);
+    }
+  // the descriptors sent (SCM_RIGHTS) go with the first byte of the data
+  std::vector<UnixFd *> files;
+  if (msg->msg_control != 0 && msg->msg_controllen >= sizeof (struct cmsghdr))
+    {
+      for (struct cmsghdr *cmsg = CMSG_FIRSTHDR ((struct msghdr *) msg); cmsg != 0;
+           cmsg = CMSG_NXTHDR ((struct msghdr *) msg, cmsg))
         {
-          break;
-        }
-      if (ret > 0)
-        {
-          retval += ret;
-        }
-      else
-        {
-          return -1;
+          if (cmsg->cmsg_level != SOL_SOCKET || cmsg->cmsg_type != SCM_RIGHTS)
+            {
+              continue;
+            }
+          size_t n = (cmsg->cmsg_len - CMSG_LEN (0)) / sizeof (int);
+          const int *fds = (const int *) CMSG_DATA (cmsg);
+          for (size_t k = 0; k < n; k++)
+            {
+              std::map<int, FileUsage *>::iterator it = current->process->openFiles.find (fds[k]);
+              if (it == current->process->openFiles.end () || it->second->IsClosed ())
+                {
+                  for (size_t j = 0; j < files.size (); j++)
+                    {
+                      files[j]->DecFdCount ();
+                      files[j]->Unref ();
+                    }
+                  current->err = EBADF;
+                  return -1;
+                }
+              UnixFd *file = it->second->GetFile ();
+              file->IncFdCount ();
+              file->Ref ();
+              files.push_back (file);
+            }
         }
     }
-
-  return retval;
+  if (!files.empty ())
+    {
+      if (m_state != CONNECTED || m_peer == 0 || buffer.empty ())
+        {
+          for (size_t j = 0; j < files.size (); j++)
+            {
+              files[j]->DecFdCount ();
+              files[j]->Unref ();
+            }
+          current->err = (m_state != CONNECTED || m_peer == 0) ? ENOTCONN : EINVAL;
+          return -1;
+        }
+      PassedFiles passed;
+      passed.offset = m_peer->m_received;
+      passed.files = files;
+      m_peer->m_passedFiles.push_back (passed);
+    }
+  int statusFlags = m_statusFlags;
+  if (flags & MSG_DONTWAIT)
+    {
+      m_statusFlags |= O_NONBLOCK;
+    }
+  ssize_t ret = Write (buffer.data (), buffer.size ());
+  m_statusFlags = statusFlags;
+  NS_LOG_DEBUG ("sendmsg size=" << buffer.size () << " fds=" << files.size () << " ret=" << ret);
+  return ret;
 }
 bool
 LocalStreamSocketFd::Isatty (void) const
@@ -884,6 +997,16 @@ LocalStreamSocketFd::Shutdown (int how)
       }
       break;
     }
+  // As on Linux, a thread blocked reading this socket (Chromium's audio
+  // thread, which another thread stops so) reads end of file, and so does
+  // the peer when this end no longer writes.
+  short events = POLLIN | POLLOUT | POLLHUP;
+  WakeWaiters (&events);
+  if (m_shutWrite && m_peer != 0)
+    {
+      short peerEvents = POLLIN | POLLRDHUP;
+      m_peer->WakeWaiters (&peerEvents);
+    }
   return 0;
 }
 int
@@ -983,7 +1106,8 @@ LocalStreamSocketFd::CanRecv (void) const
     case CONNECTED:
     case REMOTECLOSED:
       {
-        return (m_readBufferSize > 0);
+        // a socket shut down for reading reads end of file at once
+        return (m_readBufferSize > 0) || m_shutRead;
       }
 
     case LISTENING:
@@ -1052,6 +1176,15 @@ LocalStreamSocketFd::RemoveFromQueue (LocalStreamSocketFd* sock)
 {
   NS_LOG_FUNCTION (sock);
   m_cnxQueue.remove (sock);
+}
+
+void
+LocalStreamSocketFd::Pair (LocalStreamSocketFd *a, LocalStreamSocketFd *b)
+{
+  a->m_state = CONNECTED;
+  a->m_peer = b;
+  b->m_state = CONNECTED;
+  b->m_peer = a;
 }
 
 void

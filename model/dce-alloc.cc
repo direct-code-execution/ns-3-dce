@@ -1,38 +1,125 @@
 #include "dce-stdlib.h"
+#include <errno.h>
+#include <stdint.h>
 #include "dce-unistd.h"
 #include "utils.h"
 #include "process.h"
 #include "kingsley-alloc.h"
 #include "ns3/log.h"
 #include <string.h>
+#include <algorithm>
 
 NS_LOG_COMPONENT_DEFINE ("DceAlloc");
 
 using namespace ns3;
 
+// Every block handed to the application is preceded by a 16 byte header:
+//
+//   [ address of the KingsleyAlloc buffer ][ size of that buffer ] [ block... ]
+//
+// and is aligned on 16 bytes, like glibc's malloc (compilers rely on it,
+// e.g. movaps on struct fields), or on the alignment posix_memalign() asks
+// for. free() and realloc() find the underlying buffer in the header
+// whatever the alignment.
+static const size_t HEADER = 2 * sizeof (size_t);
+
+static void *
+Allocate (Thread *current, size_t size, size_t alignment)
+{
+  if (alignment < 16)
+    {
+      alignment = 16;
+    }
+  size_t total = size + HEADER + alignment;
+  uint8_t *raw = current->process->alloc->Malloc (total);
+  if (raw == 0)
+    {
+      return 0;
+    }
+  uintptr_t aligned = ((uintptr_t)raw + HEADER + alignment - 1) & ~(uintptr_t)(alignment - 1);
+  uint8_t *ptr = (uint8_t *)aligned;
+  memcpy (ptr - HEADER, &raw, sizeof (raw));
+  memcpy (ptr - sizeof (size_t), &total, sizeof (total));
+  NS_LOG_DEBUG ("alloc=" << (void*)ptr << " raw=" << (void*)raw << " size=" << size);
+  return ptr;
+}
+
+static void
+Header (void *ptr, uint8_t **raw, size_t *total)
+{
+  memcpy (raw, (uint8_t *)ptr - HEADER, sizeof (*raw));
+  memcpy (total, (uint8_t *)ptr - sizeof (size_t), sizeof (*total));
+}
+
+// With a program which brings its own allocator, blocks DCE allocated before
+// it was there (or for DCE itself) still return to DCE's.
+static ProgramAllocator *
+ProgramAlloc (Thread *current)
+{
+  return current->process->programAllocator;
+}
+
+static bool
+OwnedByDce (Thread *current, void *ptr)
+{
+  return current->process->alloc->Owns (ptr);
+}
+
 void * dce_calloc (size_t nmemb, size_t size)
 {
   GET_CURRENT (nmemb << size);
+  if (ProgramAlloc (current) != 0)
+    {
+      return ProgramAlloc (current)->calloc (nmemb, size);
+    }
+  if (size != 0 && nmemb > SIZE_MAX / size)
+    {
+      current->err = ENOMEM;
+      return 0;
+    }
   void *ptr = dce_malloc (nmemb * size);
-  memset (ptr, 0, nmemb * size);
+  if (ptr != 0 && !current->process->alloc->IsFreshMapping (nmemb * size + HEADER + 16))
+    {
+      // Large blocks are fresh anonymous mappings, already zero: clearing
+      // them again cost GTK's software renderer a large share of each frame.
+      memset (ptr, 0, nmemb * size);
+    }
   return ptr;
 }
+
 void * dce_malloc (size_t size)
 {
   GET_CURRENT (size);
-  size += sizeof (size_t);
-  uint8_t *buffer = current->process->alloc->Malloc (size);
-  memcpy (buffer, &size, sizeof (size_t));
-  buffer += sizeof (size_t);
-  NS_LOG_DEBUG ("alloc=" << (void*)buffer);
-  return buffer;
+  if (ProgramAlloc (current) != 0)
+    {
+      return ProgramAlloc (current)->malloc (size);
+    }
+  void *ptr = Allocate (current, size, 16);
+  if (ptr == 0)
+    {
+      current->err = ENOMEM;
+    }
+  return ptr;
 }
+
 size_t dce_malloc_usable_size (void *ptr)
 {
-  size_t* buffer = (size_t*) ptr;
-  buffer--;
-  return *buffer - sizeof (size_t);
+  if (ptr == 0)
+    {
+      return 0;
+    }
+  Thread *current = Current ();
+  if (ProgramAlloc (current) != 0 && !OwnedByDce (current, ptr))
+    {
+      return ProgramAlloc (current)->malloc_usable_size != 0
+        ? ProgramAlloc (current)->malloc_usable_size (ptr) : 0;
+    }
+  uint8_t *raw;
+  size_t total;
+  Header (ptr, &raw, &total);
+  return total - ((uint8_t *)ptr - raw);
 }
+
 void dce_free (void *ptr)
 {
   GET_CURRENT (ptr);
@@ -40,36 +127,95 @@ void dce_free (void *ptr)
     {
       return;
     }
-  uint8_t *buffer = (uint8_t*)ptr;
-  size_t size;
-  buffer -= sizeof (size_t);
-  memcpy (&size, buffer, sizeof (size_t));
-  current->process->alloc->Free (buffer, size);
+  if (ProgramAlloc (current) != 0 && !OwnedByDce (current, ptr))
+    {
+      ProgramAlloc (current)->free (ptr);
+      return;
+    }
+  uint8_t *raw;
+  size_t total;
+  Header (ptr, &raw, &total);
+  current->process->alloc->Free (raw, total);
 }
+
 void * dce_realloc (void *ptr, size_t size)
 {
   GET_CURRENT (ptr << size);
-  if (ptr == 0 && size == 0)
-    {
-      return 0;
-    }
   if (ptr == 0)
     {
       return dce_malloc (size);
     }
-  size_t oldSize;
-  uint8_t *buffer = (uint8_t*)ptr;
-  buffer -= sizeof (size_t);
-  size += sizeof (size_t);
-  memcpy (&oldSize, buffer, sizeof (size_t));
-  if (size <= oldSize)
+  if (size == 0)
+    {
+      dce_free (ptr);
+      return 0;
+    }
+  if (ProgramAlloc (current) != 0)
+    {
+      if (!OwnedByDce (current, ptr))
+        {
+          return ProgramAlloc (current)->realloc (ptr, size);
+        }
+      // a block of DCE's moves to the program's allocator
+      void *moved = ProgramAlloc (current)->malloc (size);
+      if (moved != 0)
+        {
+          memcpy (moved, ptr, std::min (size, dce_malloc_usable_size (ptr)));
+          dce_free (ptr);
+        }
+      return moved;
+    }
+  size_t usable = dce_malloc_usable_size (ptr);
+  if (size <= usable)
     {
       return ptr;
     }
-  buffer = current->process->alloc->Realloc (buffer, oldSize, size);
-  memcpy (buffer, &size, sizeof (size_t));
-  buffer += sizeof (size_t);
-  return buffer;
+  void *fresh = Allocate (current, size, 16);
+  if (fresh == 0)
+    {
+      current->err = ENOMEM;
+      return 0;
+    }
+  memcpy (fresh, ptr, usable);
+  dce_free (ptr);
+  return fresh;
+}
+
+int dce_posix_memalign (void **memptr, size_t alignment, size_t size)
+{
+  GET_CURRENT (alignment << size);
+  if (memptr == 0 || alignment == 0 || (alignment & (alignment - 1)) != 0)
+    {
+      return EINVAL;
+    }
+  if (ProgramAlloc (current) != 0 && ProgramAlloc (current)->posix_memalign != 0)
+    {
+      return ProgramAlloc (current)->posix_memalign (memptr, alignment, size);
+    }
+  void *ptr = Allocate (current, size, alignment);
+  if (ptr == 0)
+    {
+      return ENOMEM;
+    }
+  *memptr = ptr;
+  return 0;
+}
+
+void * dce_memalign (size_t alignment, size_t size)
+{
+  void *ptr = 0;
+  int err = dce_posix_memalign (&ptr, alignment, size);
+  if (err != 0)
+    {
+      Current ()->err = err;
+      return 0;
+    }
+  return ptr;
+}
+
+void * dce_aligned_alloc (size_t alignment, size_t size)
+{
+  return dce_memalign (alignment, size);
 }
 void * dce_sbrk (intptr_t increment)
 {
@@ -82,4 +228,15 @@ void * dce_sbrk (intptr_t increment)
 int dce_getpagesize (void)
 {
   return sysconf (_SC_PAGESIZE);
+}
+
+// C23, used by GLib with glibc >= 2.43: must reach DCE's heap, as malloc does.
+void dce_free_sized (void *ptr, size_t size)
+{
+  dce_free (ptr);
+}
+
+void dce_free_aligned_sized (void *ptr, size_t alignment, size_t size)
+{
+  dce_free (ptr);
 }

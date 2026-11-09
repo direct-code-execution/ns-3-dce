@@ -1,0 +1,43 @@
+From 23feee119a3e54e3c6e7af58fc3d6ab54a8a0fd6 Mon Sep 17 00:00:00 2001
+From: Gabriel Ferreira <gabrielcarvfer@gmail.com>
+Date: Tue, 13 Oct 2026 20:30:00 +0200
+Subject: [PATCH] lkl: update jiffies on interrupts while the tick is stopped
+
+irq_enter() brings a stale jiffies up to date (tick_irq_enter) only
+when the idle task is current. LKL idles in idle_host_task, a regular
+task, or in a host task that stays current after a system call, so the
+interrupts taken while the tick is stopped (see "lkl: stop the tick
+while the host is idle") ran with an old jiffies. The timers armed from
+them, such as the TCP retransmission timer armed on an incoming ACK,
+expired early by the time elapsed since the tick stopped, which caused
+spurious retransmissions: in ns-3 DCE, a transfer losing 10 segments
+retransmitted 84.
+
+Update jiffies as the idle task would when an interrupt starts while
+another task is current.
+---
+ arch/lkl/kernel/irq.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/arch/lkl/kernel/irq.c b/arch/lkl/kernel/irq.c
+index 54c5686ab..dca9dc1af 100644
+--- a/arch/lkl/kernel/irq.c
++++ b/arch/lkl/kernel/irq.c
+@@ -61,6 +61,14 @@ static void run_irq(int irq)
+ 	/* interrupt handlers need to run with interrupts disabled */
+ 	local_irq_save(flags);
+ 	irq_enter();
++	/*
++	 * irq_enter() brings a stale jiffies up to date only when the idle
++	 * task is current, but LKL idles in idle_host_task or in a host
++	 * task: without this, handlers running while the tick is stopped
++	 * see an old jiffies and arm their timers too early.
++	 */
++	if (!is_idle_task(current) && irq_count() == HARDIRQ_OFFSET)
++		tick_irq_enter();
+ 	generic_handle_irq(irq);
+ 	irq_exit();
+ 	set_irq_regs(old_regs);
+-- 
+2.43.0
+

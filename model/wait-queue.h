@@ -124,6 +124,8 @@ public:
 
 private:
   Thread* m_waitTask;
+  // Woken while not waiting: the next Wait returns at once.
+  bool m_woken;
 };
 /**
  * Poll table used to store WaitQueues of waiting files.

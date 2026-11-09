@@ -7,9 +7,10 @@
 #include "dce-global-variables.h"
 #include "libc.h"
 
-extern Libc g_libc; // this is initialized in libc.c
+extern __attribute__ ((visibility ("hidden"))) Libc g_libc; // this is initialized in libc.c
 
 extern char *__progname;
+extern void *__libc_stack_end;
 //extern char *program_invocation_name;
 // extern char *__program_invocation_short_name;
 
@@ -32,6 +33,7 @@ void setup_global_variables ()
   globals.pprogname = &__progname;
   globals.pprogram_invocation_name = &program_invocation_name;
   globals.pprogram_invocation_short_name = &program_invocation_short_name;
+  globals.plibc_stack_end = &__libc_stack_end;
 
   typedef void (*dce_global_variables_setup_t)(struct DceGlobalVariables *);
   ((dce_global_variables_setup_t)g_libc.dce_global_variables_setup_fn)(&globals);

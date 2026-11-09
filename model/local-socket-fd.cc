@@ -19,6 +19,7 @@
  *
  */
 #include "local-socket-fd.h"
+#include <sys/ioctl.h>
 #include "local-socket-fd-factory.h"
 #include "utils.h"
 #include "process.h"
@@ -43,6 +44,9 @@ LocalSocketFd::GetTypeId (void)
 }
 LocalSocketFd::LocalSocketFd () : m_readBuffer (0),
                                   m_readBufferSize (0),
+                                  m_messages (false),
+                                  m_received (0),
+                                  m_consumed (0),
                                   m_sendTimeout (0),
                                   m_recvTimeout (0),
                                   m_factory (0),
@@ -155,6 +159,19 @@ LocalSocketFd::Setsockopt (int level, int optname, const void *optval, socklen_t
 int
 LocalSocketFd::Ioctl (unsigned long request, char *argp)
 {
+  switch (request)
+    {
+    case FIONREAD:
+      // the bytes waiting to be read: those of the next message for
+      // SOCK_SEQPACKET (Chromium's SyncSocket asks before it reads)
+      *(int *) argp = (m_messages && !m_readBuffer.empty ())
+        ? m_readBuffer.front ()->size - m_readBuffer.front ()->readOffset
+        : (int) m_readBufferSize;
+      return 0;
+    case FIONBIO:
+      Fcntl (F_SETFL, *(int *) argp ? (Fcntl (F_GETFL, 0) | O_NONBLOCK) : (Fcntl (F_GETFL, 0) & ~O_NONBLOCK));
+      return 0;
+    }
   Current ()->err = EINVAL;
   return -1;
 }
@@ -237,7 +254,13 @@ LocalSocketFd::DoRecvPacket (uint8_t* buf, size_t len)
     {
       return -2;
     }
-  if (m_readBufferSize >= LOCAL_SOCKET_MAX_BUFFER)
+  if (m_messages && len > LOCAL_SOCKET_MAX_BUFFER)
+    {
+      Current ()->err = EMSGSIZE;
+      return -1;
+    }
+  if (m_readBufferSize >= LOCAL_SOCKET_MAX_BUFFER
+      || (m_messages && len > LOCAL_SOCKET_MAX_BUFFER - m_readBufferSize))
     {
       return 0;
     }
@@ -264,6 +287,7 @@ LocalSocketFd::DoRecvPacket (uint8_t* buf, size_t len)
   m_readBuffer.push_back (myBuf);
 
   m_readBufferSize += l;
+  m_received += l;
 
   NS_LOG_DEBUG ("DoRecvPacket before WakeUpRecv");
 
@@ -299,6 +323,10 @@ LocalSocketFd::ReadData (uint8_t* buf, size_t len, bool peek)
               fill += avail;
               rest -= avail;
             }
+          if (m_messages)
+            {
+              break;
+            }
         }
     }
   else
@@ -317,7 +345,16 @@ LocalSocketFd::ReadData (uint8_t* buf, size_t len, bool peek)
               rest -= avail;
 
               m_readBufferSize -= avail;
+              m_consumed += avail;
               myBuf->readOffset += avail;
+              if (m_messages)
+                {
+                  // the rest of the message is lost (MSG_TRUNC)
+                  m_readBufferSize -= myBuf->size - myBuf->readOffset;
+                  m_consumed += myBuf->size - myBuf->readOffset;
+                  myBuf->readOffset = myBuf->size;
+                  rest = 0;
+                }
 
               if (myBuf->readOffset >= myBuf->size)
                 {
@@ -337,8 +374,24 @@ LocalSocketFd::ReadData (uint8_t* buf, size_t len, bool peek)
 }
 
 void
+LocalSocketFd::KeepMessageBoundaries (void)
+{
+  m_messages = true;
+}
+
+void
 LocalSocketFd::ClearReadBuffer (void)
 {
+  // descriptors sent with data nobody will read
+  for (std::list<PassedFiles>::iterator i = m_passedFiles.begin (); i != m_passedFiles.end (); ++i)
+    {
+      for (size_t k = 0; k < i->files.size (); k++)
+        {
+          i->files[k]->DecFdCount ();
+          i->files[k]->Unref ();
+        }
+    }
+  m_passedFiles.clear ();
   NS_LOG_FUNCTION (this);
   for (std::list<struct Buffer *>::iterator i = m_readBuffer.begin (); i != m_readBuffer.end (); ++i)
     {

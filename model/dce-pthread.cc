@@ -3,6 +3,8 @@
 #include "dce-unistd.h"
 #include "dce-manager.h"
 #include "process.h"
+#include "dce-executable.h"
+#include "dce-compat.h"
 #include "utils.h"
 #include "dce-cxa.h"
 #include "dce-stdio.h"
@@ -75,7 +77,7 @@ void dce_exit (int status)
 
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << status);
   NS_ASSERT (current != 0);
-  CleanupPthreadKeys ();
+  // unlike pthread_exit(), exit() runs no thread specific data destructors
   dce___cxa_finalize (0);
   dce_fflush (0);
   current->process->timing.exitValue = __W_EXITCODE (status,  WTERMSIG (current->process->timing.exitValue));
@@ -94,6 +96,31 @@ void dce_exit (int status)
   TaskManager::Current ()->Exit ();
 }
 
+void dce_exit_signal (int signal)
+{
+  // what the kernel does when a signal kills a process: no atexit handlers
+  // nor destructors, no flush of its stdio buffers (it may have crashed in
+  // them)
+  Thread *current = Current ();
+  NS_LOG_FUNCTION (current << UtilsGetNodeId () << signal);
+  NS_ASSERT (current != 0);
+  current->process->timing.exitValue = __W_EXITCODE (0, signal);
+  current->process->timing.ns3End = Now ().GetNanoSeconds ();
+  current->process->timing.realEnd = time (0);
+
+  current->task->SetSwitchNotifier (0, 0);
+  current->process->loader->UnloadAll ();
+
+  std::ostringstream oss;
+  oss << "Killed by signal " << signal << " (" << strsignal (signal) << ")";
+  std::string line = oss.str ();
+  DceManager::AppendStatusFile (current->process->pid, current->process->nodeId, line);
+  DceManager::AppendProcFile (current->process);
+
+  current->process->manager->DeleteProcess (current->process, DceManager::PEC_EXIT);
+  TaskManager::Current ()->Exit ();
+}
+
 struct PthreadStartContext
 {
   void *(*start_routine)(void*);
@@ -105,6 +132,10 @@ static void pthread_do_start (void *context)
   struct PthreadStartContext *pctx = (struct PthreadStartContext *)context;
   struct PthreadStartContext ctx = *pctx;
   delete pctx;
+  if (!Current ()->process->executableTls.empty ())
+    {
+      DceExecutableTlsInit (Current ()->process->executableTls);
+    }
   void *retval = ctx.start_routine (ctx.arg);
   dce_pthread_exit (retval);
 }
@@ -375,7 +406,8 @@ int dce_pthread_key_delete (pthread_key_t key)
               break;
             }
         }
-      NS_ASSERT (found);
+      // a thread which never set a value for the key has no entry
+      (void) found;
     }
   return 0;
 }
@@ -392,9 +424,10 @@ int dce_pthread_kill (pthread_t th, int sig)
     }
 
   sigaddset (&thread->pendingSignals, sig);
-  if (sigismember (&thread->signalMask, sig) == 0)
+  if (sigismember (&thread->signalMask, sig) == 0
+      || sigismember (&thread->sigwaitSet, sig) == 1)
     {
-      // signal not blocked by thread.
+      // signal not blocked by thread, or the thread waits for it in sigwait.
       if (thread->task->IsBlocked ())
         {
           thread->process->manager->Wakeup (thread);
@@ -417,3 +450,20 @@ int dce_sigprocmask (int how, const sigset_t *restrict set,
   return 0;
 }
 #endif
+
+int dce_pthread_getattr_np (pthread_t thread, pthread_attr_t *attr)
+{
+  // the stack of the thread's task (garbage collectors scan it)
+  Thread *current = Current ();
+  NS_ASSERT (current != 0);
+  Thread *target = current->process->manager->SearchThread (PthreadToPid (thread), PthreadToTid (thread));
+  TaskManager *manager = TaskManager::Current ();
+  void *bottom = target != 0 ? manager->GetStackBottom (target->task) : 0;
+  if (bottom == 0)
+    {
+      return ENOSYS;
+    }
+  pthread_attr_init (attr);
+  pthread_attr_setstack (attr, bottom, manager->GetStackSize (target->task));
+  return 0;
+}

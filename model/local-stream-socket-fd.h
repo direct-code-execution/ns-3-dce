@@ -82,6 +82,11 @@ public:
 
   virtual int Poll (PollTable* ptable);
 
+  /**
+   * Connect two new sockets to each other (socketpair).
+   */
+  static void Pair (LocalStreamSocketFd *a, LocalStreamSocketFd *b);
+
 protected:
   virtual void ClearAll (bool andWakeUp);
   virtual bool IsClosed (void) const;

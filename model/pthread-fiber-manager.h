@@ -16,6 +16,10 @@ public:
   PthreadFiberManager ();
   virtual ~PthreadFiberManager ();
   virtual struct Fiber * Clone (struct Fiber *fiber);
+  virtual bool CanClone (void) const
+  {
+    return true;
+  }
   virtual struct Fiber *Create (void (*callback)(void *),
                                 void *context,
                                 uint32_t stackSize);

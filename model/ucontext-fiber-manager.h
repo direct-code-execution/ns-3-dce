@@ -21,7 +21,10 @@ public:
   virtual void SwitchTo (struct Fiber *from,
                          const struct Fiber *to);
   virtual uint32_t GetStackSize (struct Fiber *fiber) const;
+  virtual void *GetStackBottom (struct Fiber *fiber) const;
   virtual void SetSwitchNotification (void (*fn)(void));
+  virtual bool EnablePerFiberTls (void);
+  virtual bool HasPerFiberTls (void) const;
 private:
   static void SegfaultHandler (int sig, siginfo_t *si, void *unused);
   // invoked as atexit handler
@@ -35,6 +38,7 @@ private:
 
 
   void (*m_notifySwitch)(void);
+  bool m_perFiberTls;
   static void *g_alternateSignalStack;
   static std::list<unsigned long> g_guardPages;
 };

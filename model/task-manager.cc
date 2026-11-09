@@ -6,6 +6,7 @@
 #include "ns3/log.h"
 #include "ns3/uinteger.h"
 #include "ns3/enum.h"
+#include "ns3/boolean.h"
 #include "ns3/simulator.h"
 #include "ns3/node.h"
 #include "ns3/node-list.h"
@@ -95,6 +96,14 @@ TaskManager::GetTypeId (void)
                    MakeEnumAccessor<FiberManagerType>  (&TaskManager::SetFiberManagerType),
                    MakeEnumChecker (PTHREAD_FIBER_MANAGER, "PthreadFiberManager",
                                     UCONTEXT_FIBER_MANAGER, "UcontextFiberManager"))
+    .AddAttribute ("PerFiberTls",
+                   "Give every task thread local storage of its own (UcontextFiberManager, "
+                   "x86_64): programs whose threads keep state in thread local variables "
+                   "need it. Otherwise all the tasks share the simulator thread's.",
+                   TypeId::ATTR_CONSTRUCT | TypeId::ATTR_GET,
+                   BooleanValue (false),
+                   MakeBooleanAccessor (&TaskManager::SetPerFiberTls, &TaskManager::GetPerFiberTls),
+                   MakeBooleanChecker ())
   ;
   return tid;
 }
@@ -107,7 +116,9 @@ TaskManager::TaskManager ()
     m_disposing (0),
     m_todoOnMain (0),
     m_noSignal (0),
-    m_hightask (0)
+    m_hightask (0),
+    m_taskEndNotifier (0),
+    m_taskEndNotifierContext (0)
 {
   NS_LOG_FUNCTION (this);
 }
@@ -172,6 +183,9 @@ TaskManager::GarbageCollectDeadTasks (void)
       Task *task = m_deadTasks.front ();
       m_deadTasks.pop_front ();
       NS_LOG_DEBUG ("delete " << task);
+      // Defensive: make sure a pointer to the task cannot remain in the
+      // run queue after it is deleted.
+      m_scheduler->Dequeue (task);
       if (task->m_fiber)
         {
           m_fiberManager->Delete (task->m_fiber);
@@ -286,6 +300,10 @@ TaskManager::Stop (Task *task)
       return;
     }
 
+  if (m_taskEndNotifier)
+    {
+      m_taskEndNotifier (task, false, m_taskEndNotifierContext);
+    }
   // we can delete the task immediately.
   NS_LOG_DEBUG ("delete " << task << " fiber=" << task->m_fiber);
   m_scheduler->Dequeue (task);
@@ -304,8 +322,13 @@ TaskManager::Wakeup (Task *task)
 {
   NS_LOG_FUNCTION (this << task << task->m_state);
   if (task->m_state == Task::ACTIVE
-      || task->m_state == Task::RUNNING)
+      || task->m_state == Task::RUNNING
+      || task->m_state == Task::DEAD)
     {
+      // A dead task (exited, waiting for garbage collection) can still be
+      // referenced by a wait queue, e.g. when a process exits from a signal
+      // handler while blocked on a socket that its exit then closes. It must
+      // never be put back in the run queue: it is about to be deleted.
       return;
     }
   task->m_state = Task::ACTIVE;
@@ -367,10 +390,21 @@ TaskManager::Exit (void)
   NS_ASSERT (m_current != 0);
   NS_ASSERT (m_current->m_state == Task::RUNNING);
   Task *current = m_current;
+  if (m_taskEndNotifier)
+    {
+      m_taskEndNotifier (current, true, m_taskEndNotifierContext);
+    }
   current->m_state = Task::DEAD;
   current->m_waitTimer.Cancel ();
   m_deadTasks.push_back (current);
   Schedule ();
+}
+
+void
+TaskManager::SetTaskEndNotifier (void (*fn)(Task *task, bool running, void *context), void *context)
+{
+  m_taskEndNotifier = fn;
+  m_taskEndNotifierContext = context;
 }
 
 void
@@ -396,6 +430,26 @@ TaskManager::CurrentTask (void)
       return m_hightask;
     }
   return m_current;
+}
+Task *
+TaskManager::RunningTask (void)
+{
+  return m_current;
+}
+bool
+TaskManager::RunNow (const bool *done)
+{
+  NS_LOG_FUNCTION (this);
+  NS_ASSERT (m_current == 0);
+  // The tasks run here are not the hi task.
+  Task *hightask = m_hightask;
+  m_hightask = 0;
+  while (!*done && m_scheduler->PeekNext () != 0)
+    {
+      Schedule ();
+    }
+  m_hightask = hightask;
+  return *done;
 }
 TaskManager *
 TaskManager::Current (void)
@@ -517,6 +571,34 @@ TaskManager::SetFiberManagerType (enum FiberManagerType type)
   m_mainFiber = m_fiberManager->CreateFromCaller ();
 }
 
+void
+TaskManager::SetPerFiberTls (bool enable)
+{
+  NS_LOG_FUNCTION (this << enable);
+  if (enable && !m_fiberManager->EnablePerFiberTls ())
+    {
+      NS_FATAL_ERROR ("This FiberManagerType cannot give the tasks thread local storage of their own");
+    }
+}
+
+bool
+TaskManager::GetPerFiberTls (void) const
+{
+  return HasPerFiberTls ();
+}
+
+bool
+TaskManager::CanClone (void) const
+{
+  return m_fiberManager != 0 && m_fiberManager->CanClone ();
+}
+
+bool
+TaskManager::HasPerFiberTls (void) const
+{
+  return m_fiberManager != 0 && m_fiberManager->HasPerFiberTls ();
+}
+
 
 void
 TaskManager::EndWait (Task *task)
@@ -536,6 +618,11 @@ uint32_t
 TaskManager::GetStackSize (Task *task) const
 {
   return m_fiberManager->GetStackSize (task->m_fiber);
+}
+void *
+TaskManager::GetStackBottom (Task *task) const
+{
+  return m_fiberManager->GetStackBottom (task->m_fiber);
 }
 void
 TaskManager::ExecOnMain (EventImpl *e)

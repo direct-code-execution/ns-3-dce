@@ -22,6 +22,22 @@ cpp_examples = [
     ("dce-linux", "True", "True"), 
     ("dce-dccp", "True", "True"), 
     ("dce-iperf", "IPERF_DCE_FOUND == True", "IPERF_DCE_FOUND == True"),
+    # Real ffmpeg streaming video over 802.11n with the Linux and ns-3 stacks;
+    # the example fails if the received streams differ from the sent ones.
+    ("dce-wifi-video --realtime=0 --fifo=0 --stopTime=60", "FFMPEG_DCE_FOUND == True", "False"),
+    ("dce-wifi-video --realtime=0 --fifo=0 --stopTime=60 --stack=ns3", "FFMPEG_DCE_FOUND == True", "False"),
+    # An X11 client drawing a window from inside the simulation through the
+    # host socket passthrough; needs an X server (DISPLAY), e.g. xvfb-run.
+    ("dce-x11-hello --seconds=2", "X11_DCE_FOUND == True and os.getenv('DISPLAY') is not None", "False"),
+    # GLib/GTK4 inside DCE: event loop, threads, futex locks, X11 window.
+    ("dce-x11-hello --binary=gtk4-hello --seconds=2 --hostfs=1 --env=GSK_RENDERER=cairo,GDK_BACKEND=x11,GSETTINGS_BACKEND=memory,NO_AT_BRIDGE=1,GTK_A11Y=none",
+     "GTK4_DCE_FOUND == True and os.getenv('DISPLAY') is not None", "False"),
+    # A web browser fetching a page from thttpd over Wi-Fi and drawing on the
+    # X display, for 8 s (the browser does not exit by itself).
+    ("dce-browser --stopTime=8", "DILLO_DCE_FOUND == True and X11_DCE_FOUND == True and os.getenv('DISPLAY') is not None", "False"),
+    ("dce-browser --browser=northstar --stopTime=12", "NORTHSTAR_DCE_FOUND == True and X11_DCE_FOUND == True and os.getenv('DISPLAY') is not None and os.getenv('DBUS_SESSION_BUS_ADDRESS') is not None", "False"),
+    # JavaScript in the browser polling a server inside the simulation twice a second
+    ("dce-browser --browser=northstar --numbers=1 --stopTime=16 --minRequests=8", "NORTHSTAR_DCE_FOUND == True and X11_DCE_FOUND == True and os.getenv('DISPLAY') is not None and os.getenv('DBUS_SESSION_BUS_ADDRESS') is not None", "False"),
 #    ("dce-ccnd-udp-2-nodes", "True", "True"), 
 #    ("dce-ccnd-linear-multiple", "True", "True"),
     ("dce-cradle-simple", "True", "True"),  
@@ -54,7 +70,8 @@ cpp_examples = [
     ("dce-ping-mt1 --kernel=1", "True", "True"),
     ("dce-mt2 --kernel=1", "True", "True"),
     ("dce-mt3 --kernel=1", "True", "True"),
-    ("dce-xfrm", "False", "False"),
+    # Runs, but libos 4.4 cannot install IPsec states (ENOSYS)
+    ("dce-xfrm", "True", "True"),
 #    ("dce-ltp", "True", "True"),
     ("dce-cradle-mptcp", "True", "True"),
     ("dce-iperf-mptcp", "IPERF_DCE_FOUND == True", "IPERF_DCE_FOUND == True"),
@@ -83,11 +100,19 @@ cpp_examples = [
     ("dce-mptcp-handoff-v4v6 --v6Primary=1 --errRate=0.4", "True", "True"),
     ("dce-mptcp-handoff-v4v6 --v6Primary=1 --errRate=0.5", "True", "True"),
     ("dce-mptcp-handoff-v4v6 --v6Primary=1 --errRate=0.8", "True", "True"),
-#    ("dce-mptcp-lte-wifi", "True", "True"),
+    ("dce-mptcp-lte-wifi", "True", "True"),
+    ("dce-mptcp-lte-wifi --disLte=1", "True", "True"),
+    ("dce-mptcp-lte-wifi --disWifi=1", "True", "True"),
+    ("dce-mptcp-lte-wifi-v6", "True", "True"),
     ("dce-httpd", "True", "True"),
 #    ("dce-wifi-ccnx", "True", "True"),
     ("dce-sctp-simple", "True", "True"),
-    ("dce-freebsd", "True", "True"),
+    # Linux kernels from LKL (configure --with-lkl)
+    ("dce-lkl-boot", "True", "True"),
+    ("dce-lkl-p2p --loopback", "True", "True"),
+    ("dce-lkl-p2p", "True", "True"),
+    ("dce-lkl-p2p --stop", "True", "True"),
+    ("dce-lkl-p2p --loopback --stop", "True", "True"),
 ]
 
 # A list of Python examples to run in order to ensure that they remain

@@ -38,6 +38,7 @@ struct DceGlobalVariables
   char **pprogname;
   char **pprogram_invocation_name;
   char **pprogram_invocation_short_name;
+  void **plibc_stack_end;
 };
 
 void dce_global_variables_setup (struct DceGlobalVariables *variables);

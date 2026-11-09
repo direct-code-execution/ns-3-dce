@@ -193,6 +193,10 @@ private:
   NetlinkMessage
   BuildInterfaceInfoDumpMessage (uint32_t interface_id, uint32_t seq);
 
+  // Netlink interface index (NetDevice index + 1) of an IP interface.
+  uint32_t Ipv4InterfaceToDevice (uint32_t interface) const;
+  uint32_t Ipv6InterfaceToDevice (uint32_t interface) const;
+
   /**
    * \brief Build a multipart netlink message consisting of several
    * (possibly zero) InterfaceInfo dump messages

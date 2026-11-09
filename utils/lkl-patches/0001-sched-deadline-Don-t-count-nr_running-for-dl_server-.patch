@@ -1,0 +1,45 @@
+From dc1b4d1ff1445f22cf1003912caefaf40858d4a7 Mon Sep 17 00:00:00 2001
+From: Gabriel Ferreira <gabrielcarvfer@gmail.com>
+Date: Wed, 7 Oct 2026 20:22:33 +0200
+Subject: [PATCH 1/4] sched/deadline: Don't count nr_running for dl_server
+ proxy tasks
+
+Backport of upstream commit 52d15521eb75 ("sched/deadline: Don't count
+nr_running for dl_server proxy tasks") to the 6.12 base of LKL.
+
+The fair server is a deadline entity that runs other tasks; counting it
+in nr_running makes single_task_running() report two runnable tasks when
+only one exists. LKL relies on single_task_running() to decide whether a
+host task must yield the CPU, so the miscount made idle_host_task yield
+to the idle task forever once the tick was stopped.
+---
+ kernel/sched/deadline.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/sched/deadline.c b/kernel/sched/deadline.c
+index be1b917dc..7c81922f8 100644
+--- a/kernel/sched/deadline.c
++++ b/kernel/sched/deadline.c
+@@ -1874,7 +1874,8 @@ void inc_dl_tasks(struct sched_dl_entity *dl_se, struct dl_rq *dl_rq)
+ 	u64 deadline = dl_se->deadline;
+ 
+ 	dl_rq->dl_nr_running++;
+-	add_nr_running(rq_of_dl_rq(dl_rq), 1);
++	if (!dl_server(dl_se))
++		add_nr_running(rq_of_dl_rq(dl_rq), 1);
+ 
+ 	inc_dl_deadline(dl_rq, deadline);
+ }
+@@ -1884,7 +1885,8 @@ void dec_dl_tasks(struct sched_dl_entity *dl_se, struct dl_rq *dl_rq)
+ {
+ 	WARN_ON(!dl_rq->dl_nr_running);
+ 	dl_rq->dl_nr_running--;
+-	sub_nr_running(rq_of_dl_rq(dl_rq), 1);
++	if (!dl_server(dl_se))
++		sub_nr_running(rq_of_dl_rq(dl_rq), 1);
+ 
+ 	dec_dl_deadline(dl_rq, dl_se->deadline);
+ }
+-- 
+2.53.0
+

@@ -66,6 +66,10 @@ public:
   virtual int Getsockname (struct sockaddr *name, socklen_t *namelen);
   virtual int Getpeername (struct sockaddr *name, socklen_t *namelen);
   virtual int Bind (const struct sockaddr *my_addr, socklen_t addrlen);
+  /**
+   * Connect two new sockets to each other (socketpair).
+   */
+  static void Pair (LocalDatagramSocketFd *a, LocalDatagramSocketFd *b);
   virtual int Connect (const struct sockaddr *my_addr, socklen_t addrlen);
   virtual int Listen (int backlog);
   virtual int Shutdown (int how);
