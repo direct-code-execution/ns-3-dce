@@ -74,6 +74,12 @@ LocalSocketFdFactory::CreateSocket (int domain, int type, int protocol)
 
       return fd;
     }
+  if (SOCK_SEQPACKET == type)
+    {
+      LocalStreamSocketFd *fd = new LocalStreamSocketFd (this);
+      fd->KeepMessageBoundaries ();
+      return fd;
+    }
 
   return 0;
 }

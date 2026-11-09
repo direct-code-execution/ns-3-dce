@@ -469,6 +469,17 @@ LocalDatagramSocketFd::Bind (const struct sockaddr *my_addr, socklen_t addrlen)
   return ret;
 }
 
+void
+LocalDatagramSocketFd::Pair (LocalDatagramSocketFd *a, LocalDatagramSocketFd *b)
+{
+  a->m_state = CONNECTED;
+  a->m_peer = b;
+  b->AddConnected (a);
+  b->m_state = CONNECTED;
+  b->m_peer = a;
+  a->AddConnected (b);
+}
+
 int
 LocalDatagramSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
 {

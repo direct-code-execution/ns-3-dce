@@ -59,6 +59,7 @@ PthreadMutexInitStatic (pthread_mutex_t *mutex)
   mtx->waiting.clear ();
   mtx->current = 0;
   current->process->mutexes.push_back (mtx);
+  current->process->mutexById[mtx->mid] = mtx;
   MidToMutex (mtx->mid, mutex);
 }
 
@@ -75,16 +76,8 @@ SearchMutex (pthread_mutex_t *mutex)
       // this is a mutex initialized with PTHREAD_MUTEX_INITIALIZER
       PthreadMutexInitStatic (mutex);
     }
-  uint32_t mid = MutexToMid (mutex);
-  for (uint32_t i = 0; i < current->process->mutexes.size (); ++i)
-    {
-      struct Mutex *mtx = current->process->mutexes[i];
-      if (mtx->mid == mid)
-        {
-          return mtx;
-        }
-    }
-  return 0;
+  std::unordered_map<uint32_t, Mutex *>::const_iterator i = current->process->mutexById.find (MutexToMid (mutex));
+  return i != current->process->mutexById.end () ? i->second : 0;
 }
 
 int dce_pthread_mutex_init (pthread_mutex_t *mutex,
@@ -98,9 +91,13 @@ int dce_pthread_mutex_init (pthread_mutex_t *mutex,
       return EINVAL;
     }
   struct PthreadMutexAttr *attr = (struct PthreadMutexAttr *)attribute;
+  // An error checking mutex works as a normal one, and an adaptive one (it
+  // spins a little before it sleeps: NSPR's) is a normal one.
   if (attr != 0
       && attr->type != PTHREAD_MUTEX_RECURSIVE
-      && attr->type != PTHREAD_MUTEX_NORMAL)
+      && attr->type != PTHREAD_MUTEX_NORMAL
+      && attr->type != PTHREAD_MUTEX_ERRORCHECK
+      && attr->type != PTHREAD_MUTEX_ADAPTIVE_NP)
     {
       return EINVAL;
     }
@@ -129,6 +126,7 @@ int dce_pthread_mutex_init (pthread_mutex_t *mutex,
   mtx->waiting.clear ();
   mtx->current = 0;
   current->process->mutexes.push_back (mtx);
+  current->process->mutexById[mtx->mid] = mtx;
 
   MidToMutex (mtx->mid, mutex);
 
@@ -159,6 +157,7 @@ int dce_pthread_mutex_destroy (pthread_mutex_t *mutex)
     {
       if (mtx == *i)
         {
+          current->process->mutexById.erase (mtx->mid);
           delete mtx;
           mtx = 0;
           current->process->mutexes.erase (i);
@@ -260,6 +259,11 @@ int dce_pthread_mutex_trylock (pthread_mutex_t *mutex)
 }
 int dce_pthread_mutex_unlock (pthread_mutex_t *mutex)
 {
+  return DcePthreadMutexUnlock (mutex, true);
+}
+
+int DcePthreadMutexUnlock (pthread_mutex_t *mutex, bool yield)
+{
   Thread *current = Current ();
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << mutex);
   NS_ASSERT (current != 0);
@@ -289,11 +293,20 @@ int dce_pthread_mutex_unlock (pthread_mutex_t *mutex)
       // them, etc. What we do, instead, is implement the simplest
       // "fair" policy by ensuring that every thread
       // is woken up in FIFO order.
-      Thread *waiting = mtx->waiting.front ();
-      if (waiting != 0)
+      bool waiters = !mtx->waiting.empty ();
+      if (waiters)
         {
+          Thread *waiting = mtx->waiting.front ();
           current->process->manager->Wakeup (waiting);
-          // give them a chance to run.
+        }
+      // Give the thread woken up a chance to take the mutex, and other
+      // threads a chance to run even when no one was waiting: a thread that
+      // rapidly locks/unlocks a mutex could starve every other thread. Not
+      // at every unlock, though: a switch costs a simulator event, and
+      // programs such as Chromium unlock thousands of mutexes per task.
+      if (yield && (waiters || ++current->unlocksWithoutYield >= 64))
+        {
+          current->unlocksWithoutYield = 0;
           current->process->manager->Yield ();
         }
     }

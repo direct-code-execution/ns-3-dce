@@ -15,8 +15,13 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "file-usage.h"
+#include "dce-unistd.h"
+#include <signal.h>
+#include <ucontext.h>
 #include "ns3/global-value.h"
 #include "ns3/uinteger.h"
+#include "ns3/simulator.h"
+#include "ns3/realtime-simulator-impl.h"
 
 NS_LOG_COMPONENT_DEFINE ("DceProcessUtils");
 
@@ -201,9 +206,10 @@ UtilsSendSignal (Process *process, int signum)
        i != process->threads.end (); ++i)
     {
       Thread *thread = *i;
-      if (sigismember (&thread->signalMask, signum) == 0)
+      if (sigismember (&thread->signalMask, signum) == 0
+          || sigismember (&thread->sigwaitSet, signum) == 1)
         {
-          // signal not blocked by thread.
+          // signal not blocked by thread, or the thread waits for it in sigwait.
           if (thread->task->IsBlocked ())
             {
               process->manager->Wakeup (thread);
@@ -214,6 +220,42 @@ UtilsSendSignal (Process *process, int signum)
   // Could not find any candidate thread to receive signal.
   // signal pending until a thread unblocks it.
 }
+// Run the handler of a signal, or what SIG_DFL and SIG_IGN stand for.
+static void
+DeliverSignal (const SignalHandler &handler)
+{
+  void (*fn)(int) = (handler.flags & SA_SIGINFO) ? (void (*)(int)) handler.sigaction : handler.handler;
+  if (fn == SIG_IGN)
+    {
+      return;
+    }
+  if (fn == SIG_DFL)
+    {
+      switch (handler.signal)
+        {
+        case SIGCHLD: case SIGURG: case SIGWINCH: case SIGCONT:
+          return;
+        default:
+          // the default action of the others ends the process
+          NS_LOG_DEBUG ("signal " << handler.signal << " ends the process");
+          dce_exit (128 + handler.signal);
+          return;
+        }
+    }
+  if (handler.flags & SA_SIGINFO)
+    {
+      siginfo_t info;
+      ucontext_t ctx;
+      memset (&info, 0, sizeof (info));
+      info.si_signo = handler.signal;
+      handler.sigaction (handler.signal, &info, &ctx);
+    }
+  else
+    {
+      handler.handler (handler.signal);
+    }
+}
+
 void UtilsDoSignal (void)
 {
   Thread *current = Current ();
@@ -240,32 +282,14 @@ void UtilsDoSignal (void)
         {
           NS_LOG_DEBUG ("deliver signal=" << i->signal);
           // the signal is pending so, we try to deliver it.
-          if (i->flags & SA_SIGINFO)
-            {
-              siginfo_t info;
-              ucontext_t ctx;
-              i->sigaction (i->signal, &info, &ctx);
-            }
-          else
-            {
-              i->handler (i->signal);
-            }
+          DeliverSignal (*i);
           sigdelset (&current->pendingSignals, i->signal);
         }
       if (sigismember (&current->process->pendingSignals, i->signal) == 1)
         {
           NS_LOG_DEBUG ("deliver signal=" << i->signal);
           // the signal is pending so, we try to deliver it.
-          if (i->flags & SA_SIGINFO)
-            {
-              siginfo_t info;
-              ucontext_t ctx;
-              i->sigaction (i->signal, &info, &ctx);
-            }
-          else
-            {
-              i->handler (i->signal);
-            }
+          DeliverSignal (*i);
           sigdelset (&current->process->pendingSignals, i->signal);
         }
     }
@@ -294,10 +318,28 @@ void UtilsAdvanceTime (Thread *current)
 {
   Time now = Now ();
 
+  // In real time, a thread that keeps polling without blocking (GLib main
+  // loops with zero-timeout sources, busy-waits on a flag) burns wall clock
+  // time while the simulated clock only moves 1 µs per poll: the
+  // simulation falls behind the wall clock, everything else (network,
+  // other threads) slows to a crawl, and it later races to catch up. Let
+  // the simulated clock catch up with the wall clock instead, as the
+  // spinning would take that long on a real machine too.
+  Ptr<RealtimeSimulatorImpl> realtime = DynamicCast<RealtimeSimulatorImpl> (Simulator::GetImplementation ());
+  if (realtime)
+    {
+      Time behind = realtime->RealtimeNow () - now;
+      if (behind > MicroSeconds (1))
+        {
+          NS_LOG_DEBUG ("UtilsAdvanceTime: real time is " << behind << " ahead, catching up");
+          current->process->manager->Wait (behind);
+          current->lastTime = Now ();
+          return;
+        }
+    }
+
   if (now == current->lastTime)
     {
-//      NS_LOG_DEBUG ("UtilsAdvanceTime current thread wait 1ms.");
-      //current->process->manager->Wait (Time (MilliSeconds (1)));
       NS_LOG_DEBUG ("UtilsAdvanceTime current thread wait 1µs.");
       current->process->manager->Wait (Time (MicroSeconds (1)));
     }

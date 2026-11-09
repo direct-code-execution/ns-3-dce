@@ -5,6 +5,78 @@ This file contains Direct Code Execution release notes (most recent releases fir
 
 Please refer the page https://www.nsnam.org/projects/direct-code-execution/ for detailed instructions
 
+Changes since dce-1.12 (development, ns-3.49)
+==============================================
+
+New examples
+------------
+- dce-wifi-video: real ffmpeg streaming video over simulated 802.11n
+  (station - access point - station) on the Linux kernel stack or the ns-3
+  stack, watched live with a host player or in a window drawn from inside
+  the simulation; as a test, the received streams must be identical to the
+  sent ones. utils/build_kernel_deps.sh builds the DCE version of ffmpeg.
+- x11-hello, gtk4-hello and dce-x11-hello: X11 and GTK4 clients built for
+  DCE draw their windows on the host display.
+- dce-browser: a web browser on a Wi-Fi station browses a site served by
+  thttpd on another station, or the Internet through a host tap device
+  (utils/dce-tap-setup.sh): Dillo and Northstar (GTK4, JavaScript, sound)
+  built for DCE by utils/build_kernel_deps.sh, or unmodified prebuilt
+  Chromium and Brave, which play YouTube with sound. The Wi-Fi capture and
+  the browser's TLS key log let Wireshark decrypt the traffic. See
+  doc/source/dce-x11.rst.
+- build-and-run.sh builds everything in a container and runs the demos.
+
+New DCE features
+----------------
+- Host socket passthrough: the DceHostUnixSocketPaths global value lists
+  AF_UNIX path prefixes for which connect() reaches a real host socket.
+  DceX11Helper uses it for the host's X server, D-Bus session bus and
+  PulseAudio server.
+- eventfd(2), epoll(7), pipe2(2), futex(2) (through syscall(2)), SOCK_SEQPACKET,
+  connected socketpair(), descriptor passing (SCM_RIGHTS), FIONREAD/FIONBIO,
+  memfd_create, shm_open, gettid, /proc/self/exe, and several hundred more
+  libc entry points for ffmpeg, the X11 libraries, GLib/GIO/GTK4, Dillo,
+  Northstar and Chromium.
+- Programs built as executables (PIE), such as a prebuilt Chromium, run
+  unmodified: main() is found from the entry point, their thread local
+  variables get their own room (DCE_RESERVE_EXECUTABLE_TLS), their own
+  allocator is used by their libraries, and their references to old glibc
+  symbol versions bind to DCE.
+- TaskManager::PerFiberTls gives every task thread local storage of its
+  own (UcontextFiberManager, x86_64).
+- A program which crashes (SIGSEGV, SIGBUS, SIGILL, SIGFPE) ends its
+  process, as the kernel would, instead of the simulation.
+- DcePcapCheck reads ns-3 captures back (802.11 with A-MPDU, Ethernet, raw
+  IP) for examples that check their traffic.
+- Performance: libc functions are forwarded with a tail jump, the heap no
+  longer walks all its chunks, mutexes and condition variables are found
+  by id, and a zero-timeout poll() or epoll_wait() lets the simulated clock
+  catch up with the wall clock instead of spinning.
+- malloc() and friends return 16 byte aligned memory, like glibc.
+
+Bugs fixed
+----------
+- LKL: the kernel's re-armed timer events piled up in the simulator's
+  queue (gigabytes per minute with a busy kernel), and frames larger than
+  1500 bytes were truncated (every full-size Wi-Fi TCP segment).
+- pthread_cond_wait() could miss a wake-up, and a timed-out waiter could
+  take the wake-up of another thread: programs froze.
+- socketpair() did not connect its two ends; shutdown() did not wake a
+  blocked reader; a write to a closed peer returned 0 instead of EPIPE; a
+  blocking read waited for the whole buffer; sendmsg()/recvmsg() mishandled
+  their control data and errors.
+- fork() returned 0 in the parent with UcontextFiberManager; it now fails
+  with ENOSYS. PthreadFiberManager's switches aborted under _FORTIFY_SOURCE.
+- openat() relative to a directory ran a shell; F_DUPFD_CLOEXEC returned a
+  host descriptor; dlerror() was the host's; SIG_DFL and SIG_IGN were
+  called as handlers; exit() ran thread specific data destructors.
+- open64() passed garbage as the file creation mode; socket() with
+  SOCK_NONBLOCK/SOCK_CLOEXEC and setsockopt(SO_SNDBUF) on ns-3 UDP failed;
+  closing a pipe end whose peer was closed failed; realpath() leaked host
+  paths; the fortified __sprintf_chk() took the buffer size as the format
+  string, and wrote one character into a buffer of unknown size; a task
+  could be woken up after its process had exited.
+
 Release dce-1.12
 ================
 In order to use DCE, please use the bake tool to install DCE.  DCE 1.12

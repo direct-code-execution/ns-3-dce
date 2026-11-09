@@ -76,6 +76,11 @@ PYTHON = ""
 VALGRIND_FOUND = True
 BASH_DCE_FOUND = False
 IPERF_DCE_FOUND = False
+FFMPEG_DCE_FOUND = False
+X11_DCE_FOUND = False
+GTK4_DCE_FOUND = False
+DILLO_DCE_FOUND = False
+NORTHSTAR_DCE_FOUND = False
 
 #
 # This will be given a prefix and a suffix when the waf config file is
@@ -1199,6 +1204,60 @@ def run_tests():
             break
     if options.verbose:
         print("IPERF_DCE_FOUND == %s" % IPERF_DCE_FOUND)
+
+    #
+    # Check if ffmpeg and the test clip are available for DCE. The
+    # dce-wifi-video example requires a DCE compiled version of ffmpeg
+    # (built by utils/build_kernel_deps.sh) and the video.ts clip that the
+    # build copies from example/dce-wifi-video-sample.ts.
+    #
+    global FFMPEG_DCE_FOUND
+    for d in iperf_search_dirs:
+        if os.path.isfile(os.path.join(d, "ffmpeg")) and os.path.isfile(os.path.join(d, "video.ts")):
+            FFMPEG_DCE_FOUND = True
+            break
+    if options.verbose:
+        print("FFMPEG_DCE_FOUND == %s" % FFMPEG_DCE_FOUND)
+
+    #
+    # Check if the x11-hello DCE client was built (needs libx11-dev). The
+    # dce-x11-hello example also needs an X server: DISPLAY must be set
+    # (e.g. run test.py under xvfb-run).
+    #
+    global X11_DCE_FOUND
+    for d in iperf_search_dirs:
+        if os.path.isfile(os.path.join(d, "x11-hello")):
+            X11_DCE_FOUND = True
+            break
+    if options.verbose:
+        print("X11_DCE_FOUND == %s" % X11_DCE_FOUND)
+
+    # The GTK4 client (needs libgtk-4-dev at build time and an X server).
+    global GTK4_DCE_FOUND
+    for d in iperf_search_dirs:
+        if os.path.isfile(os.path.join(d, "gtk4-hello")):
+            GTK4_DCE_FOUND = True
+            break
+    if options.verbose:
+        print("GTK4_DCE_FOUND == %s" % GTK4_DCE_FOUND)
+
+    # The dce-dillo example needs the DCE build of the dillo browser.
+    global DILLO_DCE_FOUND
+    for d in iperf_search_dirs:
+        if os.path.isfile(os.path.join(d, "dillo")):
+            DILLO_DCE_FOUND = True
+            break
+    if options.verbose:
+        print("DILLO_DCE_FOUND == %s" % DILLO_DCE_FOUND)
+
+    # dce-browser --browser=northstar needs the DCE build of Northstar.
+    global NORTHSTAR_DCE_FOUND
+    for d in iperf_search_dirs:
+        if os.path.isfile(os.path.join(d, "northstar")):
+            NORTHSTAR_DCE_FOUND = True
+            break
+    if options.verbose:
+        print("NORTHSTAR_DCE_FOUND == %s" % NORTHSTAR_DCE_FOUND)
 
     #
     # Get the information from the build status file.

@@ -23,6 +23,8 @@ int dce_pthread_mutex_destroy (pthread_mutex_t *mutex);
 int dce_pthread_mutex_lock (pthread_mutex_t *mutex);
 int dce_pthread_mutex_trylock (pthread_mutex_t *mutex);
 int dce_pthread_mutex_unlock (pthread_mutex_t *mutex);
+// unlock, without letting other threads run if yield is false
+int DcePthreadMutexUnlock (pthread_mutex_t *mutex, bool yield);
 int dce_pthread_mutexattr_init (pthread_mutexattr_t *attr);
 int dce_pthread_mutexattr_destroy (pthread_mutexattr_t *attr);
 int dce_pthread_mutexattr_settype (pthread_mutexattr_t *attr, int kind);

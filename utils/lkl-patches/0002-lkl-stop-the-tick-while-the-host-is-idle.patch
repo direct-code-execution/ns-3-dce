@@ -1,0 +1,222 @@
+From 4b5514bacfc3215b0907b7ad28fda7ddee54be0e Mon Sep 17 00:00:00 2001
+From: Gabriel Ferreira <gabrielcarvfer@gmail.com>
+Date: Wed, 7 Oct 2026 20:22:33 +0200
+Subject: [PATCH 2/4] lkl: stop the tick while the host is idle
+
+The CPU idles in idle_host_task, a regular task, rather than in the idle
+task, so the idle loop restarts the tick when it switches to it. Also,
+when a system call returns with nothing else to run, the calling host
+task stays current while its thread runs host code: the kernel looks
+busy although nothing runs. Either way an idle kernel took a timer
+interrupt every jiffy, even with NO_HZ_IDLE. Hosts that run LKL in
+virtual time (e.g. ns-3 DCE, where time only advances between events)
+process every one of them.
+
+Enter NOHZ idle in both cases (idle_host_task, or the end of a system
+call, when no other task is runnable), as the idle loop would, and
+leave it when work resumes: a system call, the exit of a host thread,
+or a task woken by an interrupt. After interrupts that wake nothing,
+stop the tick again so that the next timer is programmed, as the next
+pass of the idle loop would; only at the outermost level, as interrupts
+can run nested in softirq context (a transmit completion while a
+received packet is processed), where the softirqs they raise are still
+pending.
+
+The clocksource also has to be marked valid for high resolution timers,
+otherwise the tick never switches to one-shot mode and NO_HZ never
+takes effect.
+
+With this, an idle kernel sleeping 10 s takes 7 timer events instead
+of about 1000, and a program that makes a system call every second no
+longer keeps the tick running between them.
+---
+ arch/lkl/include/asm/syscalls.h |  2 ++
+ arch/lkl/kernel/cpu.c           |  2 ++
+ arch/lkl/kernel/irq.c           |  2 ++
+ arch/lkl/kernel/syscalls.c      | 60 +++++++++++++++++++++++++++++++++
+ arch/lkl/kernel/time.c          |  2 +-
+ 5 files changed, 67 insertions(+), 1 deletion(-)
+
+diff --git a/arch/lkl/include/asm/syscalls.h b/arch/lkl/include/asm/syscalls.h
+index 09b78212b..6e596127a 100644
+--- a/arch/lkl/include/asm/syscalls.h
++++ b/arch/lkl/include/asm/syscalls.h
+@@ -5,6 +5,8 @@ int syscalls_init(void);
+ void syscalls_cleanup(void);
+ long lkl_syscall(long no, long *params);
+ void wakeup_idle_host_task(void);
++void lkl_idle_host_exit(void);
++void lkl_idle_host_irq_exit(void);
+ long lkl_sys_halt(void);
+ 
+ #define sys_mmap sys_mmap_pgoff
+diff --git a/arch/lkl/kernel/cpu.c b/arch/lkl/kernel/cpu.c
+index 4afab4817..2a473a701 100644
+--- a/arch/lkl/kernel/cpu.c
++++ b/arch/lkl/kernel/cpu.c
+@@ -122,6 +122,7 @@ void lkl_cpu_put(void)
+ 		cpu.irqs_pending = false;
+ 		lkl_ops->mutex_unlock(cpu.lock);
+ 		run_irqs();
++		lkl_idle_host_irq_exit();
+ 		lkl_ops->mutex_lock(cpu.lock);
+ 	}
+ 
+@@ -130,6 +131,7 @@ void lkl_cpu_put(void)
+ 		if (in_interrupt())
+ 			lkl_bug("%s: in interrupt\n", __func__);
+ 		lkl_ops->mutex_unlock(cpu.lock);
++		lkl_idle_host_exit();
+ 		thread_sched_jb();
+ 		return;
+ 	}
+diff --git a/arch/lkl/kernel/irq.c b/arch/lkl/kernel/irq.c
+index fdbabc3e6..54c5686ab 100644
+--- a/arch/lkl/kernel/irq.c
++++ b/arch/lkl/kernel/irq.c
+@@ -1,3 +1,4 @@
++#include <asm/syscalls.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+ #include <linux/irq.h>
+@@ -94,6 +95,7 @@ int lkl_trigger_irq(int irq)
+ 	}
+ 
+ 	run_irq(irq);
++	lkl_idle_host_irq_exit();
+ 
+ 	lkl_cpu_put();
+ 
+diff --git a/arch/lkl/kernel/syscalls.c b/arch/lkl/kernel/syscalls.c
+index cd4431ff2..aaa68ef22 100644
+--- a/arch/lkl/kernel/syscalls.c
++++ b/arch/lkl/kernel/syscalls.c
+@@ -1,3 +1,5 @@
++#include <linux/tick.h>
++#include <linux/sched/stat.h>
+ #include <linux/stat.h>
+ #include <linux/irq.h>
+ #include <linux/sched.h>
+@@ -95,6 +97,7 @@ static void del_host_task(void *arg)
+ 	if (lkl_cpu_get() < 0)
+ 		return;
+ 
++	lkl_idle_host_exit();
+ 	switch_to_host_task(task);
+ 	host_task_id--;
+ 	set_ti_thread_flag(ti, TIF_SCHED_JB);
+@@ -103,6 +106,28 @@ static void del_host_task(void *arg)
+ 
+ static struct lkl_tls_key *task_key;
+ 
++/*
++ * The CPU is idle when no task runs: the host is busy elsewhere. That is
++ * the case in idle_host_task, a regular task, rather than in the idle task
++ * (the core idle loop restarts the tick when it switches to it), and when
++ * a system call returns with nothing else to run, as the host task stays
++ * current while its thread runs host code. Stop the tick then, as the idle
++ * loop would, so that an idle kernel gets no timer interrupts until its
++ * next timer actually expires.
++ */
++static bool idle_host_nohz;
++
++static void idle_host_enter(void)
++{
++	if (idle_host_nohz)
++		return;
++	tick_nohz_idle_enter();
++	local_irq_disable();
++	tick_nohz_idle_stop_tick();
++	local_irq_enable();
++	idle_host_nohz = true;
++}
++
+ long lkl_syscall(long no, long *params)
+ {
+ 	struct task_struct *task = host0;
+@@ -112,6 +137,8 @@ long lkl_syscall(long no, long *params)
+ 	if (ret < 0)
+ 		return ret;
+ 
++	lkl_idle_host_exit();
++
+ 	if (lkl_ops->tls_get) {
+ 		task = lkl_ops->tls_get(task_key);
+ 		if (!task) {
+@@ -132,6 +159,8 @@ long lkl_syscall(long no, long *params)
+ 	}
+ 
+ out:
++	if (single_task_running())
++		idle_host_enter();
+ 	lkl_cpu_put();
+ 
+ 	return ret;
+@@ -139,6 +168,34 @@ long lkl_syscall(long no, long *params)
+ 
+ static struct task_struct *idle_host_task;
+ 
++
++/*
++ * Called after interrupts ran while the host is idle and nothing became
++ * runnable: like the next pass of the idle loop, stop the tick again so
++ * that the next timer event is programmed. Not for interrupts that ran
++ * nested in interrupt or softirq context (e.g. a transmit completion
++ * while a received packet is processed): the softirqs they raised only
++ * run when that context ends.
++ */
++void lkl_idle_host_irq_exit(void)
++{
++	if (idle_host_nohz && test_thread_flag(TIF_HOST_THREAD) &&
++	    !in_interrupt() && single_task_running()) {
++		local_irq_disable();
++		tick_nohz_idle_stop_tick();
++		local_irq_enable();
++	}
++}
++
++/* Called when work resumes on the CPU: a system call or a woken task. */
++void lkl_idle_host_exit(void)
++{
++	if (idle_host_nohz) {
++		idle_host_nohz = false;
++		tick_nohz_idle_exit();
++	}
++}
++
+ /* called from idle, don't failed, don't block */
+ void wakeup_idle_host_task(void)
+ {
+@@ -155,6 +212,8 @@ static int idle_host_task_loop(void *unused)
+ 	idle_host_task = current;
+ 
+ 	for (;;) {
++		if (single_task_running())
++			idle_host_enter();
+ 		lkl_cpu_put();
+ 		lkl_ops->sem_down(ti->sched_sem);
+ 		if (idle_host_task == NULL) {
+@@ -162,6 +221,7 @@ static int idle_host_task_loop(void *unused)
+ 			return 0;
+ 		}
+ 		schedule_tail(ti->prev_sched);
++		lkl_idle_host_exit();
+ 	}
+ }
+ 
+diff --git a/arch/lkl/kernel/time.c b/arch/lkl/kernel/time.c
+index 17d956fe6..c8f77086e 100644
+--- a/arch/lkl/kernel/time.c
++++ b/arch/lkl/kernel/time.c
+@@ -60,7 +60,7 @@ static struct clocksource clocksource = {
+ 	.name	= "lkl",
+ 	.rating = 499,
+ 	.read	= clock_read,
+-	.flags	= CLOCK_SOURCE_IS_CONTINUOUS,
++	.flags	= CLOCK_SOURCE_IS_CONTINUOUS | CLOCK_SOURCE_VALID_FOR_HRES,
+ 	.mask	= CLOCKSOURCE_MASK(64),
+ };
+ 
+-- 
+2.53.0
+

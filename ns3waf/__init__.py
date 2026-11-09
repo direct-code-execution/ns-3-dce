@@ -345,11 +345,9 @@ def _build_headers(bld, name, headers):
     import os
     import shutil
     def run(task):
-        out_dir = os.path.dirname(task.outputs[0].abspath())
-        for header in task.inputs:
-            dst = os.path.join(out_dir, os.path.basename(header.abspath()))
-            src = header.abspath()
-            shutil.copyfile(src, dst)
+        # outputs: the module header, then a copy of each input header
+        for header, copy in zip(task.inputs, task.outputs[1:]):
+            shutil.copyfile(header.abspath(), copy.abspath())
 
         with open(task.outputs[0].abspath(), "w") as outfile:
 
@@ -370,7 +368,11 @@ def _build_headers(bld, name, headers):
 
     out_relpath = os.path.relpath(bld.out_dir, str(bld.out_dir) + "/" + bld.path.path_from(bld.srcnode))
     target = os.path.join(out_relpath, 'include', 'ns3', '%s-module.h' % name)
-    bld(rule=run, source=headers, target=target)
+    # The copies are outputs too, so that waf rebuilds what includes them
+    # when a header changes.
+    copies = [os.path.join(out_relpath, 'include', 'ns3', os.path.basename(h))
+              for h in headers]
+    bld(rule=run, source=headers, target=[target] + copies, name=target)
     bld(use=[target], target='NS3_HEADERS_%s' % name.upper(),
         export_includes=['include'])
     bld.install_files(os.path.join('${PREFIX}', 'include', 'ns3'), headers + [target])

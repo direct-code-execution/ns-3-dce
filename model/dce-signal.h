@@ -11,9 +11,12 @@ extern "C" {
 #endif
 
 sighandler_t dce_signal (int signum, sighandler_t handler);
+sighandler_t dce___sysv_signal (int signum, sighandler_t handler);
 int dce_sigaction (int signum, const struct sigaction *act,
                    struct sigaction *oldact);
 int dce_kill (pid_t pid, int sig);
+int dce_raise (int sig);
+int dce___register_atfork (void (*prepare) (void), void (*parent) (void), void (*child) (void), void *dso_handle);
 int dce_pthread_kill (pthread_t thread, int sig);
 void dce_abort ();
 void dce___assert_fail (const char *__assertion, const char *__file,

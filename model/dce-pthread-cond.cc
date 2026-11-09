@@ -39,6 +39,7 @@ PthreadCondInitStatic (pthread_cond_t *cond)
   condition->cid = current->process->nextCid;
   current->process->nextCid++;
   current->process->conditions.push_back (condition);
+  current->process->conditionById[condition->cid] = condition;
   CidToCond (condition->cid, cond);
   return condition;
 }
@@ -57,17 +58,23 @@ SearchCondition (pthread_cond_t *cond)
       struct Condition *condition = PthreadCondInitStatic (cond);
       return condition;
     }
-  for (uint32_t i = 0; i < current->process->conditions.size (); ++i)
-    {
-      struct Condition *condition = current->process->conditions[i];
-      if (condition->cid == cid)
-        {
-          return condition;
-        }
-    }
-  return 0;
+  std::unordered_map<uint32_t, Condition *>::const_iterator i = current->process->conditionById.find (cid);
+  return i != current->process->conditionById.end () ? i->second : 0;
 }
 
+
+// A thread which stops waiting without a signal (a timeout, a signal of the
+// process) must leave the waiting list: pthread_cond_signal() would wake it,
+// not a thread which still waits.
+static void
+StopWaiting (pthread_cond_t *cond, Thread *current)
+{
+  struct Condition *condition = SearchCondition (cond);
+  if (condition != 0)
+    {
+      condition->waiting.remove (current);
+    }
+}
 
 int dce_pthread_cond_init (pthread_cond_t *cond,
                            const pthread_condattr_t *attr)
@@ -100,6 +107,7 @@ int dce_pthread_cond_destroy (pthread_cond_t *cond)
     {
       if (condition == *i)
         {
+          current->process->conditionById.erase (condition->cid);
           delete condition;
           condition = 0;
           current->process->conditions.erase (i);
@@ -167,9 +175,12 @@ int dce_pthread_cond_timedwait (pthread_cond_t * cond,
   timeout -= Simulator::Now ();
   timeout = Max (Seconds (0.0), timeout);
 
-  dce_pthread_mutex_unlock (mutex);
+  // Release the mutex and wait atomically (POSIX): no other thread may run
+  // in between, or its signal would come before this thread waits.
   condition->waiting.push_back (current);
+  DcePthreadMutexUnlock (mutex, false);
   Time timeLeft = current->process->manager->Wait (timeout);
+  StopWaiting (cond, current);
   dce_pthread_mutex_lock (mutex);
   if (timeLeft.IsZero ())
     {
@@ -189,9 +200,11 @@ int dce_pthread_cond_wait (pthread_cond_t * cond,
     {
       return EINVAL;
     }
-  dce_pthread_mutex_unlock (mutex);
+  // release the mutex and wait atomically (see dce_pthread_cond_timedwait)
   condition->waiting.push_back (current);
+  DcePthreadMutexUnlock (mutex, false);
   current->process->manager->Wait ();
+  StopWaiting (cond, current);
   dce_pthread_mutex_lock (mutex);
   return 0;
 }

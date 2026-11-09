@@ -2,13 +2,18 @@ name: Build and Test DCE
 
 on:
   push:
-    branches: [ sikabo_master ]
+    branches: [ master ]
+  # Run for every pull request (merge-request pipeline), whatever the target branch
   pull_request:
-    branches: [ sikabo_master ]
   workflow_dispatch:
 
+# Cancel superseded runs of the same branch/PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 env:
-  NS3_VER: "3.46"
+  NS3_VER: "3.49"
 
 jobs:
   build:
@@ -18,8 +23,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - distro: ubuntu-22.04
-            image: ubuntu:22.04
           - distro: ubuntu-24.04
             image: ubuntu:24.04
           - distro: debian-trixie
@@ -44,7 +47,44 @@ jobs:
             libsqlite3-dev \
             libxml2-dev \
             wget \
-            make
+            make \
+            bc \
+            flex \
+            bison \
+            byacc \
+            gawk \
+            file \
+            xz-utils \
+            libssl-dev \
+            libdb-dev \
+            libsctp-dev \
+            libx11-dev \
+            libxext-dev \
+            libxv-dev \
+            libpulse-dev \
+            libsdl2-dev \
+            libfltk1.3-dev \
+            libpng-dev \
+            libjpeg-dev \
+            autoconf \
+            automake \
+            libtool \
+            meson \
+            libgtk-4-dev \
+            libuchardet-dev \
+            libpsl-dev \
+            libseccomp-dev \
+            libharfbuzz-dev \
+            libfribidi-dev \
+            libcairo2-dev \
+            libfontconfig-dev \
+            libfreetype-dev \
+            xvfb \
+            dbus \
+            libdav1d-dev \
+            libvpx-dev \
+            libopenh264-dev \
+            libopus-dev
 
       - name: Configure git safe directory
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE/ns-3-dce"
@@ -88,24 +128,82 @@ jobs:
         working-directory: ns-${{ env.NS3_VER }}
         run: ./ns3 install
 
+      # DCE builds of ip, iperf, thttpd, wget, ping and quagga, and the
+      # ns-3-dce-quagga module.
+      - name: Cache kernel stack dependencies
+        id: cache-kernel-deps
+        uses: actions/cache@v4
+        with:
+          path: |
+            deps/bin_dce
+            deps/ns-3-dce-quagga
+          key: kernel-deps-${{ matrix.distro }}-${{ hashFiles('ns-3-dce/utils/build_kernel_deps.sh', 'ns-3-dce/utils/*.patch') }}
+
+      - name: Build kernel stack dependencies
+        if: steps.cache-kernel-deps.outputs.cache-hit != 'true'
+        working-directory: ns-3-dce
+        run: |
+          ./utils/build_kernel_deps.sh "$GITHUB_WORKSPACE/deps"
+          rm -rf "$GITHUB_WORKSPACE/deps/src"
+
+      # Linux 6.12 kernel library (LKL) and its headers.
+      - name: Cache LKL
+        id: cache-lkl
+        uses: actions/cache@v4
+        with:
+          path: deps/lkl
+          key: lkl-${{ matrix.distro }}-${{ hashFiles('ns-3-dce/utils/build_lkl.sh', 'ns-3-dce/utils/lkl-patches/*.patch', 'ns-3-dce/utils/lkl-dce.config') }}
+
+      - name: Build LKL
+        if: steps.cache-lkl.outputs.cache-hit != 'true'
+        working-directory: ns-3-dce
+        run: |
+          ./utils/build_lkl.sh "$GITHUB_WORKSPACE/lkl-src" "$GITHUB_WORKSPACE/deps/lkl"
+          rm -rf "$GITHUB_WORKSPACE/lkl-src" "$GITHUB_WORKSPACE/deps/lkl/liblkl.so.debug"
+
+      - name: Add Quagga module
+        run: cp -a deps/ns-3-dce-quagga ns-3-dce/myscripts/
+
       - name: Configure DCE
         working-directory: ns-3-dce
         run: |
           ./waf configure \
             --with-ns3="$GITHUB_WORKSPACE/build" \
             --prefix="$GITHUB_WORKSPACE/build" \
+            --with-lkl="$GITHUB_WORKSPACE/deps/lkl" \
             --enable-opt
 
       - name: Build DCE
         working-directory: ns-3-dce
         run: ./waf build
 
-      - name: Build bash for DCE
+      - name: Install DCE binaries
         working-directory: ns-3-dce
-        run: ./utils/build_bash.sh build/bin_dce
+        run: |
+          cp -a "$GITHUB_WORKSPACE/deps/bin_dce/." build/bin_dce/
+          cp "$GITHUB_WORKSPACE/deps/lkl/liblkl.so" build/bin_dce/
+          ./utils/build_bash.sh build/bin_dce
 
       - name: Run DCE tests
         working-directory: ns-3-dce
         env:
           LD_LIBRARY_PATH: ${{ github.workspace }}/build/lib:${{ github.workspace }}/build/lib64
-        run: python3 test.py
+        # xvfb-run provides the X server used by dce-x11-hello and the
+        # browsers; dbus-run-session the session bus GApplication (Northstar)
+        # registers on.
+        run: xvfb-run -a dbus-run-session -- python3 test.py -r
+
+      # Sockets cannot be uploaded; symlinks would be followed (dce-browser
+      # links its browser's /usr and /etc to the host's).
+      - name: Remove sockets and symlinks from test output
+        if: always()
+        working-directory: ns-3-dce
+        run: if [ -d testpy-output ]; then find testpy-output \( -type s -o -type l \) -delete; fi
+
+      - name: Upload test output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testpy-output-${{ matrix.distro }}
+          path: ns-3-dce/testpy-output
+          if-no-files-found: ignore

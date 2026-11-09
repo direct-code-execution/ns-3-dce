@@ -117,7 +117,7 @@ bool NetlinkSocketAddress::IsMatchingType (const Address &address)
 
 uint8_t NetlinkSocketAddress::GetType (void)
 {
-  static uint8_t type = Address::Register ();
+  static uint8_t type = Address::Register ("NetlinkSocketAddress", 8);
   return type;
 }
 

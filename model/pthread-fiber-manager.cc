@@ -1,3 +1,8 @@
+// The fibers jump from one thread's stack to another's with longjmp(), on
+// purpose: _FORTIFY_SOURCE (Ubuntu's default when optimizing) checks that a
+// longjmp() goes to an outer frame of the same stack, and aborts ("longjmp
+// causes uninitialized stack frame") when the target stack is lower.
+#undef _FORTIFY_SOURCE
 /*
  * Copyright (c) 2008 Sam Jansen, INRIA
  *

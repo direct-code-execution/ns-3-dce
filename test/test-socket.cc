@@ -310,9 +310,11 @@ void test_tcp (void)
   int ret;
   pthread_t thread;
 
-  // TCP Sock
-  ret = socketpair (AF_INET, SOCK_STREAM, 0, socks);
-  TEST_ASSERT_UNEQUAL (ret, -1);
+  // TCP Sock: socketpair () is for AF_UNIX only
+  socks[0] = socket (AF_INET, SOCK_STREAM, 0);
+  TEST_ASSERT_UNEQUAL (socks[0], -1);
+  socks[1] = socket (AF_INET, SOCK_STREAM, 0);
+  TEST_ASSERT_UNEQUAL (socks[1], -1);
 
   memset (&dst, 0, sizeof (dst));
   dst.sin_family = AF_INET;

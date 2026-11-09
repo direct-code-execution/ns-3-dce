@@ -449,18 +449,16 @@ _ns3_Ipv4Address_tp_hash (PyObject *obj)
 
 def post_register_types(root_module):
     remove_classes = [
-        # These are classes which get introduced when KERNEL_STACK is enabled , so should be removed for non-linux DCE builds
+        # The Linux stack (LKL) is not part of the Python bindings
         'KernelSocketFdFactory',
         'LinuxSocketImpl',
         'KernelSocketFd',
         'LinuxSocketFdFactory',
-        'FreeBSDSocketFdFactory'
     ]
 
-    if "KERNEL_STACK" not in os.environ:
-        for classname in remove_classes:
-            try:
-                root_module.classes.remove(root_module['ns3::%s' % classname])
-            except:
-                pass
+    for classname in remove_classes:
+        try:
+            root_module.classes.remove(root_module['ns3::%s' % classname])
+        except:
+            pass
 

@@ -12,6 +12,7 @@ Basic Use Cases
    dce-user-submodule
    dce-user-config
    dce-cradle 
+   dce-wifi-video
+   dce-x11
    dce-user-aspect-trace
-   dce-user-freebsd
 

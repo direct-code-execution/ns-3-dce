@@ -2,4 +2,6 @@ NS3 {
 global:
 	libc_setup;
 	libc_global_setup;
+	# the dynamic loader's in glibc: the top of the main thread's stack
+	__libc_stack_end;
 };

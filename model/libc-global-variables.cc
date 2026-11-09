@@ -17,6 +17,7 @@ int __h_errno;
 __thread int errno;
 __thread struct __res_state *__resp;
 char *__progname = 0;
+void *__libc_stack_end = 0;
 char *dce_proginvname = 0;
 char *dce_proginvnameshort = 0;
 

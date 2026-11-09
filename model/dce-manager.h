@@ -73,6 +73,8 @@ class Loader;
 class DceManager : public Object
 {
 public:
+  // true if thread is a live thread of one of this manager's processes
+  bool ThreadExists (Thread *thread);
   typedef Callback<void> Runnable;
   typedef enum
   {
@@ -137,7 +139,6 @@ private:
   uint16_t AllocateTid (const struct Process *process) const;
   static void SigkillHandler (int signal);
   static void SigabrtHandler (int signal);
-  bool ThreadExists (Thread *thread);
   static struct ::Libc * GetLibc (void);
   void SetArgv (struct Process *process, std::string filename, std::vector<std::string> args);
   void SetEnvp (struct Process *process, std::vector<std::pair<std::string,std::string> > envp);

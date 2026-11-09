@@ -2,6 +2,7 @@
 #include "dce-global-variables.h"
 #include "process.h"
 #include "utils.h"
+#include "task-manager.h"
 #include "dce-stdio.h"
 
 using namespace ns3;
@@ -46,4 +47,9 @@ void dce_global_variables_setup (struct DceGlobalVariables *variables)
         }
     }
   *variables->pprogram_invocation_short_name = slash;
+  // the top of the main thread's stack (V8 and Oilpan scan the stack up to it)
+  TaskManager *manager = TaskManager::Current ();
+  Task *task = Current ()->task;
+  uint8_t *bottom = (uint8_t *) manager->GetStackBottom (task);
+  *variables->plibc_stack_end = bottom != 0 ? bottom + manager->GetStackSize (task) : 0;
 }

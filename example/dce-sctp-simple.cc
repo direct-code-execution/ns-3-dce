@@ -4,6 +4,7 @@
 #include "ns3/point-to-point-module.h"
 #include "ns3/internet-module.h"
 #include <fstream>
+#include <sstream>
 
 using namespace ns3;
 
@@ -17,6 +18,20 @@ static void RunIp (Ptr<Node> node, Time at, std::string str)
   process.ParseArguments(str.c_str ());
   apps = process.Install (node);
   apps.Start (at);
+}
+
+// The client succeeds if it exits with 0 and received messages.
+static bool g_ok = false;
+
+static void
+ClientFinished (uint32_t node, uint16_t pid, int status)
+{
+  std::ostringstream path;
+  path << "files-" << node << "/var/log/" << pid << "/stdout";
+  std::ifstream file (path.str ());
+  std::stringstream out;
+  out << file.rdbuf ();
+  g_ok = status == 0 && out.str ().find ("(Stream ") != std::string::npos;
 }
 
 int main (int argc, char *argv[])
@@ -69,6 +84,7 @@ int main (int argc, char *argv[])
   process.SetBinary ("sctp-client");
   process.ResetArguments ();
   process.ParseArguments ("10.0.0.1");
+  process.SetFinishedCallback (MakeBoundCallback (&ClientFinished, nodes.Get (1)->GetId ()));
   apps = process.Install (nodes.Get (1));
   apps.Start (Seconds (1.5));
 
@@ -76,5 +92,6 @@ int main (int argc, char *argv[])
   Simulator::Run ();
   Simulator::Destroy ();
 
-  return 0;
+  std::cout << (g_ok ? "OK" : "FAILED: the client received nothing") << std::endl;
+  return g_ok ? 0 : 1;
 }

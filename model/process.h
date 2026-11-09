@@ -23,6 +23,7 @@
 #include <signal.h>
 #include <map>
 #include <vector>
+#include <unordered_map>
 #include <list>
 #include <set>
 #include <stdio.h>
@@ -43,6 +44,15 @@ struct SimTask;
 namespace ns3 {
 
 struct Process;
+struct ProgramAllocator
+{
+  void * (*malloc)(size_t);
+  void (*free)(void *);
+  void * (*calloc)(size_t, size_t);
+  void * (*realloc)(void *, size_t);
+  int (*posix_memalign)(void **, size_t, size_t);
+  size_t (*malloc_usable_size)(void *);
+};
 struct Thread;
 class DceManager;
 class UnixFd;
@@ -140,14 +150,20 @@ struct Process
   // Key is the fd
   std::map<int,FileUsage *> openFiles;
   std::vector<FILE *> openStreams;
+  // descriptor behind each stream of openStreams (fopencookie streams have no fileno)
+  std::map<FILE *, int> streamFds;
   std::vector<DIR *> openDirs;
   std::vector<SignalHandler> signalHandlers;
   std::vector<Thread *> threads;
   std::vector<Mutex *> mutexes;
+  // the same, by id: programs such as Chromium create tens of thousands
+  std::unordered_map<uint32_t, Mutex *> mutexById;
   std::vector<Semaphore *> semaphores;
   std::vector<Condition *> conditions;
+  std::unordered_map<uint32_t, Condition *> conditionById;
   std::vector<struct AtExitHandler> atExitHandlers;
   std::set<uint16_t> children;
+  bool getoptStarted; // getopt has been called by this process
   sigset_t pendingSignals;
   Time itimerInterval;
   EventId itimer;
@@ -158,6 +174,20 @@ struct Process
   DceManager *manager;
   Loader *loader;
   void *mainHandle;
+  // what /proc/self/exe links to: the program, in the node's file system
+  // if it was found there, else on the host (DCE_PATH)
+  std::string exePath;
+  // what dlerror() reports, and whether it has to
+  std::string dlError;
+  bool hasDlError;
+  // a signal is ending it (dce_exit_signal)
+  bool killedBySignal;
+  // the initial value of the thread local variables of a program loaded
+  // from an executable, below the thread pointer (DceExecutableTlsImage)
+  std::vector<uint8_t> executableTls;
+  // the program's own malloc() and friends (Chrome's PartitionAlloc), which
+  // the libraries it uses must use too, as they would without DCE
+  struct ProgramAllocator *programAllocator;
   std::string cwd;
   KingsleyAlloc *alloc;
   Callback<void,uint16_t,int> finished;
@@ -216,12 +246,15 @@ struct Thread
   int h_err;
   /* thread id. */
   uint16_t tid;
+  // mutexes unlocked without letting other threads run (dce-pthread-mutex.cc)
+  uint32_t unlocksWithoutYield;
   Task *task;
   Thread *joinWaiter;
   Process *process;
   std::list<struct ThreadKeyValue> keyValues;
   sigset_t signalMask;
   sigset_t pendingSignals;
+  sigset_t sigwaitSet; // Signals this thread waits for in sigwait, empty otherwise
   Time lastTime; // Last time of a possible infinite loop checkpoint.
   Waiter *childWaiter; // Not zero if thread waiting for a child in wait or waitall ...
   PollTable *pollTable; // No 0 if a poll is running on this thread

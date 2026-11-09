@@ -1,0 +1,64 @@
+From d670f680e4370f6530fcc2252a340e82bf6071ba Mon Sep 17 00:00:00 2001
+From: Gabriel Ferreira <gabrielcarvfer@gmail.com>
+Date: Wed, 7 Oct 2026 23:46:57 +0200
+Subject: [PATCH 3/4] crypto: jitter - do not loop forever on a clock that does
+ not advance
+
+jent_entropy_collector_alloc() fills the entropy pool before
+jent_entropy_init() checks that the clock is fine-grained enough. When
+every measurement is stuck, as with a clock that does not advance,
+jent_gen_entropy() repeats the measurement until the health tests fail,
+but outside of FIPS mode jent_health_failure() never reports a failure,
+so the kernel hangs while initializing the jitterentropy RNG.
+
+Give up after many consecutive stuck measurements, far more than the
+repetition count test's cutoffs, so that only a clock that does not
+advance at all is given up on. The time tests of jent_entropy_init()
+then reject the clock, and the jitterentropy RNG is not registered, as
+for any other unsuitable clock.
+
+This happens with LKL in DCE, where the kernel runs on simulated time,
+which does not advance while the kernel initializes.
+
+TOUPSTREAM
+---
+ crypto/jitterentropy.c | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/crypto/jitterentropy.c b/crypto/jitterentropy.c
+index 3b390bd6c..9025437f9 100644
+--- a/crypto/jitterentropy.c
++++ b/crypto/jitterentropy.c
+@@ -556,7 +556,7 @@ static int jent_measure_jitter(struct rand_data *ec, __u64 *ret_current_delta)
+  */
+ static void jent_gen_entropy(struct rand_data *ec)
+ {
+-	unsigned int k = 0, safety_factor = 0;
++	unsigned int k = 0, safety_factor = 0, stuck = 0;
+ 
+ 	if (fips_enabled)
+ 		safety_factor = JENT_ENTROPY_SAFETY_FACTOR;
+@@ -566,8 +566,19 @@ static void jent_gen_entropy(struct rand_data *ec)
+ 
+ 	while (!jent_health_failure(ec)) {
+ 		/* If a stuck measurement is received, repeat measurement */
+-		if (jent_measure_jitter(ec, NULL))
++		if (jent_measure_jitter(ec, NULL)) {
++			/*
++			 * Outside of FIPS mode, the health tests do not end
++			 * the loop: give up on a clock that does not advance,
++			 * which jent_entropy_init() rejects. The limit is far
++			 * above the cutoffs of the repetition count test,
++			 * which a usable clock does not reach.
++			 */
++			if (++stuck >= 1024)
++				break;
+ 			continue;
++		}
++		stuck = 0;
+ 
+ 		/*
+ 		 * We multiply the loop value with ->osr to obtain the
+-- 
+2.53.0
+

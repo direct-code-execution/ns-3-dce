@@ -241,6 +241,14 @@ ElfDependencies::GetSearchDirectories (void) const
                           tmp.begin (),
                           tmp.end ());
     }
+  // where the dynamic loader looks (a dlopen() of a bare name: NSS loads
+  // libsoftokn3.so so), as ElfLdd does for the dependencies
+#if defined(__x86_64__)
+  directories.push_back ("/lib64");
+  directories.push_back ("/usr/lib64");
+  directories.push_back ("/lib/x86_64-linux-gnu");
+  directories.push_back ("/usr/lib/x86_64-linux-gnu");
+#endif
   directories.push_back ("/lib");
   directories.push_back ("/usr/lib");
   directories.push_back (".");

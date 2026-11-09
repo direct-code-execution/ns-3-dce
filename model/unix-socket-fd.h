@@ -28,6 +28,7 @@
 #include <linux/types.h>
 #include <linux/errqueue.h>
 #include <netinet/in.h>
+#include <netinet/icmp6.h>
 #include <list>
 
 struct sockaddr_ll;
@@ -100,6 +101,9 @@ protected:
 
   Ptr<Packet> m_peekedData;
   Address m_peekedAddress;
+  // ICMP6_FILTER: the ICMPv6 types a raw socket does not receive.
+  bool m_icmp6FilterSet;
+  struct icmp6_filter m_icmp6Filter;
 
   void AddPeekedData (const uint8_t *buf, uint32_t count, Address from);
   void AddPeekedData (Ptr<Packet> p);

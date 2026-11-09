@@ -17,6 +17,13 @@ public:
   {
     return 0;
   }
+  /**
+   * \returns true if Clone () can clone a fiber (fork ()).
+   */
+  virtual bool CanClone (void) const
+  {
+    return false;
+  }
 
   /**
    * \param callback function to use as main loop for the
@@ -67,12 +74,37 @@ public:
    * \return size of stack allocated in fiber.
    */
   virtual uint32_t GetStackSize (struct Fiber *fiber) const = 0;
+  /**
+   * \return the lowest address of the stack allocated in fiber, 0 if
+   *         unknown.
+   */
+  virtual void *GetStackBottom (struct Fiber *fiber) const
+  {
+    return 0;
+  }
 
   /**
    * \param fn a function which will be invoked whenever SwitchTo
    * is invoked, just before it returns to the destination fiber.
    */
   virtual void SetSwitchNotification (void (*fn)(void)) = 0;
+  /**
+   * Give every fiber created from now on thread local storage of its
+   * own, switched with the fiber.
+   *
+   * \returns false if this implementation cannot.
+   */
+  virtual bool EnablePerFiberTls (void)
+  {
+    return false;
+  }
+  /**
+   * \returns true if every fiber has thread local storage of its own.
+   */
+  virtual bool HasPerFiberTls (void) const
+  {
+    return false;
+  }
 };
 
 } // namespace ns3
