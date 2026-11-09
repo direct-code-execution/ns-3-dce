@@ -107,7 +107,9 @@ TaskManager::TaskManager ()
     m_disposing (0),
     m_todoOnMain (0),
     m_noSignal (0),
-    m_hightask (0)
+    m_hightask (0),
+    m_taskEndNotifier (0),
+    m_taskEndNotifierContext (0)
 {
   NS_LOG_FUNCTION (this);
 }
@@ -286,6 +288,10 @@ TaskManager::Stop (Task *task)
       return;
     }
 
+  if (m_taskEndNotifier)
+    {
+      m_taskEndNotifier (task, false, m_taskEndNotifierContext);
+    }
   // we can delete the task immediately.
   NS_LOG_DEBUG ("delete " << task << " fiber=" << task->m_fiber);
   m_scheduler->Dequeue (task);
@@ -367,10 +373,21 @@ TaskManager::Exit (void)
   NS_ASSERT (m_current != 0);
   NS_ASSERT (m_current->m_state == Task::RUNNING);
   Task *current = m_current;
+  if (m_taskEndNotifier)
+    {
+      m_taskEndNotifier (current, true, m_taskEndNotifierContext);
+    }
   current->m_state = Task::DEAD;
   current->m_waitTimer.Cancel ();
   m_deadTasks.push_back (current);
   Schedule ();
+}
+
+void
+TaskManager::SetTaskEndNotifier (void (*fn)(Task *task, bool running, void *context), void *context)
+{
+  m_taskEndNotifier = fn;
+  m_taskEndNotifierContext = context;
 }
 
 void
@@ -396,6 +413,26 @@ TaskManager::CurrentTask (void)
       return m_hightask;
     }
   return m_current;
+}
+Task *
+TaskManager::RunningTask (void)
+{
+  return m_current;
+}
+bool
+TaskManager::RunNow (const bool *done)
+{
+  NS_LOG_FUNCTION (this);
+  NS_ASSERT (m_current == 0);
+  // The tasks run here are not the hi task.
+  Task *hightask = m_hightask;
+  m_hightask = 0;
+  while (!*done && m_scheduler->PeekNext () != 0)
+    {
+      Schedule ();
+    }
+  m_hightask = hightask;
+  return *done;
 }
 TaskManager *
 TaskManager::Current (void)

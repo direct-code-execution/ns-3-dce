@@ -81,7 +81,7 @@ int main (int argc, char *argv[])
   Config::SetDefault ("ns3::TcpSocket::InitialSlowStartThreshold", UintegerValue (0xfffff));
 
   CommandLine cmd;
-  cmd.AddValue ("stack", "Name of DCE IP stack: ns3/linux/freebsd. Default:", stack);
+  cmd.AddValue ("stack", "Name of DCE IP stack: ns3/linux. Default:", stack);
   cmd.AddValue ("udp", "Use UDP.  Default: ", useUdp);
   cmd.AddValue ("bw", "UDP bandwidth limit. Default: ", bandWidth);
   cmd.AddValue ("emulation", "Use emulation. Default: ", useEmulation);
@@ -133,26 +133,13 @@ int main (int argc, char *argv[])
     }
   else if (stack == "linux")
     {
-#ifdef KERNEL_STACK
+#ifdef LINUX_STACK
       dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
       dceManager.Install (nodes);
       LinuxStackHelper stack;
       stack.Install (nodes);
 #else
-      NS_LOG_ERROR ("Linux kernel stack for DCE is not available. build with dce-linux module.");
-      // silently exit
-      return 0;
-#endif
-    }
-  else if (stack == "freebsd")
-    {
-#ifdef KERNEL_STACK
-      dceManager.SetNetworkStack ("ns3::FreeBSDSocketFdFactory", "Library", StringValue ("libfreebsd.so"));
-      dceManager.Install (nodes);
-      FreeBSDStackHelper stack;
-      stack.Install (nodes);
-#else
-      NS_LOG_ERROR ("FreeBSD kernel stack for DCE is not available. build with dce-freebsd module.");
+      NS_LOG_ERROR ("Linux kernel stack for DCE is not available: configure DCE --with-lkl.");
       // silently exit
       return 0;
 #endif
@@ -162,7 +149,7 @@ int main (int argc, char *argv[])
   address.SetBase ("10.0.0.0", "255.255.255.252");
   Ipv4InterfaceContainer interfaces = address.Assign (devices);
 
-#ifdef KERNEL_STACK
+#ifdef LINUX_STACK
   if (stack == "linux")
     {
       LinuxStackHelper::PopulateRoutingTables ();

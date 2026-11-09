@@ -1,39 +1,32 @@
+/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 #ifndef KERNEL_SOCKET_FD_FACTORY_H
 #define KERNEL_SOCKET_FD_FACTORY_H
 
 #include "socket-fd-factory.h"
-#include "task-manager.h"
 #include "ns3/net-device.h"
-#include "ns3/random-variable-stream.h"
-#include <sys/socket.h>
-#include <vector>
+#include <list>
+#include <map>
+#include <set>
 #include <string>
-#include <utility>
-#include <stdarg.h>
-#include <stdio.h>
-#include "linux/types.h"
-
-extern "C" {
-struct SimExported;
-struct SimDevice;
-struct SimSocket;
-struct SimTask;
-struct SimKernel;
-struct SimSysFile;
-}
-
-class KingsleyAlloc;
+#include <vector>
 
 namespace ns3 {
 
-class Loader;
-class NetDevice;
+class EventImpl;
+class LklKernel;
+class KernelSocketFd;
 class Task;
-class TaskManager;
-class Packet;
-class KernelDeviceStateListener;
-class PollTable;
+struct LklNetDevice;
 
+/**
+ * Network stack of a node backed by a Linux kernel (LKL): select it with
+ * DceManagerHelper::SetNetworkStack ("ns3::KernelSocketFdFactory").
+ *
+ * The kernel boots when the simulation starts. Every ns-3 NetDevice of the
+ * node but its loopback device (the kernel has its own) becomes a kernel
+ * network device named sim<n>, in device order; sockets of DCE
+ * applications are kernel sockets.
+ */
 class KernelSocketFdFactory : public SocketFdFactory
 {
 public:
@@ -43,115 +36,58 @@ public:
 
   virtual UnixFd * CreateSocket (int domain, int type, int protocol);
 
-  void ScheduleTask (EventImpl *event);
-  std::string m_library;
+  Ptr<LklKernel> GetKernel (void) const;
 
-protected:
-  void InitializeStack (void);
-  struct SimExported *m_exported;
-  Ptr<TaskManager> m_manager;
-  Loader *m_loader;
-  FILE *m_logFile;
+  /**
+   * Write a sysctl, like libos: path ".net.ipv4.tcp_sack" is
+   * /proc/sys/net/ipv4/tcp_sack. Sysctls set before the kernel booted are
+   * written right after boot.
+   */
+  void Set (std::string path, std::string value);
+  /**
+   * Read a sysctl, or any kernel file given by its absolute path (e.g.
+   * /proc/net/netstat); must be called from a task of this node.
+   */
+  std::string Get (std::string path);
+  /** Run the event in a new task of this node. */
+  void ScheduleTask (EventImpl *event);
+
+  // Used by KernelSocketFd.
+  void Register (KernelSocketFd *socket);
+  void Unregister (KernelSocketFd *socket);
+  /** From now on, wake the socket's poll waiters when its state changes. */
+  void Watch (KernelSocketFd *socket);
 
 private:
-  KernelSocketFdFactory (KernelSocketFdFactory const &);
-  KernelSocketFdFactory& operator= (KernelSocketFdFactory const &);
-  
-  friend class KernelSocketFd;
-  friend class KernelDeviceStateListener;
-  struct EventIdHolder : public SimpleRefCount<EventIdHolder>
-  {
-    EventId id;
-  };
-
-  // called from KernelSocketFd
-  int Close (struct SimSocket *socket);
-  ssize_t Recvmsg (struct SimSocket *socket, struct msghdr *msg, int flags);
-  ssize_t Sendmsg (struct SimSocket *socket, const struct msghdr *msg, int flags);
-  int Getsockname (struct SimSocket *socket, struct sockaddr *name, socklen_t *namelen);
-  int Getpeername (struct SimSocket *socket, struct sockaddr *name, socklen_t *namelen);
-  int Bind (struct SimSocket *socket, const struct sockaddr *my_addr, socklen_t addrlen);
-  int Connect (struct SimSocket *socket, const struct sockaddr *my_addr, socklen_t addrlen, int flags);
-  int Listen (struct SimSocket *socket, int backlog);
-  int Shutdown (struct SimSocket *socket, int how);
-  int Accept (struct SimSocket *socket, struct sockaddr *my_addr, socklen_t *addrlen, int flags);
-  int Ioctl (struct SimSocket *socket, unsigned long request, char *argp);
-  int Setsockopt (struct SimSocket *socket, int level, int optname,
-                  const void *optval, socklen_t optlen);
-  int Getsockopt (struct SimSocket *socket, int level, int optname,
-                  void *optval, socklen_t *optlen);
-  bool CanRecv (struct SimSocket *socket);
-  bool CanSend (struct SimSocket *socket);
-  void* PollWait (struct SimSocket *socket, void *ctxt);
-  void  FreePoll (struct SimSocket *socket, void *ctxt);
-  int Poll (struct SimSocket *socket, PollTable* ptable);
-  void PollFreeWait (void *ref);
-
-  // called from kernel.
-  static int Vprintf (struct SimKernel *kernel, const char *str, va_list args);
-  static void * Malloc (struct SimKernel *kernel, unsigned long size);
-  static void Free (struct SimKernel *kernel, void *buffer);
-  static void * Memcpy (struct SimKernel *kernel, void *dst, const void *src, unsigned long size);
-  static void * Memset (struct SimKernel *kernel, void *dst, char value, unsigned long size);
-  static int AtExit (struct SimKernel *kernel, void (*function)(void));
-  static int Access (struct SimKernel *kernel, const char *pathname, int mode);
-  static char* Getenv (struct SimKernel *kernel, const char *name);
-  static int Mkdir (struct SimKernel *kernel, const char *pathname, mode_t mode);
-  static int Open (struct SimKernel *kernel, const char *pathname, int flags);
-  static size_t Fread (struct SimKernel *kernel, void *ptr, size_t size, size_t nmemb, FILE *stream);
-  static size_t Fwrite (struct SimKernel *kernel, const void *ptr, size_t size, size_t nmemb, FILE *stream);
-  static FILE* FdOpen (struct SimKernel *kernel, int fd, const char *mode);
-  static int __Fxstat (struct SimKernel *kernel, int ver, int fd, void *buf);
-  static int Fseek (struct SimKernel *kernel, FILE *stream, long offset, int whence);
-  static void Setbuf (struct SimKernel *kernel, FILE *stream, char *buf);
-  static long Ftell (struct SimKernel *kernel, FILE *stream);
-  static int Fclose (struct SimKernel *kernel, FILE *fp);
-  static unsigned long Random (struct SimKernel *kernel);
-  static void *EventScheduleNs (struct SimKernel *kernel, __u64 ns, void (*fn)(void *context), void *context,
-                                void (*pre_fn)(void));
-  static void EventCancel (struct SimKernel *kernel, void *ev);
-  static struct SimTask *TaskStart (struct SimKernel *kernel, void (*callback)(void *), void *context);
-  static struct SimTask * TaskCurrent (struct SimKernel *kernel);
-  static void TaskWait (struct SimKernel *kernel);
-  static int TaskWakeup (struct SimKernel *kernel, struct SimTask *task);
-  static void TaskYield (struct SimKernel *kernel);
-  static void DevXmit (struct SimKernel *kernel, struct SimDevice *dev, unsigned char *data, int len);
-  static void SignalRaised (struct SimKernel *kernel, struct SimTask *task, int signalNumber);
-  static void PollEvent (int flag, void *context);
-
-
-  // inherited from Object.
   virtual void DoDispose (void);
-  // called from Node
-  void NotifyAddDevice (Ptr<NetDevice> device);
-  // called during initialization with a task context
-  // to enter the kernel functions.
-  void StartInitializationTask (void);
-  void RxFromDevice (Ptr<NetDevice> device, Ptr<const Packet> p,
-                     uint16_t protocol, const Address & from,
-                     const Address &to, NetDevice::PacketType type);
-  struct SimDevice * DevToDev (Ptr<NetDevice> dev);
-  void NotifyDeviceStateChange (Ptr<NetDevice> device);
-  void NotifyDeviceStateChangeTask (Ptr<NetDevice> device);
-  void NotifyAddDeviceTask (Ptr<NetDevice> device);
-
-  void DoSet (std::string path, std::string value);
-  static void TaskSwitch (enum Task::SwitchType type, void *context);
+  virtual void NotifyNewAggregate (void);
+  static void BootTrampoline (void *context);
   static void ScheduleTaskTrampoline (void *context);
-  void EventTrampoline (void (*fn)(void *context),
-                        void *context, void (*pre_fn)(void),
-                        Ptr<EventIdHolder> event);
-  static void SendMain (bool *r, NetDevice *d, Ptr<Packet> packet, const Address& dest, uint16_t protocolNumber);
+  void SetTask (std::string path, std::string value);
+  void Boot (void);
+  void WaitBooted (void);
+  void NotifyAddDevice (Ptr<NetDevice> device);
+  void AddDevice (Ptr<NetDevice> device);
+  static void AddDeviceTrampoline (void *context);
+  void RxFromDevice (Ptr<NetDevice> device, Ptr<const Packet> p, uint16_t protocol,
+                     const Address &from, const Address &to, NetDevice::PacketType type);
+  static void WatcherTrampoline (void *context);
+  void Watcher (void);
+  long Call (long no, long a0 = 0, long a1 = 0, long a2 = 0,
+             long a3 = 0, long a4 = 0, long a5 = 0);
 
-  std::vector<std::pair<Ptr<NetDevice>,struct SimDevice *> > m_devices;
-  std::list<Task *> m_kernelTasks;
-  Ptr<UniformRandomVariable> m_variable;
-  KingsleyAlloc *m_alloc;
-  std::vector<Ptr<KernelDeviceStateListener> > m_listeners;
-  double m_rate;
-  Ptr<RandomVariableStream> m_ranvar;
-  uint16_t m_pid;
-  TypeId m_lteUeTid;
+  std::string m_library;
+  std::string m_cmdline;
+  bool m_mptcp;
+  Ptr<LklKernel> m_kernel;
+  bool m_booted;
+  std::list<Task *> m_bootWaiters;
+  std::list<std::pair<std::string, std::string> > m_earlySysctls;
+  std::vector<LklNetDevice *> m_devices;
+  uint32_t m_nextDevice;
+  int m_epollFd;
+  std::map<int, KernelSocketFd *> m_sockets;
+  std::set<int> m_watched;
 };
 
 } // namespace ns3

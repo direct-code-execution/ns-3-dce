@@ -162,7 +162,7 @@ main (int argc, char *argv[])
   ns3stack.Install (routersL);
   ns3stack.Install (routersR);
 
-#ifdef KERNEL_STACK
+#ifdef LINUX_STACK
   LinuxStackHelper linuxStack;
 #endif
 
@@ -175,7 +175,7 @@ main (int argc, char *argv[])
     }
   else if (stack == "linux")
     {
-#ifdef KERNEL_STACK
+#ifdef LINUX_STACK
       dceManager.SetNetworkStack ("ns3::LinuxSocketFdFactory", "Library", StringValue ("liblinux.so"));
       dceManager.Install (client);
       dceManager.Install (server);
@@ -259,7 +259,7 @@ main (int argc, char *argv[])
   // Calculate and populate routing tables
   // ----------------------------------------------------------------------
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
-#ifdef KERNEL_STACK
+#ifdef LINUX_STACK
   if (stack == "linux")
     {
       LinuxStackHelper::PopulateRoutingTables ();
@@ -294,7 +294,7 @@ main (int argc, char *argv[])
   apps.Start (Seconds (0.75));
   apps.Stop  (Seconds (iperfDurationSeconds+3.0));
 
-#ifdef KERNEL_STACK
+#ifdef LINUX_STACK
   if (stack == "linux")
     {
       if(clientTcp != "")
@@ -345,7 +345,7 @@ main (int argc, char *argv[])
   apps.Start (Seconds (0.5));
   apps.Stop  (Seconds (iperfDurationSeconds+3.0));
 
-#ifdef KERNEL_STACK
+#ifdef LINUX_STACK
   if (stack == "linux")
     {
       if (serverTcp != "")

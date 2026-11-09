@@ -34,9 +34,12 @@
 #include "ns3/simulator.h"
 #include "ns3/netlink-socket-address.h"
 #include "ns3/inet6-socket-address.h"
+#include "ns3/ipv6-l3-protocol.h"
+#include "ns3/node.h"
 #include <fcntl.h>
 #include <errno.h>
 #include <linux/icmp.h> // need ICMP_FILTER
+#include <netinet/icmp6.h> // need ICMP6_FILTER
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/mman.h>
@@ -55,7 +58,8 @@ UnixSocketFd::UnixSocketFd (Ptr<Socket> socket)
   : m_socket (socket),
     m_sendTimeout (Seconds (0.0)),
     m_recvTimeout (Seconds (0.0)),
-    m_peekedData (0)
+    m_peekedData (0),
+    m_icmp6FilterSet (false)
 {
   m_socket->SetRecvCallback (MakeCallback (&UnixSocketFd::RecvSocketData, this));
   m_socket->SetSendCallback (MakeCallback (&UnixSocketFd::SendSocketData, this));
@@ -395,6 +399,7 @@ UnixSocketFd::Setsockopt (int level, int optname,
     case SOL_IPV6:
       switch (optname)
         {
+        case IPV6_RECVPKTINFO:
         case IPV6_PKTINFO:
           {
             if (optlen != sizeof (int))
@@ -404,6 +409,52 @@ UnixSocketFd::Setsockopt (int level, int optname,
               }
             int *v = (int*)optval;
             m_socket->SetRecvPktInfo (*v ? true : false);
+          } break;
+        case IPV6_JOIN_GROUP:
+        case IPV6_LEAVE_GROUP:
+          {
+            if (optlen < (socklen_t) sizeof (struct ipv6_mreq))
+              {
+                current->err = EINVAL;
+                return -1;
+              }
+            const struct ipv6_mreq *mreq = (const struct ipv6_mreq *)optval;
+            Ptr<Node> node = current->process->manager->GetObject<Node> ();
+            Ptr<Ipv6L3Protocol> ipv6 = node->GetObject<Ipv6L3Protocol> ();
+            // The interface index is NetDevice index + 1, as reported by
+            // netlink; 0 means all interfaces.
+            if (!ipv6 || mreq->ipv6mr_interface > node->GetNDevices ())
+              {
+                current->err = ENODEV;
+                return -1;
+              }
+            Ipv6Address group ((uint8_t *)mreq->ipv6mr_multiaddr.s6_addr);
+            if (mreq->ipv6mr_interface == 0)
+              {
+                if (optname == IPV6_JOIN_GROUP)
+                  {
+                    ipv6->AddMulticastAddress (group);
+                  }
+                else
+                  {
+                    ipv6->RemoveMulticastAddress (group);
+                  }
+                break;
+              }
+            int32_t ifIndex = ipv6->GetInterfaceForDevice (node->GetDevice (mreq->ipv6mr_interface - 1));
+            if (ifIndex < 0)
+              {
+                current->err = ENODEV;
+                return -1;
+              }
+            if (optname == IPV6_JOIN_GROUP)
+              {
+                ipv6->AddMulticastAddress (group, ifIndex);
+              }
+            else
+              {
+                ipv6->RemoveMulticastAddress (group, ifIndex);
+              }
           } break;
         // case IPV6_RECVPKTINFO: {
         //   if (optlen != sizeof (int))
@@ -464,6 +515,31 @@ UnixSocketFd::Setsockopt (int level, int optname,
           break;
         }
       break;
+    case IPPROTO_ICMPV6:
+      switch (optname)
+        {
+        case ICMP6_FILTER:
+          {
+            if (m_socket->GetInstanceTypeId ().GetName () != "ns3::Ipv6RawSocketImpl")
+              {
+                current->err = ENOPROTOOPT;
+                return -1;
+              }
+            if (optlen != sizeof (struct icmp6_filter))
+              {
+                current->err = EINVAL;
+                return -1;
+              }
+            // ns-3 does not expose its ICMPv6 raw socket filter: applied
+            // when receiving.
+            memcpy (&m_icmp6Filter, optval, sizeof (m_icmp6Filter));
+            m_icmp6FilterSet = true;
+          } break;
+        default:
+          NS_LOG_WARN ("Unsupported setsockopt requested. level: IPPROTO_ICMPV6, optname: " << optname);
+          break;
+        }
+      break;
     default:
       {
         NS_LOG_WARN ("Unsupported sockopt: level = " << level);
@@ -483,6 +559,22 @@ UnixSocketFd::Getsockopt (int level, int optname,
 
   switch (level)
     {
+    case IPPROTO_ICMPV6:
+      if (optname != ICMP6_FILTER || *optlen < (socklen_t) sizeof (struct icmp6_filter))
+        {
+          current->err = optname != ICMP6_FILTER ? ENOPROTOOPT : EINVAL;
+          return -1;
+        }
+      if (m_icmp6FilterSet)
+        {
+          memcpy (optval, &m_icmp6Filter, sizeof (m_icmp6Filter));
+        }
+      else
+        {
+          ICMP6_FILTER_SETPASSALL ((struct icmp6_filter *)optval);
+        }
+      *optlen = sizeof (struct icmp6_filter);
+      break;
     case SOL_RAW:
       switch (optname)
         {

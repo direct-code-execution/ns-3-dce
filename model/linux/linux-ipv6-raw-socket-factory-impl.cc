@@ -32,7 +32,7 @@ namespace ns3 {
 Ptr<Socket>
 LinuxIpv6RawSocketFactoryImpl::CreateSocket (void)
 {
-#ifdef KERNEL_STACK
+#ifdef LINUX_STACK
   Ptr<LinuxSocketImpl> socket = CreateObject<LinuxSocketImpl> ();
   Ptr<Node> node = this->GetObject<Node> ();
   socket->SetNode (node);
@@ -42,7 +42,7 @@ LinuxIpv6RawSocketFactoryImpl::CreateSocket (void)
   socket->CreateSocket ();
   return socket;
 #else
-  NS_LOG_WARN ("LinuxIpv6RawSocketFactoryImpl::CreateSocket(): require KERNEL_STACK");
+  NS_LOG_WARN ("LinuxIpv6RawSocketFactoryImpl::CreateSocket(): require LINUX_STACK");
   return nullptr;
 #endif
 }

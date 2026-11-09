@@ -89,7 +89,8 @@ PollTableEntry::IsEventMatch (short e) const
   return e & m_eventMask;
 }
 //WaitPoint
-WaitPoint::WaitPoint () : m_waitTask (0)
+WaitPoint::WaitPoint () : m_waitTask (0),
+                           m_woken (false)
 {
 }
 WaitPoint::Result
@@ -99,9 +100,18 @@ WaitPoint::Wait (Time to)
   NS_LOG_FUNCTION (this << current);
   NS_ASSERT (current != 0);
 
+  // An event came between the registration of the wait and now, e.g. while
+  // this thread polled another file with a system call that had to wait
+  // for the kernel (LKL): it was not waiting yet.
+  if (m_woken)
+    {
+      m_woken = false;
+      return HasPendingSignal () ? PollTable::INTERRUPTED : PollTable::OK;
+    }
   m_waitTask = current;
   Time left = current->process->manager->Wait (to);
   m_waitTask = 0;
+  m_woken = false;
   if (HasPendingSignal ())
     {
       return PollTable::INTERRUPTED;
@@ -132,6 +142,10 @@ WaitPoint::WakeUpCallback ()
         {
           NS_ASSERT (m_waitTask->task->IsActive ());
         }
+    }
+  else
+    {
+      m_woken = true;
     }
 }
 

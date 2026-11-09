@@ -126,6 +126,17 @@ public:
    */
   Task * CurrentTask (void);
   /**
+   * Returns the task whose fiber is executing, ignoring the task entered
+   * with EnterHiTask, or 0 on the main fiber.
+   */
+  Task * RunningTask (void);
+  /**
+   * From the main fiber: run the ready tasks, without advancing the
+   * simulation time, until *done is true. Returns false if no task is
+   * ready while *done is still false.
+   */
+  bool RunNow (const bool *done);
+  /**
    * Returns the 'current' task manager.
    * Note that this function does not return a reference (i.e., the caller does not
    * need to call Unref on the object returned). This is done on purpose to avoid
@@ -145,6 +156,11 @@ public:
   void LeaveHiTask (Task *task);
 
   void SetSwitchNotify (void (*fn)(void));
+  /**
+   * fn is called when a task ends: by the task itself when it calls Exit
+   * (running is true), or when it is stopped (running is false).
+   */
+  void SetTaskEndNotifier (void (*fn)(Task *task, bool running, void *context), void *context);
   uint32_t GetStackSize (Task *task) const;
 
   /**
@@ -193,6 +209,8 @@ private:
   EventImpl *m_todoOnMain;
   bool m_noSignal; // I am not come back from a real thread interruption do not run signal ....
   bool m_disposing; // In order to never loop while disposing me.
+  void (*m_taskEndNotifier)(Task *task, bool running, void *context);
+  void *m_taskEndNotifierContext;
 };
 
 } // namespace

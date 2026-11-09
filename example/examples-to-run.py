@@ -54,7 +54,8 @@ cpp_examples = [
     ("dce-ping-mt1 --kernel=1", "True", "True"),
     ("dce-mt2 --kernel=1", "True", "True"),
     ("dce-mt3 --kernel=1", "True", "True"),
-    ("dce-xfrm", "False", "False"),
+    # Runs, but libos 4.4 cannot install IPsec states (ENOSYS)
+    ("dce-xfrm", "True", "True"),
 #    ("dce-ltp", "True", "True"),
     ("dce-cradle-mptcp", "True", "True"),
     ("dce-iperf-mptcp", "IPERF_DCE_FOUND == True", "IPERF_DCE_FOUND == True"),
@@ -83,11 +84,19 @@ cpp_examples = [
     ("dce-mptcp-handoff-v4v6 --v6Primary=1 --errRate=0.4", "True", "True"),
     ("dce-mptcp-handoff-v4v6 --v6Primary=1 --errRate=0.5", "True", "True"),
     ("dce-mptcp-handoff-v4v6 --v6Primary=1 --errRate=0.8", "True", "True"),
-#    ("dce-mptcp-lte-wifi", "True", "True"),
+    ("dce-mptcp-lte-wifi", "True", "True"),
+    ("dce-mptcp-lte-wifi --disLte=1", "True", "True"),
+    ("dce-mptcp-lte-wifi --disWifi=1", "True", "True"),
+    ("dce-mptcp-lte-wifi-v6", "True", "True"),
     ("dce-httpd", "True", "True"),
 #    ("dce-wifi-ccnx", "True", "True"),
     ("dce-sctp-simple", "True", "True"),
-    ("dce-freebsd", "True", "True"),
+    # Linux kernels from LKL (configure --with-lkl)
+    ("dce-lkl-boot", "True", "True"),
+    ("dce-lkl-p2p --loopback", "True", "True"),
+    ("dce-lkl-p2p", "True", "True"),
+    ("dce-lkl-p2p --stop", "True", "True"),
+    ("dce-lkl-p2p --loopback --stop", "True", "True"),
 ]
 
 # A list of Python examples to run in order to ensure that they remain

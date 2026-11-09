@@ -106,13 +106,34 @@ int dce_sigwait (const sigset_t *set, int *sig)
   NS_LOG_FUNCTION (current << UtilsGetNodeId () << set << sig);
   NS_ASSERT (current != 0);
 
-  int ret = 0;
-  // NEED TO WORK!!
-  // XXX: we need to add signal num notiifcation
-  current->process->manager->Wait ();
-  //  sigdelset (&current->pendingSignals, numnum);
-
-  return ret;
+  while (true)
+    {
+      for (int s = 1; s < NSIG; s++)
+        {
+          if (sigismember (set, s) != 1)
+            {
+              continue;
+            }
+          if (sigismember (&current->pendingSignals, s) == 1
+              || sigismember (&current->process->pendingSignals, s) == 1)
+            {
+              // Consume one occurrence: the thread-directed one first.
+              if (sigismember (&current->pendingSignals, s) == 1)
+                {
+                  sigdelset (&current->pendingSignals, s);
+                }
+              else
+                {
+                  sigdelset (&current->process->pendingSignals, s);
+                }
+              sigemptyset (&current->sigwaitSet);
+              *sig = s;
+              return 0;
+            }
+        }
+      current->sigwaitSet = *set;
+      current->process->manager->Wait ();
+    }
 }
 int dce_sigprocmask (int how, const sigset_t *set, sigset_t *oldset)
 {
