@@ -223,8 +223,24 @@ NetlinkAttributeValue::DeserializeWithType (Buffer::Iterator& start,
     }
   else if (m_type == ADDRESS)
     {
-      ReadFrom (start, m_address, remaining);
-      len = m_address.GetLength ();
+      uint8_t buf[Address::MAX_SIZE];
+      NS_ASSERT (remaining <= Address::MAX_SIZE);
+      start.Read (buf, remaining);
+      if (remaining == 4)
+        {
+          m_address = Ipv4Address::Deserialize (buf);
+        }
+      else if (remaining == 16)
+        {
+          m_address = Ipv6Address::Deserialize (buf);
+        }
+      else if (remaining == 6)
+        {
+          Mac48Address mac;
+          mac.CopyFrom (buf);
+          m_address = mac;
+        }
+      len = remaining;
     }
   else
     {
