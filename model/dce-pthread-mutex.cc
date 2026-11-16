@@ -289,9 +289,9 @@ int dce_pthread_mutex_unlock (pthread_mutex_t *mutex)
       // them, etc. What we do, instead, is implement the simplest
       // "fair" policy by ensuring that every thread
       // is woken up in FIFO order.
-      Thread *waiting = mtx->waiting.front ();
-      if (waiting != 0)
+      if (!mtx->waiting.empty ())
         {
+          Thread *waiting = mtx->waiting.front ();
           current->process->manager->Wakeup (waiting);
           // give them a chance to run.
           current->process->manager->Yield ();
