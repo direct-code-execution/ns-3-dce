@@ -795,7 +795,7 @@ def run_job_synchronously(shell_command, directory, valgrind, is_python, build_p
     retval = proc.returncode
 
     # If the process crashed (segfault = 139, etc), re-run with GDB to get backtrace
-    if options.gdb and (retval < 0 or retval == 139):  # 139 = 128 + 11 (SIGSEGV)
+    if options.gdb and (retval < 0 or retval in (134, 139)):  # 134 = SIGABRT, 139 = SIGSEGV
         print("=" * 70)
         print("CRASH DETECTED (exit code %d). Re-running with GDB to get backtrace..." % retval)
         print("=" * 70)

@@ -1,7 +1,7 @@
 #ifndef SIMU_UIO_H
 #define SIMU_UIO_H
 
-#include <termio.h>
+#include <termios.h>
 
 #ifdef __cplusplus
 extern "C" {

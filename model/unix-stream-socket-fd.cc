@@ -19,6 +19,7 @@ namespace ns3 {
 UnixStreamSocketFd::UnixStreamSocketFd (Ptr<Socket> sock, bool connected)
   : UnixSocketFd (sock),
     m_backlog (0),
+    m_connectEstablished (false),
     m_peerAddress (0),
     m_shutWrite (0)
 {
@@ -464,6 +465,7 @@ UnixStreamSocketFd::ConnectionSuccess (Ptr<Socket> sock)
   if (CONNECTING == m_state)
     {
       m_state = CONNECTED;
+      m_connectEstablished = true;
       Address ad;
       if (0 == sock->GetSockName (ad))
         {
@@ -540,10 +542,12 @@ UnixStreamSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
     }
 
   m_state = CONNECTING;
+  m_connectEstablished = false;
 
   int sup = UnixSocketFd::Connect (my_addr, addrlen);
+  bool handshakeStarted = (0 == sup);
 
-  if (0 == sup)
+  if (handshakeStarted)
     {
       sup = -1;
       WaitQueueEntryTimeout *wq = new WaitQueueEntryTimeout (POLLIN | POLLHUP, GetRecvTimeout ());
@@ -576,7 +580,9 @@ UnixStreamSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
       delete wq;
       wq = 0;
     }
-  if (CONNECTED == m_state)
+  // The peer may accept and close the connection before this thread runs
+  // again; like Linux, connect () still succeeds and later reads see EOF.
+  if (CONNECTED == m_state || (REMOTECLOSED == m_state && m_connectEstablished))
     {
       sup = 0;
       Address ad = PosixAddressToNs3Address (my_addr, addrlen);
@@ -587,7 +593,7 @@ UnixStreamSocketFd::Connect (const struct sockaddr *my_addr, socklen_t addrlen)
     {
       sup = -1;
 
-      if ((m_state == CLOSED)||(REMOTECLOSED == m_state))
+      if (handshakeStarted || (m_state == CLOSED) || (REMOTECLOSED == m_state))
         {
           Current ()->err = ECONNREFUSED;
         }

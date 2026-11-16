@@ -52,6 +52,7 @@ private:
 
   std::list<std::pair<Ptr<Socket>,Address> > m_connectionQueue;
   int m_backlog;
+  bool m_connectEstablished; // the current Connect () completed its handshake
   State m_state;
   Address* m_peerAddress;
   bool m_shutWrite;
